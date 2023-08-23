@@ -225,5 +225,51 @@ namespace MissingValues
 			low = (Int256)ulower;
 			return (Int256)(upper) - ((left >> 255) & right) - ((right >> 255) & left);
 		}
+
+		/// <summary>
+		/// Produces the full product of two unsigned 512-bit numbers.
+		/// </summary>
+		/// <param name="left">First number to multiply.</param>
+		/// <param name="right">Second number to multiply.</param>
+		/// <param name="lower">The low 512-bit of the product of the specified numbers.</param>
+		/// <returns>The high 512-bit of the product of the specified numbers.</returns>
+		public static UInt512 BigMul(UInt512 left, UInt512 right, out UInt512 lower)
+		{
+			// Adaptation of algorithm for multiplication
+			// of 32-bit unsigned integers described
+			// in Hacker's Delight by Henry S. Warren, Jr. (ISBN 0-201-91465-4), Chapter 8
+			// Basically, it's an optimized version of FOIL method applied to
+			// low and high dwords of each operand
+
+			UInt512 al = left.Lower;
+			UInt512 ah = left.Upper;
+
+			UInt512 bl = right.Lower;
+			UInt512 bh = right.Upper;
+
+			UInt512 mull = al * bl;
+			UInt512 t = ah * bl + mull.Upper;
+			UInt512 tl = al * bh + t.Lower;
+
+			lower = new UInt512(tl.Lower, mull.Lower);
+
+			return ah * bh + t.Upper + tl.Upper;
+		}
+
+		/// <summary>
+		/// Produces the full product of two signed 512-bit numbers.
+		/// </summary>
+		/// <param name="left">First number to multiply.</param>
+		/// <param name="right">Second number to multiply.</param>
+		/// <param name="lower">The low 512-bit of the product of the specified numbers.</param>
+		/// <returns>The high 512-bit of the product of the specified numbers.</returns>
+		public static Int512 BigMul(Int512 left, Int512 right, out Int512 low)
+		{
+			// This follows the same logic as is used in `long Math.BigMul(long, long, out long)`
+
+			UInt512 upper = BigMul((UInt512)left, (UInt512)right, out UInt512 ulower);
+			low = (Int512)ulower;
+			return (Int512)(upper) - ((left >> 511) & right) - ((right >> 511) & left);
+		}
 	}
 }

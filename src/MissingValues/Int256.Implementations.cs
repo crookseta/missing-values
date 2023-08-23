@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MissingValues.Internals;
+using System;
 using System.Buffers.Binary;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -19,8 +20,8 @@ namespace MissingValues
 		ISignedNumber<Int256>,
 		IFormattableSignedInteger<Int256, UInt256>
 	{
-		private static UInt128 _upperMin => new UInt128(0x8000_0000_0000_0000, 0);
-		private static UInt128 _lowerMin => new UInt128(0, 0);
+		private static UInt128 _upperMin => new UInt128(0x8000_0000_0000_0000, 0x0000_0000_0000_0000);
+		private static UInt128 _lowerMin => new UInt128(0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
 
 		private static UInt128 _upperMax => new UInt128(0x7FFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF);
 		private static UInt128 _lowerMax => new UInt128(0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF);
@@ -33,7 +34,7 @@ namespace MissingValues
 
 		public static Int256 NegativeOne => new(_lowerMax, _lowerMax);
 
-		public static Int256 One => new(0, 1);
+		public static Int256 One => new(0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0001);
 
 		static int INumberBase<Int256>.Radix => 2;
 
@@ -77,7 +78,7 @@ namespace MissingValues
 
 				if (IsNegative(value))
 				{
-					throw new ArgumentException("Minimum value cannot be double negated", nameof(value));
+					Thrower.MinimumSignedAbsoluteValue<Int256>();
 				}
 			}
 			return value;
@@ -109,7 +110,7 @@ namespace MissingValues
 
 		static bool INumberBase<Int256>.IsNegativeInfinity(Int256 value) => false;
 
-		public static bool IsNormal(Int256 value) => value != Zero;
+		static bool INumberBase<Int256>.IsNormal(Int256 value) => value != Zero;
 
 		public static bool IsOddInteger(Int256 value) => (value._lower & 1) != 0;
 
@@ -123,13 +124,13 @@ namespace MissingValues
 
 		static bool INumberBase<Int256>.IsSubnormal(Int256 value) => false;
 
-		public static bool IsZero(Int256 value) => (value == Zero);
+		static bool INumberBase<Int256>.IsZero(Int256 value) => (value == Zero);
 
 		public static Int256 Clamp(Int256 value, Int256 min, Int256 max)
 		{
 			if (min > max)
 			{
-				throw MathematicalException.MinMaxException;
+				Thrower.MinMaxError(min, max);
 			}
 
 			if (value < min)
@@ -157,7 +158,7 @@ namespace MissingValues
 			{
 				if (IsNegative(absValue))
 				{
-					throw new UnreachableException($"Value was double negative/Negation failed.");
+					Thrower.MinimumSignedAbsoluteValue<Int256>();
 				}
 				return absValue;
 			}
@@ -177,7 +178,7 @@ namespace MissingValues
 		{
 			if (IsNegative(value))
 			{
-				throw new ArgumentOutOfRangeException(nameof(value), "Needs non-negative number.");
+				Thrower.NeedsNonNegative<Int256>();
 			}
 
 			if (value._upper == 0)
@@ -300,7 +301,8 @@ namespace MissingValues
 				return result;
 			}
 
-			throw ExceptionThrowingHelper.ThrowParsingException<Int256>(new string(s));
+			Thrower.ParsingError<Int256>(s.ToString());
+			return default;
 		}
 
 		public static Int256 Parse(string s, NumberStyles style, IFormatProvider? provider)
@@ -310,7 +312,8 @@ namespace MissingValues
 				return result;
 			}
 
-			throw ExceptionThrowingHelper.ThrowParsingException<Int256>(new string(s));
+			Thrower.ParsingError<Int256>(s.ToString());
+			return default;
 		}
 
 		public static Int256 Parse(ReadOnlySpan<char> s, IFormatProvider? provider)
@@ -320,7 +323,8 @@ namespace MissingValues
 				return result;
 			}
 
-			throw ExceptionThrowingHelper.ThrowParsingException<Int256>(new string(s));
+			Thrower.ParsingError<Int256>(s.ToString());
+			return default;
 		}
 
 		public static Int256 Parse(string s, IFormatProvider? provider)
@@ -330,7 +334,8 @@ namespace MissingValues
 				return result;
 			}
 
-			throw ExceptionThrowingHelper.ThrowParsingException<Int256>(new string(s));
+			Thrower.ParsingError<Int256>(s.ToString());
+			return default;
 		}
 
 		public static Int256 PopCount(Int256 value)
@@ -571,6 +576,7 @@ namespace MissingValues
 			where TOther : INumberBase<TOther>
 		{
 			bool converted = true;
+
 			checked
 			{
 				result = value switch
@@ -579,7 +585,6 @@ namespace MissingValues
 					Half actual => (Int256)actual,
 					float actual => (Int256)actual,
 					double actual => (Int256)actual,
-					//Quad actual => (Int256)actual,
 					decimal actual => (Int256)actual,
 					byte actual => (Int256)actual,
 					ushort actual => (Int256)actual,
@@ -587,6 +592,7 @@ namespace MissingValues
 					ulong actual => (Int256)actual,
 					UInt128 actual => (Int256)actual,
 					UInt256 actual => (Int256)actual,
+					UInt512 actual => (Int256)actual,
 					nuint actual => (Int256)actual,
 					sbyte actual => (Int256)actual,
 					short actual => (Int256)actual,
@@ -594,9 +600,12 @@ namespace MissingValues
 					long actual => (Int256)actual,
 					Int128 actual => (Int256)actual,
 					Int256 actual => actual,
+					Int512 actual => (Int256)actual,
+					nint actual => (Int256)actual,
 					_ => BitHelper.DefaultConvert<Int256>(out converted)
 				};
 			}
+
 			return converted;
 		}
 
@@ -613,8 +622,7 @@ namespace MissingValues
 				Half actual => (Int256)actual,
 				float actual => (Int256)actual,
 				double actual => (actual <= -TwoPow255) ? MinValue : (actual > +TwoPow255) ? MaxValue : (Int256)actual,
-				//Quad actual => (actual <= -TwoPow255) ? MinValue : (actual > +TwoPow255) ? MaxValue : (Int256)actual,
-				decimal actual => (Int128)actual,
+				decimal actual => (Int256)actual,
 				byte actual => (Int256)actual,
 				ushort actual => (Int256)actual,
 				uint actual => (Int256)actual,
@@ -628,6 +636,7 @@ namespace MissingValues
 				long actual => actual,
 				Int128 actual => actual,
 				Int256 actual => actual,
+				Int512 actual => (actual <= MinValue) ? MinValue : (actual >= MaxValue) ? MaxValue : (Int256)actual,
 				nint actual => actual,
 				_ => BitHelper.DefaultConvert<Int256>(out converted)
 			};
@@ -647,7 +656,6 @@ namespace MissingValues
 				Half actual => (actual == Half.PositiveInfinity) ? MaxValue : (actual == Half.NegativeInfinity) ? MinValue : (Int256)actual,
 				float actual => (actual == float.PositiveInfinity) ? MaxValue : (actual == float.NegativeInfinity) ? MinValue : (Int256)actual,
 				double actual => (actual <= -TwoPow255) ? MinValue : (actual > +TwoPow255) ? MaxValue : (Int256)actual,
-				//Quad actual => (actual <= -TwoPow255) ? MinValue : (actual > +TwoPow255) ? MaxValue : (Int256)actual,
 				decimal actual => (Int128)actual,
 				byte actual => (Int256)actual,
 				ushort actual => (Int256)actual,
@@ -671,7 +679,7 @@ namespace MissingValues
 		static bool INumberBase<Int256>.TryConvertToChecked<TOther>(Int256 value, out TOther result)
 		{
 			bool converted = true;
-			result = default;
+			result = default!;
 			checked
 			{
 				result = result switch
@@ -680,7 +688,6 @@ namespace MissingValues
 					Half => (TOther)(object)(Half)value,
 					float => (TOther)(object)(float)value,
 					double => (TOther)(object)(double)value,
-					//Quad => (TOther)(object)(Quad)value,
 					decimal => (TOther)(object)(decimal)value,
 					byte => (TOther)(object)(byte)value,
 					ushort => (TOther)(object)(ushort)value,
@@ -688,6 +695,7 @@ namespace MissingValues
 					ulong => (TOther)(object)(ulong)value,
 					UInt128 => (TOther)(object)(UInt128)value,
 					UInt256 => (TOther)(object)(UInt256)value,
+					UInt512 => (TOther)(object)(UInt512)value,
 					nuint => (TOther)(object)(nuint)value,
 					sbyte => (TOther)(object)(sbyte)value,
 					short => (TOther)(object)(short)value,
@@ -695,6 +703,7 @@ namespace MissingValues
 					long => (TOther)(object)(long)value,
 					Int128 => (TOther)(object)(Int128)value,
 					Int256 => (TOther)(object)value,
+					Int512 => (TOther)(object)(Int512)value,
 					nint => (TOther)(object)(nint)value,
 					_ => BitHelper.DefaultConvert<TOther>(out converted)
 				};
@@ -706,7 +715,7 @@ namespace MissingValues
 		static bool INumberBase<Int256>.TryConvertToSaturating<TOther>(Int256 value, out TOther result)
 		{
 			bool converted = true;
-			result = default;
+			result = default!;
 
 			result = result switch
 			{
@@ -714,7 +723,6 @@ namespace MissingValues
 				Half => (TOther)(object)(Half)value,
 				float => (TOther)(object)(float)value,
 				double => (TOther)(object)(double)value,
-				//Quad => (TOther)(object)(Quad)value,
 				decimal => (TOther)(object)(decimal)value,
 				byte => (TOther)(object)((value >= (Int256)byte.MaxValue) ? byte.MaxValue : (value <= (Int256)byte.MinValue) ? byte.MinValue : (byte)value),
 				ushort => (TOther)(object)((value >= (Int256)ushort.MaxValue) ? ushort.MaxValue : (value <= (Int256)ushort.MinValue) ? ushort.MinValue : (ushort)value),
@@ -722,6 +730,7 @@ namespace MissingValues
 				ulong => (TOther)(object)((value >= (Int256)ulong.MaxValue) ? ulong.MaxValue : (value <= (Int256)ulong.MinValue) ? ulong.MinValue : (ulong)value),
 				UInt128 => (TOther)(object)((value >= (Int256)UInt128.MaxValue) ? UInt128.MaxValue : (value <= (Int256)UInt128.MinValue) ? UInt128.MinValue : (UInt128)value),
 				UInt256 => (TOther)(object)(UInt256)value,
+				UInt512 => (TOther)(object)(UInt512)value,
 				nuint => (TOther)(object)((value >= (Int256)nuint.MaxValue) ? nuint.MaxValue : (value <= (Int256)nuint.MinValue) ? nuint.MinValue : (nuint)value),
 				sbyte => (TOther)(object)((value >= (Int256)sbyte.MaxValue) ? sbyte.MaxValue : (value <= (Int256)sbyte.MinValue) ? sbyte.MinValue : (sbyte)value),
 				short => (TOther)(object)((value >= (Int256)short.MaxValue) ? short.MaxValue : (value <= (Int256)short.MinValue) ? short.MinValue : (short)value),
@@ -729,6 +738,7 @@ namespace MissingValues
 				long => (TOther)(object)((value >= (Int256)long.MaxValue) ? long.MaxValue : (value <= (Int256)long.MinValue) ? long.MinValue : (long)value),
 				Int128 => (TOther)(object)((value >= (Int256)Int128.MaxValue) ? Int128.MaxValue : (value <= (Int256)Int128.MinValue) ? Int128.MinValue : (Int128)value),
 				Int256 => (TOther)(object)value,
+				Int512 => (TOther)(object)(Int512)value,
 				nint => (TOther)(object)((value >= (Int256)nint.MaxValue) ? nint.MaxValue : (value <= (Int256)nint.MinValue) ? nint.MinValue : (nint)value),
 				_ => BitHelper.DefaultConvert<TOther>(out converted)
 			};
@@ -739,14 +749,13 @@ namespace MissingValues
 		static bool INumberBase<Int256>.TryConvertToTruncating<TOther>(Int256 value, out TOther result)
 		{
 			bool converted = true;
-			result = default;
+			result = default!;
 			result = result switch
 			{
 				char => (TOther)(object)(char)value,
 				Half => (TOther)(object)(Half)value,
 				float => (TOther)(object)(float)value,
 				double => (TOther)(object)(double)value,
-				//Quad => (TOther)(object)(Quad)value,
 				decimal => (TOther)(object)(decimal)value,
 				byte => (TOther)(object)(byte)value,
 				ushort => (TOther)(object)(ushort)value,
@@ -754,6 +763,7 @@ namespace MissingValues
 				ulong => (TOther)(object)(ulong)value,
 				UInt128 => (TOther)(object)(UInt128)value,
 				UInt256 => (TOther)(object)(UInt256)value,
+				UInt512 => (TOther)(object)(UInt512)value,
 				nuint => (TOther)(object)(nuint)value,
 				sbyte => (TOther)(object)(sbyte)value,
 				short => (TOther)(object)(short)value,
@@ -761,6 +771,7 @@ namespace MissingValues
 				long => (TOther)(object)(long)value,
 				Int128 => (TOther)(object)(Int128)value,
 				Int256 => (TOther)(object)value,
+				Int512 => (TOther)(object)(Int512)value,
 				nint => (TOther)(object)(nint)value,
 				_ => BitHelper.DefaultConvert<TOther>(out converted)
 			};
@@ -780,7 +791,8 @@ namespace MissingValues
 			}
 			else
 			{
-				throw new ArgumentException($"Parameter must be {typeof(Int256)}", nameof(obj));
+				Thrower.MustBeType<Int256>();
+				return default;
 			}
 		}
 
@@ -811,7 +823,7 @@ namespace MissingValues
 			}
 			else if (!Int256.TryConvertFromChecked(value, out result) && !TOther.TryConvertToChecked<Int256>(value, out result))
 			{
-				throw new NotSupportedException();
+				Thrower.NotSupported<Int256, TOther>();
 			}
 
 			return result;
@@ -828,7 +840,7 @@ namespace MissingValues
 			}
 			else if (!Int256.TryConvertFromSaturating(value, out result) && !TOther.TryConvertToSaturating<Int256>(value, out result))
 			{
-				throw new NotSupportedException();
+				Thrower.NotSupported<Int256, TOther>();
 			}
 
 			return result;
@@ -845,7 +857,7 @@ namespace MissingValues
 			}
 			else if (!Int256.TryConvertFromTruncating(value, out result) && !TOther.TryConvertToTruncating<Int256>(value, out result))
 			{
-				throw new NotSupportedException();
+				Thrower.NotSupported<Int256, TOther>();
 			}
 
 			return result;
@@ -998,7 +1010,7 @@ namespace MissingValues
 			{
 				return (Int256)CharUnicodeInfo.GetDecimalDigitValue(value);
 			}
-			else if (char.IsAsciiLetter(value))
+			else if (char.IsAsciiHexDigit(value))
 			{
 				return (Int256)(char.ToLowerInvariant(value) - 'W'); // 'W' = 87
 			}
@@ -1034,7 +1046,7 @@ namespace MissingValues
 			if (sign == (ulong)(right._upper >> 127) && 
 				sign != (ulong)(result._upper >> 127))
 			{
-				throw new OverflowException();
+				Thrower.ArithmethicOverflow(Thrower.ArithmethicOperation.Addition);
 			}
 			return result;
 		}
@@ -1054,7 +1066,7 @@ namespace MissingValues
 			// This gives us the borrow to subtract from upper to compute the correct result
 
 			UInt128 lower = left._lower - right._lower;
-			UInt128 borrow = (lower > left._lower) ? 1UL : 0UL;
+			UInt128 borrow = (lower > left._lower) ? UInt128.One : UInt128.Zero;
 
 			UInt128 upper = left._upper - right._upper - borrow;
 			return new Int256(upper, lower);
@@ -1071,14 +1083,14 @@ namespace MissingValues
 
 			if (sign != (uint)(right._upper >> 127) && sign != (uint)(result._upper >> 127))
 			{
-				throw new OverflowException();
+				Thrower.ArithmethicOverflow(Thrower.ArithmethicOperation.Subtraction);
 			}
 			return result;
 		}
 
 		public static Int256 operator ~(Int256 value)
 		{
-			return new(~value._upper, ~value._lower);
+			return new Int256(~value._upper, ~value._lower);
 		}
 
 		public static Int256 operator ++(Int256 value)
@@ -1122,7 +1134,7 @@ namespace MissingValues
 				// we have a large negative value less than MinValue and
 				// should throw.
 
-				throw new OverflowException();
+				Thrower.ArithmethicOverflow(Thrower.ArithmethicOperation.Multiplication);
 			}
 
 			return lower;
@@ -1132,7 +1144,7 @@ namespace MissingValues
 		{
 			if ((right == NegativeOne) && (left._upper == _upperMin) && (left._lower == _lowerMin))
 			{
-				throw new OverflowException();
+				Thrower.ArithmethicOverflow(Thrower.ArithmethicOperation.Division);
 			}
 
 			// We simplify the logic here by just doing unsigned division on the
@@ -1171,24 +1183,21 @@ namespace MissingValues
 
 		public static Int256 operator &(Int256 left, Int256 right)
 		{
-			return new(left._upper & right._upper, left._lower & right._lower);
+			return new Int256(left._upper & right._upper, left._lower & right._lower);
 		}
 
 		public static Int256 operator |(Int256 left, Int256 right)
 		{
-			return new(left._upper | right._upper, left._lower | right._lower);
+			return new Int256(left._upper | right._upper, left._lower | right._lower);
 		}
 
 		public static Int256 operator ^(Int256 left, Int256 right)
 		{
-			return new(left._upper ^ right._upper, left._lower ^ right._lower);
+			return new Int256(left._upper ^ right._upper, left._lower ^ right._lower);
 		}
 
 		public static Int256 operator <<(Int256 value, int shiftAmount)
 		{
-			// C# automatically masks the shift amount for UInt64 to be 0x3F. So we
-			// need to specially handle things if the 7th bit is set.
-
 			shiftAmount &= 0xFF;
 
 			if ((shiftAmount & 0x80) != 0)

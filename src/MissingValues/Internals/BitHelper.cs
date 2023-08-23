@@ -92,6 +92,28 @@ namespace MissingValues
 			}
 			return LeadingZeroCount(upper);
 		}
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		internal static int LeadingZeroCount(UInt512 value)
+		{
+			UInt256 upper = value.Upper;
+
+			if (upper == 0)
+			{
+				return 256 + LeadingZeroCount(value.Lower);
+			}
+			return LeadingZeroCount(upper);
+		}
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		internal static int LeadingZeroCount(Int512 value)
+		{
+			UInt256 upper = value.Upper;
+
+			if (upper == 0)
+			{
+				return 256 + LeadingZeroCount(value.Lower);
+			}
+			return LeadingZeroCount(upper);
+		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		internal static UInt128 ReverseEndianness(UInt128 value)
@@ -117,6 +139,16 @@ namespace MissingValues
 		internal static Int256 ReverseEndianness(Int256 value)
 		{
 			return new(ReverseEndianness(value.Lower), ReverseEndianness(value.Upper));
+		}
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		internal static UInt512 ReverseEndianness(UInt512 value)
+		{
+			return new UInt512(ReverseEndianness(value.Lower), ReverseEndianness(value.Upper));
+		}
+
+		internal static Int512 ReverseEndianness(Int512 value)
+		{
+			return new Int512(ReverseEndianness(value.Lower), ReverseEndianness(value.Upper));
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -221,6 +253,7 @@ namespace MissingValues
 			}
 		}
 
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		internal static T DefaultConvert<T>(out bool result)
 		{
 			result = false;

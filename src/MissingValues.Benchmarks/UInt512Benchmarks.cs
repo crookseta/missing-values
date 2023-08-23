@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace MissingValues.Benchmarks
 {
-	public class UInt256Benchmarks
+	public class UInt512Benchmarks
 	{
 		static Random rnd = new Random(7);
 
@@ -77,7 +77,7 @@ namespace MissingValues.Benchmarks
 				return value.ToString(Format, CultureInfo.CurrentCulture);
 			}
 		}
-		
+
 		[MemoryDiagnoser]
 		public class Parsing
 		{
