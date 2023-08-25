@@ -237,46 +237,22 @@ namespace MissingValues
 
 		public static UInt256 Parse(ReadOnlySpan<char> s, NumberStyles style, IFormatProvider? provider)
 		{
-			if(TryParse(s, style, provider, out var result))
-			{
-				return result;
-			}
-
-			Thrower.ParsingError<UInt256>(s.ToString());
-			return default;
+			return NumberParser.ParseToUnsigned<UInt256>(s, style, provider);
 		}
 
 		public static UInt256 Parse(string s, NumberStyles style, IFormatProvider? provider)
 		{
-			if (TryParse(s, style, provider, out var result))
-			{
-				return result;
-			}
-
-			Thrower.ParsingError<UInt256>(s.ToString());
-			return default;
+			return NumberParser.ParseToUnsigned<UInt256>(s, style, provider);
 		}
 
 		public static UInt256 Parse(ReadOnlySpan<char> s, IFormatProvider? provider)
 		{
-			if (TryParse(s, provider, out var result))
-			{
-				return result;
-			}
-
-			Thrower.ParsingError<UInt256>(s.ToString());
-			return default;
+			return NumberParser.ParseToUnsigned<UInt256>(s, NumberStyles.Integer, provider);
 		}
 
 		public static UInt256 Parse(string s, IFormatProvider? provider)
 		{
-			if (TryParse(s, provider, out var result))
-			{
-				return result;
-			}
-
-			Thrower.ParsingError<UInt256>(s.ToString());
-			return default;
+			return NumberParser.ParseToUnsigned<UInt256>(s, NumberStyles.Integer, provider);
 		}
 
 		public static UInt256 PopCount(UInt256 value)
@@ -890,13 +866,13 @@ namespace MissingValues
 
 		public static UInt256 operator *(UInt256 left, UInt256 right)
 		{
-			UInt128 upper = Calculator.BigMul(left._lower, right._lower, out UInt128 lower);
+			UInt128 upper = BitHelper.BigMul(left._lower, right._lower, out UInt128 lower);
 			upper += (left._upper * right._lower) + (left._lower * right._upper);
 			return new UInt256(upper, lower);
 		}
 		public static UInt256 operator checked *(UInt256 left, UInt256 right)
 		{
-			UInt256 upper = Calculator.BigMul(left, right, out UInt256 lower);
+			UInt256 upper = BigMul(left, right, out UInt256 lower);
 
 			if(upper != UInt256.Zero)
 			{

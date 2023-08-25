@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 namespace MissingValues
 {
 	[StructLayout(LayoutKind.Sequential)]
+	[DebuggerDisplay($"{{{nameof(ToString)}(),nq}}")]
 	public readonly partial struct Int512
 	{
 		internal const int Size = 64;
@@ -63,6 +64,21 @@ namespace MissingValues
 			return NumberFormatter.SignedNumberToDecimalString<Int512, UInt512>(in this);
 		}
 
+		/// <summary>
+		/// Produces the full product of two signed 512-bit numbers.
+		/// </summary>
+		/// <param name="left">First number to multiply.</param>
+		/// <param name="right">Second number to multiply.</param>
+		/// <param name="lower">The low 512-bit of the product of the specified numbers.</param>
+		/// <returns>The high 512-bit of the product of the specified numbers.</returns>
+		public static Int512 BigMul(Int512 left, Int512 right, out Int512 low)
+		{
+			// This follows the same logic as is used in `long Math.BigMul(long, long, out long)`
+
+			UInt512 upper = UInt512.BigMul((UInt512)left, (UInt512)right, out UInt512 ulower);
+			low = (Int512)ulower;
+			return (Int512)(upper) - ((left >> 511) & right) - ((right >> 511) & left);
+		}
 
 		/// <summary>Parses a span of characters into a value.</summary>
 		/// <param name="s">The span of characters to parse.</param>

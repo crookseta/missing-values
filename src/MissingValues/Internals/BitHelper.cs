@@ -151,6 +151,36 @@ namespace MissingValues
 			return new Int512(ReverseEndianness(value.Lower), ReverseEndianness(value.Upper));
 		}
 
+		/// <summary>
+		/// Produces the full product of two unsigned 128-bit numbers.
+		/// </summary>
+		/// <param name="a">First number to multiply.</param>
+		/// <param name="b">Second number to multiply.</param>
+		/// <param name="lower">The low 128-bit of the product of the specified numbers.</param>
+		/// <returns>The high 128-bit of the product of the specified numbers.</returns>
+		public static UInt128 BigMul(UInt128 a, UInt128 b, out UInt128 lower)
+		{
+			// Adaptation of algorithm for multiplication
+			// of 32-bit unsigned integers described
+			// in Hacker's Delight by Henry S. Warren, Jr. (ISBN 0-201-91465-4), Chapter 8
+			// Basically, it's an optimized version of FOIL method applied to
+			// low and high dwords of each operand
+
+			UInt128 al = (ulong)a;
+			UInt128 ah = (ulong)(a >> 64);
+
+			UInt128 bl = (ulong)b;
+			UInt128 bh = (ulong)(b >> 64);
+
+			UInt128 mull = al * bl;
+			UInt128 t = ah * bl + (ulong)(mull >> 64);
+			UInt128 tl = al * bh + (ulong)t;
+
+			lower = new UInt128((ulong)tl, (ulong)mull); ;
+
+			return ah * bh + (ulong)(t >> 64) + (ulong)(tl >> 64);
+		}
+
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		internal static int SizeOf<T>()
 			where T : struct

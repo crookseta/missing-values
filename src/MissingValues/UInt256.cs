@@ -53,7 +53,7 @@ namespace MissingValues
 
 		public override string ToString()
 		{
-			return NumberFormatter.UnsignedNumberToString(in this, new(10));
+			return NumberFormatter.UnsignedNumberToString(in this, new UInt256(UInt128.Zero, 10));
 		}
 
 		public override bool Equals(object? obj)
@@ -64,6 +64,36 @@ namespace MissingValues
 		public override int GetHashCode()
 		{
 			return HashCode.Combine(_upper, _lower);
+		}
+
+		/// <summary>
+		/// Produces the full product of two unsigned 256-bit numbers.
+		/// </summary>
+		/// <param name="left">First number to multiply.</param>
+		/// <param name="right">Second number to multiply.</param>
+		/// <param name="lower">The low 256-bit of the product of the specified numbers.</param>
+		/// <returns>The high 256-bit of the product of the specified numbers.</returns>
+		public static UInt256 BigMul(UInt256 left, UInt256 right, out UInt256 lower)
+		{
+			// Adaptation of algorithm for multiplication
+			// of 32-bit unsigned integers described
+			// in Hacker's Delight by Henry S. Warren, Jr. (ISBN 0-201-91465-4), Chapter 8
+			// Basically, it's an optimized version of FOIL method applied to
+			// low and high dwords of each operand
+
+			UInt256 al = left.Lower;
+			UInt256 ah = left.Upper;
+
+			UInt256 bl = right.Lower;
+			UInt256 bh = right.Upper;
+
+			UInt256 mull = al * bl;
+			UInt256 t = ah * bl + mull.Upper;
+			UInt256 tl = al * bh + t.Lower;
+
+			lower = new UInt256(tl.Lower, mull.Lower);
+
+			return ah * bh + t.Upper + tl.Upper;
 		}
 
 		/// <summary>Parses a span of characters into a value.</summary>
@@ -259,7 +289,7 @@ namespace MissingValues
 		#endregion
 
 		#region To UInt256
-		public static implicit operator UInt256(char value) => new UInt256(value);
+		public static implicit operator UInt256(char value) => new UInt256(UInt128.Zero, value);
 		// Floating
 		public static explicit operator UInt256(Half value) => (UInt256)(double)value;
 		public static explicit operator checked UInt256(Half value) => checked((UInt256)(double)value);

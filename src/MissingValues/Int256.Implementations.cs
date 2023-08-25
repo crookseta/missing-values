@@ -296,46 +296,22 @@ namespace MissingValues
 
 		public static Int256 Parse(ReadOnlySpan<char> s, NumberStyles style, IFormatProvider? provider)
 		{
-			if (TryParse(s, style, provider, out var result))
-			{
-				return result;
-			}
-
-			Thrower.ParsingError<Int256>(s.ToString());
-			return default;
+			return NumberParser.ParseToSigned<Int256, UInt256>(s, style, provider);
 		}
 
 		public static Int256 Parse(string s, NumberStyles style, IFormatProvider? provider)
 		{
-			if (TryParse(s, style, provider, out var result))
-			{
-				return result;
-			}
-
-			Thrower.ParsingError<Int256>(s.ToString());
-			return default;
+			return NumberParser.ParseToSigned<Int256, UInt256>(s, style, provider);
 		}
 
 		public static Int256 Parse(ReadOnlySpan<char> s, IFormatProvider? provider)
 		{
-			if (TryParse(s, provider, out var result))
-			{
-				return result;
-			}
-
-			Thrower.ParsingError<Int256>(s.ToString());
-			return default;
+			return NumberParser.ParseToSigned<Int256, UInt256>(s, NumberStyles.Integer, provider);
 		}
 
 		public static Int256 Parse(string s, IFormatProvider? provider)
 		{
-			if (TryParse(s, provider, out var result))
-			{
-				return result;
-			}
-
-			Thrower.ParsingError<Int256>(s.ToString());
-			return default;
+			return NumberParser.ParseToSigned<Int256, UInt256>(s, NumberStyles.Integer, provider);
 		}
 
 		public static Int256 PopCount(Int256 value)
@@ -1117,7 +1093,7 @@ namespace MissingValues
 		}
 		public static Int256 operator checked *(Int256 left, Int256 right)
 		{
-			Int256 upper = Calculator.BigMul(left, right, out Int256 lower);
+			Int256 upper = BigMul(left, right, out Int256 lower);
 
 			if (((upper != 0) || (lower < 0)) && ((~upper != 0) || (lower >= 0)))
 			{

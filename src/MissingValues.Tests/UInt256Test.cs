@@ -50,7 +50,7 @@ namespace MissingValues.Tests
 		public void Cast_ToDouble()
 		{
 			// Test a UInt256Converter value where _upper is 0
-			UInt value1 = new UInt(UInt128.MaxValue);
+			UInt value1 = new UInt(UInt128.Zero, UInt128.MaxValue);
 			double exp1 = System.Math.Round((double)UInt128.MaxValue, 5);
 			double act1 = System.Math.Round((double)value1, 5);
 			double diff1 = System.Math.Abs(exp1 * 0.00000000001);
@@ -63,6 +63,19 @@ namespace MissingValues.Tests
 			double act2 = System.Math.Round((double)value2, 5);
 			double diff2 = System.Math.Abs(exp2 * 0.00000000001);
 			Assert.True(System.Math.Abs(exp2 - act2) <= diff2);
+		}
+
+		[Fact]
+		public void BigMulTest()
+		{
+			UInt upper = UInt.BigMul(MaxValue, Two, out UInt lower);
+
+			upper
+				.Should()
+				.Be(new(0x1));
+			lower
+				.Should()
+				.Be(new(0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFE));
 		}
 
 		[Fact]

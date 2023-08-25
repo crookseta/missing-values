@@ -14,11 +14,11 @@ namespace MissingValues.Tests
 		#region Readonly Variables
 		private const double MaxValueAsDouble = 115792089237316195423570985008687907853269984665640564039457584007913129639935.0;
 
-		private static readonly UInt ByteMaxValue = new(new(0x0000_0000_0000_0000, 0x0000_0000_0000_00FF));
-		private static readonly UInt UInt16MaxValue = new(new(0x0000_0000_0000_0000, 0x0000_0000_0000_FFFF));
-		private static readonly UInt UInt32MaxValue = new(new(0x0000_0000_0000_0000, 0x0000_0000_FFFF_FFFF));
-		private static readonly UInt UInt64MaxValue = new(new(0x0000_0000_0000_0000, 0xFFFF_FFFF_FFFF_FFFF));
-		private static readonly UInt UInt128MaxValue = new(new(0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF));
+		private static readonly UInt ByteMaxValue = new(0, new(0x0000_0000_0000_0000, 0x0000_0000_0000_00FF));
+		private static readonly UInt UInt16MaxValue = new(0, new(0x0000_0000_0000_0000, 0x0000_0000_0000_FFFF));
+		private static readonly UInt UInt32MaxValue = new(0, new(0x0000_0000_0000_0000, 0x0000_0000_FFFF_FFFF));
+		private static readonly UInt UInt64MaxValue = new(0, new(0x0000_0000_0000_0000, 0xFFFF_FFFF_FFFF_FFFF));
+		private static readonly UInt UInt128MaxValue = new(0, new(0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF));
 
 		private static readonly UInt Zero = new(new (0x0000_0000_0000_0000, 0x0000_0000_0000_0000), new (0x0000_0000_0000_0000, 0x0000_0000_0000_0000));
 		private static readonly UInt One = new(new (0x0000_0000_0000_0000, 0x0000_0000_0000_0000), new (0x0000_0000_0000_0000, 0x0000_0000_0000_0001));
@@ -350,28 +350,28 @@ namespace MissingValues.Tests
 			UInt result;
 
 			Assert.True(BinaryIntegerHelper<UInt>.TryReadBigEndian(new byte[] { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 }, isUnsigned: true, out result));
-			Assert.Equal(new(new(0x0000_0000_0000_0000, 0x0000_0000_0000_0000)), result);
+			Assert.Equal(new(0, new(0x0000_0000_0000_0000, 0x0000_0000_0000_0000)), result);
 
 			Assert.True(BinaryIntegerHelper<UInt>.TryReadBigEndian(new byte[] { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01 }, isUnsigned: true, out result));
-			Assert.Equal(new(new(0x0000_0000_0000_0000, 0x0000_0000_0000_0001)), result);
+			Assert.Equal(new(0, new(0x0000_0000_0000_0000, 0x0000_0000_0000_0001)), result);
 
 			Assert.True(BinaryIntegerHelper<UInt>.TryReadBigEndian(new byte[] { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x80 }, isUnsigned: true, out result));
-			Assert.Equal(new(new(0x0000_0000_0000_0000, 0x0000_0000_0000_0080)), result);
+			Assert.Equal(new(0, new(0x0000_0000_0000_0000, 0x0000_0000_0000_0080)), result);
 
 			Assert.True(BinaryIntegerHelper<UInt>.TryReadBigEndian(new byte[] { 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 }, isUnsigned: true, out result));
-			Assert.Equal(new(new(0x0100_0000_0000_0000, 0x0000_0000_0000_0000)), result);
+			Assert.Equal(new(0, new(0x0100_0000_0000_0000, 0x0000_0000_0000_0000)), result);
 
 			Assert.True(BinaryIntegerHelper<UInt>.TryReadBigEndian(new byte[] { 0x7F, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF }, isUnsigned: true, out result));
-			Assert.Equal(new(new(0x7FFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF)), result);
+			Assert.Equal(new(0, new(0x7FFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF)), result);
 
 			Assert.True(BinaryIntegerHelper<UInt>.TryReadBigEndian(new byte[] { 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 }, isUnsigned: true, out result));
-			Assert.Equal(new(new(0x8000_0000_0000_0000, 0x0000_0000_0000_0000)), result);
+			Assert.Equal(new(0, new(0x8000_0000_0000_0000, 0x0000_0000_0000_0000)), result);
 
 			Assert.True(BinaryIntegerHelper<UInt>.TryReadBigEndian(new byte[] { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x7F }, isUnsigned: true, out result));
-			Assert.Equal(new(new(0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FF7F)), result);
+			Assert.Equal(new(0, new(0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FF7F)), result);
 
 			Assert.True(BinaryIntegerHelper<UInt>.TryReadBigEndian(new byte[] { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF }, isUnsigned: true, out result));
-			Assert.Equal(new(new(0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF)), result);
+			Assert.Equal(new(0, new(0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF)), result);
 		}
 
 		[Fact]
@@ -470,28 +470,28 @@ namespace MissingValues.Tests
 			UInt result;
 
 			Assert.True(BinaryIntegerHelper<UInt>.TryReadLittleEndian(new byte[] { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 }, isUnsigned: true, out result));
-			Assert.Equal(new(new(0x0000_0000_0000_0000, 0x0000_0000_0000_0000)), result);
+			Assert.Equal(new(0, new(0x0000_0000_0000_0000, 0x0000_0000_0000_0000)), result);
 
 			Assert.True(BinaryIntegerHelper<UInt>.TryReadLittleEndian(new byte[] { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01 }, isUnsigned: true, out result));
-			Assert.Equal(new(new(0x0100_0000_0000_0000, 0x0000_0000_0000_0000)), result);
+			Assert.Equal(new(0, new(0x0100_0000_0000_0000, 0x0000_0000_0000_0000)), result);
 
 			Assert.True(BinaryIntegerHelper<UInt>.TryReadLittleEndian(new byte[] { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x80 }, isUnsigned: true, out result));
-			Assert.Equal(new(new(0x8000_0000_0000_0000, 0x0000_0000_0000_0000)), result);
+			Assert.Equal(new(0, new(0x8000_0000_0000_0000, 0x0000_0000_0000_0000)), result);
 
 			Assert.True(BinaryIntegerHelper<UInt>.TryReadLittleEndian(new byte[] { 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 }, isUnsigned: true, out result));
-			Assert.Equal(new(new(0x0000_0000_0000_0000, 0x0000_0000_0000_0001)), result);
+			Assert.Equal(new(0, new(0x0000_0000_0000_0000, 0x0000_0000_0000_0001)), result);
 
 			Assert.True(BinaryIntegerHelper<UInt>.TryReadLittleEndian(new byte[] { 0x7F, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF }, isUnsigned: true, out result));
-			Assert.Equal(new(new(0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FF7F)), result);
+			Assert.Equal(new(0, new(0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FF7F)), result);
 
 			Assert.True(BinaryIntegerHelper<UInt>.TryReadLittleEndian(new byte[] { 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 }, isUnsigned: true, out result));
-			Assert.Equal(new(new(0x0000_0000_0000_0000, 0x0000_0000_0000_0080)), result);
+			Assert.Equal(new(0, new(0x0000_0000_0000_0000, 0x0000_0000_0000_0080)), result);
 
 			Assert.True(BinaryIntegerHelper<UInt>.TryReadLittleEndian(new byte[] { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x7F }, isUnsigned: true, out result));
-			Assert.Equal(new(new(0x7FFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF)), result);
+			Assert.Equal(new(0, new(0x7FFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF)), result);
 
 			Assert.True(BinaryIntegerHelper<UInt>.TryReadLittleEndian(new byte[] { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF }, isUnsigned: true, out result));
-			Assert.Equal(new(new(0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF)), result);
+			Assert.Equal(new(0, new(0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF)), result);
 		}
 
 		[Fact]
@@ -500,7 +500,7 @@ namespace MissingValues.Tests
 			UInt result;
 
 			Assert.True(BinaryIntegerHelper<UInt>.TryReadLittleEndian(new byte[] { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 }, isUnsigned: true, out result));
-			Assert.Equal(new(new UInt128(0x0000_0000_0000_0000, 0x0000_0000_0000_0000)), result);
+			Assert.Equal(new(0, new UInt128(0x0000_0000_0000_0000, 0x0000_0000_0000_0000)), result);
 
 			Assert.True(BinaryIntegerHelper<UInt>.TryReadLittleEndian(new byte[] { 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01 }, isUnsigned: true, out result));
 			Assert.Equal(new(new(0x0000_0000_0000_0000, 0x0100_0000_0000_0000), new(0x0000_0000_0000_0000, 0x0000_0000_0000_0000)), result);
@@ -509,13 +509,13 @@ namespace MissingValues.Tests
 			Assert.Equal(new(new(0x0000_0000_0000_0000, 0x8000_0000_0000_0000), new(0x0000_0000_0000_0000, 0x0000_0000_0000_0000)), result);
 
 			Assert.True(BinaryIntegerHelper<UInt>.TryReadLittleEndian(new byte[] { 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 }, isUnsigned: true, out result));
-			Assert.Equal(new(new UInt128(0x0000_0000_0000_0000, 0x0000_0000_0000_0001)), result);
+			Assert.Equal(new(0, new UInt128(0x0000_0000_0000_0000, 0x0000_0000_0000_0001)), result);
 
 			Assert.True(BinaryIntegerHelper<UInt>.TryReadLittleEndian(new byte[] { 0x7F, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF }, isUnsigned: true, out result));
 			Assert.Equal(new(new(0x0000_0000_0000_0000, 0xFFFF_FFFF_FFFF_FFFF), new(0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FF7F)), result);
 
 			Assert.True(BinaryIntegerHelper<UInt>.TryReadLittleEndian(new byte[] { 0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 }, isUnsigned: true, out result));
-			Assert.Equal(new(new UInt128(0x0000_0000_0000_0000, 0x0000_0000_0000_0080)), result);
+			Assert.Equal(new(0, new UInt128(0x0000_0000_0000_0000, 0x0000_0000_0000_0080)), result);
 
 			Assert.True(BinaryIntegerHelper<UInt>.TryReadLittleEndian(new byte[] { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0x7F }, isUnsigned: true, out result));
 			Assert.Equal(new(new(0x0000_0000_0000_0000, 0x7FFF_FFFF_FFFF_FFFF), new(0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF)), result);
@@ -629,7 +629,7 @@ namespace MissingValues.Tests
 			Assert.True(BinaryNumberHelper<UInt>.IsPow2(new(0x100)));
 			Assert.True(BinaryNumberHelper<UInt>.IsPow2(new(0x1_0000)));
 			Assert.True(BinaryNumberHelper<UInt>.IsPow2(new(0x1_0000_0000)));
-			Assert.True(BinaryNumberHelper<UInt>.IsPow2(new(new(0x1, 0x0000_0000_0000_0000))));
+			Assert.True(BinaryNumberHelper<UInt>.IsPow2(new(0, new(0x1, 0x0000_0000_0000_0000))));
 			Assert.True(BinaryNumberHelper<UInt>.IsPow2(new(0x1, new(0x0000_0000_0000_0000, 0x0000_0000_0000_0000))));
 		}
 		[Fact]
@@ -638,7 +638,7 @@ namespace MissingValues.Tests
 			Assert.Equal(8U, BinaryNumberHelper<UInt>.Log2(new(0x100)));
 			Assert.Equal(16U, BinaryNumberHelper<UInt>.Log2(new(0x1_0000)));
 			Assert.Equal(32U, BinaryNumberHelper<UInt>.Log2(new(0x1_0000_0000)));
-			Assert.Equal(64U, BinaryNumberHelper<UInt>.Log2(new(new(0x1, 0x0000_0000_0000_0000))));
+			Assert.Equal(64U, BinaryNumberHelper<UInt>.Log2(new(0, new(0x1, 0x0000_0000_0000_0000))));
 			Assert.Equal(128U, BinaryNumberHelper<UInt>.Log2(new(0x1, new(0x0000_0000_0000_0000, 0x0000_0000_0000_0000))));
 		}
 		#endregion

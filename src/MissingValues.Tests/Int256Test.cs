@@ -32,7 +32,7 @@ namespace MissingValues.Tests
 		[Fact]
 		public void Ctor_Value()
 		{
-			var i = new Int(new(0, 7));
+			var i = new Int(UInt128.Zero, new(0, 7));
 			Assert.Equal(7, i);
 		}
 

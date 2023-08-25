@@ -323,46 +323,22 @@ namespace MissingValues
 
 		public static Int512 Parse(ReadOnlySpan<char> s, NumberStyles style, IFormatProvider? provider)
 		{
-			if (TryParse(s, style, provider, out var result))
-			{
-				return result;
-			}
-
-			Thrower.ParsingError<Int512>(s.ToString());
-			return default;
+			return NumberParser.ParseToSigned<Int512, UInt512>(s, style, provider);
 		}
 
 		public static Int512 Parse(string s, NumberStyles style, IFormatProvider? provider)
 		{
-			if (TryParse(s, style, provider, out var result))
-			{
-				return result;
-			}
-
-			Thrower.ParsingError<Int512>(s.ToString());
-			return default;
+			return NumberParser.ParseToSigned<Int512, UInt512>(s, style, provider);
 		}
 
 		public static Int512 Parse(ReadOnlySpan<char> s, IFormatProvider? provider)
 		{
-			if (TryParse(s, provider, out var result))
-			{
-				return result;
-			}
-
-			Thrower.ParsingError<Int512>(s.ToString());
-			return default;
+			return NumberParser.ParseToSigned<Int512, UInt512>(s, NumberStyles.Integer, provider);
 		}
 
 		public static Int512 Parse(string s, IFormatProvider? provider)
 		{
-			if (TryParse(s, provider, out var result))
-			{
-				return result;
-			}
-
-			Thrower.ParsingError<Int512>(s.ToString());
-			return default;
+			return NumberParser.ParseToSigned<Int512, UInt512>(s, NumberStyles.Integer, provider);
 		}
 
 		public static Int512 PopCount(Int512 value)
@@ -1038,7 +1014,7 @@ namespace MissingValues
 		}
 		public static Int512 operator checked *(Int512 left, Int512 right)
 		{
-			Int512 upper = Calculator.BigMul(left, right, out Int512 lower);
+			Int512 upper = BigMul(left, right, out Int512 lower);
 
 			if (((upper != 0) || (lower < 0)) && ((~upper != 0) || (lower >= 0)))
 			{

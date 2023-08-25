@@ -65,6 +65,22 @@ namespace MissingValues
 			return NumberFormatter.SignedNumberToDecimalString<Int256, UInt256>(in this);
 		}
 
+		/// <summary>
+		/// Produces the full product of two signed 256-bit numbers.
+		/// </summary>
+		/// <param name="left">First number to multiply.</param>
+		/// <param name="right">Second number to multiply.</param>
+		/// <param name="lower">The low 256-bit of the product of the specified numbers.</param>
+		/// <returns>The high 256-bit of the product of the specified numbers.</returns>
+		public static Int256 BigMul(Int256 left, Int256 right, out Int256 low)
+		{
+			// This follows the same logic as is used in `long Math.BigMul(long, long, out long)`
+
+			UInt256 upper = UInt256.BigMul((UInt256)left, (UInt256)right, out UInt256 ulower);
+			low = (Int256)ulower;
+			return (Int256)(upper) - ((left >> 255) & right) - ((right >> 255) & left);
+		}
+
 		/// <summary>Parses a span of characters into a value.</summary>
 		/// <param name="s">The span of characters to parse.</param>
 		/// <returns>The result of parsing <paramref name="s" />.</returns>

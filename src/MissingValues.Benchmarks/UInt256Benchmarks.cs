@@ -103,11 +103,6 @@ namespace MissingValues.Benchmarks
 			{
 				return UInt256.Parse(_hex, NumberStyles.HexNumber, CultureInfo.CurrentCulture);
 			}
-			//[Benchmark]
-			//public UInt256Converter Parse_BinaryUInt256()
-			//{
-			//	return UInt256Converter.Parse(_bin);
-			//}
 		}
 
 		[MemoryDiagnoser]

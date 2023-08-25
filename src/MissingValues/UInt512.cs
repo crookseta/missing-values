@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 namespace MissingValues
 {
 	[StructLayout(LayoutKind.Sequential)]
+	[DebuggerDisplay($"{{{nameof(ToString)}(),nq}}")]
 	public readonly partial struct UInt512
 	{
 		internal const int Size = 64;
@@ -61,6 +62,36 @@ namespace MissingValues
 		public override string? ToString()
 		{
 			return NumberFormatter.UnsignedNumberToDecimalString(in this);
+		}
+
+		/// <summary>
+		/// Produces the full product of two unsigned 512-bit numbers.
+		/// </summary>
+		/// <param name="left">First number to multiply.</param>
+		/// <param name="right">Second number to multiply.</param>
+		/// <param name="lower">The low 512-bit of the product of the specified numbers.</param>
+		/// <returns>The high 512-bit of the product of the specified numbers.</returns>
+		public static UInt512 BigMul(UInt512 left, UInt512 right, out UInt512 lower)
+		{
+			// Adaptation of algorithm for multiplication
+			// of 32-bit unsigned integers described
+			// in Hacker's Delight by Henry S. Warren, Jr. (ISBN 0-201-91465-4), Chapter 8
+			// Basically, it's an optimized version of FOIL method applied to
+			// low and high dwords of each operand
+
+			UInt512 al = left.Lower;
+			UInt512 ah = left.Upper;
+
+			UInt512 bl = right.Lower;
+			UInt512 bh = right.Upper;
+
+			UInt512 mull = al * bl;
+			UInt512 t = ah * bl + mull.Upper;
+			UInt512 tl = al * bh + t.Lower;
+
+			lower = new UInt512(tl.Lower, mull.Lower);
+
+			return ah * bh + t.Upper + tl.Upper;
 		}
 
 		/// <summary>Parses a span of characters into a value.</summary>

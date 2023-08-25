@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Linq;
 using System.Numerics;
 using System.Text;
@@ -14,6 +15,20 @@ namespace MissingValues.Internals
 	/// </summary>
 	internal static class Thrower
 	{
+		[Flags]
+		internal enum ParsingErrorType : byte
+		{
+			None = 0,
+			InvalidTrailingWhiteSpace = 1,
+			InvalidLeadingWhiteSpace = 2,
+			InvalidCharacter = 4,
+			InvalidHex = 8,
+			InvalidBin = 16,
+			StringTooBig = 32,
+			ValueTooBig = 64,
+			NotSupported = 128,
+			InvalidWhiteSpace = InvalidTrailingWhiteSpace | InvalidLeadingWhiteSpace
+		}
 		internal enum ArithmethicOperation : byte
 		{
 			Addition, Subtraction, Multiplication, Division
@@ -62,6 +77,52 @@ namespace MissingValues.Internals
 			where T : IParsable<T>
 		{
 			throw new FormatException($"Could not parse '{input}' as {typeof(T)}.\n" + extraContext);
+		}
+		[DoesNotReturn]
+		public static void ParsingError<T>(string input, ParsingErrorType errorType)
+			where T : IParsable<T>
+		{
+			StringBuilder extraContext = new StringBuilder();
+
+			if (errorType.HasFlag(ParsingErrorType.InvalidWhiteSpace))
+			{
+				extraContext.AppendLine("String cannot contain whitespaces.");
+			}
+			else if (errorType.HasFlag(ParsingErrorType.InvalidTrailingWhiteSpace))
+			{
+				extraContext.AppendLine("String cannot contain trailing whitespaces.");
+			}
+			else if (errorType.HasFlag(ParsingErrorType.InvalidLeadingWhiteSpace))
+			{
+				extraContext.AppendLine("String cannot contain leading whitespaces.");
+			}
+
+			if (errorType.HasFlag(ParsingErrorType.InvalidCharacter))
+			{
+				extraContext.AppendLine("Invalid character found.");
+			}
+
+			if (errorType.HasFlag(ParsingErrorType.InvalidHex))
+			{
+				extraContext.AppendLine($"Hex character found, use {NumberStyles.AllowHexSpecifier} to parse hex values.");
+			}
+
+			if (errorType.HasFlag(ParsingErrorType.StringTooBig))
+			{
+				extraContext.AppendLine("String contains more characters than can be represented.");
+			}
+
+			if (errorType.HasFlag(ParsingErrorType.ValueTooBig))
+			{
+				extraContext.AppendLine("Value represented is too big.");
+			}
+
+			if (errorType.HasFlag(ParsingErrorType.NotSupported))
+			{
+				extraContext.AppendLine("Style not supported.");
+			}
+
+			throw new FormatException($"Could not parse '{input}' as {typeof(T)}.\n" + extraContext.ToString());
 		}
 		[DoesNotReturn]
 		public static void MustBeType<T>()

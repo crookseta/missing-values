@@ -73,6 +73,19 @@ namespace MissingValues.Tests
 		}
 
 		[Fact]
+		public void BigMulTest()
+		{
+			UInt upper = UInt.BigMul(MaxValue, Two, out UInt lower);
+
+			upper
+				.Should()
+				.Be(new(0x1));
+			lower
+				.Should()
+				.Be(new(0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFE));
+		}
+
+		[Fact]
 		public void BasicParseTest()
 		{
 			UInt.Parse("13407807929942597099574024998205846127479365820592393377723561443721764030073546976801874298166903427690031858186486050853753882811946569946433649006084095")

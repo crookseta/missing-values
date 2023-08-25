@@ -305,46 +305,22 @@ namespace MissingValues
 
 		public static UInt512 Parse(ReadOnlySpan<char> s, NumberStyles style, IFormatProvider? provider)
 		{
-			if (TryParse(s, style, provider, out var result))
-			{
-				return result;
-			}
-
-			Thrower.ParsingError<UInt512>(s.ToString());
-			return default;
+			return NumberParser.ParseToUnsigned<UInt512>(s, style, provider);
 		}
 
 		public static UInt512 Parse(string s, NumberStyles style, IFormatProvider? provider)
 		{
-			if (TryParse(s, style, provider, out var result))
-			{
-				return result;
-			}
-
-			Thrower.ParsingError<UInt512>(s.ToString());
-			return default;
+			return NumberParser.ParseToUnsigned<UInt512>(s, style, provider);
 		}
 
 		public static UInt512 Parse(ReadOnlySpan<char> s, IFormatProvider? provider)
 		{
-			if (TryParse(s, provider, out var result))
-			{
-				return result;
-			}
-
-			Thrower.ParsingError<UInt512>(s.ToString());
-			return default;
+			return NumberParser.ParseToUnsigned<UInt512>(s, NumberStyles.Integer, provider);
 		}
 
 		public static UInt512 Parse(string s, IFormatProvider? provider)
 		{
-			if (TryParse(s, provider, out var result))
-			{
-				return result;
-			}
-
-			Thrower.ParsingError<UInt512>(s.ToString());
-			return default;
+			return NumberParser.ParseToUnsigned<UInt512>(s, NumberStyles.Integer, provider);
 		}
 
 		public static UInt512 PopCount(UInt512 value)
@@ -951,14 +927,14 @@ namespace MissingValues
 
 		public static UInt512 operator *(UInt512 left, UInt512 right)
 		{
-			UInt256 upper = Calculator.BigMul(left._lower, right._lower, out UInt256 lower);
+			UInt256 upper = UInt256.BigMul(left._lower, right._lower, out UInt256 lower);
 			upper += (left._upper * right._lower) + (left._lower * right._upper);
 			return new UInt512(upper, lower);
 		}
 		
 		public static UInt512 operator checked *(UInt512 left, UInt512 right)
 		{
-			UInt512 upper = Calculator.BigMul(left, right, out UInt512 lower);
+			UInt512 upper = BigMul(left, right, out UInt512 lower);
 
 			if (upper != UInt512.Zero)
 			{
