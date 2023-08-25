@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MissingValues.Internals;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
@@ -9,7 +10,7 @@ using System.Runtime.InteropServices;
 namespace MissingValues
 {
 	[StructLayout(LayoutKind.Sequential)]
-	[DebuggerDisplay($"{{{nameof(GetDebuggerDisplay)}(),nq}}")]
+	[DebuggerDisplay($"{{{nameof(ToString)}(),nq}}")]
 	public readonly partial struct UInt256
 	{
 		internal const int Size = 32;
@@ -52,7 +53,7 @@ namespace MissingValues
 
 		public override string ToString()
 		{
-			return NumberFormatter.UnsignedNumberToString(in this, new(10));
+			return NumberFormatter.UnsignedNumberToString(in this, new UInt256(UInt128.Zero, 10));
 		}
 
 		public override bool Equals(object? obj)
@@ -65,11 +66,41 @@ namespace MissingValues
 			return HashCode.Combine(_upper, _lower);
 		}
 
+		/// <summary>
+		/// Produces the full product of two unsigned 256-bit numbers.
+		/// </summary>
+		/// <param name="left">First number to multiply.</param>
+		/// <param name="right">Second number to multiply.</param>
+		/// <param name="lower">The low 256-bit of the product of the specified numbers.</param>
+		/// <returns>The high 256-bit of the product of the specified numbers.</returns>
+		public static UInt256 BigMul(UInt256 left, UInt256 right, out UInt256 lower)
+		{
+			// Adaptation of algorithm for multiplication
+			// of 32-bit unsigned integers described
+			// in Hacker's Delight by Henry S. Warren, Jr. (ISBN 0-201-91465-4), Chapter 8
+			// Basically, it's an optimized version of FOIL method applied to
+			// low and high dwords of each operand
+
+			UInt256 al = left.Lower;
+			UInt256 ah = left.Upper;
+
+			UInt256 bl = right.Lower;
+			UInt256 bh = right.Upper;
+
+			UInt256 mull = al * bl;
+			UInt256 t = ah * bl + mull.Upper;
+			UInt256 tl = al * bh + t.Lower;
+
+			lower = new UInt256(tl.Lower, mull.Lower);
+
+			return ah * bh + t.Upper + tl.Upper;
+		}
+
 		/// <summary>Parses a span of characters into a value.</summary>
 		/// <param name="s">The span of characters to parse.</param>
 		/// <returns>The result of parsing <paramref name="s" />.</returns>
 		/// <exception cref="FormatException"><paramref name="s" /> is not in the correct format.</exception>
-		/// <exception cref="OverflowException"><paramref name="s" /> is not representable by <typeparamref name="TSelf" />.</exception>
+		/// <exception cref="OverflowException"><paramref name="s" /> is not representable by <see cref="UInt256"/>.</exception>
 		public static UInt256 Parse(ReadOnlySpan<char> s)
 		{
 			return Parse(s, CultureInfo.CurrentCulture);
@@ -89,7 +120,7 @@ namespace MissingValues
 		{
 			if (value._upper != 0)
 			{
-				throw new OverflowException();
+				Thrower.IntegerOverflow();
 			}
 			return checked((char)value._lower);
 		}
@@ -99,7 +130,7 @@ namespace MissingValues
 		{
 			if (value._upper != 0)
 			{
-				throw new OverflowException();
+				Thrower.IntegerOverflow();
 			}
 			return checked((byte)value._lower);
 		}
@@ -108,7 +139,7 @@ namespace MissingValues
 		{
 			if (value._upper != 0)
 			{
-				throw new OverflowException();
+				Thrower.IntegerOverflow();
 			}
 			return checked((ushort)value._lower);
 		}
@@ -117,7 +148,7 @@ namespace MissingValues
 		{
 			if (value._upper != 0)
 			{
-				throw new OverflowException();
+				Thrower.IntegerOverflow();
 			}
 			return checked((uint)value._lower);
 		}
@@ -126,7 +157,7 @@ namespace MissingValues
 		{
 			if (value._upper != 0)
 			{
-				throw new OverflowException();
+				Thrower.IntegerOverflow();
 			}
 			return checked((ulong)value._lower);
 		}
@@ -135,16 +166,17 @@ namespace MissingValues
 		{
 			if (value._upper != 0)
 			{
-				throw new OverflowException();
+				Thrower.IntegerOverflow();
 			}
 			return value._lower;
 		}
+		public static implicit operator UInt512(UInt256 value) => new(value);
 		public static explicit operator nuint(UInt256 value) => (nuint)value._lower;
 		public static explicit operator checked nuint(UInt256 value)
 		{
 			if (value._upper != 0)
 			{
-				throw new OverflowException();
+				Thrower.IntegerOverflow();
 			}
 			return (nuint)value._lower;
 		}
@@ -154,7 +186,7 @@ namespace MissingValues
 		{
 			if (value._upper != 0)
 			{
-				throw new OverflowException();
+				Thrower.IntegerOverflow();
 			}
 			return checked((sbyte)value._lower);
 		}
@@ -163,7 +195,7 @@ namespace MissingValues
 		{
 			if (value._upper != 0)
 			{
-				throw new OverflowException();
+				Thrower.IntegerOverflow();
 			}
 			return checked((short)value._lower);
 		}
@@ -172,7 +204,7 @@ namespace MissingValues
 		{
 			if (value._upper != 0)
 			{
-				throw new OverflowException();
+				Thrower.IntegerOverflow();
 			}
 			return checked((int)value._lower);
 		}
@@ -181,7 +213,7 @@ namespace MissingValues
 		{
 			if (value._upper != 0)
 			{
-				throw new OverflowException();
+				Thrower.IntegerOverflow();
 			}
 			return checked((long)value._lower);
 		}
@@ -190,7 +222,7 @@ namespace MissingValues
 		{
 			if (value._upper != 0)
 			{
-				throw new OverflowException();
+				Thrower.IntegerOverflow();
 			}
 			return (Int128)value._lower;
 		}
@@ -199,16 +231,25 @@ namespace MissingValues
 		{
 			if ((Int128)value._upper < 0)
 			{
-				throw new OverflowException();
+				Thrower.IntegerOverflow();
 			}
 			return new(value._upper, value._lower);
+		}
+		public static explicit operator Int512(UInt256 value) => new(value);
+		public static explicit operator checked Int512(UInt256 value)
+		{
+			if ((Int128)value._upper < 0)
+			{
+				Thrower.IntegerOverflow();
+			}
+			return new(value);
 		}
 		public static explicit operator nint(UInt256 value) => (nint)value._lower;
 		public static explicit operator checked nint(UInt256 value)
 		{
 			if (value._upper != 0)
 			{
-				throw new OverflowException();
+				Thrower.IntegerOverflow();
 			}
 			return (nint)value._lower;
 		}
@@ -219,7 +260,7 @@ namespace MissingValues
 			if (value._upper != 0)
 			{
 				// The default behavior of decimal conversions is to always throw on overflow
-				throw new OverflowException();
+				Thrower.IntegerOverflow();
 			}
 
 			return (decimal)value._lower;
@@ -237,9 +278,6 @@ namespace MissingValues
 				return (double)value._lower;
 			}
 
-			// For values greater than UInt128 we need to account
-			// for the precision loss that double will have. As such, the lower value effectively drops the
-			// lowest 24 bits and then or's them back to ensure rounding stays correct.
 
 			double lower = BitConverter.UInt64BitsToDouble(TwoPow204bits | ((ulong)(value._lower >> 12) >> 12) | ((ulong)(value._lower) & 0xFFFFFF)) - TwoPow204;
 			double upper = BitConverter.UInt64BitsToDouble(TwoPow256bits | (ulong)(value >> 204)) - TwoPow256;
@@ -251,7 +289,7 @@ namespace MissingValues
 		#endregion
 
 		#region To UInt256
-		public static implicit operator UInt256(char value) => new UInt256(value);
+		public static implicit operator UInt256(char value) => new UInt256(UInt128.Zero, value);
 		// Floating
 		public static explicit operator UInt256(Half value) => (UInt256)(double)value;
 		public static explicit operator checked UInt256(Half value) => checked((UInt256)(double)value);
@@ -281,7 +319,7 @@ namespace MissingValues
 
 			if ((value < 0.0) || double.IsNaN(value) || (0.0 < TwoPow256 - value))
 			{
-				throw new OverflowException();
+				Thrower.IntegerOverflow();
 			}
 			if (0.0 == TwoPow256 - value)
 			{
@@ -309,7 +347,7 @@ namespace MissingValues
 		{
 			if (value < 0)
 			{
-				throw new OverflowException();
+				Thrower.IntegerOverflow();
 			}
 			return new(0, (byte)value);
 		}
@@ -322,7 +360,7 @@ namespace MissingValues
 		{
 			if (value < 0)
 			{
-				throw new OverflowException();
+				Thrower.IntegerOverflow();
 			}
 			return new(0, (UInt128)value);
 		}
@@ -335,7 +373,7 @@ namespace MissingValues
 		{
 			if (value < 0)
 			{
-				throw new OverflowException();
+				Thrower.IntegerOverflow();
 			}
 			return new(0, (UInt128)value);
 		}
@@ -348,7 +386,7 @@ namespace MissingValues
 		{
 			if (value < 0)
 			{
-				throw new OverflowException();
+				Thrower.IntegerOverflow();
 			}
 			return new(0, (UInt128)value);
 		}
@@ -361,7 +399,7 @@ namespace MissingValues
 		{
 			if (value < 0)
 			{
-				throw new OverflowException();
+				Thrower.IntegerOverflow();
 			}
 			return new(0, (UInt128)value);
 		} 
@@ -374,7 +412,7 @@ namespace MissingValues
 		{
 			if (value < 0)
 			{
-				throw new OverflowException();
+				Thrower.IntegerOverflow();
 			}
 			return new(0, (UInt128)value);
 		} 
@@ -423,10 +461,6 @@ namespace MissingValues
 			{
 				return MinValue;
 			}
-		}
-		private string GetDebuggerDisplay()
-		{
-			return ToString();
 		}
 	}
 }
