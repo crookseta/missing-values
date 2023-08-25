@@ -7,15 +7,17 @@ using System.Text;
 using System.Threading.Tasks;
 using Xunit;
 
+using Int = MissingValues.Int256;
+
 namespace MissingValues.Tests
 {
 	public partial class Int256Test
 	{
-		private static readonly Int256 Int256MaxValue = new(
+		private static readonly Int Int256MaxValue = new(
 			new UInt128(0x7FFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF),
 			new UInt128(0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF)
 			);
-		private static readonly Int256 Int256MinValue = new(
+		private static readonly Int Int256MinValue = new(
 			new UInt128(0x8000_0000_0000_0000, 0x0000_0000_0000_0000),
 			new UInt128(0x0000_0000_0000_0000, 0x0000_0000_0000_0000)
 			);
@@ -23,14 +25,14 @@ namespace MissingValues.Tests
 		[Fact]
 		public void Ctor_Empty()
 		{
-			var i = new Int256();
+			var i = new Int();
 			Assert.Equal(0, i);
 		}
 
 		[Fact]
 		public void Ctor_Value()
 		{
-			var i = new Int256(new(0, 7));
+			var i = new Int(UInt128.Zero, new(0, 7));
 			Assert.Equal(7, i);
 		}
 

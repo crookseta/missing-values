@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MissingValues.Internals;
+using System;
 using System.Buffers.Binary;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -68,7 +69,7 @@ namespace MissingValues
 		{
 			if (min > max)
 			{
-				throw MathematicalException.MinMaxException;
+				Thrower.MinMaxError(min, max);
 			}
 
 			if (value < min)
@@ -100,7 +101,8 @@ namespace MissingValues
 			{
 				return 1;
 			}
-			throw new ArgumentException($"Parameter must be {typeof(UInt256)}", nameof(obj));
+			Thrower.MustBeType<UInt256>();
+			return default;
 		}
 
 		public static UInt256 CreateChecked<TOther>(TOther value)
@@ -114,7 +116,7 @@ namespace MissingValues
 			}
 			else if (!UInt256.TryConvertFromChecked(value, out result) && !TOther.TryConvertToChecked<UInt256>(value, out result))
 			{
-				throw new NotSupportedException();
+				Thrower.NotSupported<UInt256, TOther>();
 			}
 
 			return result;
@@ -131,7 +133,7 @@ namespace MissingValues
 			}
 			else if (!UInt256.TryConvertFromSaturating(value, out result) && !TOther.TryConvertToSaturating<UInt256>(value, out result))
 			{
-				throw new NotSupportedException();
+				Thrower.NotSupported<UInt256, TOther>();
 			}
 
 			return result;
@@ -148,7 +150,7 @@ namespace MissingValues
 			}
 			else if (!UInt256.TryConvertFromTruncating(value, out result) && !TOther.TryConvertToTruncating<UInt256>(value, out result))
 			{
-				throw new NotSupportedException();
+				Thrower.NotSupported<UInt256, TOther>();
 			}
 
 			return result;
@@ -183,7 +185,7 @@ namespace MissingValues
 
 		static bool INumberBase<UInt256>.IsNegativeInfinity(UInt256 value) => false;
 
-		public static bool IsNormal(UInt256 value) => value != UInt128.Zero;
+		static bool INumberBase<UInt256>.IsNormal(UInt256 value) => value != UInt128.Zero;
 
 		public static bool IsOddInteger(UInt256 value) => (value._lower & 1) != 0;
 
@@ -197,7 +199,7 @@ namespace MissingValues
 
 		static bool INumberBase<UInt256>.IsSubnormal(UInt256 value) => false;
 
-		public static bool IsZero(UInt256 value) => value == Zero;
+		static bool INumberBase<UInt256>.IsZero(UInt256 value) => value == Zero;
 
 		public static UInt256 LeadingZeroCount(UInt256 value)
 		{
@@ -235,42 +237,22 @@ namespace MissingValues
 
 		public static UInt256 Parse(ReadOnlySpan<char> s, NumberStyles style, IFormatProvider? provider)
 		{
-			if(TryParse(s, style, provider, out var result))
-			{
-				return result;
-			}
-
-			throw ExceptionThrowingHelper.ThrowParsingException<UInt256>(new string(s));
+			return NumberParser.ParseToUnsigned<UInt256>(s, style, provider);
 		}
 
 		public static UInt256 Parse(string s, NumberStyles style, IFormatProvider? provider)
 		{
-			if (TryParse(s, style, provider, out var result))
-			{
-				return result;
-			}
-
-			throw ExceptionThrowingHelper.ThrowParsingException<UInt256>(new string(s));
+			return NumberParser.ParseToUnsigned<UInt256>(s, style, provider);
 		}
 
 		public static UInt256 Parse(ReadOnlySpan<char> s, IFormatProvider? provider)
 		{
-			if (TryParse(s, provider, out var result))
-			{
-				return result;
-			}
-
-			throw ExceptionThrowingHelper.ThrowParsingException<UInt256>(new string(s));
+			return NumberParser.ParseToUnsigned<UInt256>(s, NumberStyles.Integer, provider);
 		}
 
 		public static UInt256 Parse(string s, IFormatProvider? provider)
 		{
-			if (TryParse(s, provider, out var result))
-			{
-				return result;
-			}
-
-			throw ExceptionThrowingHelper.ThrowParsingException<UInt256>(new string(s));
+			return NumberParser.ParseToUnsigned<UInt256>(s, NumberStyles.Integer, provider);
 		}
 
 		public static UInt256 PopCount(UInt256 value)
@@ -467,13 +449,14 @@ namespace MissingValues
 					Half actual => (UInt256)actual,
 					float actual => (UInt256)actual,
 					double actual => (UInt256)actual,
-					//Quad actual => (UInt256)actual,
 					decimal actual => (UInt256)actual,
 					byte actual => (UInt256)actual,
 					ushort actual => (UInt256)actual,
 					uint actual => (UInt256)actual,
 					ulong actual => (UInt256)actual,
 					UInt128 actual => (UInt256)actual,
+					UInt256 actual => actual,
+					UInt512 actual => (UInt256)actual,
 					nuint actual => (UInt256)actual,
 					sbyte actual => (UInt256)actual,
 					short actual => (UInt256)actual,
@@ -481,6 +464,7 @@ namespace MissingValues
 					long actual => (UInt256)actual,
 					Int128 actual => (UInt256)actual,
 					Int256 actual => (UInt256)actual,
+					Int512 actual => (UInt256)actual,
 					_ => BitHelper.DefaultConvert<UInt256>(out converted)
 				}; 
 			}
@@ -500,13 +484,14 @@ namespace MissingValues
 				Half actual => (actual < Half.Zero) ? MinValue : (UInt256)actual,
 				float actual => (actual < 0) ? MinValue : (UInt256)actual,
 				double actual => (actual < 0) ? MinValue : (actual > TwoPow256) ? MaxValue : (UInt256)actual,
-				//Quad actual => (actual < 0) ? MinValue : (actual > TwoPow256) ? MaxValue : (UInt256)actual,
 				decimal actual => (actual < 0) ? MinValue : (UInt128)actual,
 				byte actual => actual,
 				ushort actual => actual,
 				uint actual => actual,
 				ulong actual => actual,
 				UInt128 actual => actual,
+				UInt256 actual => actual,
+				UInt512 actual => (actual > MaxValue) ? MaxValue : (UInt256)actual,
 				nuint actual => actual,
 				sbyte actual => (actual < 0) ? MinValue : (UInt256)actual,
 				short actual => (actual < 0) ? MinValue : (UInt256)actual,
@@ -514,6 +499,7 @@ namespace MissingValues
 				long actual => (actual < 0) ? MinValue : (UInt256)actual,
 				Int128 actual => (actual < 0) ? MinValue : (UInt256)actual,
 				Int256 actual => (actual < 0) ? MinValue : (UInt256)actual,
+				Int512 actual => (actual < 0) ? MinValue : (actual > (Int512)MaxValue) ? MaxValue : (UInt256)actual,
 				_ => BitHelper.DefaultConvert<UInt256>(out converted)
 			};
 			return converted;
@@ -530,13 +516,14 @@ namespace MissingValues
 				Half actual => (actual < Half.Zero) ? MinValue : (UInt256)actual,
 				float actual => (actual < 0) ? MinValue : (UInt256)actual,
 				double actual => (actual < 0) ? MinValue : (UInt256)actual,
-				//Quad actual => (actual < 0) ? MinValue : (UInt256)actual,
 				decimal actual => (actual < 0) ? MinValue : (UInt128)actual,
 				byte actual => actual,
 				ushort actual => actual,
 				uint actual => actual,
 				ulong actual => actual,
 				UInt128 actual => actual,
+				UInt256 actual => actual,
+				UInt512 actual => (UInt256)actual,
 				nuint actual => actual,
 				sbyte actual => (actual < 0) ? MinValue : (UInt256)actual,
 				short actual => (actual < 0) ? MinValue : (UInt256)actual,
@@ -544,6 +531,7 @@ namespace MissingValues
 				long actual => (actual < 0) ? MinValue : (UInt256)actual,
 				Int128 actual => (actual < 0) ? MinValue : (UInt256)actual,
 				Int256 actual => (actual < 0) ? MinValue : (UInt256)actual,
+				Int512 actual => (actual < 0) ? MinValue : (UInt256)actual,
 				_ => BitHelper.DefaultConvert<UInt256>(out converted)
 			};
 			return converted;
@@ -561,7 +549,6 @@ namespace MissingValues
 					Half => (TOther)(object)(Half)value,
 					float => (TOther)(object)(float)value,
 					double => (TOther)(object)(double)value,
-					//Quad => (TOther)(object)(Quad)value,
 					decimal => (TOther)(object)(decimal)value,
 					byte => (TOther)(object)(byte)value,
 					ushort => (TOther)(object)(ushort)value,
@@ -569,6 +556,7 @@ namespace MissingValues
 					ulong => (TOther)(object)(ulong)value,
 					UInt128 => (TOther)(object)(UInt128)value,
 					UInt256 => (TOther)(object)value,
+					UInt512 => (TOther)(object)(UInt512)value,
 					nuint => (TOther)(object)(nuint)value,
 					sbyte => (TOther)(object)(sbyte)value,
 					short => (TOther)(object)(short)value,
@@ -576,6 +564,7 @@ namespace MissingValues
 					long => (TOther)(object)(long)value,
 					Int128 => (TOther)(object)(Int128)value,
 					Int256 => (TOther)(object)(Int256)value,
+					Int512 => (TOther)(object)(Int512)value,
 					nint => (TOther)(object)(nint)value,
 					_ => BitHelper.DefaultConvert<TOther>(out converted)
 				};
@@ -594,7 +583,6 @@ namespace MissingValues
 				Half => (TOther)(object)(Half)value,
 				float => (TOther)(object)(float)value,
 				double => (TOther)(object)(double)value,
-				//Quad => (TOther)(object)(Quad)value,
 				decimal => (TOther)(object)(decimal)value,
 				byte => (TOther)(object)(byte)value,
 				ushort => (TOther)(object)(ushort)value,
@@ -602,6 +590,7 @@ namespace MissingValues
 				ulong => (TOther)(object)(ulong)value,
 				UInt128 => (TOther)(object)(UInt128)value,
 				UInt256 => (TOther)(object)value,
+				UInt512 => (TOther)(object)(UInt512)value,
 #if TARGET_32BIT
 				nuint => (TOther)(object)((value >= new UInt128(0x0000_0000_0000_0000, 0x0000_0000_7FFF_FFFF)) ? nuint.MaxValue : (nuint)value),
 #else
@@ -613,6 +602,7 @@ namespace MissingValues
 				long => (TOther)(object)((value >= new UInt128(0x0000_0000_0000_0000, 0x7FFF_FFFF_FFFF_FFFF)) ? long.MaxValue : (long)value),
 				Int128 => (TOther)(object)((value >= new UInt128(0x7FFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF)) ? Int128.MaxValue : (Int128)value),
 				Int256 => (TOther)(object)((value >= new UInt256(new UInt128(0x7FFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF), new UInt128(0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF))) ? Int256.MaxValue : (Int256)value),
+				Int512 => (TOther)(object)(Int512)value,
 #if TARGET_32BIT
 				nint => (TOther)(object)((value >= new UInt128(0x0000_0000_0000_0000, 0x0000_0000_7FFF_FFFF)) ? nint.MaxValue : (nint)value),
 #else
@@ -634,7 +624,6 @@ namespace MissingValues
 				Half => (TOther)(object)(Half)value,
 				float => (TOther)(object)(float)value,
 				double => (TOther)(object)(double)value,
-				//Quad => (TOther)(object)(Quad)value,
 				decimal => (TOther)(object)(decimal)value,
 				byte => (TOther)(object)(byte)value,
 				ushort => (TOther)(object)(ushort)value,
@@ -642,6 +631,7 @@ namespace MissingValues
 				ulong => (TOther)(object)(ulong)value,
 				UInt128 => (TOther)(object)(UInt128)value,
 				UInt256 => (TOther)(object)value,
+				UInt512 => (TOther)(object)(UInt512)value,
 				nuint => (TOther)(object)(nuint)value,
 				sbyte => (TOther)(object)(sbyte)value,
 				short => (TOther)(object)(short)value,
@@ -649,6 +639,7 @@ namespace MissingValues
 				long => (TOther)(object)(long)value,
 				Int128 => (TOther)(object)(Int128)value,
 				Int256 => (TOther)(object)(Int256)value,
+				Int512 => (TOther)(object)(Int512)value,
 				nint => (TOther)(object)(nint)value,
 				_ => BitHelper.DefaultConvert<TOther>(out converted)
 			};
@@ -784,7 +775,7 @@ namespace MissingValues
 			{
 				return (UInt256)CharUnicodeInfo.GetDecimalDigitValue(value);
 			}
-			else if (char.IsAsciiLetter(value))
+			else if (char.IsAsciiHexDigit(value))
 			{
 				return (UInt256)(char.ToLowerInvariant(value) - 'W'); // 'W' = 87
 			}
@@ -875,17 +866,17 @@ namespace MissingValues
 
 		public static UInt256 operator *(UInt256 left, UInt256 right)
 		{
-			UInt128 upper = Calculator.BigMul(left._lower, right._lower, out UInt128 lower);
+			UInt128 upper = BitHelper.BigMul(left._lower, right._lower, out UInt128 lower);
 			upper += (left._upper * right._lower) + (left._lower * right._upper);
 			return new UInt256(upper, lower);
 		}
 		public static UInt256 operator checked *(UInt256 left, UInt256 right)
 		{
-			UInt256 upper = Calculator.BigMul(left, right, out UInt256 lower);
+			UInt256 upper = BigMul(left, right, out UInt256 lower);
 
 			if(upper != UInt256.Zero)
 			{
-				throw new OverflowException();
+				Thrower.ArithmethicOverflow(Thrower.ArithmethicOperation.Multiplication);
 			}
 
 			return lower;
@@ -906,7 +897,7 @@ namespace MissingValues
 
 			static ulong AddDivisor(Span<ulong> left, ReadOnlySpan<ulong> right)
 			{
-				UInt128 carry = 0UL;
+				UInt128 carry = UInt128.Zero;
 
 				for (int i = 0; i < right.Length; i++)
 				{
@@ -1059,7 +1050,7 @@ namespace MissingValues
 				// Combines a subtract and a multiply operation, which is naturally
 				// more efficient than multiplying and then subtracting...
 
-				UInt128 carry = 0UL;
+				UInt128 carry = UInt128.Zero;
 
 				for (int i = 0; i < right.Length; i++)
 				{
@@ -1123,7 +1114,7 @@ namespace MissingValues
 				// amount and then or that with whatever bits were shifted "out" of lower
 
 				UInt128 lower = value._lower << shiftAmount;
-				UInt128 upper = (value._upper << shiftAmount) | (value._upper >> (128 - shiftAmount));
+				UInt128 upper = (value._upper << shiftAmount) | (value._lower >> (128 - shiftAmount));
 
 				return new UInt256(upper, lower);
 			}
