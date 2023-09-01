@@ -10,6 +10,7 @@ using System.Runtime.InteropServices;
 namespace MissingValues
 {
 	[StructLayout(LayoutKind.Sequential)]
+	[CLSCompliant(false)]
 	[DebuggerDisplay($"{{{nameof(ToString)}(),nq}}")]
 	public readonly partial struct UInt256
 	{

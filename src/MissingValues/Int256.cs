@@ -27,6 +27,7 @@ namespace MissingValues
 		internal UInt128 Lower => _lower;
 		internal UInt128 Upper => _upper;
 
+		[CLSCompliant(false)]
 		public Int256(ulong u1, ulong u2, ulong l1, ulong l2)
 		{
 			_upper = new(u1, u2);
@@ -36,6 +37,7 @@ namespace MissingValues
 		/// Initializes a new instance of the <see cref="Int256" /> struct.
 		/// </summary>
 		/// <param name="lower">The lower 128-bits of the 256-bit value.</param>
+		[CLSCompliant(false)]
 		public Int256(UInt128 lower) : this(UInt128.Zero, lower)
 		{
 		}
@@ -44,6 +46,7 @@ namespace MissingValues
 		/// </summary>
 		/// <param name="upper">The upper 128-bits of the 256-bit value.</param>
 		/// <param name="lower">The lower 128-bits of the 256-bit value.</param>
+		[CLSCompliant(false)]
 		public Int256(UInt128 upper, UInt128 lower)
 		{
 			_upper = upper;
@@ -101,7 +104,9 @@ namespace MissingValues
 
 		#region From Int256
 		// Signed
+		[CLSCompliant(false)]
 		public static explicit operator sbyte(Int256 value) => (sbyte)value._lower;
+		[CLSCompliant(false)]
 		public static explicit operator checked sbyte(Int256 value)
 		{
 			if (~value._upper == 0)
@@ -204,7 +209,9 @@ namespace MissingValues
 			}
 			return checked((byte)value._lower);
 		}
+		[CLSCompliant(false)]
 		public static explicit operator ushort(Int256 value) => (ushort)value._lower;
+		[CLSCompliant(false)]
 		public static explicit operator checked ushort(Int256 value)
 		{
 			if (value._upper != 0)
@@ -213,7 +220,9 @@ namespace MissingValues
 			}
 			return checked((ushort)value._lower);
 		}
+		[CLSCompliant(false)]
 		public static explicit operator uint(Int256 value) => (uint)value._lower;
+		[CLSCompliant(false)]
 		public static explicit operator checked uint(Int256 value)
 		{
 			if (value._upper != 0)
@@ -222,7 +231,9 @@ namespace MissingValues
 			}
 			return checked((uint)value._lower);
 		}
+		[CLSCompliant(false)]
 		public static explicit operator ulong(Int256 value) => (ulong)value._lower;
+		[CLSCompliant(false)]
 		public static explicit operator checked ulong(Int256 value)
 		{
 			if (value._upper != 0)
@@ -231,7 +242,9 @@ namespace MissingValues
 			}
 			return checked((ulong)value._lower);
 		}
+		[CLSCompliant(false)]
 		public static explicit operator UInt128(Int256 value) => value._lower;
+		[CLSCompliant(false)]
 		public static explicit operator checked UInt128(Int256 value)
 		{
 			if (value._upper != 0)
@@ -240,7 +253,9 @@ namespace MissingValues
 			}
 			return value._lower;
 		}
+		[CLSCompliant(false)]
 		public static explicit operator UInt256(Int256 value) => new(value._upper, value._lower);
+		[CLSCompliant(false)]
 		public static explicit operator checked UInt256(Int256 value)
 		{
 			if ((Int128)value._upper < 0)
@@ -249,7 +264,9 @@ namespace MissingValues
 			}
 			return new(value._upper, value._lower);
 		}
+		[CLSCompliant(false)]
 		public static explicit operator UInt512(Int256 value) => new(unchecked((UInt256)value));
+		[CLSCompliant(false)]
 		public static explicit operator checked UInt512(Int256 value)
 		{
 			if ((Int128)value._upper < 0)
@@ -258,7 +275,9 @@ namespace MissingValues
 			}
 			return new(unchecked((UInt256)value));
 		}
+		[CLSCompliant(false)]
 		public static explicit operator nuint(Int256 value) => (nuint)value._lower;
+		[CLSCompliant(false)]
 		public static explicit operator checked nuint(Int256 value)
 		{
 			if (value._upper != 0)
@@ -308,6 +327,7 @@ namespace MissingValues
 
 		#region To Int256
 		// Signed
+		[CLSCompliant(false)]
 		public static implicit operator Int256(sbyte v)
 		{
 			Int128 lower = v;
@@ -339,10 +359,15 @@ namespace MissingValues
 		}
 		//Unsigned
 		public static explicit operator Int256(byte v) => new Int256(v);
+		[CLSCompliant(false)]
 		public static explicit operator Int256(ushort v) => new Int256(v);
+		[CLSCompliant(false)]
 		public static explicit operator Int256(uint v) => new Int256(v);
+		[CLSCompliant(false)]
 		public static explicit operator Int256(nuint v) => new Int256(v);
+		[CLSCompliant(false)]
 		public static explicit operator Int256(ulong v) => new Int256(v);
+		[CLSCompliant(false)]
 		public static explicit operator Int256(UInt128 v) => new Int256(v);
 		//Floating
 		public static explicit operator Int256(decimal v) => (Int256)(double)v;

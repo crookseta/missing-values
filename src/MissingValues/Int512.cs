@@ -28,21 +28,25 @@ namespace MissingValues
 		internal UInt256 Upper => _upper;
 		internal UInt256 Lower => _lower;
 
+		[CLSCompliant(false)]
 		public Int512(UInt256 lower)
 		{
 			_upper = UInt256.Zero;
 			_lower = lower;
 		}
+		[CLSCompliant(false)]
 		public Int512(UInt256 upper, UInt256 lower)
 		{
 			_upper = upper;
 			_lower = lower;
 		}
+		[CLSCompliant(false)]
 		public Int512(UInt128 uu, UInt128 ul, UInt128 lu, UInt128 ll)
 		{
 			_upper = new UInt256(uu, ul);
 			_lower = new UInt256(lu, ll);
 		}
+		[CLSCompliant(false)]
 		public Int512(ulong uuu, ulong uul, ulong ulu, ulong ull, ulong luu, ulong lul, ulong llu, ulong lll)
 		{
 			_upper = new UInt256(new UInt128(uuu, uul), new UInt128(ulu, ull));
@@ -118,7 +122,9 @@ namespace MissingValues
 			}
 			return checked((byte)value._lower);
 		}
+		[CLSCompliant(false)]
 		public static explicit operator ushort(Int512 value) => (ushort)value._lower;
+		[CLSCompliant(false)]
 		public static explicit operator checked ushort(Int512 value)
 		{
 			if (value._upper != UInt256.Zero)
@@ -127,7 +133,9 @@ namespace MissingValues
 			}
 			return checked((ushort)value._lower);
 		}
+		[CLSCompliant(false)]
 		public static explicit operator uint(Int512 value) => (uint)value._lower;
+		[CLSCompliant(false)]
 		public static explicit operator checked uint(Int512 value)
 		{
 			if (value._upper != UInt256.Zero)
@@ -136,7 +144,9 @@ namespace MissingValues
 			}
 			return checked((uint)value._lower);
 		}
+		[CLSCompliant(false)]
 		public static explicit operator ulong(Int512 value) => (ulong)value._lower;
+		[CLSCompliant(false)]
 		public static explicit operator checked ulong(Int512 value)
 		{
 			if (value._upper != UInt256.Zero)
@@ -145,7 +155,9 @@ namespace MissingValues
 			}
 			return checked((ulong)value._lower);
 		}
+		[CLSCompliant(false)]
 		public static explicit operator UInt128(Int512 value) => (UInt128)value._lower;
+		[CLSCompliant(false)]
 		public static explicit operator checked UInt128(Int512 value)
 		{
 			if (value._upper != UInt256.Zero)
@@ -154,7 +166,9 @@ namespace MissingValues
 			}
 			return checked((UInt128)value._lower);
 		}
+		[CLSCompliant(false)]
 		public static explicit operator UInt256(Int512 value) => value._lower;
+		[CLSCompliant(false)]
 		public static explicit operator checked UInt256(Int512 value)
 		{
 			if (value._upper != UInt256.Zero)
@@ -163,7 +177,9 @@ namespace MissingValues
 			}
 			return value._lower;
 		}
+		[CLSCompliant(false)]
 		public static explicit operator UInt512(Int512 value) => new(value._upper, value._lower);
+		[CLSCompliant(false)]
 		public static explicit operator checked UInt512(Int512 value)
 		{
 			if ((Int256)value._upper < 0)
@@ -172,7 +188,9 @@ namespace MissingValues
 			}
 			return new(value._upper, value._lower);
 		}
+		[CLSCompliant(false)]
 		public static explicit operator nuint(Int512 value) => (nuint)value._lower;
+		[CLSCompliant(false)]
 		public static explicit operator checked nuint(Int512 value)
 		{
 			if (value._upper != UInt256.Zero)
@@ -182,7 +200,9 @@ namespace MissingValues
 			return checked((nuint)value._lower);
 		}
 		// Signed
+		[CLSCompliant(false)]
 		public static explicit operator sbyte(Int512 value) => (sbyte)value._lower;
+		[CLSCompliant(false)]
 		public static explicit operator checked sbyte(Int512 value)
 		{
 			if (~value._upper == 0)
@@ -326,13 +346,20 @@ namespace MissingValues
 		#endregion
 		#region To UInt512
 		//Unsigned
+		[CLSCompliant(false)]
 		public static explicit operator Int512(byte v) => new Int512(v);
+		[CLSCompliant(false)]
 		public static explicit operator Int512(ushort v) => new Int512(v);
+		[CLSCompliant(false)]
 		public static explicit operator Int512(uint v) => new Int512(v);
+		[CLSCompliant(false)]
 		public static explicit operator Int512(nuint v) => new Int512(v);
+		[CLSCompliant(false)]
 		public static explicit operator Int512(ulong v) => new Int512(v);
+		[CLSCompliant(false)]
 		public static explicit operator Int512(UInt128 v) => new Int512(v);
 		//Signed
+		[CLSCompliant(false)]
 		public static implicit operator Int512(sbyte v)
 		{
 			Int256 lower = v;

@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 namespace MissingValues
 {
 	[StructLayout(LayoutKind.Sequential)]
+	[CLSCompliant(false)]
 	[DebuggerDisplay($"{{{nameof(ToString)}(),nq}}")]
 	public readonly partial struct UInt512
 	{

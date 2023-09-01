@@ -606,7 +606,7 @@ namespace MissingValues
 			throw new FormatException();
 		}
 
-		static bool INumberBase<Int512>.TryConvertFromChecked<TOther>(TOther value, out Int512 result) => TryConvertFromSaturating(value, out result);
+		static bool INumberBase<Int512>.TryConvertFromChecked<TOther>(TOther value, out Int512 result) => TryConvertFromChecked(value, out result);
 		private static bool TryConvertFromChecked<TOther>(TOther value, out Int512 result)
 			where TOther : INumberBase<TOther>
 		{
