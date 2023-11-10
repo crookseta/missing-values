@@ -397,3 +397,5 @@ FodyWeavers.xsd
 # JetBrains Rider
 *.sln.iml
 /src/MissingValues/MathQ.MathFunctions.cs
+/src/MissingValues/Properties/MissingValues.AssemblyInfo.cs
+/src/MissingValues/Properties/AssemblyInfo.cs

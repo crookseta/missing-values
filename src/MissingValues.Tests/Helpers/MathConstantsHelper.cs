@@ -39,5 +39,35 @@ namespace MissingValues.Tests.Helpers
 		{
 			return TSelf.NegativeOne;
 		}
+		public static TSelf Pi<TSelf>()
+			where TSelf : IFloatingPointConstants<TSelf>
+		{
+			return TSelf.Pi;
+		}
+		public static TSelf Tau<TSelf>()
+			where TSelf : IFloatingPointConstants<TSelf>
+		{
+			return TSelf.Tau;
+		}
+		public static TSelf E<TSelf>()
+			where TSelf : IFloatingPointConstants<TSelf>
+		{
+			return TSelf.E;
+		}
+		public static TSelf PositiveInfinity<TSelf>()
+			where TSelf : IFloatingPointIeee754<TSelf>
+		{
+			return TSelf.PositiveInfinity;
+		}
+		public static TSelf NegativeInfinity<TSelf>()
+			where TSelf : IFloatingPointIeee754<TSelf>
+		{
+			return TSelf.NegativeInfinity;
+		}
+		public static TSelf NaN<TSelf>()
+			where TSelf : IFloatingPointIeee754<TSelf>
+		{
+			return TSelf.NaN;
+		}
 	}
 }

@@ -102,7 +102,7 @@ namespace MissingValues
 			return TryParse(s, CultureInfo.CurrentCulture, out result);
 		}
 
-		#region From UInt512
+		#region From Int512
 		public static explicit operator char(Int512 value) => (char)value._lower;
 		public static explicit operator checked char(Int512 value)
 		{
@@ -316,6 +316,15 @@ namespace MissingValues
 			}
 			return (decimal)(UInt512)(value);
 		}
+		public static explicit operator Quad(Int512 value)
+		{
+			if (IsNegative(value))
+			{
+				value = -value;
+				return -(Quad)(UInt512)(value);
+			}
+			return (Quad)(UInt512)(value);
+		}
 		public static explicit operator double(Int512 value)
 		{
 			if (IsNegative(value))
@@ -344,7 +353,7 @@ namespace MissingValues
 			return (float)(UInt512)(value);
 		}
 		#endregion
-		#region To UInt512
+		#region To Int512
 		//Unsigned
 		[CLSCompliant(false)]
 		public static explicit operator Int512(byte v) => new Int512(v);

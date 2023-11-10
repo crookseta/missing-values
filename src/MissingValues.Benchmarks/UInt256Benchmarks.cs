@@ -10,7 +10,7 @@ namespace MissingValues.Benchmarks
 {
 	public class UInt256Benchmarks
 	{
-		static Random rnd = new Random(7);
+		static readonly Random rnd = new Random(7);
 
 		[MemoryDiagnoser]
 		public class MathOperators

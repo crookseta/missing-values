@@ -9,7 +9,7 @@ using Xunit;
 
 using Int = MissingValues.Int256;
 
-namespace MissingValues.Tests
+namespace MissingValues.Tests.Core
 {
 	public partial class Int256Test
 	{

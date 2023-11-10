@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 using UInt = MissingValues.UInt256;
 
-namespace MissingValues.Tests
+namespace MissingValues.Tests.Core
 {
 	public partial class UInt256Test
 	{

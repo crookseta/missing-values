@@ -5,6 +5,8 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <Nullable>enable</Nullable>
+    <GenerateAssemblyInfo>true</GenerateAssemblyInfo>
+    <GeneratedAssemblyInfoFile>Properties/AssemblyInfo.cs</GeneratedAssemblyInfoFile>
     
     <Authors>crookseta</Authors>
     <PackageProjectUrl>https://github.com/crookseta/missing-values</PackageProjectUrl>
@@ -19,6 +21,13 @@
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <PackageReadmeFile>README.md</PackageReadmeFile>
+  </PropertyGroup>
+  <PropertyGroup>
+    <IsBigEndian Condition="'$(Platform)' == 's390x'">true</IsBigEndian>
+
+    <DefineConstants Condition="'$(IsBigEndian)' == 'true'">$(DefineConstants);BIGENDIAN</DefineConstants>
+
+    <Version>1.1.0</Version>
   </PropertyGroup>
 
   <ItemGroup>

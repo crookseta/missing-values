@@ -1,6 +1,7 @@
 ﻿using MissingValues.Internals;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -10,19 +11,17 @@ using System.Threading.Tasks;
 
 namespace MissingValues
 {
+	// TODO: Finish implementing math functions so that Quad can implemente the IBinaryFloatingPointIEEE interface...
+
 	internal ref struct Shape
 	{
-		internal ref Quad f;
-
 		internal ref Word i;
 		internal ref Word64 i2;
 
-        public Shape(Quad quad)
+        public Shape(ref Quad quad)
         {
-			f = quad;
-
-			i = ref Unsafe.As<Quad, Word>(ref f);
-			i2 = ref Unsafe.As<Quad, Word64>(ref f);
+			i = ref Unsafe.As<Quad, Word>(ref quad);
+			i2 = ref Unsafe.As<Quad, Word64>(ref quad);
         }
 
 		[StructLayout(LayoutKind.Sequential)]
@@ -52,12 +51,52 @@ namespace MissingValues
 #endif
 		}
     }
+	internal readonly ref struct ReadOnlyShape
+	{
+		internal readonly ref Word i;
+		internal readonly ref Word64 i2;
 
-	public static partial class MathQ
+        public ReadOnlyShape(ref Quad quad)
+        {
+			i = ref Unsafe.As<Quad, Word>(ref quad);
+			i2 = ref Unsafe.As<Quad, Word64>(ref quad);
+        }
+
+		[StructLayout(LayoutKind.Sequential)]
+		public readonly struct Word
+		{
+#if BIGENDIAN
+			internal readonly ushort se;
+			internal readonly ushort top;
+			internal readonly uint mid;
+			internal readonly ulong lo;
+#else
+			internal readonly ulong lo;
+			internal readonly uint mid;
+			internal readonly ushort top;
+			internal readonly ushort se;
+#endif
+		}
+		[StructLayout(LayoutKind.Sequential)]
+		public readonly struct Word64
+		{
+#if BIGENDIAN
+			internal readonly ulong hi;
+			internal readonly ulong lo;
+#else
+			internal readonly ulong lo;
+			internal readonly ulong hi;
+#endif
+		}
+    }
+
+	internal static partial class MathQ
 	{
 		internal const int MaxRoundingDigits = 34;
 
 		private static Quad M_PI_4 => new Quad(0x3FFE_921F_B544_42D1, 0x8469_B288_3370_1F13); // pi / 4
+		private static Quad LOG2EA => new Quad();
+		private static Quad SQRTH => new Quad();
 
 		private static Quad RoundLimit => new Quad(0x4073_3426_172C_74D8, 0x22B8_78FE_8000_0000); // 1E35
 		internal static ReadOnlySpan<Quad> RoundPower10 => new Quad[MaxRoundingDigits + 1] 
@@ -162,7 +201,7 @@ namespace MissingValues
 
 
 		/// <summary>
-		/// Returns the absolute value of a quadruple-precision floating-point number.
+		/// Returns the absolute value of x quadruple-precision floating-point number.
 		/// </summary>
 		/// <param name="x">A number that is greater than or equal to <seealso cref="Quad.MinValue"/>, but less than or equal to <seealso cref="Quad.MaxValue"/>.</param>
 		/// <returns>A quadruple-precision floating-point number, x, such that 0 ≤ x ≤ <seealso cref="Quad.MaxValue"/>.</returns>
@@ -173,7 +212,7 @@ namespace MissingValues
 		/// <summary>
 		/// Returns the angle whose cosine is the specified number.
 		/// </summary>
-		/// <param name="x">A number representing a cosine, where <paramref name="x"/> must be greater than or equal to -1, but less than or equal to 1.</param>
+		/// <param name="x">A number representing x cosine, where <paramref name="x"/> must be greater than or equal to -1, but less than or equal to 1.</param>
 		/// <returns>
 		/// An angle, θ, measured in radians, such that 0 ≤ θ ≤ π.
 		/// </returns>
@@ -184,7 +223,7 @@ namespace MissingValues
 		/// <summary>
 		/// Returns the angle whose hyperbolic cosine is the specified number.
 		/// </summary>
-		/// <param name="x">A number representing a hyperbolic cosine, where <paramref name="x"/> must be greater than or equal to 1, but less than or equal to <seealso cref="Quad.PositiveInfinity"/>.</param>
+		/// <param name="x">A number representing x hyperbolic cosine, where <paramref name="x"/> must be greater than or equal to 1, but less than or equal to <seealso cref="Quad.PositiveInfinity"/>.</param>
 		/// <returns>An angle, θ, measured in radians, such that 0 ≤ θ ≤ ∞.</returns>
 		public static Quad Acosh(Quad x)
 		{
@@ -310,7 +349,42 @@ namespace MissingValues
 		/// <returns></returns>
 		public static Quad Ceiling(Quad x)
 		{
-			throw new NotImplementedException();
+			if (Quad.IsNaN(x) || Quad.IsInfinity(x))
+			{
+				return x;
+			}
+
+			int unbiasedExponent = x.Exponent;
+			if (unbiasedExponent < 0)
+			{
+				if (Quad.IsNegative(x))
+				{
+					return Quad.Zero;
+				}
+				else
+				{
+					return Quad.One;
+				}
+			}
+			else
+			{
+				if (unbiasedExponent >= 112)
+				{
+					return x;
+				}
+
+				UInt128 resultBits = Quad.QuadToUInt128Bits(x);
+				int bitsToErase = 112 - unbiasedExponent;
+				resultBits = (resultBits >> bitsToErase) << bitsToErase;
+				Quad result = Quad.UInt128BitsToQuad(resultBits);
+
+				if (result != x && !Quad.IsNegative(result))
+				{
+					result++;
+				}
+
+				return result;
+			}
 		}
 		/// <summary>
 		/// 
@@ -345,7 +419,8 @@ namespace MissingValues
 		/// <returns></returns>
 		public static Quad Cos(Quad x)
 		{
-			Shape u = new Shape(x);
+			Quad x0 = x;
+			Shape u = new Shape(ref x0);
 			uint n;
 			Span<Quad> y = stackalloc Quad[2];
 			Quad hi, lo;
@@ -355,7 +430,7 @@ namespace MissingValues
 			{
 				return x - x;
 			}
-			x = u.f;
+			x = x0;
 
 			if (x < M_PI_4)
 			{
@@ -387,7 +462,7 @@ namespace MissingValues
 			 * Copyright (C) 1993 by Sun Microsystems, Inc. All rights reserved.
 			 * Copyright (c) 2008 Steven G. Kargl, David Schultz, Bruce D. Evans.
 			 *
-			 * Developed at SunSoft, a Sun Microsystems, Inc. business.
+			 * Developed at SunSoft, x Sun Microsystems, Inc. business.
 			 * Permission to use, copy, modify, and distribute this
 			 * software is freely granted, provided that this notice
 			 * is preserved.
@@ -430,7 +505,42 @@ namespace MissingValues
 		/// <returns></returns>
 		public static Quad Floor(Quad x)
 		{
-			throw new NotImplementedException();
+			if (Quad.IsNaN(x) || Quad.IsInfinity(x))
+			{
+				return x;
+			}
+
+			int unbiasedExponent = x.Exponent;
+			if (unbiasedExponent < 0)
+			{
+				if (Quad.IsNegative(x))
+				{
+					return Quad.NegativeOne;
+				}
+				else
+				{
+					return Quad.Zero;
+				}
+			}
+			else
+			{
+				if (unbiasedExponent >= 112)
+				{
+					return x;
+				}
+
+				UInt128 resultBits = Quad.QuadToUInt128Bits(x);
+				int bitsToErase = 112 - unbiasedExponent;
+				resultBits = (resultBits >> bitsToErase) << bitsToErase;
+				Quad result = Quad.UInt128BitsToQuad(resultBits);
+
+				if (result != x && Quad.IsNegative(result))
+				{
+					result--;
+				}
+
+				return result;
+			}
 		}
 		/// <summary>
 		/// 
@@ -497,7 +607,74 @@ namespace MissingValues
 		/// <returns></returns>
 		public static Quad Log2(Quad x)
 		{
-			throw new NotImplementedException();
+			Quad y, z;
+			short e = 0;
+
+			if (Quad.IsNaN(x))
+			{
+				return x;
+			}
+			if (Quad.IsInfinity(x))
+			{
+				return x;
+			}
+			if (x <= Quad.Zero)
+			{
+				if (x == Quad.Zero)
+				{
+					return Quad.NegativeInfinity;
+				}
+				return Quad.NaN;
+			}
+
+			x = Quad.SeparateExponent(x, ref e);
+
+			/* logarithm using log(x) = z + z**3 P(z)/Q(z),
+			 * where z = 2(x-1)/x+1)
+			 */
+
+			if (e > 2 || e < -2)
+			{
+				if (x < SQRTH) // 2(2x-1)/(2x+1)
+				{
+					e -= 1;
+					z = x - Quad.HalfOne;
+					y = Quad.HalfOne * z + Quad.HalfOne;
+				}
+				else // 2 (x-1)/(x+1)
+				{
+					z = x - Quad.HalfOne;
+					z -= Quad.HalfOne;
+					y = Quad.HalfOne * x + Quad.HalfOne;
+				}
+				x = z / y;
+				z = x * x;
+				y = x * (z * PolynomialEvaluator(z, ref MemoryMarshal.GetReference(MathQConstants.Log2.R), 3) / PolynomialEvaluator1(z, ref MemoryMarshal.GetReference(MathQConstants.Log2.S), 3));
+				goto done;
+			}
+
+			// logarithm using log(1+x) = x - .5x**2 + x**3 P(x)/Q(x)
+			if (x < SQRTH)
+			{
+				e -= 1;
+				x = Quad.Two * x - Quad.One;
+			}
+			else
+			{
+				x -= Quad.One;
+			}
+
+			z = x * x;
+			y = x * (z * PolynomialEvaluator(x, ref MemoryMarshal.GetReference(MathQConstants.Log2.P), 6) / PolynomialEvaluator1(x, ref MemoryMarshal.GetReference(MathQConstants.Log2.Q), 7));
+			y -= Quad.HalfOne * z;
+
+		done:
+			z = y * LOG2EA;
+			z += x * LOG2EA;
+			z += y;
+			z += x;
+			z += e;
+			return z;
 		}
 		/// <summary>
 		/// 
@@ -505,9 +682,26 @@ namespace MissingValues
 		/// <param name="x"></param>
 		/// <param name="y"></param>
 		/// <returns></returns>
-		public static Quad Max(Quad x, Quad y)
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static Quad Max(Quad val1, Quad val2)
 		{
-			throw new NotImplementedException();
+			// This matches the IEEE 754:2019 `maximum` function
+			//
+			// It propagates NaN inputs back to the caller and
+			// otherwise returns the greater of the inputs. It
+			// treats +0 as greater than -0 as per the specification.
+
+			if (val1 != val2)
+			{
+				if (!Quad.IsNaN(val1))
+				{
+					return val2 < val1 ? val1 : val2;
+				}
+
+				return val1;
+			}
+
+			return Quad.IsNegative(val2) ? val1 : val2;
 		}
 		/// <summary>
 		/// 
@@ -517,7 +711,26 @@ namespace MissingValues
 		/// <returns></returns>
 		public static Quad MaxMagnitude(Quad x, Quad y)
 		{
-			throw new NotImplementedException();
+			// This matches the IEEE 754:2019 `maximumMagnitude` function
+			//
+			// It propagates NaN inputs back to the caller and
+			// otherwise returns the input with a greater magnitude.
+			// It treats +0 as greater than -0 as per the specification.
+
+			Quad ax = Abs(x);
+			Quad ay = Abs(y);
+
+			if ((ax > ay) || Quad.IsNaN(ax))
+			{
+				return x;
+			}
+
+			if (ax == ay)
+			{
+				return Quad.IsNegative(x) ? y : x;
+			}
+
+			return y;
 		}
 		/// <summary>
 		/// 
@@ -526,9 +739,26 @@ namespace MissingValues
 		/// <param name="y"></param>
 		/// <returns></returns>
 		/// <exception cref="NotImplementedException"></exception>
-		public static Quad Min(Quad x, Quad y)
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static Quad Min(Quad val1, Quad val2)
 		{
-			throw new NotImplementedException();
+			// This matches the IEEE 754:2019 `minimum` function
+			//
+			// It propagates NaN inputs back to the caller and
+			// otherwise returns the lesser of the inputs. It
+			// treats +0 as greater than -0 as per the specification.
+
+			if (val1 != val2)
+			{
+				if (!Quad.IsNaN(val1))
+				{
+					return val1 < val2 ? val1 : val2;
+				}
+
+				return val1;
+			}
+
+			return Quad.IsNegative(val1) ? val1 : val2;
 		}
 		/// <summary>
 		/// 
@@ -538,7 +768,26 @@ namespace MissingValues
 		/// <returns></returns>
 		public static Quad MinMagnitude(Quad x, Quad y)
 		{
-			throw new NotImplementedException();
+			// This matches the IEEE 754:2019 `minimumMagnitude` function
+			//
+			// It propagates NaN inputs back to the caller and
+			// otherwise returns the input with a lesser magnitude.
+			// It treats +0 as greater than -0 as per the specification.
+
+			Quad ax = Abs(x);
+			Quad ay = Abs(y);
+
+			if ((ax < ay) || Quad.IsNaN(ax))
+			{
+				return x;
+			}
+
+			if (ax == ay)
+			{
+				return Quad.IsNegative(x) ? x : y;
+			}
+
+			return y;
 		}
 		/// <summary>
 		/// 
@@ -567,7 +816,7 @@ namespace MissingValues
 
 			// Expresses D as M × 2e where 1 ≤ M < 2
 			// we also get the absolute value while we are at it.
-			Quad normalizedValue = new Quad(true, Quad.Bias, bits.matissa);
+			Quad normalizedValue = new Quad(true, Quad.ExponentBias, bits.matissa);
 
 			x0 = Quad.One;
 			Quad two = new Quad(0x4000_0000_0000_0000, 0x0000_0000_0000_0000);
@@ -576,10 +825,10 @@ namespace MissingValues
 			for (int i = 0; i < 15; i++)
 			{
 				// X1 = X(2 - DX)
-				//Quad x1 = x0 * (two - (normalizedValue * x0));
+				//Quad x1 = f * (two - (normalizedValue * f));
 				Quad x1 = x0 * FusedMultiplyAdd(normalizedValue, x0, two);
-				// Since we need: two - (normalizedValue * x0)
-				// to make use of FusedMultiplyAdd, we can rewrite it to (-normalizedValue * x0) + two
+				// Since we need: two - (normalizedValue * f)
+				// to make use of FusedMultiplyAdd, we can rewrite it to (-normalizedValue * f) + two
 				// which requires normalizedValue to be negative...
 
 				if (Quad.Abs(x1 - x) < Quad.Epsilon)
@@ -593,7 +842,7 @@ namespace MissingValues
 
 			bits = Quad.ExtractFromBits(Quad.QuadToUInt128Bits(x0));
 
-			bits.exponent -= (ushort)(exp - Quad.Bias);
+			bits.exponent -= (ushort)(exp - Quad.ExponentBias);
 
 			var output = new Quad(sign, bits.exponent, bits.matissa);
 			return output;
@@ -611,7 +860,86 @@ namespace MissingValues
 		/// <returns></returns>
 		public static Quad Round(Quad x)
 		{
-			throw new NotImplementedException();
+			// This is based on the 'Berkeley SoftFloat Release 3e' algorithm
+			// source: berkeley-softfloat-3/source/f128_roundToInt.c
+
+			UInt128 uiZ, lastBitMask;
+			UInt128 bits = Quad.QuadToUInt128Bits(x);
+			ulong uiZ64 = x._upper, uiZ0 = x._lower, roundBitsMask;
+			ulong lastBitMask64, lastBitMask0;
+			ushort biasedExponent = Quad.ExtractBiasedExponentFromBits(bits);
+
+			if (biasedExponent >= 0x402F)
+			{
+				if (biasedExponent >= 0x406F)
+				{
+					if (biasedExponent == 0x7FFF && (Quad.ExtractTrailingSignificandFromBits(bits) != UInt128.Zero))
+					{
+						return Quad.NaN;
+					}
+					return x;
+				}
+
+				lastBitMask0 = (ulong)(2 << (0x406E - biasedExponent));
+				roundBitsMask = lastBitMask0 - 1;
+				uiZ = bits;
+
+				if (biasedExponent == 0x402F)
+				{
+					if (uiZ0 >= 0x8000_0000_0000_0000)
+					{
+						uiZ64++;
+						if (uiZ0 == 0x8000_0000_0000_0000)
+						{
+							uiZ64 &= ~1UL;
+						}
+					}
+				}
+				else
+				{
+					uiZ = new UInt128(uiZ64, uiZ0) + new UInt128(0, lastBitMask0 >> 1);
+					if (((ulong)uiZ & roundBitsMask) == 0)
+					{
+						uiZ &= new UInt128(0xFFFF_FFFF_FFFF_FFFF, ~lastBitMask0);
+						//uiZ0 = ((ulong)uiZ);
+						//uiZ0 &= ~lastBitMask0;
+						//uiZ = new UInt128((ulong)(uiZ >> 64), uiZ0);
+					}
+				}
+
+				//uiZ0 = ((ulong)uiZ);
+				//uiZ0 &= ~roundBitsMask;
+
+				uiZ &= new UInt128(0xFFFF_FFFF_FFFF_FFFF, ~roundBitsMask);
+
+				lastBitMask64 = (lastBitMask0 == 0) ? 0UL : 1UL;
+			}
+			else
+			{
+				if (biasedExponent < 0x3FFF)
+				{
+					if ((bits & new UInt128(0x7FFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF)) == UInt128.Zero)
+					{
+						return x;
+					}
+					uiZ = bits & new UInt128(BitHelper.PackToQuadUI64(true, 0, 0), 0);
+
+					return Quad.UInt128BitsToQuad(uiZ);
+				}
+
+				uiZ = bits & new UInt128(0xFFFF_FFFF_FFFF_FFFF, 0x0);
+				lastBitMask64 = (ulong)1 << (0x402F - biasedExponent);
+				roundBitsMask = lastBitMask64 - 1;
+				uiZ += new UInt128(lastBitMask64 >> 1, 0);
+				if ((((ulong)(uiZ >> 64) & roundBitsMask) | (ulong)bits) == 0)
+				{
+					uiZ &= new UInt128(~lastBitMask64, 0xFFFF_FFFF_FFFF_FFFF);
+				}
+				uiZ &= new UInt128(~roundBitsMask, 0xFFFF_FFFF_FFFF_FFFF);
+				lastBitMask0 = 0;
+			}
+
+			return Quad.UInt128BitsToQuad(uiZ);
 		}
 		/// <summary>
 		/// 
@@ -631,12 +959,7 @@ namespace MissingValues
 		/// <returns></returns>
 		public static Quad Round(Quad x, MidpointRounding mode)
 		{
-			return mode switch
-			{
-				MidpointRounding.ToEven => Round(x),
-				MidpointRounding.AwayFromZero => Truncate(x + CopySign(BitDecrement(Quad.HalfOne), x)),
-				_ => Round(x, 0, mode)
-			};
+			return Round(x, 0, mode);
 		}
 		/// <summary>
 		/// 
@@ -714,7 +1037,8 @@ namespace MissingValues
 		/// <returns></returns>
 		public static Quad Sin(Quad x)
 		{
-			Shape u = new Shape(x);
+			Quad x0 = x;
+			Shape u = new Shape(ref x0);
 			int n;
 			Quad hi, lo;
 			Span<Quad> y = stackalloc Quad[2];
@@ -722,7 +1046,7 @@ namespace MissingValues
 			u.i.se &= 0x7fff;
 			if (u.i.se == 0x7fff)
 				return x - x;
-			if (u.f < M_PI_4)
+			if (x0 < M_PI_4)
 			{
 				if (u.i.se < 0x3fff - Quad.MantissaDigits / 2)
 				{
@@ -789,7 +1113,147 @@ namespace MissingValues
 		/// <returns></returns>
 		public static Quad Sqrt(Quad x)
 		{
-			throw new NotImplementedException();
+			UInt128 bits = Quad.QuadToUInt128Bits(x);
+			bool signA = Quad.IsNegative(x);
+			int exp = Quad.ExtractBiasedExponentFromBits(bits);
+			UInt128 sig = Quad.ExtractTrailingSignificandFromBits(bits);
+
+			// Is x NaN?
+			if (exp == 0x7FFF)
+			{
+				if (sig != UInt128.Zero)
+				{
+					return Quad.NaN;
+				}
+				if (!signA)
+				{
+					return x;
+				}
+				return Quad.NaN;
+			}
+			if (signA)
+			{
+				if (((UInt128)exp | sig) != UInt128.Zero)
+				{
+					return x;
+				}
+				return Quad.NaN;
+			}
+
+			if (exp == 0)
+			{
+				if (sig == UInt128.Zero)
+				{
+					return x;
+				}
+				(exp, sig) = BitHelper.NormalizeSubnormalF128Sig(sig);
+			}
+
+			/*
+			 * `sig32Z' is guaranteed to be a lower bound on the square root of
+			 * `sig32A', which makes `sig32Z' also a lower bound on the square root of
+			 * `sigA'.
+			 */
+
+			int expZ = ((exp - 0x3FFF) >> 1) + 0x3FFE;
+			exp &= 1;
+			sig |= new UInt128(0x0001000000000000, 0x0);
+			uint sig32 = (uint)(sig >> 81);
+			uint recipSqrt32 = BitHelper.SqrtReciprocalApproximate((uint)exp, sig32);
+			uint sig32Z = (uint)(((ulong) sig32 * recipSqrt32) >> 32);
+			UInt128 rem;
+			if (exp != 0)
+			{
+				sig32Z >>= 1;
+				rem = sig << 12;
+			}
+			else
+			{
+				rem = sig << 13;
+			}
+			Span<uint> qs = stackalloc uint[3] { 0, 0, sig32Z };
+			rem -= new UInt128((ulong)sig32Z * sig32Z, 0x0);
+
+			uint q = (uint)(((uint)(rem >> 66) * (ulong)recipSqrt32) >> 32);
+			ulong x64 = (ulong)sig32Z << 32;
+			ulong sig64Z = x64 + ((ulong)q << 3);
+			UInt128 y = rem << 29;
+
+			UInt128 term;
+			do
+			{
+				term = BitHelper.Mul64ByShifted32To128(x64 + sig64Z, q);
+				rem = y - term;
+				if (((ulong)(rem >> 64) & 0x8000_0000_0000_0000) == 0)
+				{
+					break;
+				}
+				--q;
+				sig64Z -= 1 << 3;
+			} while (true);
+			qs[1] = q;
+
+			q = (uint)(((ulong)(rem >> 66) * recipSqrt32) >> 32);
+			y = rem << 29;
+			sig64Z <<= 1;
+
+			do
+			{
+				term = (UInt128)sig64Z << 32;
+				term += (ulong)q << 6;
+				term += q;
+				rem = y - term;
+				if (((ulong)(rem >> 64) & 0x8000_0000_0000_0000) == 0)
+				{
+					break;
+				}
+				--q;
+			} while (true);
+			qs[0] = q;
+
+			q = (uint)((((ulong)(rem >> 66) * recipSqrt32) >> 32) + 2);
+			ulong sigZExtra = q << 59;
+			term = (UInt128)qs[1] << 53;
+			UInt128 sigZ = new UInt128((ulong)qs[2] << 18, ((ulong)qs[0] << 24) + (q >> 5)) + term;
+
+			if ((q & 0xF) <= 2)
+			{
+				q &= ~3U;
+				sigZExtra = q << 59;
+				y = sigZ << 6;
+				y |= sigZExtra >> 58;
+				term = y - q;
+				y = BitHelper.Mul64ByShifted32To128((ulong)term, q);
+				term = BitHelper.Mul64ByShifted32To128((ulong)(term >> 64), q);
+				term += (y >> 64);
+				rem <<= 20;
+				term -= rem;
+				/*
+				 * The concatenation of `term' and `y.v0' is now the negative remainder
+				 * (3 words altogether).
+				 */
+				if (((ulong)(term >> 64) & 0x8000_0000_0000_0000) != 0)
+				{
+					sigZExtra |= 1;
+				}
+				else
+				{
+					if ((term | (ulong)y) != UInt128.Zero)
+					{
+						if (sigZExtra != 0)
+						{
+							--sigZExtra;
+						}
+						else
+						{
+							sigZ -= UInt128.One;
+							sigZExtra = ~0UL;
+						}
+					}
+				}
+			}
+
+			return Quad.UInt128BitsToQuad(BitHelper.RoundPackToQuad(false, expZ, sigZ, sigZExtra));
 		}
 		/// <summary>
 		/// 
@@ -798,7 +1262,8 @@ namespace MissingValues
 		/// <returns></returns>
 		public static Quad Tan(Quad x)
 		{
-			Shape u = new Shape(x);
+			Quad x0 = x;
+			Shape u = new Shape(ref x0);
 			Span<Quad> y = stackalloc Quad[2];
 			int n;
 
@@ -807,7 +1272,7 @@ namespace MissingValues
 			{
 				return x - x;
 			}
-			if (u.f < M_PI_4)
+			if (x0 < M_PI_4)
 			{
 				if (u.i.se < 0x3FFF - Quad.MantissaDigits / 2)
 				{
@@ -817,8 +1282,6 @@ namespace MissingValues
 			}
 			n = __rem_pio2l(x, y);
 			return __tan(y[0], y[1], n & 1);
-
-			throw new NotImplementedException();
 		}
 		private static Quad __tan(Quad x, Quad y, int odd)
 		{
@@ -869,7 +1332,7 @@ namespace MissingValues
 			z = w;
 			z = z + temp - temp;
 			v = r - (z - x);        /* z+v = r+x */
-			t = a = -1.0 / w;       /* a = -1.0/w */
+			t = a = -1.0 / w;       /* x = -1.0/w */
 			t = t + temp - temp;
 			s = 1.0 + t * z;
 			return t + a * (s + t * v);
@@ -903,7 +1366,33 @@ namespace MissingValues
 		/// <returns></returns>
 		public static Quad Truncate(Quad x)
 		{
-			throw new NotImplementedException();
+			return (Quad)(Int128)x;
+		}
+
+		private unsafe static Quad PolynomialEvaluator(Quad x, ref Quad p, int n)
+		{
+			Quad y = p;
+
+			do
+			{
+				p = ref Unsafe.Add(ref p, 1);
+				y = y * x + p;
+			} while (--n != 0);
+
+			return y;
+		}
+		private unsafe static Quad PolynomialEvaluator1(Quad x, ref Quad p, int n)
+		{
+			--n;
+			Quad y = x + p;
+
+			do
+			{
+				p = ref Unsafe.Add(ref p, 1);
+				y = y * x + p;
+			} while (--n != 0);
+
+			return y;
 		}
 	}
 }

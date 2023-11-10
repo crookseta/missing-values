@@ -266,6 +266,46 @@ namespace MissingValues
 
 			return (decimal)value._lower;
 		}
+		public static explicit operator Quad(UInt256 value)
+		{
+			if (value._upper == 0)
+			{
+				return (Quad)value._lower;
+			}
+			else if ((value._upper >> 32) == UInt128.Zero) // value < (2^224)
+			{
+				// For values greater than MaxValue but less than 2^224 this takes advantage
+				// that we can represent both "halves" of the uint256 within the 112-bit mantissa of
+				// a pair of quads.
+				Quad twoPow112 = new Quad(0x406F_0000_0000_0000, 0x0000_0000_0000_0000);
+				Quad twoPow224 = new Quad(0x40DF_0000_0000_0000, 0x0000_0000_0000_0000);
+
+				UInt128 twoPow112bits = Quad.QuadToUInt128Bits(twoPow112);
+				UInt128 twoPow224bits = Quad.QuadToUInt128Bits(twoPow224);
+
+				Quad lower = Quad.UInt128BitsToQuad(twoPow112bits | ((value._lower << 16) >> 16)) - twoPow112;
+				Quad upper = Quad.UInt128BitsToQuad(twoPow224bits | (UInt128)(value >> 112)) - twoPow224;
+
+				return lower + upper;
+			}
+			else
+			{
+				// For values greater than 2^224 we basically do the same as before but we need to account
+				// for the precision loss that quad will have. As such, the lower value effectively drops the
+				// lowest 32 bits and then or's them back to ensure rounding stays correct.
+
+				Quad twoPow144 = new Quad(0x408F_0000_0000_0000, 0x0000_0000_0000_0000);
+				Quad twoPow256 = new Quad(0x40FF_0000_0000_0000, 0x0000_0000_0000_0000);
+
+				UInt128 twoPow144bits = Quad.QuadToUInt128Bits(twoPow144);
+				UInt128 twoPow256bits = Quad.QuadToUInt128Bits(twoPow256);
+
+				Quad lower = Quad.UInt128BitsToQuad(twoPow144bits | ((UInt128)(value >> 16) >> 16) | (value._lower & 0xFFFF_FFFF)) - twoPow144;
+				Quad upper = Quad.UInt128BitsToQuad(twoPow256bits | (UInt128)(value >> 144)) - twoPow256;
+
+				return lower + upper;
+			}
+		}
 		public static explicit operator double(UInt256 value)
 		{
 			const double TwoPow204 = 25711008708143844408671393477458601640355247900524685364822016.0d;

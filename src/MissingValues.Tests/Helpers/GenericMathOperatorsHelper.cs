@@ -1,6 +1,7 @@
 ﻿using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.Contracts;
 using System.Linq;
 using System.Numerics;
 using System.Text;
@@ -30,6 +31,28 @@ namespace MissingValues.Tests.Helpers
 			where TSelf : IIncrementOperators<TSelf>
 		{
 			return checked(++value);
+		}
+
+		public static TResult UnaryPlusOperation<TSelf, TResult>(TSelf value)
+			where TSelf : IUnaryPlusOperators<TSelf, TResult>
+		{
+			return +value;
+		}
+		public static TResult CheckedUnaryPlusOperation<TSelf, TResult>(TSelf value)
+			where TSelf : IUnaryPlusOperators<TSelf, TResult>
+		{
+			return checked(+value);
+		}
+		
+		public static TResult UnaryNegationOperation<TSelf, TResult>(TSelf value)
+			where TSelf : IUnaryNegationOperators<TSelf, TResult>
+		{
+			return -value;
+		}
+		public static TResult CheckedUnaryNegationOperation<TSelf, TResult>(TSelf value)
+			where TSelf : IUnaryNegationOperators<TSelf, TResult>
+		{
+			return checked(-value);
 		}
 		
 		public static TResult SubtractionOperation<TSelf, TOther, TResult>(TSelf left, TOther right)
@@ -153,6 +176,7 @@ namespace MissingValues.Tests.Helpers
 			return value >>> shiftAmount;
 		}
 	}
+
 	internal static class UnaryOperatorsHelper
 	{
 		public static TResult UnaryPlusOperation<TSelf, TResult>(TSelf value)

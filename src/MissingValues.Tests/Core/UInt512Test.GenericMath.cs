@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 using UInt = MissingValues.UInt512;
 
-namespace MissingValues.Tests
+namespace MissingValues.Tests.Core
 {
 	public partial class UInt512Test
 	{

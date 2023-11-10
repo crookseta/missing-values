@@ -271,6 +271,29 @@ namespace MissingValues
 
 			return (decimal)value._lower;
 		}
+		public static explicit operator Quad(UInt512 value)
+		{
+			if (value._upper == UInt256.Zero)
+			{
+				return (Quad)value._lower;
+			}
+			else
+			{
+				// For values greater than 2^224 we basically do the same as before but we need to account
+				// for the precision loss that quad will have. As such, the lower value effectively drops the
+				// lowest 288 bits.
+				Quad twoPow400 = new Quad(0x418F_0000_0000_0000, 0x0000_0000_0000_0000);
+				Quad twoPow512 = new Quad(0x41FF_0000_0000_0000, 0x0000_0000_0000_0000);
+
+				UInt128 twoPow400bits = Quad.QuadToUInt128Bits(twoPow400);
+				UInt128 twoPow512bits = Quad.QuadToUInt128Bits(twoPow512);
+
+				Quad lower = Quad.UInt128BitsToQuad(twoPow400bits | (UInt128)((UInt256)(value >> 144) >> 144) | (value._upper.Lower & 0xFFFF_FFFF)) - twoPow400;
+				Quad upper = Quad.UInt128BitsToQuad(twoPow512bits | (UInt128)(value >> 400)) - twoPow512;
+
+				return lower + upper;
+			}
+		}
 		public static explicit operator double(UInt512 value)
 		{
 			const double TwoPow460 = 2977131414714805823690030317109266572712515013375254774912983855843898524112477893944078543723575564536883288499266264815757728270805630976.0d;

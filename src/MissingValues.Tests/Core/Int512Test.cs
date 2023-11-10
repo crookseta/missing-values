@@ -9,7 +9,7 @@ using Xunit;
 
 using Int = MissingValues.Int512;
 
-namespace MissingValues.Tests
+namespace MissingValues.Tests.Core
 {
 	public partial class Int512Test
 	{

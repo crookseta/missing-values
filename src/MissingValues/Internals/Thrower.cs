@@ -144,5 +144,10 @@ namespace MissingValues.Internals
 		{
 			throw new InvalidOperationException($"Expected {JsonTokenType.Number}, got {actual}.");
 		}
+		[DoesNotReturn]
+		internal static void OutOfRange(string paramName)
+		{
+			throw new ArgumentOutOfRangeException(paramName);
+		}
 	}
 }

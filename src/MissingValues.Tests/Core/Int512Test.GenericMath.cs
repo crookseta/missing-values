@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 using Int = MissingValues.Int512;
 
-namespace MissingValues.Tests
+namespace MissingValues.Tests.Core
 {
 	public partial class Int512Test
 	{
@@ -364,7 +364,7 @@ namespace MissingValues.Tests
 		public static void MultiplicativeIdentityTest()
 		{
 			Assert.Equal(One, MathConstantsHelper.MultiplicativeIdentityHelper<Int, Int>());
-		} 
+		}
 		#endregion
 
 		#region IBinaryInteger
@@ -681,7 +681,7 @@ namespace MissingValues.Tests
 			Assert.Throws<OverflowException>(() => NumberBaseHelper<Int>.Abs(MinValue));
 		}
 		[Fact]
-		public static void CreateCheckedToInt256Test()
+		public static void CreateCheckedToInt512Test()
 		{
 			NumberBaseHelper<Int>.CreateChecked(byte.MaxValue).Should().Be(ByteMaxValue);
 			NumberBaseHelper<Int>.CreateChecked(short.MaxValue).Should().Be(Int16MaxValue);
@@ -698,7 +698,7 @@ namespace MissingValues.Tests
 			NumberBaseHelper<Int>.CreateChecked(Int512MinValueAsDouble).Should().Be(MinValue);
 		}
 		[Fact]
-		public static void CreateSaturatingToInt256Test()
+		public static void CreateSaturatingToInt512Test()
 		{
 			NumberBaseHelper<Int>.CreateSaturating(byte.MaxValue).Should().Be(ByteMaxValue);
 			NumberBaseHelper<Int>.CreateSaturating(short.MaxValue).Should().Be(Int16MaxValue);
@@ -715,7 +715,7 @@ namespace MissingValues.Tests
 			NumberBaseHelper<Int>.CreateSaturating(Int512MinValueAsDouble).Should().Be(MinValue);
 		}
 		[Fact]
-		public static void CreateTruncatingToInt256Test()
+		public static void CreateTruncatingToInt512Test()
 		{
 			NumberBaseHelper<Int>.CreateTruncating(byte.MaxValue).Should().Be(ByteMaxValue);
 			NumberBaseHelper<Int>.CreateTruncating(short.MaxValue).Should().Be(Int16MaxValue);
@@ -733,7 +733,7 @@ namespace MissingValues.Tests
 		}
 
 		[Fact]
-		public static void CreateCheckedFromInt256Test()
+		public static void CreateCheckedFromInt512Test()
 		{
 			NumberBaseHelper<byte>.CreateChecked(ByteMaxValue).Should().Be(byte.MaxValue);
 			NumberBaseHelper<short>.CreateChecked(Int16MaxValue).Should().Be(short.MaxValue);
@@ -750,7 +750,7 @@ namespace MissingValues.Tests
 			NumberBaseHelper<double>.CreateChecked(MinValue).Should().Be(Int512MinValueAsDouble);
 		}
 		[Fact]
-		public static void CreateSaturatingFromInt256Test()
+		public static void CreateSaturatingFromInt512Test()
 		{
 			NumberBaseHelper<byte>.CreateSaturating(ByteMaxValue).Should().Be(byte.MaxValue);
 			NumberBaseHelper<short>.CreateSaturating(Int16MaxValue).Should().Be(short.MaxValue);
@@ -767,7 +767,7 @@ namespace MissingValues.Tests
 			NumberBaseHelper<double>.CreateSaturating(MinValue).Should().Be(Int512MinValueAsDouble);
 		}
 		[Fact]
-		public static void CreateTruncatingFromInt256Test()
+		public static void CreateTruncatingFromInt512Test()
 		{
 			NumberBaseHelper<byte>.CreateTruncating(ByteMaxValue).Should().Be(byte.MaxValue);
 			NumberBaseHelper<short>.CreateTruncating(Int16MaxValue).Should().Be(short.MaxValue);

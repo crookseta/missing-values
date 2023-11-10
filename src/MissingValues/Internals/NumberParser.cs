@@ -1,11 +1,14 @@
 ﻿using MissingValues.Internals;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Numerics;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace MissingValues
 {
@@ -414,6 +417,86 @@ namespace MissingValues
 				}
 			}
 			return false;
+		}
+		#endregion
+		#region Float
+		public static unsafe bool TryParseQuad(ReadOnlySpan<char> s, NumberStyles styles, IFormatProvider? provider, [MaybeNullWhen(false)] out Quad result)
+		{
+			const uint RequiredBitsOfPrecision = (113 + 1);
+
+			FloatInfo number = new FloatInfo(stackalloc byte[11563 + 1 + 1]);
+			NumberFormatInfo info = NumberFormatInfo.GetInstance(provider);
+			
+
+			if (!FloatInfo.TryParse(s, ref number, info, styles))
+			{
+				ReadOnlySpan<char> trim = s.Trim();
+
+				ReadOnlySpan<char> infinity = info.PositiveInfinitySymbol;
+
+				if (trim.Equals(infinity, StringComparison.OrdinalIgnoreCase))
+				{
+					result = Quad.PositiveInfinity;
+					return true;
+				}
+
+				if (trim.Equals(info.NegativeInfinitySymbol, StringComparison.OrdinalIgnoreCase))
+				{
+					result = Quad.NegativeInfinity;
+					return true;
+				}
+
+				ReadOnlySpan<char> nan = info.NaNSymbol;
+
+				if (trim.Equals(nan, StringComparison.OrdinalIgnoreCase))
+				{
+					result = Quad.NaN;
+					return true;
+				}
+
+				ReadOnlySpan<char> positiveSign = info.PositiveSign;
+
+				if (trim.StartsWith(positiveSign, StringComparison.OrdinalIgnoreCase))
+				{
+					trim = trim.Slice(positiveSign.Length);
+
+					if (trim.Equals(infinity, StringComparison.OrdinalIgnoreCase))
+					{
+						result = Quad.PositiveInfinity;
+						return true;
+					}
+					else if (trim.Equals(nan, StringComparison.OrdinalIgnoreCase))
+					{
+						result = Quad.NaN;
+						return true;
+					}
+
+					result = Quad.Zero;
+					return false;
+				}
+				ReadOnlySpan<char> negativeSign = info.NegativeSign;
+
+				if (trim.StartsWith(negativeSign, StringComparison.OrdinalIgnoreCase))
+				{
+					if (trim[negativeSign.Length..].Equals(nan, StringComparison.OrdinalIgnoreCase))
+					{
+						result = Quad.NaN;
+						return true;
+					}
+
+					if (trim.StartsWith("-", StringComparison.OrdinalIgnoreCase))
+					{
+						result = Quad.NaN;
+						return true;
+					}
+				}
+
+				result = Quad.Zero;
+				return false; // We really failed
+			}
+
+			result = FloatInfo.ConvertToQuad(ref number);
+			return true;
 		}
 		#endregion
 	}
