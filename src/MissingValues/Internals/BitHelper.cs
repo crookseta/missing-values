@@ -187,19 +187,19 @@ namespace MissingValues
 			// Basically, it's an optimized version of FOIL method applied to
 			// low and high dwords of each operand
 
-			UInt128 al = (ulong)a;
-			UInt128 ah = (ulong)(a >> 64);
+			UInt128 al = a.GetLowerBits();
+			UInt128 ah = a.GetUpperBits();
 
-			UInt128 bl = (ulong)b;
-			UInt128 bh = (ulong)(b >> 64);
+			UInt128 bl = b.GetLowerBits();
+			UInt128 bh = b.GetUpperBits();
 
 			UInt128 mull = al * bl;
-			UInt128 t = ah * bl + (ulong)(mull >> 64);
-			UInt128 tl = al * bh + (ulong)t;
+			UInt128 t = ah * bl + mull.GetUpperBits();
+			UInt128 tl = al * bh + t.GetLowerBits();
 
-			lower = new UInt128((ulong)tl, (ulong)mull);
+			lower = new UInt128(tl.GetLowerBits(), mull.GetLowerBits());
 
-			return ah * bh + (ulong)(t >> 64) + (ulong)(tl >> 64);
+			return ah * bh + t.GetUpperBits() + tl.GetUpperBits();
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
