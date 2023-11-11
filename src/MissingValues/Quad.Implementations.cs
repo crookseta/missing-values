@@ -14,6 +14,7 @@ using System.Threading.Tasks;
 namespace MissingValues
 {
 	public partial struct Quad :
+		IBinaryFloatingPointIeee754<Quad>,
 		IFloatingPoint<Quad>,
 		IFormattableFloatingPoint<Quad>,
 		IMinMaxValue<Quad>
@@ -49,6 +50,8 @@ namespace MissingValues
 		public static Quad MaxValue => Quad.UInt128BitsToQuad(MaxValueBits);
 
 		public static Quad MinValue => Quad.UInt128BitsToQuad(MinValueBits);
+
+		static Quad IBinaryNumber<Quad>.AllBitsSet => Quad.UInt128BitsToQuad(new UInt128(0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF));
 
 		static ReadOnlySpan<Quad> IFormattableFloatingPoint<Quad>.PowersOfTen => MathQ.RoundPower10;
 
@@ -631,6 +634,120 @@ namespace MissingValues
 				bytesWritten = 0;
 				return false;
 			}
+		}
+
+		public static Quad Log2(Quad value) => MathQ.Log2(value);
+
+		public static Quad Atan2(Quad y, Quad x) => MathQ.Atan2(y, x);
+
+		public static Quad Atan2Pi(Quad y, Quad x)
+		{
+			throw new NotImplementedException();
+		}
+
+		public static Quad BitDecrement(Quad x) => MathQ.BitDecrement(x);
+
+		public static Quad BitIncrement(Quad x) => MathQ.BitIncrement(x);
+
+		public static Quad FusedMultiplyAdd(Quad left, Quad right, Quad addend) => MathQ.FusedMultiplyAdd(left, right, addend);
+
+		public static Quad Ieee754Remainder(Quad left, Quad right) => MathQ.IEEERemainder(left, right);
+
+		public static int ILogB(Quad x) => MathQ.ILogB(x);
+
+		public static Quad ScaleB(Quad x, int n) => MathQ.ScaleB(x, n);
+
+		public static Quad Exp(Quad x) => MathQ.Exp(x);
+
+		public static Quad Exp10(Quad x)
+		{
+			throw new NotImplementedException();
+		}
+
+		public static Quad Exp2(Quad x)
+		{
+			throw new NotImplementedException();
+		}
+
+		public static Quad Acosh(Quad x) => MathQ.Acosh(x);
+
+		public static Quad Asinh(Quad x) => MathQ.Asinh(x);
+
+		public static Quad Atanh(Quad x) => MathQ.Atanh(x);
+
+		public static Quad Cosh(Quad x) => MathQ.Cosh(x);
+
+		public static Quad Sinh(Quad x) => MathQ.Sinh(x);
+
+		public static Quad Tanh(Quad x) => MathQ.Tanh(x);
+
+		public static Quad Log(Quad x) => MathQ.Log(x);
+
+		public static Quad Log(Quad x, Quad newBase) => MathQ.Log(x, newBase);
+
+		public static Quad Log10(Quad x) => MathQ.Log10(x);
+
+		public static Quad Pow(Quad x, Quad y) => MathQ.Pow(x, y);
+
+		public static Quad Cbrt(Quad x) => MathQ.Cbrt(x);
+
+		public static Quad Hypot(Quad x, Quad y)
+		{
+			throw new NotImplementedException();
+		}
+
+		public static Quad RootN(Quad x, int n)
+		{
+			throw new NotImplementedException();
+		}
+
+		public static Quad Acos(Quad x) => MathQ.Acos(x);
+
+		public static Quad AcosPi(Quad x)
+		{
+			throw new NotImplementedException();
+		}
+
+		public static Quad Asin(Quad x) => MathQ.Asin(x);
+
+		public static Quad AsinPi(Quad x)
+		{
+			throw new NotImplementedException();
+		}
+
+		public static Quad Atan(Quad x) => MathQ.Atan(x);
+
+		public static Quad AtanPi(Quad x)
+		{
+			throw new NotImplementedException();
+		}
+
+		public static Quad Cos(Quad x) => MathQ.Cos(x);
+
+		public static Quad CosPi(Quad x)
+		{
+			throw new NotImplementedException();
+		}
+
+		public static Quad Sin(Quad x) => MathQ.Sin(x);
+
+		public static (Quad Sin, Quad Cos) SinCos(Quad x) => MathQ.SinCos(x);
+
+		public static (Quad SinPi, Quad CosPi) SinCosPi(Quad x)
+		{
+			throw new NotImplementedException();
+		}
+
+		public static Quad SinPi(Quad x)
+		{
+			throw new NotImplementedException();
+		}
+
+		public static Quad Tan(Quad x) => MathQ.Tan(x);
+
+		public static Quad TanPi(Quad x)
+		{
+			throw new NotImplementedException();
 		}
 
 		public static Quad operator +(Quad value) => value;
