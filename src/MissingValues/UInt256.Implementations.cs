@@ -9,6 +9,8 @@ using System.Linq;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Runtime.Intrinsics;
+using System.Runtime.Intrinsics.X86;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -794,19 +796,118 @@ namespace MissingValues
 
 		public static UInt256 operator +(UInt256 left, UInt256 right)
 		{
-			UInt128 lower = left._lower + right._lower;
-			UInt128 carry = (lower < left._lower) ? 1UL : 0UL;
+			if (Avx2.IsSupported)
+			{
+				/*
+				 * Based on AddImpl from Nethermind.Int256
+				 * Source: https://github.com/NethermindEth/int256/blob/master/src/Nethermind.Int256/UInt256.cs
+				 */
 
-			UInt128 upper = left._upper + right._upper + carry;
-			return new UInt256(upper, lower);
+				var av = Unsafe.As<UInt256, Vector256<ulong>>(ref Unsafe.AsRef(in left));
+				var bv = Unsafe.As<UInt256, Vector256<ulong>>(ref Unsafe.AsRef(in right));
+
+				var result = Avx2.Add(av, bv);
+
+				var carryFromBothHighBits = Avx2.And(av, bv);
+				var eitherHighBit = Avx2.Or(av, bv);
+				var highBitNotInResult = Avx2.AndNot(result, eitherHighBit);
+
+				// Set high bits where carry occurs
+				var vCarry = Avx2.Or(carryFromBothHighBits, highBitNotInResult);
+				// Move carry from Vector space to int
+				var carry = Avx.MoveMask(Unsafe.As<Vector256<ulong>, Vector256<double>>(ref vCarry));
+
+				// All bits set will cascade another carry when carry is added to it
+				var vCascade = Avx2.CompareEqual(result, Vector256<ulong>.AllBitsSet);
+				// Move cascade from Vector space to int
+				var cascade = Avx.MoveMask(Unsafe.As<Vector256<ulong>, Vector256<double>>(ref vCascade));
+
+				// Use ints to work out the Vector cross lane cascades
+				// Move carry to next bit and add cascade
+				carry = cascade + 2 * carry; // lea
+											 // Remove cascades not effected by carry
+				cascade ^= carry;
+				// Choice of 16 vectors
+				cascade &= 0x0F;
+
+				// Lookup the carries to broadcast to the Vectors
+				var cascadedCarries = Unsafe.Add(ref Unsafe.As<byte, Vector256<ulong>>(ref MemoryMarshal.GetReference(_broadcastLookup)), cascade);
+
+				// Mark res as initalized so we can use it as left said of ref assignment
+				Unsafe.SkipInit(out UInt256 res);
+				// Add the cascadedCarries to the result
+				Unsafe.As<UInt256, Vector256<ulong>>(ref res) = Avx2.Add(result, cascadedCarries);
+
+				return res;
+			}
+			else
+			{
+				UInt128 lower = left._lower + right._lower;
+				UInt128 carry = (lower < left._lower) ? 1UL : 0UL;
+
+				UInt128 upper = left._upper + right._upper + carry;
+				return new UInt256(upper, lower);
+			}
 		}
 		public static UInt256 operator checked +(UInt256 left, UInt256 right)
 		{
-			UInt128 lower = left._lower + right._lower;
-			UInt128 carry = (lower < left._lower) ? 1UL : 0UL;
+			if (Avx2.IsSupported)
+			{
+				/*
+				 * Based on AddImpl from Nethermind.Int256
+				 * Source: https://github.com/NethermindEth/int256/blob/master/src/Nethermind.Int256/UInt256.cs
+				 */
 
-			UInt128 upper = checked(left._upper + right._upper + carry);
-			return new UInt256(upper, lower);
+				var av = Unsafe.As<UInt256, Vector256<ulong>>(ref Unsafe.AsRef(in left));
+				var bv = Unsafe.As<UInt256, Vector256<ulong>>(ref Unsafe.AsRef(in right));
+
+				var result = Avx2.Add(av, bv);
+
+				var carryFromBothHighBits = Avx2.And(av, bv);
+				var eitherHighBit = Avx2.Or(av, bv);
+				var highBitNotInResult = Avx2.AndNot(result, eitherHighBit);
+
+				// Set high bits where carry occurs
+				var vCarry = Avx2.Or(carryFromBothHighBits, highBitNotInResult);
+				// Move carry from Vector space to int
+				var carry = Avx.MoveMask(Unsafe.As<Vector256<ulong>, Vector256<double>>(ref vCarry));
+
+				// All bits set will cascade another carry when carry is added to it
+				var vCascade = Avx2.CompareEqual(result, Vector256<ulong>.AllBitsSet);
+				// Move cascade from Vector space to int
+				var cascade = Avx.MoveMask(Unsafe.As<Vector256<ulong>, Vector256<double>>(ref vCascade));
+
+				// Use ints to work out the Vector cross lane cascades
+				// Move carry to next bit and add cascade
+				carry = cascade + 2 * carry; // lea
+											 // Remove cascades not effected by carry
+				cascade ^= carry;
+				// Choice of 16 vectors
+				cascade &= 0x0F;
+
+				// Lookup the carries to broadcast to the Vectors
+				var cascadedCarries = Unsafe.Add(ref Unsafe.As<byte, Vector256<ulong>>(ref MemoryMarshal.GetReference(_broadcastLookup)), cascade);
+
+				// Mark res as initalized so we can use it as left said of ref assignment
+				Unsafe.SkipInit(out UInt256 res);
+				// Add the cascadedCarries to the result
+				Unsafe.As<UInt256, Vector256<ulong>>(ref res) = Avx2.Add(result, cascadedCarries);
+
+				if ((carry & 0b1_000) != 0)
+				{
+					Thrower.ArithmethicOverflow(Thrower.ArithmethicOperation.Addition);
+				}
+
+				return res;
+			}
+			else
+			{
+				UInt128 lower = left._lower + right._lower;
+				UInt128 carry = (lower < left._lower) ? 1UL : 0UL;
+
+				UInt128 upper = checked(left._upper + right._upper + carry);
+				return new UInt256(upper, lower); 
+			}
 		}
 
 		public static UInt256 operator -(UInt256 value)
@@ -820,25 +921,124 @@ namespace MissingValues
 
 		public static UInt256 operator -(UInt256 left, UInt256 right)
 		{
-			// For unsigned subtract, we can detect overflow by checking `(x - y) > x`
-			// This gives us the borrow to subtract from upper to compute the correct result
+			if (Avx2.IsSupported)
+			{
+				/*
+				 * Based on SubtractImpl from Nethermind.Int256
+				 * Source: https://github.com/NethermindEth/int256/blob/master/src/Nethermind.Int256/UInt256.cs
+				 */
+				var av = Unsafe.As<UInt256, Vector256<ulong>>(ref Unsafe.AsRef(in left));
+				var bv = Unsafe.As<UInt256, Vector256<ulong>>(ref Unsafe.AsRef(in right));
 
-			UInt128 lower = left._lower - right._lower;
-			UInt128 borrow = (lower > left._lower) ? 1UL : 0UL;
+				var result = Avx2.Subtract(av, bv);
+				// Invert top bits as Avx2.CompareGreaterThan is only available for longs, not unsigned
+				var resultSigned = Avx2.Xor(result, Vector256.Create<ulong>(0x8000_0000_0000_0000));
+				var avSigned = Avx2.Xor(av, Vector256.Create<ulong>(0x8000_0000_0000_0000));
 
-			UInt128 upper = left._upper - right._upper - borrow;
-			return new UInt256(upper, lower);
+				// Which vectors need to borrow from the next
+				var vBorrow = Avx2.CompareGreaterThan(Unsafe.As<Vector256<ulong>, Vector256<long>>(ref resultSigned),
+													  Unsafe.As<Vector256<ulong>, Vector256<long>>(ref avSigned));
+
+				// Move borrow from Vector space to int
+				var borrow = Avx.MoveMask(Unsafe.As<Vector256<long>, Vector256<double>>(ref vBorrow));
+
+				// All zeros will cascade another borrow when borrow is subtracted from it
+				var vCascade = Avx2.CompareEqual(result, Vector256<ulong>.Zero);
+				// Move cascade from Vector space to int
+				var cascade = Avx.MoveMask(Unsafe.As<Vector256<ulong>, Vector256<double>>(ref vCascade));
+
+				// Use ints to work out the Vector cross lane cascades
+				// Move borrow to next bit and add cascade
+				borrow = cascade + 2 * borrow; // lea
+											   // Remove cascades not effected by borrow
+				cascade ^= borrow;
+				// Choice of 16 vectors
+				cascade &= 0x0f;
+
+				// Lookup the borrows to broadcast to the Vectors
+				var cascadedBorrows = Unsafe.Add(ref Unsafe.As<byte, Vector256<ulong>>(ref MemoryMarshal.GetReference(_broadcastLookup)), cascade);
+
+				// Mark res as initalized so we can use it as left said of ref assignment
+				Unsafe.SkipInit(out UInt256 res);
+				// Subtract the cascadedBorrows from the result
+				Unsafe.As<UInt256, Vector256<ulong>>(ref res) = Avx2.Subtract(result, cascadedBorrows);
+
+				return res;
+			}
+			else
+			{
+				// For unsigned subtract, we can detect overflow by checking `(x - y) > x`
+				// This gives us the borrow to subtract from upper to compute the correct result
+
+				UInt128 lower = left._lower - right._lower;
+				UInt128 borrow = (lower > left._lower) ? 1UL : 0UL;
+
+				UInt128 upper = left._upper - right._upper - borrow;
+				return new UInt256(upper, lower); 
+			}
 		}
 		public static UInt256 operator checked -(UInt256 left, UInt256 right)
 		{
-			// For unsigned subtract, we can detect overflow by checking `(x - y) > x`
-			// This gives us the borrow to subtract from upper to compute the correct result
+			if (Avx2.IsSupported)
+			{
+				/*
+				 * Based on SubtractImpl from Nethermind.Int256
+				 * Source: https://github.com/NethermindEth/int256/blob/master/src/Nethermind.Int256/UInt256.cs
+				 */
+				var av = Unsafe.As<UInt256, Vector256<ulong>>(ref Unsafe.AsRef(in left));
+				var bv = Unsafe.As<UInt256, Vector256<ulong>>(ref Unsafe.AsRef(in right));
 
-			UInt128 lower = left._lower - right._lower;
-			UInt128 borrow = (lower > left._lower) ? 1UL : 0UL;
+				var result = Avx2.Subtract(av, bv);
+				// Invert top bits as Avx2.CompareGreaterThan is only available for longs, not unsigned
+				var resultSigned = Avx2.Xor(result, Vector256.Create<ulong>(0x8000_0000_0000_0000));
+				var avSigned = Avx2.Xor(av, Vector256.Create<ulong>(0x8000_0000_0000_0000));
 
-			UInt128 upper = checked(left._upper - right._upper - borrow);
-			return new UInt256(upper, lower);
+				// Which vectors need to borrow from the next
+				var vBorrow = Avx2.CompareGreaterThan(Unsafe.As<Vector256<ulong>, Vector256<long>>(ref resultSigned),
+													  Unsafe.As<Vector256<ulong>, Vector256<long>>(ref avSigned));
+
+				// Move borrow from Vector space to int
+				var borrow = Avx.MoveMask(Unsafe.As<Vector256<long>, Vector256<double>>(ref vBorrow));
+
+				// All zeros will cascade another borrow when borrow is subtracted from it
+				var vCascade = Avx2.CompareEqual(result, Vector256<ulong>.Zero);
+				// Move cascade from Vector space to int
+				var cascade = Avx.MoveMask(Unsafe.As<Vector256<ulong>, Vector256<double>>(ref vCascade));
+
+				// Use ints to work out the Vector cross lane cascades
+				// Move borrow to next bit and add cascade
+				borrow = cascade + 2 * borrow; // lea
+											   // Remove cascades not effected by borrow
+				cascade ^= borrow;
+				// Choice of 16 vectors
+				cascade &= 0x0f;
+
+				// Lookup the borrows to broadcast to the Vectors
+				var cascadedBorrows = Unsafe.Add(ref Unsafe.As<byte, Vector256<ulong>>(ref MemoryMarshal.GetReference(_broadcastLookup)), cascade);
+
+				// Mark res as initalized so we can use it as left said of ref assignment
+				Unsafe.SkipInit(out UInt256 res);
+				// Subtract the cascadedBorrows from the result
+				Unsafe.As<UInt256, Vector256<ulong>>(ref res) = Avx2.Subtract(result, cascadedBorrows);
+
+				if ((borrow & 0b1_0000) != 0)
+				{
+					Thrower.ArithmethicOverflow(Thrower.ArithmethicOperation.Addition);
+				}
+
+				return res;
+			}
+			else
+			{
+				// For unsigned subtract, we can detect overflow by checking `(x - y) > x`
+				// This gives us the borrow to subtract from upper to compute the correct result
+
+				UInt128 lower = left._lower - right._lower;
+				UInt128 borrow = (lower > left._lower) ? 1UL : 0UL;
+
+				UInt128 upper = checked(left._upper - right._upper - borrow);
+				return new UInt256(upper, lower); 
+			}
 		}
 
 		public static UInt256 operator ~(UInt256 value)
