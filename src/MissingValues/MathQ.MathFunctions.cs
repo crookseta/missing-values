@@ -94,7 +94,9 @@ namespace MissingValues
 	{
 		internal const int MaxRoundingDigits = 34;
 
+		private static Quad M_PI_2 => new Quad(0x3FFF_921F_B544_42D1, 0x8469_898C_C517_01B8); // pi / 2
 		private static Quad M_PI_4 => new Quad(0x3FFE_921F_B544_42D1, 0x8469_B288_3370_1F13); // pi / 4
+		private static Quad LN2 => new Quad(0x3FFE_62E4_2FEF_A39E, 0xF357_ADEB_B905_E4BD);
 		private static Quad LOG2EA => new Quad();
 		private static Quad SQRTH => new Quad();
 
@@ -139,7 +141,7 @@ namespace MissingValues
 		};
 
 		// Domain [-0.7854, 0.7854], range ~[-1.80e-37, 1.79e-37]:
-		// |cos(x) - c(x))| < 2**-122.0
+		// |cos(y) - c(y))| < 2**-122.0
 		private static Quad C1 => new Quad(0x3FFA_5555_5555_5555, 0x5555_5555_5555_5548);
 		private static Quad C2 => new Quad(0xBFF5_6C16_C16C_16C1, 0x6C16_C16C_16BF_5C98);
 		private static Quad C3 => new Quad(0x3FEF_A01A_01A0_1A01, 0xA01A_019F_FFC4_B13D);
@@ -153,7 +155,7 @@ namespace MissingValues
 		private static Quad C11 => new Quad(0x3FAF_EF81_27D7_65B0, 0x90B7_B2A6_9D9B_4DA3);
 
 		// Domain [-0.7854, 0.7854], range ~[-1.53e-37, 1.659e-37]
-		// |sin(x)/x - s(x)| < 2**-122.1
+		// |sin(y)/y - s(y)| < 2**-122.1
 		private static Quad S1 => new Quad(0xBFFC_5555_5555_5555, 0x5555_5555_5555_5555);
 		private static Quad S2 => new Quad(0x3FF8_1111_1111_1111, 0x1111_1111_1111_107F);
 		private static Quad S3 => new Quad(0xBFF2_A01A_01A0_1A01, 0xA01A_01A0_19F8_F785);
@@ -167,7 +169,7 @@ namespace MissingValues
 		private static Quad S11 => new Quad(0xBFB4_7619_0E26_27FC, 0xD447_C8CE_C732_8FCB);
 		private static Quad S12 => new Quad(0x3FAB_3D19_FFD7_AD8B, 0xF1DD_C6F8_CBDE_24B6);
 		// Domain [-0.67434, 0.67434], range ~[-3.37e-36, 1.982e-37]
-		// |tan(x)/x - t(x)| < 2**-117.8 (XXX should be ~1e-37)
+		// |tan(y)/y - t(y)| < 2**-117.8 (XXX should be ~1e-37)
 		private static Quad T3 => new Quad(0x3FFD_5555_5555_5555, 0x5555_5555_5555_5555);
 		private static Quad T5 => new Quad(0x3FFB_1111_1111_1111, 0x1111_1111_1111_1111);
 		private static Quad T7 => new Quad(0x3FF9_4AFD_6A05_2BF5, 0xA814_AFD6_A052_BF5B);
@@ -201,10 +203,10 @@ namespace MissingValues
 
 
 		/// <summary>
-		/// Returns the absolute value of x quadruple-precision floating-point number.
+		/// Returns the absolute value of y quadruple-precision floating-point number.
 		/// </summary>
 		/// <param name="x">A number that is greater than or equal to <seealso cref="Quad.MinValue"/>, but less than or equal to <seealso cref="Quad.MaxValue"/>.</param>
-		/// <returns>A quadruple-precision floating-point number, x, such that 0 ≤ x ≤ <seealso cref="Quad.MaxValue"/>.</returns>
+		/// <returns>A quadruple-precision floating-point number, y, such that 0 ≤ y ≤ <seealso cref="Quad.MaxValue"/>.</returns>
 		public static Quad Abs(Quad x)
 		{
 			return Quad.UInt128BitsToQuad(Quad.QuadToUInt128Bits(x) & Quad.InvertedSignMask);
@@ -212,74 +214,128 @@ namespace MissingValues
 		/// <summary>
 		/// Returns the angle whose cosine is the specified number.
 		/// </summary>
-		/// <param name="x">A number representing x cosine, where <paramref name="x"/> must be greater than or equal to -1, but less than or equal to 1.</param>
+		/// <param name="x">A number representing y cosine, where <paramref name="x"/> must be greater than or equal to -1, but less than or equal to 1.</param>
 		/// <returns>
 		/// An angle, θ, measured in radians, such that 0 ≤ θ ≤ π.
 		/// </returns>
 		public static Quad Acos(Quad x)
 		{
-			throw new NotImplementedException();
+			Quad y;
+
+			if (x == Quad.Zero)
+			{
+				return M_PI_2;
+			}
+			if (x == Quad.One)
+			{
+				return Quad.Zero;
+			}
+			if (x == Quad.NegativeOne)
+			{
+				return Quad.Pi;
+			}
+
+			y = Atan(Sqrt(Quad.One - (x * x)) / x);
+
+			if (x > Quad.Zero)
+			{
+				return y;
+			}
+
+			return y + Quad.Pi;
 		}
 		/// <summary>
 		/// Returns the angle whose hyperbolic cosine is the specified number.
 		/// </summary>
-		/// <param name="x">A number representing x hyperbolic cosine, where <paramref name="x"/> must be greater than or equal to 1, but less than or equal to <seealso cref="Quad.PositiveInfinity"/>.</param>
+		/// <param name="x">A number representing y hyperbolic cosine, where <paramref name="x"/> must be greater than or equal to 1, but less than or equal to <seealso cref="Quad.PositiveInfinity"/>.</param>
 		/// <returns>An angle, θ, measured in radians, such that 0 ≤ θ ≤ ∞.</returns>
 		public static Quad Acosh(Quad x)
 		{
-			throw new NotImplementedException();
+			Quad t;
+			var exponent = x.BiasedExponent;
+
+			if (exponent < 0x3FFF || (exponent & 0x8000) != 0)
+			{
+				return Quad.NaN;
+			}
+			else if (exponent >= 0x401D) // y > 2^30
+			{
+				if (exponent >= 0x7FFF)
+				{
+					return x;
+				}
+
+				else
+				{
+					return MathQ.Log(x) + LN2;
+				}
+			}
+			else if (x == Quad.One)
+			{
+				return Quad.Zero;
+			}
+			else if (exponent > 0x4000) // 2^28 > y > 2
+			{
+				t = x * x;
+				return MathQ.Log(Quad.Two * x - Quad.One / (x + MathQ.Sqrt(t - Quad.One)));
+			}
+			else // 1 < y < 2
+			{
+				t = (x - Quad.One);
+				return Quad.LogP1(t + Sqrt(Quad.Two * t + t * t));
+			}
 		}
 		/// <summary>
-		/// 
+		/// Returns the angle whose sine is the specified number.
 		/// </summary>
-		/// <param name="x"></param>
-		/// <returns></returns>
+		/// <param name="x">A number representing a sine, where <paramref name="x"/> must be greater than or equal to -1, but less than or equal to 1.</param>
+		/// <returns>An angle, θ, measured in radians, such that -π/2 ≤ θ ≤ π/2.</returns>
 		public static Quad Asin(Quad x)
 		{
 			throw new NotImplementedException();
 		}
 		/// <summary>
-		/// 
+		/// Returns the angle whose hyperbolic sine is the specified number.
 		/// </summary>
-		/// <param name="x"></param>
-		/// <returns></returns>
+		/// <param name="x">A number representing a hyperbolic sine, where <paramref name="x"/> must be greater than or equal to <see cref="Quad.NegativeInfinity"/>, but less than or equal to <see cref="Quad.PositiveInfinity"/>.</param>
+		/// <returns>An angle, θ, measured in radians.</returns>
 		public static Quad Asinh(Quad x)
 		{
 			throw new NotImplementedException();
 		}
 		/// <summary>
-		/// 
+		/// Returns the angle whose tangent is the specified number.
 		/// </summary>
-		/// <param name="x"></param>
-		/// <returns></returns>
+		/// <param name="x">A number representing a tangent.</param>
+		/// <returns>An angle, θ, measured in radians, such that -π/2 ≤ θ ≤ π/2.</returns>
 		public static Quad Atan(Quad x)
 		{
 			throw new NotImplementedException();
 		}
 		/// <summary>
-		/// 
+		/// Returns the angle whose tangent is the quotient of two specified numbers.
 		/// </summary>
-		/// <param name="x"></param>
-		/// <param name="y"></param>
-		/// <returns></returns>
-		public static Quad Atan2(Quad x, Quad y)
+		/// <param name="y">The y coordinate of a point.</param>
+		/// <param name="x">The x coordinate of a point.</param>
+		/// <returns>An angle, θ, measured in radians, such that -π ≤ θ ≤ π, and tan(θ) = <paramref name="y"/> / <paramref name="x"/>, where (<paramref name="x"/>, <paramref name="y"/>) is a point in the Cartesian plane.</returns>
+		public static Quad Atan2(Quad y, Quad x)
 		{
 			throw new NotImplementedException();
 		}
 		/// <summary>
-		/// 
+		/// Returns the angle whose hyperbolic tangent is the specified number.
 		/// </summary>
-		/// <param name="x"></param>
-		/// <returns></returns>
+		/// <param name="x">A number representing a hyperbolic tangent, where <paramref name="x"/> must be greater than or equal to -1, but less than or equal to 1.</param>
+		/// <returns>An angle, θ, measured in radians, such that -∞ < θ <-1, or 1 < θ < ∞.</returns>
 		public static Quad Atanh(Quad x)
 		{
 			throw new NotImplementedException();
 		}
 		/// <summary>
-		/// 
+		/// Returns the largest value that compares less than a specified value.
 		/// </summary>
-		/// <param name="x"></param>
-		/// <returns></returns>
+		/// <param name="x">The value to decrement.</param>
+		/// <returns>The largest value that compares less than <paramref name="x"/>.</returns>
 		public static Quad BitDecrement(Quad x)
 		{
 			UInt128 bits = Quad.QuadToUInt128Bits(x);
@@ -301,14 +357,14 @@ namespace MissingValues
 			// Negative values need to be incremented
 			// Positive values need to be decremented
 
-			bits += (UInt128)(((Int128)bits < 0) ? Int128.One : Int128.NegativeOne);
+			bits += unchecked((UInt128)(((Int128)bits < 0) ? Int128.One : Int128.NegativeOne));
 			return Quad.UInt128BitsToQuad(bits);
 		}
 		/// <summary>
-		/// 
+		/// Returns the smallest value that compares greater than a specified value.
 		/// </summary>
-		/// <param name="x"></param>
-		/// <returns></returns>
+		/// <param name="x">The value to increment.</param>
+		/// <returns>The smallest value that compares greater than <paramref name="x"/>.</returns>
 		public static Quad BitIncrement(Quad x)
 		{
 			UInt128 bits = Quad.QuadToUInt128Bits(x);
@@ -330,23 +386,23 @@ namespace MissingValues
 			// Negative values need to be decremented
 			// Positive values need to be incremented
 
-			bits += (UInt128)(((Int128)bits < 0) ? Int128.NegativeOne : Int128.One);
+			bits += unchecked((UInt128)(((Int128)bits < 0) ? Int128.NegativeOne : Int128.One));
 			return Quad.UInt128BitsToQuad(bits);
 		}
 		/// <summary>
-		/// 
+		/// Returns the cube root of a specified number.
 		/// </summary>
-		/// <param name="x"></param>
-		/// <returns></returns>
+		/// <param name="x">The number whose cube root is to be found.</param>
+		/// <returns>The cube root of <paramref name="x"/>.</returns>
 		public static Quad Cbrt(Quad x)
 		{
 			throw new NotImplementedException();
 		}
 		/// <summary>
-		/// 
+		/// Returns the smallest integral value that is greater than or equal to the specified quadruple-precision floating-point number.
 		/// </summary>
-		/// <param name="x"></param>
-		/// <returns></returns>
+		/// <param name="x">A quadruple-precision floating-point</param>
+		/// <returns>The smallest integral value that is greater than or equal to <paramref name="x"/>. If <paramref name="x"/> is equal to <see cref="Quad.NaN"/>, <see cref="Quad.NegativeInfinity"/>, or <see cref="Quad.PositiveInfinity"/>, that value is returned. Note that this method returns a <see cref="Quad"/> instead of an integral type.</returns>
 		public static Quad Ceiling(Quad x)
 		{
 			if (Quad.IsNaN(x) || Quad.IsInfinity(x))
@@ -387,11 +443,11 @@ namespace MissingValues
 			}
 		}
 		/// <summary>
-		/// 
+		/// Returns a value with the magnitude of <paramref name="x"/> and the sign of <paramref name="y"/>.
 		/// </summary>
-		/// <param name="x"></param>
-		/// <param name="y"></param>
-		/// <returns></returns>
+		/// <param name="x">A number whose magnitude is used in the result.</param>
+		/// <param name="y">A number whose sign is the used in the result.</param>
+		/// <returns>A value with the magnitude of <paramref name="x"/> and the sign of <paramref name="y"/>.</returns>
 		public static Quad CopySign(Quad x, Quad y)
 		{
 			// This method is required to work for all inputs,
@@ -399,7 +455,7 @@ namespace MissingValues
 			UInt128 xbits = Quad.QuadToUInt128Bits(x);
 			UInt128 ybits = Quad.QuadToUInt128Bits(y);
 
-			// Remove the sign from x, and remove everything but the sign from y
+			// Remove the sign from y, and remove everything but the sign from x
 			xbits &= Quad.InvertedSignMask;
 			ybits &= Quad.SignMask;
 
@@ -413,10 +469,10 @@ namespace MissingValues
 		}
 
 		/// <summary>
-		/// 
+		/// Returns the cosine of the specified angle.
 		/// </summary>
-		/// <param name="x"></param>
-		/// <returns></returns>
+		/// <param name="x">An angle, measured in radians.</param>
+		/// <returns>The cosine of <paramref name="x"/>. If <paramref name="x"/> is equal to <see cref="Quad.NaN"/>, <see cref="Quad.NegativeInfinity"/>, or <see cref="Quad.PositiveInfinity"/>, this method returns <see cref="Quad.NaN"/>.</returns>
 		public static Quad Cos(Quad x)
 		{
 			Quad x0 = x;
@@ -462,7 +518,7 @@ namespace MissingValues
 			 * Copyright (C) 1993 by Sun Microsystems, Inc. All rights reserved.
 			 * Copyright (c) 2008 Steven G. Kargl, David Schultz, Bruce D. Evans.
 			 *
-			 * Developed at SunSoft, x Sun Microsystems, Inc. business.
+			 * Developed at SunSoft, y Sun Microsystems, Inc. business.
 			 * Permission to use, copy, modify, and distribute this
 			 * software is freely granted, provided that this notice
 			 * is preserved.
@@ -481,28 +537,28 @@ namespace MissingValues
 			static Quad Poly(in Quad z) => (z * (C1 + z * (C2 + z * (C3 + z * (C4 + z * (C5 + z * (C6 + z * (C7 + z * (C8 + z * (C9 + z * (C10 + z * C11)))))))))));
 		}
 		/// <summary>
-		/// 
+		/// Returns the hyperbolic cosine of the specified angle.
 		/// </summary>
-		/// <param name="x"></param>
-		/// <returns></returns>
+		/// <param name="x">An angle, measured in radians.</param>
+		/// <returns>The hyperbolic cosine of <paramref name="x"/>. If <paramref name="x"/> is equal to <see cref="Quad.NegativeInfinity"/> or <see cref="Quad.PositiveInfinity"/>, <see cref="Quad.PositiveInfinity"/> is returned. If <paramref name="x"/> is equal to <see cref="Quad.NaN"/>, <see cref="Quad.NaN"/> is returned.</returns>
 		public static Quad Cosh(Quad x)
 		{
 			throw new NotImplementedException();
 		}
 		/// <summary>
-		/// 
+		/// Returns <seealso cref="Quad.E"/> raised to the specified power.
 		/// </summary>
-		/// <param name="x"></param>
-		/// <returns></returns>
+		/// <param name="x">A number specifying a power.</param>
+		/// <returns>The number <seealso cref="Quad.E"/> raised to the power <paramref name="x"/>. If <paramref name="x"/> equals <see cref="Quad.NaN"/> or <see cref="Quad.PositiveInfinity"/>, that value is returned. If <paramref name="x"/> equals <see cref="Quad.NegativeInfinity"/>, 0 is returned.</returns>
 		public static Quad Exp(Quad x)
 		{
 			throw new NotImplementedException();
 		}
 		/// <summary>
-		/// 
+		/// Returns the largest integral value less than or equal to the specified quadruple-precision floating-point number.
 		/// </summary>
-		/// <param name="x"></param>
-		/// <returns></returns>
+		/// <param name="x">A quadruple-precision floating-point number</param>
+		/// <returns>The largest integral value less than or equal to <paramref name="x"/>. If <paramref name="x"/> is equal to <see cref="Quad.NaN"/>, <see cref="Quad.NegativeInfinity"/>, or <see cref="Quad.PositiveInfinity"/>, that value is returned.</returns>
 		public static Quad Floor(Quad x)
 		{
 			if (Quad.IsNaN(x) || Quad.IsInfinity(x))
@@ -543,68 +599,68 @@ namespace MissingValues
 			}
 		}
 		/// <summary>
-		/// 
+		/// Returns (x * y) + z, rounded as one ternary operation.
 		/// </summary>
-		/// <param name="x"></param>
-		/// <param name="y"></param>
-		/// <param name="z"></param>
-		/// <returns></returns>
+		/// <param name="x">The number to be multiplied with <paramref name="y"/>.</param>
+		/// <param name="y">The number to be multiplied with <paramref name="x"/>.</param>
+		/// <param name="z">The number to be added to the result of <paramref name="x"/> multiplied by <paramref name="y"/>.</param>
+		/// <returns>(x * y) + z, rounded as one ternary operation.</returns>
 		public static Quad FusedMultiplyAdd(Quad x, Quad y, Quad z)
 		{
 			throw new NotImplementedException();
 		}
 		/// <summary>
-		/// 
+		/// Returns the remainder resulting from the division of a specified number by another specified number.
 		/// </summary>
-		/// <param name="x"></param>
-		/// <param name="y"></param>
-		/// <returns></returns>
+		/// <param name="x">A dividend.</param>
+		/// <param name="y">A divisor.</param>
+		/// <returns>A number equal to <paramref name="x"/> - (<paramref name="y"/> Q), where Q is the quotient of <paramref name="x"/> / <paramref name="y"/> rounded to the nearest integer</returns>
 		public static Quad IEEERemainder(Quad x, Quad y)
 		{
 			throw new NotImplementedException();
 		}
 		/// <summary>
-		/// 
+		/// Returns the base 2 integer logarithm of a specified number.
 		/// </summary>
-		/// <param name="x"></param>
-		/// <returns></returns>
+		/// <param name="x">The number whose logarithm is to be found.</param>
+		/// <returns>The base 2 integer log of <paramref name="x"/>; that is, (int)log2(<paramref name="x"/>).</returns>
 		public static int ILogB(Quad x)
 		{
 			throw new NotImplementedException();
 		}
 		/// <summary>
-		/// 
+		/// Returns the natural (base <c>e</c>) logarithm of a specified number.
 		/// </summary>
-		/// <param name="x"></param>
-		/// <returns></returns>
+		/// <param name="x">The number whose logarithm is to be found.</param>
+		/// <returns>If positive, 	The natural logarithm of <paramref name="x"/>; that is, ln <paramref name="x"/>, or log e <paramref name="x"/></returns>
 		public static Quad Log(Quad x)
 		{
 			throw new NotImplementedException();
 		}
 		/// <summary>
-		/// 
+		/// Returns the logarithm of a specified number in a specified base.
 		/// </summary>
-		/// <param name="x"></param>
-		/// <param name="y"></param>
+		/// <param name="x">The number whose logarithm is to be found.</param>
+		/// <param name="y">The base.</param>
 		/// <returns></returns>
 		public static Quad Log(Quad x, Quad y)
 		{
 			throw new NotImplementedException();
 		}
 		/// <summary>
-		/// 
+		/// Returns the base 10 logarithm of a specified number.
 		/// </summary>
-		/// <param name="x"></param>
-		/// <returns></returns>
+		/// <param name="x">A number whose logarithm is to be found.</param>
+		/// <returns>The base 10 log of <paramref name="x"/>; that is, log 10<paramref name="x"/>.</returns>
 		public static Quad Log10(Quad x)
 		{
 			throw new NotImplementedException();
 		}
 		/// <summary>
-		/// 
+		/// Returns the base 2 logarithm of a specified number.
 		/// </summary>
-		/// <param name="x"></param>
-		/// <returns></returns>
+		/// <param name="x">A number whose logarithm is to be found.</param>
+		/// <returns>The base 2 log of <paramref name="x"/>; that is, log 2<paramref name="x"/>.</returns>
 		public static Quad Log2(Quad x)
 		{
 			Quad y, z;
@@ -629,8 +685,8 @@ namespace MissingValues
 
 			x = Quad.SeparateExponent(x, ref e);
 
-			/* logarithm using log(x) = z + z**3 P(z)/Q(z),
-			 * where z = 2(x-1)/x+1)
+			/* logarithm using log(y) = z + z**3 P(z)/Q(z),
+			 * where z = 2(y-1)/y+1)
 			 */
 
 			if (e > 2 || e < -2)
@@ -641,7 +697,7 @@ namespace MissingValues
 					z = x - Quad.HalfOne;
 					y = Quad.HalfOne * z + Quad.HalfOne;
 				}
-				else // 2 (x-1)/(x+1)
+				else // 2 (y-1)/(y+1)
 				{
 					z = x - Quad.HalfOne;
 					z -= Quad.HalfOne;
@@ -653,7 +709,7 @@ namespace MissingValues
 				goto done;
 			}
 
-			// logarithm using log(1+x) = x - .5x**2 + x**3 P(x)/Q(x)
+			// logarithm using log(1+y) = y - .5x**2 + y**3 P(y)/Q(y)
 			if (x < SQRTH)
 			{
 				e -= 1;
@@ -677,11 +733,11 @@ namespace MissingValues
 			return z;
 		}
 		/// <summary>
-		/// 
+		/// Returns the larger of two quadruple-precision floating-point numbers.
 		/// </summary>
-		/// <param name="x"></param>
-		/// <param name="y"></param>
-		/// <returns></returns>
+		/// <param name="val1">The first of two quadruple-precision floating-point numbers to compare.</param>
+		/// <param name="val2">The second of two quadruple-precision floating-point numbers to compare.</param>
+		/// <returns>Parameter <paramref name="val1"/> or <paramref name="val2"/>, whichever is larger. If <paramref name="val1"/>, or <paramref name="val2"/>, or both <paramref name="val1"/> and <paramref name="val2"/> are equal to <see cref="Quad.NaN"/>, <see cref="Quad.NaN"/> is returned.</returns>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static Quad Max(Quad val1, Quad val2)
 		{
@@ -704,11 +760,11 @@ namespace MissingValues
 			return Quad.IsNegative(val2) ? val1 : val2;
 		}
 		/// <summary>
-		/// 
+		/// Returns the larger magnitude of two quadruple-precision floating-point numbers.
 		/// </summary>
-		/// <param name="x"></param>
-		/// <param name="y"></param>
-		/// <returns></returns>
+		/// <param name="x">The first of two quadruple-precision floating-point numbers to compare.</param>
+		/// <param name="y">The second of two quadruple-precision floating-point numbers to compare.</param>
+		/// <returns>Parameter <paramref name="x"/> or <paramref name="y"/>, whichever has the larger magnitude. If <paramref name="x"/>, or <paramref name="y"/>, or both <paramref name="x"/> and <paramref name="y"/> are equal to <see cref="Quad.NaN"/>, <see cref="Quad.NaN"/> is returned.</returns>
 		public static Quad MaxMagnitude(Quad x, Quad y)
 		{
 			// This matches the IEEE 754:2019 `maximumMagnitude` function
@@ -733,12 +789,11 @@ namespace MissingValues
 			return y;
 		}
 		/// <summary>
-		/// 
+		/// Returns the smaller of two quadruple-precision floating-point numbers.
 		/// </summary>
-		/// <param name="x"></param>
-		/// <param name="y"></param>
-		/// <returns></returns>
-		/// <exception cref="NotImplementedException"></exception>
+		/// <param name="val1">The first of two quadruple-precision floating-point numbers to compare.</param>
+		/// <param name="val2">The second of two quadruple-precision floating-point numbers to compare.</param>
+		/// <returns>Parameter <paramref name="val1"/> or <paramref name="val2"/>, whichever is smaller. If <paramref name="val1"/>, <paramref name="val2"/>, or both <paramref name="val1"/> and <paramref name="val2"/> are equal to <see cref="Quad.NaN"/>, <see cref="Quad.NaN"/> is returned.</returns>
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static Quad Min(Quad val1, Quad val2)
 		{
@@ -761,11 +816,11 @@ namespace MissingValues
 			return Quad.IsNegative(val1) ? val1 : val2;
 		}
 		/// <summary>
-		/// 
+		/// Returns the smaller magnitude of two quadruple-precision floating-point numbers.
 		/// </summary>
-		/// <param name="x"></param>
-		/// <param name="y"></param>
-		/// <returns></returns>
+		/// <param name="val1">The first of two quadruple-precision floating-point numbers to compare.</param>
+		/// <param name="val2">The second of two quadruple-precision floating-point numbers to compare.</param>
+		/// <returns>Parameter <paramref name="x"/> or <paramref name="y"/>, whichever has the smaller magnitude. If <paramref name="x"/>, or <paramref name="y"/>, or both <paramref name="x"/> and <paramref name="y"/> are equal to <see cref="Quad.NaN"/>, <see cref="Quad.NaN"/> is returned.</returns>
 		public static Quad MinMagnitude(Quad x, Quad y)
 		{
 			// This matches the IEEE 754:2019 `minimumMagnitude` function
@@ -790,23 +845,23 @@ namespace MissingValues
 			return y;
 		}
 		/// <summary>
-		/// 
+		/// Returns a specified number raised to the specified power.
 		/// </summary>
-		/// <param name="x"></param>
-		/// <param name="y"></param>
-		/// <returns></returns>
+		/// <param name="x">A quadruple-precision floating-point number to be raised to a power.</param>
+		/// <param name="y">A quadruple-precision floating-point number to be raised to a power.</param>
+		/// <returns>The number <paramref name="x"/> raised to the power <paramref name="y"/>.</returns>
 		public static Quad Pow(Quad x, Quad y)
 		{
 			throw new NotImplementedException();
 		}
 		/// <summary>
-		/// 
+		/// Returns an estimate of the reciprocal of a specified number.
 		/// </summary>
-		/// <param name="x"></param>
-		/// <returns></returns>
+		/// <param name="x">The number whose reciprocal is to be estimated.</param>
+		/// <returns>An estimate of the reciprocal of <paramref name="x"/>.</returns>
 		public static Quad ReciprocalEstimate(Quad x)
 		{
-			// Uses Newton Raphton Series to find 1/x
+			// Uses Newton Raphton Series to find 1/y
 			Quad x0;
 			var bits = Quad.ExtractFromBits(Quad.QuadToUInt128Bits(x));
 
@@ -819,7 +874,7 @@ namespace MissingValues
 			Quad normalizedValue = new Quad(true, Quad.ExponentBias, bits.matissa);
 
 			x0 = Quad.One;
-			Quad two = new Quad(0x4000_0000_0000_0000, 0x0000_0000_0000_0000);
+			Quad two = Quad.Two;
 
 			// 15 iterations should be enough.
 			for (int i = 0; i < 15; i++)
@@ -848,16 +903,16 @@ namespace MissingValues
 			return output;
 		}
 		/// <summary>
-		/// 
+		/// Returns an estimate of the reciprocal square root of a specified number.
 		/// </summary>
-		/// <param name="x"></param>
-		/// <returns></returns>
+		/// <param name="x">The number whose reciprocal square root is to be estimated.</param>
+		/// <returns>An estimate of the reciprocal square root <paramref name="x"/>.</returns>
 		public static Quad ReciprocalSqrtEstimate(Quad x) => ReciprocalEstimate(Sqrt(x));
 		/// <summary>
-		/// 
+		/// Rounds a quadruple-precision floating-point value to the nearest integral value, and rounds midpoint values to the nearest even number.
 		/// </summary>
-		/// <param name="x"></param>
-		/// <returns></returns>
+		/// <param name="x">A quadruple-precision floating-point number to be rounded.</param>
+		/// <returns>The integer nearest <paramref name="x"/>. If the fractional component of <paramref name="x"/> is halfway between two integers, one of which is even and the other odd, then the even number is returned.</returns>
 		public static Quad Round(Quad x)
 		{
 			// This is based on the 'Berkeley SoftFloat Release 3e' algorithm
@@ -942,33 +997,36 @@ namespace MissingValues
 			return Quad.UInt128BitsToQuad(uiZ);
 		}
 		/// <summary>
-		/// 
+		/// Rounds a quadruple-precision floating-point value to a specified number of fractional digits, and rounds midpoint values to the nearest even number.
 		/// </summary>
-		/// <param name="x"></param>
-		/// <param name="digits"></param>
-		/// <returns></returns>
+		/// <param name="x">A quadruple-precision floating-point number to be rounded.</param>
+		/// <param name="digits">The number of fractional digits in the return value.</param>
+		/// <returns>The number nearest to <paramref name="x"/> that contains a number of fractional digits equal to <paramref name="digits"/>.</returns>
+		/// <exception cref="ArgumentOutOfRangeException"><paramref name="digits"/> is less than 0 or greater than 34.</exception>
 		public static Quad Round(Quad x, int digits)
 		{
 			return Round(x, digits, MidpointRounding.ToEven);
 		}
 		/// <summary>
-		/// 
+		/// Rounds a quadruple-precision floating-point value to an integer using the specified rounding convention.
 		/// </summary>
-		/// <param name="x"></param>
-		/// <param name="mode"></param>
-		/// <returns></returns>
+		/// <param name="x">A quadruple-precision floating-point number to be rounded.</param>
+		/// <param name="mode">One of the enumeration values that specifies which rounding strategy to use.</param>
+		/// <returns>The integer that <paramref name="x"/> is rounded to using the <paramref name="mode"/> rounding convention. This method returns a <see cref="Quad"/> instead of an integral type.</returns>
+		/// <exception cref="ArgumentException"><paramref name="mode"/> is not a valid value of <seealso cref="MidpointRounding"/>.</exception>
 		public static Quad Round(Quad x, MidpointRounding mode)
 		{
 			return Round(x, 0, mode);
 		}
 		/// <summary>
-		/// 
+		/// Rounds a quadruple-precision floating-point value to a specified number of fractional digits using the specified rounding convention.
 		/// </summary>
-		/// <param name="x"></param>
-		/// <param name="digits"></param>
-		/// <param name="mode"></param>
-		/// <returns></returns>
-		/// <exception cref="ArgumentException"></exception>
+		/// <param name="x">A quadruple-precision floating-point number to be rounded.</param>
+		/// <param name="digits">The number of fractional digits in the return value.</param>
+		/// <param name="mode">One of the enumeration values that specifies which rounding strategy to use.</param>
+		/// <returns>The number that <paramref name="x"/> is rounded to that has <paramref name="digits"/> fractional digits. If <paramref name="x"/> has fewer fractional digits than <paramref name="digits"/>, <paramref name="x"/> is returned unchanged.</returns>
+		/// <exception cref="ArgumentOutOfRangeException"><paramref name="digits"/> is less than 0 or greater than 34.</exception>
+		/// <exception cref="ArgumentException"><paramref name="mode"/> is not a valid value of <seealso cref="MidpointRounding"/>.</exception>
 		public static Quad Round(Quad x, int digits, MidpointRounding mode)
 		{
 			if ((uint)digits > MaxRoundingDigits)
@@ -998,21 +1056,21 @@ namespace MissingValues
 			return x;
 		}
 		/// <summary>
-		/// 
+		/// Returns x * 2^n computed efficiently.
 		/// </summary>
-		/// <param name="x"></param>
-		/// <param name="n"></param>
-		/// <returns></returns>
+		/// <param name="x">A quadruple-precision floating-point number that specifies the base value.</param>
+		/// <param name="n">A number that specifies the power.</param>
+		/// <returns>x * 2^n computed efficiently.</returns>
 		public static Quad ScaleB(Quad x, int n)
 		{
 			throw new NotImplementedException();
 		}
 		/// <summary>
-		/// 
+		/// Returns an integer that indicates the sign of a quadruple-precision floating-point number.
 		/// </summary>
-		/// <param name="x"></param>
-		/// <returns></returns>
-		/// <exception cref="ArithmeticException"></exception>
+		/// <param name="x">A signed number.</param>
+		/// <returns>A number that indicates the sign of <paramref name="x"/>.</returns>
+		/// <exception cref="ArithmeticException"><paramref name="x"/> is equal to <see cref="Quad.NaN"/>.</exception>
 		public static int Sign(Quad x)
 		{
 			if (x < Quad.Zero)
@@ -1028,13 +1086,14 @@ namespace MissingValues
 				return 0;
 			}
 
+			// TODO: Add arithmetic exception to Thrower class.
 			throw new ArithmeticException($"{nameof(x)} cannot be {NumberFormatInfo.CurrentInfo.NaNSymbol}");
 		}
 		/// <summary>
-		/// 
+		/// Returns the sine of the specified angle.
 		/// </summary>
-		/// <param name="x"></param>
-		/// <returns></returns>
+		/// <param name="x">An angle, measured in radians.</param>
+		/// <returns>The sine of <paramref name="x"/>. If <paramref name="x"/> is equal to <see cref="Quad.NaN"/>, <see cref="Quad.NegativeInfinity"/>, or <see cref="Quad.PositiveInfinity"/>, this method returns <see cref="Quad.NaN"/>.</returns>
 		public static Quad Sin(Quad x)
 		{
 			Quad x0 = x;
@@ -1088,29 +1147,28 @@ namespace MissingValues
 			}
 		}
 		/// <summary>
-		/// 
+		/// Returns the sine and cosine of the specified angle.
 		/// </summary>
-		/// <param name="x"></param>
-		/// <returns></returns>
+		/// <param name="x">An angle, measured in radians.</param>
+		/// <returns>The sine and cosine of <paramref name="x"/>. If <paramref name="x"/> is equal to <see cref="Quad.NaN"/>, <see cref="Quad.NegativeInfinity"/>, or <see cref="Quad.PositiveInfinity"/>, this method returns <see cref="Quad.NaN"/>.</returns>
 		public static (Quad Sin, Quad Cos) SinCos(Quad x)
 		{
 			throw new NotImplementedException();
 		}
 		/// <summary>
-		/// 
+		/// Returns the hyperbolic sine of the specified angle.
 		/// </summary>
-		/// <param name="x"></param>
-		/// <returns></returns>
-		/// <exception cref="NotImplementedException"></exception>
+		/// <param name="x">An angle, measured in radians.</param>
+		/// <returns>The hyperbolic sine of <paramref name="x"/>. If <paramref name="x"/> is equal to <see cref="Quad.NaN"/>, <see cref="Quad.NegativeInfinity"/>, or <see cref="Quad.PositiveInfinity"/>, this method returns a <see cref="Quad"/> equal to <paramref name="x"/>.</returns>
 		public static Quad Sinh(Quad x)
 		{
 			throw new NotImplementedException();
 		}
 		/// <summary>
-		/// 
+		/// Returns the square root of a specified number.
 		/// </summary>
-		/// <param name="x"></param>
-		/// <returns></returns>
+		/// <param name="x">The number whose square root is to be found.</param>
+		/// <returns>The positive square root of <paramref name="x"/>.</returns>
 		public static Quad Sqrt(Quad x)
 		{
 			UInt128 bits = Quad.QuadToUInt128Bits(x);
@@ -1118,7 +1176,7 @@ namespace MissingValues
 			int exp = Quad.ExtractBiasedExponentFromBits(bits);
 			UInt128 sig = Quad.ExtractTrailingSignificandFromBits(bits);
 
-			// Is x NaN?
+			// Is y NaN?
 			if (exp == 0x7FFF)
 			{
 				if (sig != UInt128.Zero)
@@ -1229,7 +1287,7 @@ namespace MissingValues
 				rem <<= 20;
 				term -= rem;
 				/*
-				 * The concatenation of `term' and `y.v0' is now the negative remainder
+				 * The concatenation of `term' and `x.v0' is now the negative remainder
 				 * (3 words altogether).
 				 */
 				if (((ulong)(term >> 64) & 0x8000_0000_0000_0000) != 0)
@@ -1256,10 +1314,10 @@ namespace MissingValues
 			return Quad.UInt128BitsToQuad(BitHelper.RoundPackToQuad(false, expZ, sigZ, sigZExtra));
 		}
 		/// <summary>
-		/// 
+		/// Returns the tangent of the specified angle.
 		/// </summary>
-		/// <param name="x"></param>
-		/// <returns></returns>
+		/// <param name="x">An angle, measured in radians.</param>
+		/// <returns>The tangent of <paramref name="x"/>. If <paramref name="x"/> is equal to <see cref="Quad.NaN"/>, <see cref="Quad.NegativeInfinity"/>, or <see cref="Quad.PositiveInfinity"/>, this method returns <see cref="Quad.NaN"/>.</returns>
 		public static Quad Tan(Quad x)
 		{
 			Quad x0 = x;
@@ -1288,7 +1346,7 @@ namespace MissingValues
 			Quad z, r, v, w, s, a, t;
 			bool big, sign = false;
 
-			big = Abs(x) >= new Quad(0x3FFE_5943_17AC_C4EF, 0x88B9_7785_729B_280F); // |x| >= 0.67434
+			big = Abs(x) >= new Quad(0x3FFE_5943_17AC_C4EF, 0x88B9_7785_729B_280F); // |y| >= 0.67434
 			if (big)
 			{
 				if (x < Quad.Zero)
@@ -1322,17 +1380,17 @@ namespace MissingValues
 
 			/*
 			 * if allow error up to 2 ulp, simply return
-			 * -1.0 / (x+r) here
+			 * -1.0 / (y+r) here
 			 *
 			 * 
-			 * compute -1.0 / (x+r) accurately 
+			 * compute -1.0 / (y+r) accurately 
 			 */
 
 			Quad temp = new Quad(0x401F_0000_0000_0000, 0x0000_0000_0000_0000);
 			z = w;
 			z = z + temp - temp;
-			v = r - (z - x);        /* z+v = r+x */
-			t = a = -1.0 / w;       /* x = -1.0/w */
+			v = r - (z - x);        /* z+v = r+y */
+			t = a = -1.0 / w;       /* y = -1.0/w */
 			t = t + temp - temp;
 			s = 1.0 + t * z;
 			return t + a * (s + t * v);
@@ -1351,21 +1409,26 @@ namespace MissingValues
 			}
 		}
 		/// <summary>
-		/// 
+		/// Returns the hyperbolic tangent of the specified angle.
 		/// </summary>
-		/// <param name="x"></param>
-		/// <returns></returns>
+		/// <param name="x">An angle, measured in radians.</param>
+		/// <returns>The hyperbolic tangent of <paramref name="x"/>. If <paramref name="x"/> is equal to <see cref="Quad.NegativeInfinity"/>, this method returns -1. If value is equal to <see cref="Quad.PositiveInfinity"/>, this method returns 1. If <paramref name="x"/> is equal to <see cref="Quad.NaN"/>, this method returns <see cref="Quad.NaN"/>.</returns>
 		public static Quad Tanh(Quad x)
 		{
 			throw new NotImplementedException();
 		}
 		/// <summary>
-		/// 
+		/// Calculates the integral part of a specified quadruple-precision floating-point number.
 		/// </summary>
-		/// <param name="x"></param>
-		/// <returns></returns>
+		/// <param name="x">A number to truncate.</param>
+		/// <returns>The integral part of <paramref name="x"/>; that is, the number that remains after any fractional digits have been discarded, or one of the values listed in the following table.</returns>
 		public static Quad Truncate(Quad x)
 		{
+			if (Quad.IsNaN(x) || Quad.IsInfinity(x))
+			{
+				return x;
+			}
+
 			return (Quad)(Int128)x;
 		}
 

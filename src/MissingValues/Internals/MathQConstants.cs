@@ -44,4 +44,15 @@ internal static class MathQConstants
 			new Quad(0xC007_AC9C_BA0C_1EAA, 0x9AF9_B63D_BDAA_4949),
 		};
 	}
+	public static class Atan
+	{
+		public static ReadOnlySpan<Quad> AtanTBL => new Quad[]
+		{
+
+		};
+
+
+
+		public static Quad Huge => new Quad(0x7FF8_136C_69CE_8ADF, 0xF439_7B05_0CAE_44C6);
+	}
 }
