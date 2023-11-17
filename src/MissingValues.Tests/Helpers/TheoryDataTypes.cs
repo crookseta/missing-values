@@ -5,6 +5,7 @@ using System.Linq;
 using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace MissingValues.Tests.Helpers
 {
@@ -34,6 +35,20 @@ namespace MissingValues.Tests.Helpers
 			}
 		}
 	}
+
+	public class FusedMultiplyAddTheoryData<TSelf> : TheoryData<TSelf, TSelf, TSelf, TSelf>
+		where TSelf : IFloatingPointIeee754<TSelf>
+	{
+        public FusedMultiplyAddTheoryData(IEnumerable<(TSelf, TSelf, TSelf, TSelf)> data)
+        {
+			Contract.Assert(data is not null && data.Any());
+
+			foreach (var dat in data)
+			{
+				Add(dat.Item1, dat.Item2, dat.Item3, dat.Item4);
+			}
+		}
+    }
 
 	public class RoundTheoryData<TFloat> : TheoryData<TFloat, int, MidpointRounding, TFloat>
 	{

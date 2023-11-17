@@ -13,6 +13,7 @@ namespace MissingValues.Tests.Core
 		public static readonly Quad NegativeThousand = Values.CreateQuad(0xC008_F400_0000_0000, 0x0000_0000_0000_0000);
 		public static readonly Quad NegativeHundred = Values.CreateQuad(0xC005_9000_0000_0000, 0x0000_0000_0000_0000);
 		public static readonly Quad NegativeTen = Values.CreateQuad(0xC002_4000_0000_0000, 0x0000_0000_0000_0000);
+		public static readonly Quad NegativeFive = Values.CreateQuad(0xC001_4000_0000_0000, 0x0000_0000_0000_0000);
 		public static readonly Quad NegativeFour = Values.CreateQuad(0xC001_0000_0000_0000, 0x0000_0000_0000_0000);
 		public static readonly Quad NegativeThree = Values.CreateQuad(0xC000_8000_0000_0000, 0x0000_0000_0000_0000);
 		public static readonly Quad NegativeTwo = Values.CreateQuad(0xC000_0000_0000_0000, 0x0000_0000_0000_0000);
@@ -27,6 +28,7 @@ namespace MissingValues.Tests.Core
 		public static readonly Quad Two = Values.CreateQuad(0x4000_0000_0000_0000, 0x0000_0000_0000_0000);
 		public static readonly Quad Three = Values.CreateQuad(0x4000_8000_0000_0000, 0x0000_0000_0000_0000);
 		public static readonly Quad Four = Values.CreateQuad(0x4001_0000_0000_0000, 0x0000_0000_0000_0000);
+		public static readonly Quad Five = Values.CreateQuad(0x4001_4000_0000_0000, 0x0000_0000_0000_0000);
 		public static readonly Quad Ten = Values.CreateQuad(0x4002_4000_0000_0000, 0x0000_0000_0000_0000);
 		public static readonly Quad Hundred = Values.CreateQuad(0x4005_9000_0000_0000, 0x0000_0000_0000_0000);
 		public static readonly Quad Thousand = Values.CreateQuad(0x4008_F400_0000_0000, 0x0000_0000_0000_0000);

@@ -698,6 +698,13 @@ namespace MissingValues.Tests.Core
 			(SmallestSubnormal, GreatestSubnormal, true)
 		};
 
+		private static (Quad, Quad, Quad, Quad)[] _fmaData =
+		{
+			(One, One, One, Two),
+			(Ten, Ten, Zero, Hundred),
+			(Five, Zero, Five, Five),
+		};
+
 
 		public static TryParseTheoryData<Quad> TryParseTheoryData = new(_tryParseData);
 
@@ -756,6 +763,8 @@ namespace MissingValues.Tests.Core
 		public static ComparisonOperatorsTheoryData<Quad, Quad> LessThanTheoryData = new(_lessThanData);
 		public static ComparisonOperatorsTheoryData<Quad, Quad> EqualToTheoryData = new(_equalToData);
 		public static ComparisonOperatorsTheoryData<Quad, Quad> NotEqualToTheoryData = new(_notEqualToData);
+
+		public static FusedMultiplyAddTheoryData<Quad> FMATheoryData = new(_fmaData);
 #pragma warning restore S3263 // Static fields should appear in the order they must be initialized 
 	}
 }

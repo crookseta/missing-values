@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -67,6 +68,43 @@ namespace MissingValues.Tests.Core
 				.Should().Be(result)
 				.And.BeBitwiseEquivalentTo(result);
 		}
+		[Fact]
+		public static void op_BitwiseAndTest()
+		{
+			BitwiseOperatorsHelper<Float, Float, Float>.BitwiseAndOperation(Zero, Values.CreateQuad(0x0, 0x1)).Should().Be(Zero);
+			BitwiseOperatorsHelper<Float, Float, Float>.BitwiseAndOperation(Values.CreateQuad(0x0, 0x1), Values.CreateQuad(0x0, 0x1)).Should().Be(Values.CreateQuad(0x0, 0x1));
+			BitwiseOperatorsHelper<Float, Float, Float>.BitwiseAndOperation(BinaryNumberHelper<Float>.AllBitsSet, Values.CreateQuad(0x0, 0x1)).Should().Be(Values.CreateQuad(0x0, 0x1));
+		}
+		[Fact]
+		public static void op_BitwiseOrTest()
+		{
+			BitwiseOperatorsHelper<Float, Float, Float>.BitwiseOrOperation(Zero, Values.CreateQuad(0x0, 0x1))
+				.Should().Be(Values.CreateQuad(0x0, 0x1));
+			BitwiseOperatorsHelper<Float, Float, Float>.BitwiseOrOperation(Values.CreateQuad(0x0, 0x1), Values.CreateQuad(0x0, 0x1))
+				.Should().Be(Values.CreateQuad(0x0, 0x1));
+			BitwiseOperatorsHelper<Float, Float, Float>.BitwiseOrOperation(BinaryNumberHelper<Float>.AllBitsSet, Values.CreateQuad(0x0, 0x1))
+				.Should().Be(BinaryNumberHelper<Float>.AllBitsSet);
+		}
+		[Fact]
+		public static void op_ExclusiveOrTest()
+		{
+			BitwiseOperatorsHelper<Float, Float, Float>.ExclusiveOrOperation(Zero, Values.CreateQuad(0x0, 0x1))
+				.Should().Be(Values.CreateQuad(0x0, 0x1));
+			BitwiseOperatorsHelper<Float, Float, Float>.ExclusiveOrOperation(Values.CreateQuad(0x0, 0x1), Values.CreateQuad(0x0, 0x1))
+				.Should().Be(Zero);
+			BitwiseOperatorsHelper<Float, Float, Float>.ExclusiveOrOperation(BinaryNumberHelper<Float>.AllBitsSet, Values.CreateQuad(0x0, 0x1))
+				.Should().Be(Values.CreateQuad(0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFE));
+		}
+		[Fact]
+		public static void op_OnesComplementTest()
+		{
+			BitwiseOperatorsHelper<Float, Float, Float>.OnesComplementOperation(Zero)
+				.Should().Be(BinaryNumberHelper<Float>.AllBitsSet);
+			BitwiseOperatorsHelper<Float, Float, Float>.OnesComplementOperation(Values.CreateQuad(0x0, 0x1))
+				.Should().Be(Values.CreateQuad(0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFE));
+			BitwiseOperatorsHelper<Float, Float, Float>.OnesComplementOperation(BinaryNumberHelper<Float>.AllBitsSet)
+				.Should().Be(Zero);
+		}
 		[Theory]
 		[MemberData(nameof(GreaterThanTheoryData))]
 		public static void op_GreaterThanTest(Float left, Float right, bool result)
@@ -127,6 +165,540 @@ namespace MissingValues.Tests.Core
 		}
 		#endregion
 
+		#region IBinaryFloatingPointIEEE
+		[Fact]
+		public static void AllBitsSetTest()
+		{
+			BinaryNumberHelper<Float>.AllBitsSet.Should().Be(~Zero);
+		}
+		[Fact]
+		public static void IsPow2Test()
+		{
+			BinaryNumberHelper<Float>.IsPow2(Half).Should().BeFalse();
+			BinaryNumberHelper<Float>.IsPow2(One).Should().BeFalse();
+			BinaryNumberHelper<Float>.IsPow2(Two).Should().BeTrue();
+			BinaryNumberHelper<Float>.IsPow2(NegativeTwo).Should().BeTrue();
+		}
+		#endregion
+
+		#region IFloatingPointIEEE
+		[Fact]
+		public static void EpsilonTest()
+		{
+			FloatingPointIeee754<Float>.Epsilon.Should().Be(Float.Epsilon);
+			MathOperatorsHelper.AdditionOperation<Float, Float, Float>(FloatingPointIeee754<Float>.Epsilon, NumberBaseHelper<Float>.Zero)
+				.Should().NotBe(Float.Zero);
+		}
+		[Fact]
+		public static void NaNTest()
+		{
+			FloatingPointIeee754<Float>.NaN.Should().Be(Float.NaN);
+			NumberBaseHelper<Float>.IsNaN(FloatingPointIeee754<Float>.NaN).Should().BeTrue();
+		}
+		[Fact]
+		public static void NegativeInfinityTest()
+		{
+			FloatingPointIeee754<Float>.NegativeInfinity.Should().Be(Float.NegativeInfinity);
+			NumberBaseHelper<Float>.IsInfinity(FloatingPointIeee754<Float>.NegativeInfinity).Should().BeTrue();
+			NumberBaseHelper<Float>.IsNegativeInfinity(FloatingPointIeee754<Float>.NegativeInfinity).Should().BeTrue();
+			NumberBaseHelper<Float>.IsPositiveInfinity(FloatingPointIeee754<Float>.NegativeInfinity).Should().BeFalse();
+		}
+		[Fact]
+		public static void PositiveInfinityTest()
+		{
+			FloatingPointIeee754<Float>.PositiveInfinity.Should().Be(Float.PositiveInfinity);
+			NumberBaseHelper<Float>.IsInfinity(FloatingPointIeee754<Float>.PositiveInfinity).Should().BeTrue();
+			NumberBaseHelper<Float>.IsNegativeInfinity(FloatingPointIeee754<Float>.PositiveInfinity).Should().BeFalse();
+			NumberBaseHelper<Float>.IsPositiveInfinity(FloatingPointIeee754<Float>.PositiveInfinity).Should().BeTrue();
+		}
+		[Fact]
+		public static void AcosTest()
+		{
+			GenericFloatingPointFunctions.Acos<Float>(Float.NaN).Should().BeBitwiseEquivalentTo(Float.NaN);
+			GenericFloatingPointFunctions.Acos<Float>(Two).Should().Be(Float.NaN);
+			GenericFloatingPointFunctions.Acos<Float>(NegativeTwo).Should().Be(Float.NaN);
+			GenericFloatingPointFunctions.Acos<Float>(Half).Should().Be(Float.Pi / 3);
+			GenericFloatingPointFunctions.Acos<Float>(One).Should().Be(Float.Zero);
+			GenericFloatingPointFunctions.Acos<Float>(NegativeOne).Should().Be(Float.Pi);
+		}
+		[Fact]
+		public static void AcoshTest()
+		{
+			GenericFloatingPointFunctions.Acosh<Float>(Two).Should().Be(Values.CreateQuad(0x3FFF_5124_2719_8043, 0x49BE_684B_D018_8D53));
+			GenericFloatingPointFunctions.Acosh<Float>(Half).Should().Be(Float.NaN);
+			GenericFloatingPointFunctions.Acosh<Float>(Zero).Should().Be(Float.NaN);
+			GenericFloatingPointFunctions.Acosh<Float>(NegativeOne).Should().Be(Float.NaN);
+		}
+		[Fact]
+		public static void AsinTest()
+		{
+			GenericFloatingPointFunctions.Asin<Float>(Half).Should().Be(Values.CreateQuad(0x3FFE_0C15_2382_D736, 0x5846_5BB3_2E0F_567B));
+			GenericFloatingPointFunctions.Asin<Float>(Two).Should().Be(Float.NaN);
+			GenericFloatingPointFunctions.Asin<Float>(One).Should().Be(Float.Pi / Two);
+			GenericFloatingPointFunctions.Asin<Float>(NegativeOne).Should().Be(-Float.Pi / Two);
+		}
+		[Fact]
+		public static void AsinhTest()
+		{
+			GenericFloatingPointFunctions.Asinh<Float>(Two).Should().Be(Values.CreateQuad(0x3FFF_7192_1831_3D08, 0x72F8_E831_837F_0E95));
+			GenericFloatingPointFunctions.Asinh<Float>(Zero).Should().Be(Zero);
+			GenericFloatingPointFunctions.Asinh<Float>(Values.CreateQuad(0xBFFF_8000_0000_0000, 0x0000_0000_0000_0000)).Should().Be(Values.CreateQuad(0x3FFF_31DC_0090_B63D, 0x8682_7E4B_AAAD_1909));
+		}
+		[Fact]
+		public static void AtanTest()
+		{
+			GenericFloatingPointFunctions.Atan<Float>(Half).Should().Be(Values.CreateQuad(0x3FFD_DAC6_7056_1BB4, 0xF1DE_7924_87B0_F0F3));
+			GenericFloatingPointFunctions.Atan<Float>(Zero).Should().Be(Zero);
+			GenericFloatingPointFunctions.Atan<Float>(Float.PositiveInfinity).Should().Be(Float.Pi / Two);
+			GenericFloatingPointFunctions.Atan<Float>(Two).Should().Be(Values.CreateQuad(0x3FFF_1B6E_192E_BBE4, 0x3F5A_7D44_566B_01A8));
+		}
+		[Fact]
+		public static void Atan2Test()
+		{
+			FloatingPointIeee754<Float>.Atan2(Zero, Two).Should().Be(Zero);
+			FloatingPointIeee754<Float>.Atan2(Zero, Zero).Should().Be(Zero);
+			FloatingPointIeee754<Float>.Atan2(Zero, NegativeTwo).Should().Be(Float.Pi);
+			FloatingPointIeee754<Float>.Atan2(One, Two).Should().Be(Values.CreateQuad(0x3FFD_DAC6_7056_1BB4, 0xF1DE_7924_87B0_F0F3));
+			FloatingPointIeee754<Float>.Atan2(NegativeOne, Two).Should().Be(Values.CreateQuad(0xBFFD_DAC6_7056_1BB4, 0xF1DE_7924_87B0_F0F3));
+			FloatingPointIeee754<Float>.Atan2(One, NegativeTwo).Should().Be(Values.CreateQuad(0x4000_56C6_E739_7F5A, 0xE130_A2BB_E272_574C));
+		}
+		[Fact]
+		public static void AtanhTest()
+		{
+			GenericFloatingPointFunctions.Atanh<Float>(Two).Should().Be(Float.NaN);
+			GenericFloatingPointFunctions.Atanh<Float>(NegativeFour).Should().Be(Float.NaN);
+			GenericFloatingPointFunctions.Atanh<Float>(Zero).Should().Be(Zero);
+			GenericFloatingPointFunctions.Atanh<Float>(Half).Should().Be(Values.CreateQuad(0x3FFE_193E_A7AA_D030, 0xA976_BA8D_B53A_D6E3));
+		}
+		[Fact]
+		public static void BitDecrementTest()
+		{
+			FloatingPointIeee754<Float>.BitDecrement(One)
+				.Should().Be(Values.CreateQuad(0x3FFEFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF));
+			FloatingPointIeee754<Float>.BitDecrement(NegativeOne)
+				.Should().Be(Values.CreateQuad(0xBFFF000000000000, 0x0000000000000001));
+			FloatingPointIeee754<Float>.BitDecrement(Zero)
+				.Should().Be(-Float.Epsilon);
+			FloatingPointIeee754<Float>.BitDecrement(Float.NegativeInfinity)
+				.Should().Be(Float.NegativeInfinity);
+			FloatingPointIeee754<Float>.BitDecrement(Float.PositiveInfinity)
+				.Should().Be(Float.MaxValue);
+		}
+		[Fact]
+		public static void BitIncrementTest()
+		{
+			FloatingPointIeee754<Float>.BitIncrement(One)
+				.Should().Be(Values.CreateQuad(0x3FFF000000000000, 0x0000000000000001));
+			FloatingPointIeee754<Float>.BitIncrement(NegativeOne)
+				.Should().Be(Values.CreateQuad(0xBFFEFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF));
+			FloatingPointIeee754<Float>.BitDecrement(NegativeZero)
+				.Should().Be(Float.Epsilon);
+			FloatingPointIeee754<Float>.BitDecrement(Float.NegativeInfinity)
+				.Should().Be(Float.MinValue);
+			FloatingPointIeee754<Float>.BitDecrement(Float.PositiveInfinity)
+				.Should().Be(Float.PositiveInfinity);
+		}
+		[Fact]
+		public static void CbrtTest()
+		{
+			GenericFloatingPointFunctions.Cbrt(Values.CreateQuad(0x4005_0000_0000_0000, 0x0000_0000_0000_0000))
+				.Should().Be(Four);
+
+
+			GenericFloatingPointFunctions.Cbrt(Zero)
+				.Should().Be(Zero);
+			GenericFloatingPointFunctions.Cbrt(-Zero)
+				.Should().Be(-Zero);
+			GenericFloatingPointFunctions.Cbrt(Float.PositiveInfinity)
+				.Should().Be(Float.PositiveInfinity);
+			GenericFloatingPointFunctions.Cbrt(NegativeFour)
+				.Should().Be(Float.NaN);
+			GenericFloatingPointFunctions.Cbrt(Float.NaN)
+				.Should().Be(Float.NaN);
+		}
+		[Fact]
+		public static void CosTest()
+		{
+			GenericFloatingPointFunctions.Cos(Zero)
+				.Should().Be(One);
+			GenericFloatingPointFunctions.Cos(Float.Pi / Two)
+				.Should().Be(Zero);
+			GenericFloatingPointFunctions.Cos(Float.Pi)
+				.Should().Be(NegativeOne);
+			GenericFloatingPointFunctions.Cos(Float.Pi * Two)
+				.Should().Be(One);
+
+			GenericFloatingPointFunctions.Cos(Float.NaN)
+				.Should().Be(Float.NaN);
+			GenericFloatingPointFunctions.Cos(Float.PositiveInfinity)
+				.Should().Be(Float.NaN);
+			GenericFloatingPointFunctions.Cos(Float.NegativeInfinity)
+				.Should().Be(Float.NaN);
+		}
+		[Fact]
+		public static void CoshTest()
+		{
+			GenericFloatingPointFunctions.Cosh(Zero)
+				.Should().Be(One);
+			GenericFloatingPointFunctions.Cosh(Two)
+				.Should().Be(Values.CreateQuad(0x4000_E18F_A0DF_2D9B, 0xC293_27F7_1777_4D0C));
+			GenericFloatingPointFunctions.Cosh(Five)
+				.Should().Be(Values.CreateQuad(0x4005_28D6_FCBE_FF3A, 0x9C65_3333_916C_7D52));
+			GenericFloatingPointFunctions.Cosh(NegativeFive)
+				.Should().Be(Values.CreateQuad(0x4005_28D6_FCBE_FF3A, 0x9C65_3333_916C_7D52));
+		}
+		[Fact]
+		public static void ExpTest()
+		{
+			GenericFloatingPointFunctions.Exp(Two)
+				.Should().Be(Values.CreateQuad(0x4001_D8E6_4B8D_4DDA, 0xDCC3_3A3B_A206_B68B));
+			GenericFloatingPointFunctions.Exp(NegativeHalf)
+				.Should().Be(Values.CreateQuad(0x3FFE_368B_2FC6_F960, 0x9FE7_ACEB_46AA_619C));
+			GenericFloatingPointFunctions.Exp(Values.CreateQuad(0x400C_7700_0000_0000, 0x0000_0000_0000_0000))
+				.Should().Be(Float.PositiveInfinity);
+			GenericFloatingPointFunctions.Exp(Values.CreateQuad(0xC00C_7700_0000_0000, 0x0000_0000_0000_0000))
+				.Should().Be(Zero);
+			GenericFloatingPointFunctions.Exp(Zero)
+				.Should().Be(One);
+			GenericFloatingPointFunctions.Exp(Float.PositiveInfinity)
+				.Should().Be(Float.NaN);
+			GenericFloatingPointFunctions.Exp(Float.NaN)
+				.Should().Be(Float.NaN);
+			GenericFloatingPointFunctions.Exp(Float.NegativeInfinity)
+				.Should().Be(Zero);
+		}
+		[Fact]
+		public static void Exp10Test()
+		{
+			GenericFloatingPointFunctions.Exp10(Two)
+				.Should().Be(Hundred);
+			GenericFloatingPointFunctions.Exp10(Zero)
+				.Should().Be(One);
+			GenericFloatingPointFunctions.Exp10(Float.PositiveInfinity)
+				.Should().Be(Float.NaN);
+			GenericFloatingPointFunctions.Exp10(Float.NaN)
+				.Should().Be(Float.NaN);
+			GenericFloatingPointFunctions.Exp10(Float.NegativeInfinity)
+				.Should().Be(Zero);
+		}
+		[Fact]
+		public static void Exp2Test()
+		{
+			GenericFloatingPointFunctions.Exp2(Two)
+				.Should().Be(Four);
+			GenericFloatingPointFunctions.Exp2(Zero)
+				.Should().Be(One);
+			GenericFloatingPointFunctions.Exp2(Float.PositiveInfinity)
+				.Should().Be(Float.NaN);
+			GenericFloatingPointFunctions.Exp2(Float.NaN)
+				.Should().Be(Float.NaN);
+			GenericFloatingPointFunctions.Exp2(Float.NegativeInfinity)
+				.Should().Be(Zero);
+		}
+		[Theory]
+		[MemberData(nameof(FMATheoryData))]
+		public static void FusedMultiplyAddTest(Float left, Float right, Float addend, Float result)
+		{
+			FloatingPointIeee754<Float>.FusedMultiplyAdd(left, right, addend)
+				.Should().Be(result)
+				.And.BeBitwiseEquivalentTo(result);
+		}
+		[Fact]
+		public static void HypotTest()
+		{
+			GenericFloatingPointFunctions.Hypot(Hundred, Ten)
+				.Should().Be(Values.CreateQuad(0x4005_91FE_B9F2_BF46, 0xC3A7_08A3_1212_49E7));
+			GenericFloatingPointFunctions.Hypot(Float.PositiveInfinity, Float.NegativeInfinity)
+				.Should().Be(Float.PositiveInfinity);
+			GenericFloatingPointFunctions.Hypot(Float.NaN, Float.NaN)
+				.Should().Be(Float.NaN);
+		}
+		[Fact]
+		public static void IeeeRemainderTest()
+		{
+			FloatingPointIeee754<Float>.Ieee754Remainder(Ten, Three).Should().Be(One);
+			FloatingPointIeee754<Float>.Ieee754Remainder(Ten, Two).Should().Be(Zero);
+			FloatingPointIeee754<Float>.Ieee754Remainder(NegativeTen, Three).Should().Be(NegativeOne);
+			FloatingPointIeee754<Float>.Ieee754Remainder(NegativeTen, Two).Should().Be(NegativeZero);
+			FloatingPointIeee754<Float>.Ieee754Remainder(NegativeTen, Zero).Should().Be(Float.NaN);
+		}
+		[Fact]
+		public static void ILogBTest()
+		{
+			FloatingPointIeee754<Float>.ILogB(Values.CreateQuad(0x4009_0000_0000_0000, 0x0000_0000_0000_0000))
+				.Should().Be(10);
+			FloatingPointIeee754<Float>.ILogB(Values.CreateQuad(0x403F_0000_0000_0000, 0x0000_0000_0000_0000))
+				.Should().Be(64);
+			FloatingPointIeee754<Float>.ILogB(Values.CreateQuad(0xC03F_0000_0000_0000, 0x0000_0000_0000_0000))
+				.Should().Be(64);
+			FloatingPointIeee754<Float>.ILogB(Zero)
+				.Should().Be(int.MaxValue);
+		}
+		[Fact]
+		public static void LogTest()
+		{
+			GenericFloatingPointFunctions.Log(Hundred)
+				.Should().Be(Values.CreateQuad(0x4001_26BB_1BBB_5551, 0x582D_D4AD_AC57_05A6));
+			GenericFloatingPointFunctions.Log(One)
+				.Should().Be(Zero);
+			GenericFloatingPointFunctions.Log(Zero)
+				.Should().Be(Float.NegativeInfinity);
+			GenericFloatingPointFunctions.Log(NegativeFive)
+				.Should().Be(Float.NaN);
+		}
+		[Fact]
+		public static void Log2Test()
+		{
+			GenericFloatingPointFunctions.Log2(Four)
+				.Should().Be(Two);
+			GenericFloatingPointFunctions.Log2(One)
+				.Should().Be(Zero);
+			GenericFloatingPointFunctions.Log2(Zero)
+				.Should().Be(Float.NegativeInfinity);
+			GenericFloatingPointFunctions.Log2(NegativeFive)
+				.Should().Be(Float.NaN);
+		}
+		[Fact]
+		public static void Log10Test()
+		{
+			GenericFloatingPointFunctions.Log10(Thousand)
+				.Should().Be(Three);
+			GenericFloatingPointFunctions.Log10(One)
+				.Should().Be(Zero);
+			GenericFloatingPointFunctions.Log10(Zero)
+				.Should().Be(Float.NegativeInfinity);
+			GenericFloatingPointFunctions.Log10(NegativeFive)
+				.Should().Be(Float.NaN);
+		}
+		[Fact]
+		public static void PowTest()
+		{
+			GenericFloatingPointFunctions.Pow<Float>(Three, Ten)
+				.Should()
+				.Be(Values.CreateQuad(0x400E_CD52_0000_0000, 0x0000_0000_0000_0000));
+			GenericFloatingPointFunctions.Pow<Float>(Two, NegativeFour)
+				.Should()
+				.Be(Values.CreateQuad(0x3FFB_0000_0000_0000, 0x0000_0000_0000_0000));
+
+			// Special Cases
+			Float anything = 8, oddInt = 7, nonInt = 7.5d, greaterThanOne = GreaterThanOneSmallest, lessThanOne = LessThanOneLargest;
+
+			GenericFloatingPointFunctions.Pow<Float>(anything, Zero)
+				.Should()
+				.Be(One);
+
+			GenericFloatingPointFunctions.Pow<Float>(anything, One)
+				.Should()
+				.Be(Two);
+
+			GenericFloatingPointFunctions.Pow<Float>(anything, Float.NaN)
+				.Should()
+				.Be(Float.NaN);
+
+			GenericFloatingPointFunctions.Pow<Float>(One, Float.NaN)
+				.Should()
+				.Be(One);
+
+			GenericFloatingPointFunctions.Pow<Float>(Float.NaN, anything)
+				.Should()
+				.Be(Float.NaN);
+
+			GenericFloatingPointFunctions.Pow<Float>(greaterThanOne, Float.PositiveInfinity)
+				.Should()
+				.Be(Float.PositiveInfinity);
+
+			GenericFloatingPointFunctions.Pow<Float>(greaterThanOne, Float.NegativeInfinity)
+				.Should()
+				.Be(Zero);
+
+			GenericFloatingPointFunctions.Pow<Float>(lessThanOne, Float.PositiveInfinity)
+				.Should()
+				.Be(Zero);
+
+			GenericFloatingPointFunctions.Pow<Float>(lessThanOne, Float.NegativeInfinity)
+				.Should()
+				.Be(Float.PositiveInfinity);
+
+			GenericFloatingPointFunctions.Pow<Float>(One, Float.PositiveInfinity)
+				.Should()
+				.Be(One);
+
+			GenericFloatingPointFunctions.Pow<Float>(One, Float.NegativeInfinity)
+				.Should()
+				.Be(One);
+
+			GenericFloatingPointFunctions.Pow<Float>(NegativeOne, Float.PositiveInfinity)
+				.Should()
+				.Be(One);
+
+			GenericFloatingPointFunctions.Pow<Float>(NegativeOne, Float.NegativeInfinity)
+				.Should()
+				.Be(One);
+
+			GenericFloatingPointFunctions.Pow<Float>(Zero, anything)
+				.Should()
+				.Be(Zero);
+
+			GenericFloatingPointFunctions.Pow<Float>(NegativeZero, anything)
+				.Should()
+				.Be(Zero);
+
+			GenericFloatingPointFunctions.Pow<Float>(Zero, -anything)
+				.Should()
+				.Be(Float.PositiveInfinity);
+
+			GenericFloatingPointFunctions.Pow<Float>(NegativeZero, -anything)
+				.Should()
+				.Be(Float.PositiveInfinity);
+
+			GenericFloatingPointFunctions.Pow<Float>(NegativeZero, oddInt)
+				.Should()
+				.Be(-(GenericFloatingPointFunctions.Pow<Float>(Zero, oddInt)));
+
+			GenericFloatingPointFunctions.Pow<Float>(Float.PositiveInfinity, anything)
+				.Should()
+				.Be(Float.PositiveInfinity);
+
+			GenericFloatingPointFunctions.Pow<Float>(Float.PositiveInfinity, -anything)
+				.Should()
+				.Be(Zero);
+
+			GenericFloatingPointFunctions.Pow<Float>(Float.NegativeInfinity, anything)
+				.Should()
+				.Be(GenericFloatingPointFunctions.Pow<Float>(NegativeZero, -anything));
+			
+			GenericFloatingPointFunctions.Pow<Float>(-anything, oddInt)
+				.Should()
+				.Be(GenericFloatingPointFunctions.Pow<Float>(NegativeOne, oddInt) * GenericFloatingPointFunctions.Pow<Float>(+anything, oddInt));
+
+			GenericFloatingPointFunctions.Pow<Float>(-anything, nonInt)
+				.Should()
+				.Be(Float.NaN);
+		}
+		[Fact]
+		public static void ReciprocalEstimateTest()
+		{
+			FloatingPointIeee754<Float>.ReciprocalEstimate(Two).Should().Be(Half);
+			FloatingPointIeee754<Float>.ReciprocalEstimate(Three).Should().Be(Values.CreateQuad(0x3FFD_5555_5555_5555, 0x5555_165E_5289_24A5));
+			FloatingPointIeee754<Float>.ReciprocalEstimate(Four).Should().Be(Values.CreateQuad(0x3FFD_0000_0000_0000, 0x0000_0000_0000_0000));
+		}
+		[Fact]
+		public static void RootNTest()
+		{
+			GenericFloatingPointFunctions.RootN(Values.CreateQuad(0x4005_4400_0000_0000, 0x0000_0000_0000_0000), 4)
+				.Should().Be(Three);
+			GenericFloatingPointFunctions.RootN(Values.CreateQuad(0x4005_0000_0000_0000, 0x0000_0000_0000_0000), 3)
+				.Should().Be(Four)
+				.And.Be(GenericFloatingPointFunctions.Cbrt(Values.CreateQuad(0x4005_0000_0000_0000, 0x0000_0000_0000_0000)));
+			GenericFloatingPointFunctions.RootN(Hundred, 2)
+				.Should().Be(Ten)
+				.And.Be(GenericFloatingPointFunctions.Sqrt(Hundred));
+
+			GenericFloatingPointFunctions.RootN(Zero, 2)
+				.Should().Be(Zero);
+			GenericFloatingPointFunctions.RootN(NegativeZero, 2)
+				.Should().Be(NegativeZero);
+			GenericFloatingPointFunctions.RootN(Float.PositiveInfinity, 2)
+				.Should().Be(Float.PositiveInfinity);
+			GenericFloatingPointFunctions.RootN(NegativeFour, 2)
+				.Should().Be(Float.NaN);
+			GenericFloatingPointFunctions.RootN(Float.NaN, 2)
+				.Should().Be(Float.NaN);
+		}
+		[Fact]
+		public static void ScaleBTest()
+		{
+			FloatingPointIeee754<Float>.ScaleB(Two, 3)
+				.Should().Be(Values.CreateQuad(0x4003_0000_0000_0000, 0x0000_0000_0000_0000));
+			FloatingPointIeee754<Float>.ScaleB(NegativeTwo, 3)
+				.Should().Be(Values.CreateQuad(0xC003_0000_0000_0000, 0x0000_0000_0000_0000));
+			FloatingPointIeee754<Float>.ScaleB(Zero, 6)
+				.Should().Be(Zero);
+			FloatingPointIeee754<Float>.ScaleB(Two, 30000)
+				.Should().Be(Float.PositiveInfinity);
+			FloatingPointIeee754<Float>.ScaleB(Two, -30000)
+				.Should().Be(Zero);
+		}
+		[Fact]
+		public static void SinTest()
+		{
+			GenericFloatingPointFunctions.Sin(Float.NaN)
+				.Should().Be(Float.NaN);
+			GenericFloatingPointFunctions.Sin(Float.PositiveInfinity)
+				.Should().Be(Float.NaN);
+			GenericFloatingPointFunctions.Sin(Float.NegativeInfinity)
+				.Should().Be(Float.NaN);
+		}
+		[Fact]
+		public static void SinCosTest()
+		{
+			Float sin, cos;
+
+			(sin, cos) = GenericFloatingPointFunctions.SinCos(Zero);
+			sin.Should().Be(Zero);
+			cos.Should().Be(One);
+
+			(sin, cos) = GenericFloatingPointFunctions.SinCos(Float.Pi);
+			sin.Should().Be(Zero);
+			cos.Should().Be(NegativeOne);
+			
+			(sin, cos) = GenericFloatingPointFunctions.SinCos(Float.Pi / Two);
+			sin.Should().Be(One);
+			cos.Should().Be(Zero);
+
+			(sin, cos) = GenericFloatingPointFunctions.SinCos(Float.Pi * Two);
+			sin.Should().Be(Zero);
+			cos.Should().Be(One);
+		}
+		[Fact]
+		public static void SinhTest()
+		{
+			GenericFloatingPointFunctions.Sinh(Two)
+				.Should().Be(Values.CreateQuad(0x4000_D03C_F63B_6E19, 0xF6F3_4C80_2C96_2009));
+			GenericFloatingPointFunctions.Sinh(Zero)
+				.Should().Be(Zero);
+		}
+		[Fact]
+		public static void SqrtTest()
+		{
+			GenericFloatingPointFunctions.Sqrt(Ten)
+				.Should().Be(Values.CreateQuad(0x4000_94C5_83AD_A5B5, 0x2920_4A2B_C830_CD9C));
+			GenericFloatingPointFunctions.Sqrt(Hundred)
+				.Should().Be(Ten);
+
+			GenericFloatingPointFunctions.Sqrt(Zero)
+				.Should().Be(Zero);
+			GenericFloatingPointFunctions.Sqrt(-Zero)
+				.Should().Be(-Zero);
+			GenericFloatingPointFunctions.Sqrt(Float.PositiveInfinity)
+				.Should().Be(Float.PositiveInfinity);
+			GenericFloatingPointFunctions.Sqrt(NegativeFour)
+				.Should().Be(Float.NaN);
+			GenericFloatingPointFunctions.Sqrt(Float.NaN)
+				.Should().Be(Float.NaN);
+		}
+		[Fact]
+		public static void TanTest()
+		{
+			GenericFloatingPointFunctions.Tan(Float.NaN)
+				.Should().Be(Float.NaN);
+			GenericFloatingPointFunctions.Tan(Float.PositiveInfinity)
+				.Should().Be(Float.NaN);
+			GenericFloatingPointFunctions.Tan(Float.NegativeInfinity)
+				.Should().Be(Float.NaN);
+		}
+		[Fact]
+		public static void TanhTest()
+		{
+			GenericFloatingPointFunctions.Tanh(Two)
+				.Should().Be(Values.CreateQuad(0x3FFE_ED95_05E1_BC3D, 0x3D33_C432_FC3E_8256));
+			GenericFloatingPointFunctions.Tanh(Float.NaN)
+				.Should().Be(Float.NaN);
+			GenericFloatingPointFunctions.Tanh(Zero)
+				.Should().Be(Zero);
+		}
+		#endregion
+
 		#region IFloatingPoint
 		[Theory]
 		[MemberData(nameof(RoundAwayFromZeroTheoryData))]
@@ -177,6 +749,7 @@ namespace MissingValues.Tests.Core
 		public static void NegativeOneTest()
 		{
 			MathConstantsHelper.NegativeOne<Float>().Should().Be(NegativeOne);
+			MathConstantsHelper.NegativeOne<Float>().Should().Be(-One);
 		}
 		#endregion
 
