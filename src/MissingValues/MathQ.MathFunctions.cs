@@ -18,11 +18,11 @@ namespace MissingValues
 		internal ref Word i;
 		internal ref Word64 i2;
 
-        public Shape(ref Quad quad)
-        {
+		public Shape(ref Quad quad)
+		{
 			i = ref Unsafe.As<Quad, Word>(ref quad);
 			i2 = ref Unsafe.As<Quad, Word64>(ref quad);
-        }
+		}
 
 		[StructLayout(LayoutKind.Sequential)]
 		public struct Word
@@ -50,17 +50,17 @@ namespace MissingValues
 			internal ulong hi;
 #endif
 		}
-    }
+	}
 	internal readonly ref struct ReadOnlyShape
 	{
 		internal readonly ref Word i;
 		internal readonly ref Word64 i2;
 
-        public ReadOnlyShape(ref Quad quad)
-        {
+		public ReadOnlyShape(ref Quad quad)
+		{
 			i = ref Unsafe.As<Quad, Word>(ref quad);
 			i2 = ref Unsafe.As<Quad, Word64>(ref quad);
-        }
+		}
 
 		[StructLayout(LayoutKind.Sequential)]
 		public readonly struct Word
@@ -88,7 +88,7 @@ namespace MissingValues
 			internal readonly ulong hi;
 #endif
 		}
-    }
+	}
 
 	internal static partial class MathQ
 	{
@@ -1401,7 +1401,7 @@ namespace MissingValues
 					w * (T25 + w * (T29 + w * (T33 + w * (T37 + w * (T41 +
 					w * (T45 + w * (T49 + w * (T53 + w * T57)))))))))))));
 			}
-            static Quad VPoly(Quad w)
+			static Quad VPoly(Quad w)
 			{
 				return (T7 + w * (T11 + w * (T15 + w * (T19 + w * (T23 +
 					w * (T27 + w * (T31 + w * (T35 + w * (T39 + w * (T43 +

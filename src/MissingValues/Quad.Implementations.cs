@@ -636,8 +636,6 @@ namespace MissingValues
 			}
 		}
 
-		public static Quad Log2(Quad value) => MathQ.Log2(value);
-
 		public static Quad Atan2(Quad y, Quad x) => MathQ.Atan2(y, x);
 
 		public static Quad Atan2Pi(Quad y, Quad x)
@@ -658,16 +656,19 @@ namespace MissingValues
 		public static Quad ScaleB(Quad x, int n) => MathQ.ScaleB(x, n);
 
 		public static Quad Exp(Quad x) => MathQ.Exp(x);
+		public static Quad ExpM1(Quad x) => MathQ.Exp(x) - One;
 
 		public static Quad Exp10(Quad x)
 		{
 			throw new NotImplementedException();
 		}
+		public static Quad Exp10M1(Quad x) => Exp10(x) - One;
 
 		public static Quad Exp2(Quad x)
 		{
 			throw new NotImplementedException();
 		}
+		public static Quad Exp2M1(Quad x) => Exp2(x) - One;
 
 		public static Quad Acosh(Quad x) => MathQ.Acosh(x);
 
@@ -682,10 +683,15 @@ namespace MissingValues
 		public static Quad Tanh(Quad x) => MathQ.Tanh(x);
 
 		public static Quad Log(Quad x) => MathQ.Log(x);
+		public static Quad LogP1(Quad x) => MathQ.Log(x + One);
 
 		public static Quad Log(Quad x, Quad newBase) => MathQ.Log(x, newBase);
 
 		public static Quad Log10(Quad x) => MathQ.Log10(x);
+		public static Quad Log10P1(Quad x) => MathQ.Log10(x + One);
+
+		public static Quad Log2(Quad value) => MathQ.Log2(value);
+		public static Quad Log2P1(Quad value) => MathQ.Log2(value + One);
 
 		public static Quad Pow(Quad x, Quad y) => MathQ.Pow(x, y);
 
@@ -695,6 +701,10 @@ namespace MissingValues
 		{
 			throw new NotImplementedException();
 		}
+
+		public static Quad ReciprocalEstimate(Quad x) => MathQ.ReciprocalEstimate(x);
+
+		public static Quad ReciprocalSqrtEstimate(Quad x) => MathQ.ReciprocalSqrtEstimate(x);
 
 		public static Quad RootN(Quad x, int n)
 		{
@@ -773,7 +783,11 @@ namespace MissingValues
 
 		public static Quad operator /(Quad left, Quad right) => MathQ.Div(left, right);
 
-		public static Quad operator %(Quad left, Quad right) => left - Quad.Truncate(left / right) * right;
+		public static Quad operator %(Quad left, Quad right)
+		{
+			//return left - Quad.Truncate(left / right) * right;
+			return (MathQ.Abs(left) - (MathQ.Abs(right) * (MathQ.Floor(MathQ.Abs(left) / MathQ.Abs(right))))) * MathQ.Sign(left);
+		}
 
 		public static Quad operator &(Quad left, Quad right) => new Quad(left._upper & right._upper, left._lower & right._lower);
 
