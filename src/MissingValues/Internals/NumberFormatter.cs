@@ -142,6 +142,18 @@ namespace MissingValues
 				destination[i] = numbers[rem.ToInt32()];
 			}
 		}
+		public static void UnsignedNumberToCharSpan<TNumber, TChar>(TNumber value, in TNumber numberBase, int digits, Span<TChar> destination)
+			where TNumber : struct, IFormattableInteger<TNumber>, IUnsignedNumber<TNumber>
+			where TChar : unmanaged, IUtfCharacter<TChar>
+		{
+			var numbers = TChar.Digits;
+
+            for (int i = digits - 1; i >= 0; i--)
+            {
+				(value, var rem) = TNumber.DivRem(value, numberBase);
+				destination[i] = numbers[rem.ToInt32()];
+			}
+        }
 
 		public static string UnsignedNumberToDecimalString<T>(in T value)
 			where T : struct, IFormattableInteger<T>, IUnsignedNumber<T>
@@ -302,6 +314,60 @@ namespace MissingValues
 			charsWritten = success ? precision : 0;
 			return success;
 		}
+		public static bool TryFormatUnsignedNumber<TNumber, TChar>(in TNumber value, Span<TChar> destination, out int charsWritten, ReadOnlySpan<char> format, IFormatProvider? provider)
+			where TNumber : struct, IFormattableInteger<TNumber>, IUnsignedNumber<TNumber>
+			where TChar : unmanaged, IUtfCharacter<TChar>
+		{
+			int precision = 0;
+			if (format.Length > 1 && !int.TryParse(format[1..], out precision))
+			{
+				Thrower.InvalidFormat(format.ToString());
+			}
+
+			bool isUpper = false;
+			char fmt;
+			if (format.Length < 1)
+			{
+				fmt = 'd';
+			}
+			else
+			{
+				fmt = char.ToLowerInvariant(format[0]);
+				isUpper = char.IsUpper(format[0]);
+			}
+
+			TNumber fmtBase = fmt switch
+			{
+				'b' => TNumber.Two,
+				'x' => TNumber.Sixteen,
+				_ => TNumber.Ten,
+			};
+
+			if (fmtBase != TNumber.Ten)
+			{
+				precision = int.Max(precision, BitHelper.CountDigits(value, fmtBase));
+			}
+			else
+			{
+				precision = BitHelper.CountDigits(value, fmtBase);
+			}
+
+			Span<TChar> output = stackalloc TChar[precision];
+			UnsignedNumberToCharSpan(value, in fmtBase, precision, output);
+
+			if (isUpper)
+			{
+				for (int i = 0; i < output.Length; i++)
+				{
+					output[i] = TChar.ToUpper(output[i]);
+				}
+			}
+
+			bool success = output.TryCopyTo(destination);
+
+			charsWritten = success ? precision : 0;
+			return success;
+		}
 
 		public static string SignedNumberToDecimalString<TSigned, TUnsigned>(in TSigned value)
 			where TSigned : struct, IFormattableSignedInteger<TSigned, TUnsigned>, IMinMaxValue<TSigned>
@@ -430,6 +496,73 @@ namespace MissingValues
 			charsWritten = success ? precision : 0;
 			return success;
 		}
+		public static bool TryFormatSignedNumber<TSigned, TUnsigned, TChar>(in TSigned value, Span<TChar> destination, out int charsWritten, ReadOnlySpan<char> format, IFormatProvider? provider)
+			where TSigned : struct, IFormattableSignedInteger<TSigned, TUnsigned>, IMinMaxValue<TSigned>
+			where TUnsigned : struct, IFormattableUnsignedInteger<TUnsigned, TSigned>
+			where TChar : unmanaged, IUtfCharacter<TChar>
+		{
+			int precision = 0;
+			if (format.Length > 1 && !int.TryParse(format[1..], out precision))
+			{
+				Thrower.InvalidFormat(format.ToString());
+			}
+
+			bool isUpper = false;
+			char fmt;
+			if (format.Length < 1)
+			{
+				fmt = 'd';
+			}
+			else
+			{
+				fmt = char.ToLowerInvariant(format[0]);
+				isUpper = char.IsUpper(format[0]);
+			}
+
+			TSigned fmtBase = fmt switch
+			{
+				'b' => TSigned.Two,
+				'x' => TSigned.Sixteen,
+				_ => TSigned.Ten,
+			};
+
+
+			precision = int.Max(precision, BitHelper.CountDigits(value, fmtBase));
+			bool isNegative = TSigned.IsNegative(value);
+			var v = value;
+
+			if (fmtBase != TSigned.Ten)
+			{
+				isUpper = char.IsUpper(format[0]);
+			}
+			else if (isNegative)
+			{
+				++precision;
+				v = value == TSigned.MinValue ? (TSigned.MaxValue + TSigned.One) : TSigned.Abs(value);
+			}
+
+			Span<TChar> output = stackalloc TChar[precision];
+			UnsignedNumberToCharSpan(v.ToUnsigned(), fmtBase.ToUnsigned(), precision, output);
+
+			if (isUpper)
+			{
+				for (int i = 0; i < output.Length; i++)
+				{
+					output[i] = TChar.ToUpper(output[i]);
+				}
+			}
+
+			if (isNegative && fmtBase == TSigned.Ten)
+			{
+				TChar.NegativeSign(NumberFormatInfo.GetInstance(provider)).CopyTo(output[..1]);
+			}
+
+			bool success = output.TryCopyTo(destination);
+
+
+			charsWritten = success ? precision : 0;
+			return success;
+		}
 		#endregion
 		#region Float
 		public static string QuadToString(
@@ -529,7 +662,6 @@ namespace MissingValues
 			charsWritten = general.Length;
 			return general.TryCopyTo(destination);
 		}
-
 		private static ReadOnlySpan<char> GetGeneralFromScientificFloatChars(Span<char> buffer, NumberFormatInfo info, int precision)
 		{
 			const int MaxSignificandPrecision = 33;
