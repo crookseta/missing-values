@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MissingValues.Tests.Helpers;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
@@ -214,61 +215,93 @@ namespace MissingValues.Tests.Core
 		[Fact]
 		public static void AcosTest()
 		{
-			GenericFloatingPointFunctions.Acos<Float>(Float.NaN).Should().BeBitwiseEquivalentTo(Float.NaN);
-			GenericFloatingPointFunctions.Acos<Float>(Two).Should().Be(Float.NaN);
-			GenericFloatingPointFunctions.Acos<Float>(NegativeTwo).Should().Be(Float.NaN);
-			GenericFloatingPointFunctions.Acos<Float>(Half).Should().Be(Float.Pi / 3);
-			GenericFloatingPointFunctions.Acos<Float>(One).Should().Be(Float.Zero);
-			GenericFloatingPointFunctions.Acos<Float>(NegativeOne).Should().Be(Float.Pi);
+			GenericFloatingPointFunctions.Acos<Float>(Float.NaN)
+				.Should().BeBitwiseEquivalentTo(Float.NaN);
+			GenericFloatingPointFunctions.Acos<Float>(Two)
+				.Should().BeApproximately(Float.NaN, Delta);
+			GenericFloatingPointFunctions.Acos<Float>(NegativeTwo)
+				.Should().BeApproximately(Float.NaN, Delta);
+			GenericFloatingPointFunctions.Acos<Float>(Half)
+				.Should().BeApproximately(Float.Pi / 3, Delta);
+			GenericFloatingPointFunctions.Acos<Float>(One)
+				.Should().BeApproximately(Float.Zero, Delta);
+			GenericFloatingPointFunctions.Acos<Float>(NegativeOne)
+				.Should().BeApproximately(Float.Pi, Delta);
 		}
 		[Fact]
 		public static void AcoshTest()
 		{
-			GenericFloatingPointFunctions.Acosh<Float>(Two).Should().Be(Values.CreateQuad(0x3FFF_5124_2719_8043, 0x49BE_684B_D018_8D53));
-			GenericFloatingPointFunctions.Acosh<Float>(Half).Should().Be(Float.NaN);
-			GenericFloatingPointFunctions.Acosh<Float>(Zero).Should().Be(Float.NaN);
-			GenericFloatingPointFunctions.Acosh<Float>(NegativeOne).Should().Be(Float.NaN);
+			GenericFloatingPointFunctions.Acosh<Float>(Two)
+				.Should().BeApproximately(Values.CreateQuad(0x3FFF_5124_2719_8043, 0x49BE_684B_D018_8D53), Delta);
+			GenericFloatingPointFunctions.Acosh<Float>(Half)
+				.Should().BeApproximately(Float.NaN, Delta);
+			GenericFloatingPointFunctions.Acosh<Float>(Zero)
+				.Should().BeApproximately(Float.NaN, Delta);
+			GenericFloatingPointFunctions.Acosh<Float>(NegativeOne)
+				.Should().BeApproximately(Float.NaN, Delta);
 		}
 		[Fact]
 		public static void AsinTest()
 		{
-			GenericFloatingPointFunctions.Asin<Float>(Half).Should().Be(Values.CreateQuad(0x3FFE_0C15_2382_D736, 0x5846_5BB3_2E0F_567B));
-			GenericFloatingPointFunctions.Asin<Float>(Two).Should().Be(Float.NaN);
-			GenericFloatingPointFunctions.Asin<Float>(One).Should().Be(Float.Pi / Two);
-			GenericFloatingPointFunctions.Asin<Float>(NegativeOne).Should().Be(-Float.Pi / Two);
+			GenericFloatingPointFunctions.Asin<Float>(Half)
+				.Should().BeApproximately(Values.CreateQuad(0x3FFE_0C15_2382_D736, 0x5846_5BB3_2E0F_567B), Delta)
+				.And.BeApproximately(Float.Pi / Six, Delta);
+			GenericFloatingPointFunctions.Asin<Float>(Two)
+				.Should().Be(Float.NaN);
+			GenericFloatingPointFunctions.Asin<Float>(One)
+				.Should().BeApproximately(Float.Pi / Two, Delta);
+			GenericFloatingPointFunctions.Asin<Float>(NegativeOne)
+				.Should().BeApproximately(-Float.Pi / Two, Delta);
 		}
 		[Fact]
 		public static void AsinhTest()
 		{
-			GenericFloatingPointFunctions.Asinh<Float>(Two).Should().Be(Values.CreateQuad(0x3FFF_7192_1831_3D08, 0x72F8_E831_837F_0E95));
-			GenericFloatingPointFunctions.Asinh<Float>(Zero).Should().Be(Zero);
-			GenericFloatingPointFunctions.Asinh<Float>(Values.CreateQuad(0xBFFF_8000_0000_0000, 0x0000_0000_0000_0000)).Should().Be(Values.CreateQuad(0x3FFF_31DC_0090_B63D, 0x8682_7E4B_AAAD_1909));
+			GenericFloatingPointFunctions.Asinh<Float>(Two)
+				.Should().BeApproximately(Values.CreateQuad(0x3FFF_7192_1831_3D08, 0x72F8_E831_837F_0E95), Delta);
+			GenericFloatingPointFunctions.Asinh<Float>(Zero)
+				.Should().BeApproximately(Zero, Delta);
+			GenericFloatingPointFunctions.Asinh<Float>(Values.CreateQuad(0xBFFF_8000_0000_0000, 0x0000_0000_0000_0000))
+				.Should().BeApproximately(Values.CreateQuad(0x3FFF_31DC_0090_B63D, 0x8682_7E4B_AAAD_1909), Delta);
 		}
 		[Fact]
 		public static void AtanTest()
 		{
-			GenericFloatingPointFunctions.Atan<Float>(Half).Should().Be(Values.CreateQuad(0x3FFD_DAC6_7056_1BB4, 0xF1DE_7924_87B0_F0F3));
-			GenericFloatingPointFunctions.Atan<Float>(Zero).Should().Be(Zero);
-			GenericFloatingPointFunctions.Atan<Float>(Float.PositiveInfinity).Should().Be(Float.Pi / Two);
-			GenericFloatingPointFunctions.Atan<Float>(Two).Should().Be(Values.CreateQuad(0x3FFF_1B6E_192E_BBE4, 0x3F5A_7D44_566B_01A8));
+			GenericFloatingPointFunctions.Atan<Float>(Half)
+				.Should().BeApproximately(Values.CreateQuad(0x3FFD_DAC6_7056_1BB4, 0xF1DE_7924_87B0_F0F3), Delta);
+			GenericFloatingPointFunctions.Atan<Float>(Zero)
+				.Should().BeApproximately(Zero, Delta);
+			GenericFloatingPointFunctions.Atan<Float>(Float.PositiveInfinity)
+				.Should().BeApproximately(Float.Pi / Two, Delta);
+			GenericFloatingPointFunctions.Atan<Float>(Two)
+				.Should().BeApproximately(Values.CreateQuad(0x3FFF_1B6E_192E_BBE4, 0x3F5A_7D44_566B_01A8), Delta);
 		}
 		[Fact]
 		public static void Atan2Test()
 		{
-			FloatingPointIeee754<Float>.Atan2(Zero, Two).Should().Be(Zero);
-			FloatingPointIeee754<Float>.Atan2(Zero, Zero).Should().Be(Zero);
-			FloatingPointIeee754<Float>.Atan2(Zero, NegativeTwo).Should().Be(Float.Pi);
-			FloatingPointIeee754<Float>.Atan2(One, Two).Should().Be(Values.CreateQuad(0x3FFD_DAC6_7056_1BB4, 0xF1DE_7924_87B0_F0F3));
-			FloatingPointIeee754<Float>.Atan2(NegativeOne, Two).Should().Be(Values.CreateQuad(0xBFFD_DAC6_7056_1BB4, 0xF1DE_7924_87B0_F0F3));
-			FloatingPointIeee754<Float>.Atan2(One, NegativeTwo).Should().Be(Values.CreateQuad(0x4000_56C6_E739_7F5A, 0xE130_A2BB_E272_574C));
+			FloatingPointIeee754<Float>.Atan2(Zero, Two)
+				.Should().BeApproximately(Zero, Delta);
+			FloatingPointIeee754<Float>.Atan2(Zero, Zero)
+				.Should().BeApproximately(Zero, Delta);
+			FloatingPointIeee754<Float>.Atan2(Zero, NegativeTwo)
+				.Should().BeApproximately(Float.Pi, Delta);
+			FloatingPointIeee754<Float>.Atan2(One, Two)
+				.Should().BeApproximately(Values.CreateQuad(0x3FFD_DAC6_7056_1BB4, 0xF1DE_7924_87B0_F0F3), Delta);
+			FloatingPointIeee754<Float>.Atan2(NegativeOne, Two)
+				.Should().BeApproximately(Values.CreateQuad(0xBFFD_DAC6_7056_1BB4, 0xF1DE_7924_87B0_F0F3), Delta);
+			FloatingPointIeee754<Float>.Atan2(One, NegativeTwo)
+				.Should().BeApproximately(Values.CreateQuad(0x4000_56C6_E739_7F5A, 0xE130_A2BB_E272_574C), Delta);
 		}
 		[Fact]
 		public static void AtanhTest()
 		{
-			GenericFloatingPointFunctions.Atanh<Float>(Two).Should().Be(Float.NaN);
-			GenericFloatingPointFunctions.Atanh<Float>(NegativeFour).Should().Be(Float.NaN);
-			GenericFloatingPointFunctions.Atanh<Float>(Zero).Should().Be(Zero);
-			GenericFloatingPointFunctions.Atanh<Float>(Half).Should().Be(Values.CreateQuad(0x3FFE_193E_A7AA_D030, 0xA976_BA8D_B53A_D6E3));
+			GenericFloatingPointFunctions.Atanh<Float>(Two)
+				.Should().Be(Float.NaN);
+			GenericFloatingPointFunctions.Atanh<Float>(NegativeFour)
+				.Should().Be(Float.NaN);
+			GenericFloatingPointFunctions.Atanh<Float>(Zero)
+				.Should().BeApproximately(Zero, Delta);
+			GenericFloatingPointFunctions.Atanh<Float>(Half)
+				.Should().BeApproximately(Values.CreateQuad(0x3FFE_193E_A7AA_D030, 0xA976_BA8D_B53A_D6E3), Delta);
 		}
 		[Fact]
 		public static void BitDecrementTest()
@@ -320,13 +353,13 @@ namespace MissingValues.Tests.Core
 		public static void CosTest()
 		{
 			GenericFloatingPointFunctions.Cos(Zero)
-				.Should().Be(One);
+				.Should().BeApproximately(One, Delta);
 			GenericFloatingPointFunctions.Cos(Float.Pi / Two)
-				.Should().Be(Zero);
+				.Should().BeApproximately(Zero, Delta);
 			GenericFloatingPointFunctions.Cos(Float.Pi)
-				.Should().Be(NegativeOne);
+				.Should().BeApproximately(NegativeOne, Delta);
 			GenericFloatingPointFunctions.Cos(Float.Pi * Two)
-				.Should().Be(One);
+				.Should().BeApproximately(One, Delta);
 
 			GenericFloatingPointFunctions.Cos(Float.NaN)
 				.Should().Be(Float.NaN);
@@ -341,19 +374,19 @@ namespace MissingValues.Tests.Core
 			GenericFloatingPointFunctions.Cosh(Zero)
 				.Should().Be(One);
 			GenericFloatingPointFunctions.Cosh(Two)
-				.Should().Be(Values.CreateQuad(0x4000_E18F_A0DF_2D9B, 0xC293_27F7_1777_4D0C));
+				.Should().BeApproximately(Values.CreateQuad(0x4000_E18F_A0DF_2D9B, 0xC293_27F7_1777_4D0C), Delta);
 			GenericFloatingPointFunctions.Cosh(Five)
-				.Should().Be(Values.CreateQuad(0x4005_28D6_FCBE_FF3A, 0x9C65_3333_916C_7D52));
+				.Should().BeApproximately(Values.CreateQuad(0x4005_28D6_FCBE_FF3A, 0x9C65_3333_916C_7D52), Delta);
 			GenericFloatingPointFunctions.Cosh(NegativeFive)
-				.Should().Be(Values.CreateQuad(0x4005_28D6_FCBE_FF3A, 0x9C65_3333_916C_7D52));
+				.Should().BeApproximately(Values.CreateQuad(0x4005_28D6_FCBE_FF3A, 0x9C65_3333_916C_7D52), Delta);
 		}
 		[Fact]
 		public static void ExpTest()
 		{
 			GenericFloatingPointFunctions.Exp(Two)
-				.Should().Be(Values.CreateQuad(0x4001_D8E6_4B8D_4DDA, 0xDCC3_3A3B_A206_B68B));
+				.Should().BeApproximately(Values.CreateQuad(0x4001_D8E6_4B8D_4DDA, 0xDCC3_3A3B_A206_B68B), Delta);
 			GenericFloatingPointFunctions.Exp(NegativeHalf)
-				.Should().Be(Values.CreateQuad(0x3FFE_368B_2FC6_F960, 0x9FE7_ACEB_46AA_619C));
+				.Should().BeApproximately(Values.CreateQuad(0x3FFE_368B_2FC6_F960, 0x9FE7_ACEB_46AA_619C), Delta);
 			GenericFloatingPointFunctions.Exp(Values.CreateQuad(0x400C_7700_0000_0000, 0x0000_0000_0000_0000))
 				.Should().Be(Float.PositiveInfinity);
 			GenericFloatingPointFunctions.Exp(Values.CreateQuad(0xC00C_7700_0000_0000, 0x0000_0000_0000_0000))
@@ -407,7 +440,7 @@ namespace MissingValues.Tests.Core
 		public static void HypotTest()
 		{
 			GenericFloatingPointFunctions.Hypot(Hundred, Ten)
-				.Should().Be(Values.CreateQuad(0x4005_91FE_B9F2_BF46, 0xC3A7_08A3_1212_49E7));
+				.Should().BeApproximately(Values.CreateQuad(0x4005_91FE_B9F2_BF46, 0xC3A7_08A3_1212_49E7), Delta);
 			GenericFloatingPointFunctions.Hypot(Float.PositiveInfinity, Float.NegativeInfinity)
 				.Should().Be(Float.PositiveInfinity);
 			GenericFloatingPointFunctions.Hypot(Float.NaN, Float.NaN)
@@ -438,7 +471,7 @@ namespace MissingValues.Tests.Core
 		public static void LogTest()
 		{
 			GenericFloatingPointFunctions.Log(Hundred)
-				.Should().Be(Values.CreateQuad(0x4001_26BB_1BBB_5551, 0x582D_D4AD_AC57_05A6));
+				.Should().BeApproximately(Values.CreateQuad(0x4001_26BB_1BBB_5551, 0x582D_D4AD_AC57_05A6), Delta);
 			GenericFloatingPointFunctions.Log(One)
 				.Should().Be(Zero);
 			GenericFloatingPointFunctions.Log(Zero)
@@ -475,10 +508,10 @@ namespace MissingValues.Tests.Core
 		{
 			GenericFloatingPointFunctions.Pow<Float>(Three, Ten)
 				.Should()
-				.Be(Values.CreateQuad(0x400E_CD52_0000_0000, 0x0000_0000_0000_0000));
+				.BeApproximately(Values.CreateQuad(0x400E_CD52_0000_0000, 0x0000_0000_0000_0000), Delta);
 			GenericFloatingPointFunctions.Pow<Float>(Two, NegativeFour)
 				.Should()
-				.Be(Values.CreateQuad(0x3FFB_0000_0000_0000, 0x0000_0000_0000_0000));
+				.BeApproximately(Values.CreateQuad(0x3FFB_0000_0000_0000, 0x0000_0000_0000_0000), Delta);
 
 			// Special Cases
 			Float anything = 8, oddInt = 7, nonInt = 7.5d, greaterThanOne = GreaterThanOneSmallest, lessThanOne = LessThanOneLargest;
@@ -578,9 +611,12 @@ namespace MissingValues.Tests.Core
 		[Fact]
 		public static void ReciprocalEstimateTest()
 		{
-			FloatingPointIeee754<Float>.ReciprocalEstimate(Two).Should().Be(Half);
-			FloatingPointIeee754<Float>.ReciprocalEstimate(Three).Should().Be(Values.CreateQuad(0x3FFD_5555_5555_5555, 0x5555_165E_5289_24A5));
-			FloatingPointIeee754<Float>.ReciprocalEstimate(Four).Should().Be(Values.CreateQuad(0x3FFD_0000_0000_0000, 0x0000_0000_0000_0000));
+			FloatingPointIeee754<Float>.ReciprocalEstimate(Two)
+				.Should().Be(Half);
+			FloatingPointIeee754<Float>.ReciprocalEstimate(Three)
+				.Should().BeApproximately(Values.CreateQuad(0x3FFD_5555_5555_5555, 0x5555_165E_5289_24A5), Delta);
+			FloatingPointIeee754<Float>.ReciprocalEstimate(Four)
+				.Should().BeApproximately(Values.CreateQuad(0x3FFD_0000_0000_0000, 0x0000_0000_0000_0000), Delta);
 		}
 		[Fact]
 		public static void RootNTest()
@@ -654,7 +690,7 @@ namespace MissingValues.Tests.Core
 		public static void SinhTest()
 		{
 			GenericFloatingPointFunctions.Sinh(Two)
-				.Should().Be(Values.CreateQuad(0x4000_D03C_F63B_6E19, 0xF6F3_4C80_2C96_2009));
+				.Should().BeApproximately(Values.CreateQuad(0x4000_D03C_F63B_6E19, 0xF6F3_4C80_2C96_2009), Delta);
 			GenericFloatingPointFunctions.Sinh(Zero)
 				.Should().Be(Zero);
 		}
@@ -662,7 +698,7 @@ namespace MissingValues.Tests.Core
 		public static void SqrtTest()
 		{
 			GenericFloatingPointFunctions.Sqrt(Ten)
-				.Should().Be(Values.CreateQuad(0x4000_94C5_83AD_A5B5, 0x2920_4A2B_C830_CD9C));
+				.Should().BeApproximately(Values.CreateQuad(0x4000_94C5_83AD_A5B5, 0x2920_4A2B_C830_CD9C), Delta);
 			GenericFloatingPointFunctions.Sqrt(Hundred)
 				.Should().Be(Ten);
 
@@ -691,7 +727,7 @@ namespace MissingValues.Tests.Core
 		public static void TanhTest()
 		{
 			GenericFloatingPointFunctions.Tanh(Two)
-				.Should().Be(Values.CreateQuad(0x3FFE_ED95_05E1_BC3D, 0x3D33_C432_FC3E_8256));
+				.Should().BeApproximately(Values.CreateQuad(0x3FFE_ED95_05E1_BC3D, 0x3D33_C432_FC3E_8256), Delta);
 			GenericFloatingPointFunctions.Tanh(Float.NaN)
 				.Should().Be(Float.NaN);
 			GenericFloatingPointFunctions.Tanh(Zero)

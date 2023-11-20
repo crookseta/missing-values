@@ -94,6 +94,8 @@ namespace MissingValues
 	{
 		internal const int MaxRoundingDigits = 34;
 
+		private static Quad PIO2_HI = new Quad(0x3FFF_921F_B544_42D1, 0x8469_898C_C517_01B8);
+		private static Quad PIO2_LO = new Quad(0x3F8C_CD12_9024_E088, 0xA67C_C740_20BB_EA64);
 		private static Quad M_PI_2 => new Quad(0x3FFF_921F_B544_42D1, 0x8469_898C_C517_01B8); // pi / 2
 		private static Quad M_PI_4 => new Quad(0x3FFE_921F_B544_42D1, 0x8469_B288_3370_1F13); // pi / 4
 		private static Quad LN2 => new Quad(0x3FFE_62E4_2FEF_A39E, 0xF357_ADEB_B905_E4BD);
@@ -189,7 +191,7 @@ namespace MissingValues
 		private static Quad T35 => new Quad(0x3FEF_920B_2709_36E0, 0x6EF5_8910_3109_E713);
 		private static Quad T37 => new Quad(0x3FEE_C4C4_612C_6A34, 0x2B75_272F_80AC_827B);
 		private static Quad Pio4 => new Quad(0x3FFE_921F_B544_42D1, 0x8469_898C_C517_01B8);
-		private static Quad Pio4lo => new Quad(0x3F8C_CD12_90C7_B259, 0x07DD_492F_6840_C751);
+		private static Quad PIO4LO => new Quad(0x3F8C_CD12_90C7_B259, 0x07DD_492F_6840_C751);
 		private static Quad T39 => new Quad(0x3FE5_E8A7_5929_7793, 0x7F54_CCE1_AFCF_5393);
 		private static Quad T41 => new Quad(0x3FE4_9BAA_1B12_2321, 0x8F8C_A1EF_55EF_5447);
 		private static Quad T43 => new Quad(0x3FE3_0738_5DFB_2452, 0x9040_8081_0F2D_A186);
@@ -200,6 +202,21 @@ namespace MissingValues
 		private static Quad T53 => new Quad(0x3FE1_A92F_C98C_2955, 0x3DA4_66BA_7143_E38D);
 		private static Quad T55 => new Quad(0xBFE0_5110_6CBC_779A, 0x8FC0_7E96_AD48_C11E);
 		private static Quad T57 => new Quad(0x3FDE_47ED_BDBA_6F43, 0xA141_91C3_09F7_7315);
+
+
+		/*
+		 * Most functions, unless specified, are based on musl libc
+		 * source: https://git.musl-libc.org/cgit/musl
+		 * 
+		 * ====================================================
+		 * Copyright (C) 1993 by Sun Microsystems, Inc. All rights reserved.
+		 *
+		 * Developed at SunPro, a Sun Microsystems, Inc. business.
+		 * Permission to use, copy, modify, and distribute this
+		 * software is freely granted, provided that this notice
+		 * is preserved.
+		 * ====================================================
+		 */
 
 
 		/// <summary>
@@ -292,7 +309,46 @@ namespace MissingValues
 		/// <returns>An angle, θ, measured in radians, such that -π/2 ≤ θ ≤ π/2.</returns>
 		public static Quad Asin(Quad x)
 		{
-			throw new NotImplementedException();
+			Quad z, r, s;
+			ushort exponent = x.BiasedExponent;
+			bool sign = Quad.IsNegative(x);
+
+			if (exponent >= 0x3FFF) // |x| >= 1 or nan
+			{
+				// asin(+-1)=+-pi/2 with inexact
+				if (x == Quad.One || x == Quad.NegativeOne)
+				{
+					return x * PIO2_HI + new Quad(0x3F87_0000_0000_0000, 0x0000_0000_0000_0000);
+				}
+
+				return Quad.NaN;
+			}
+			if (exponent < 0x3FFF - 1) // |x| < 0.5
+			{
+				if (exponent < 0x3FFF - (Quad.MantissaDigits + 1) / 2)
+				{
+					return x;
+				}
+
+				return x + x * MathQConstants.Asin.R(x * x);
+			}
+			// 1 > |x| >= 0.5
+			z = (Quad.One - Quad.Abs(x)) * Quad.HalfOne;
+			s = Sqrt(z);
+			r = MathQConstants.Asin.R(z);
+			if (((x._upper >> 32) & 0xFFFF) >= 0xEE00) // Close to 1
+			{
+				x = PIO2_HI - (Quad.Two * (s + s * r) - PIO2_LO);
+			}
+			else
+			{
+				Quad f, c;
+				f = new Quad(s._upper, 0x0000_0000_0000_0000);
+				c = (z - f * f) / (s + f);
+				x = Quad.HalfOne * PIO2_HI - (Quad.Two * s * r - (PIO2_LO - Quad.Two * c) - (Quad.HalfOne * PIO2_HI - Quad.Two * f));
+			}
+
+			return sign ? -x : x;
 		}
 		/// <summary>
 		/// Returns the angle whose hyperbolic sine is the specified number.
@@ -477,20 +533,21 @@ namespace MissingValues
 		{
 			Quad x0 = x;
 			Shape u = new Shape(ref x0);
+			ushort exponent = x.BiasedExponent;
 			uint n;
 			Span<Quad> y = stackalloc Quad[2];
 			Quad hi, lo;
 
-			u.i.se &= 0x7FFF;
-			if (u.i.se == 0x7FFF)
+			exponent &= 0x7FFF;
+			if (exponent == 0x7FFF)
 			{
-				return x - x;
+				return x;
 			}
 			x = x0;
 
 			if (x < M_PI_4)
 			{
-				if (u.i.se < 0x3FF - 113)
+				if (exponent < 0x3FF - 113)
 				{
 					return Quad.One + x;
 				}
@@ -1355,7 +1412,7 @@ namespace MissingValues
 					x = -x;
 					y = -y;
 				}
-				x = (Pio4 - x) + (Pio4lo - y);
+				x = (Pio4 - x) + (PIO4LO - y);
 				y = Quad.Zero;
 			}
 
