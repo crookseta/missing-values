@@ -357,7 +357,31 @@ namespace MissingValues
 		/// <returns>An angle, θ, measured in radians.</returns>
 		public static Quad Asinh(Quad x)
 		{
-			throw new NotImplementedException();
+			// asinh(x) = sign(x)*log(|x|+sqrt(x*x+1)) ~= x - x^3/6 + o(x^5)
+
+			var exponent = x.BiasedExponent;
+			var sign = Quad.IsNegative(x);
+
+			// |x|
+			x = Quad.Abs(x);
+
+			if (exponent >= 0x401F)
+			{
+				// |x| >= 0x1p32 or inf or nan 
+				x = Log(x) + new Quad(0x3FFE_62E4_2FEF_A39E, 0xF357_93C7_6730_07E6); // Log(x) + Ln(2)
+			}
+			else if (exponent >= 0x4000)
+			{
+				// |x| >= 2
+				x = Log(Quad.Two * x + Quad.One / (Sqrt(x * x + Quad.One) + x));
+			}
+			else if (exponent >= 0x3FDF)
+			{
+				// |x| >= 0x1p-32
+				x = Quad.LogP1(x + x * x / (Sqrt(x * x + Quad.One) + Quad.One));
+			}
+
+			return sign ? -x : x;
 		}
 		/// <summary>
 		/// Returns the angle whose tangent is the specified number.
@@ -366,7 +390,82 @@ namespace MissingValues
 		/// <returns>An angle, θ, measured in radians, such that -π/2 ≤ θ ≤ π/2.</returns>
 		public static Quad Atan(Quad x)
 		{
-			throw new NotImplementedException();
+			Quad w, s1, s2, z;
+			int id;
+			var exponent = x.BiasedExponent;
+			var sign = Quad.IsNegative(x);
+
+			if (exponent >= 0x3FFF + (Quad.MantissaDigits + 1))
+			{
+				// if |x| is large, atan(x)~=pi/2
+				if (Quad.IsNaN(x))
+				{
+					return x;
+				}
+				return sign ? -MathQConstants.Atan.AtanHi[3] : MathQConstants.Atan.AtanHi[3];
+			}
+
+			// Extract the exponent and the first few bits of the mantissa.
+			uint expman = ((uint)(exponent << 8) | ((byte)(x._upper >> 40)));
+			if (expman < ((0x3FFF - 2) << 8) + 0xC0) // |x| < 0.4375
+			{
+				if (exponent < 0x3FFF - (Quad.MantissaDigits + 1) / 2)
+				{
+					// if |x| is small, atan(x)~=x
+					if (Quad.IsSubnormal(x))
+					{
+						x = Quad.NegativeInfinity;
+					}
+					return x;
+				}
+
+				id = -1;
+			}
+			else
+			{
+				x = Quad.Abs(x);
+
+				if (expman < ((0x3fff << 8) + 0x30))
+				{
+					// |x| < 1.1875
+					if (expman < ((0x3fff - 1) << 8) + 0x60)
+					{
+						// 7/16 <= |x| < 11/16 
+						id = 0;
+						x = (Quad.Two * x - Quad.One) / (Quad.Two + x);
+					}
+					else
+					{
+						id = 1;
+						x = (x - Quad.One) / (x + Quad.One);
+					}
+				}
+				else
+				{
+					if (expman < ((0x3fff + 1) << 8) + 0x38)
+					{
+						id = 2;
+						Quad oneHalf = new Quad(0x3FFF_8000_0000_0000, 0x0000_0000_0000_0000);
+						x = (x - oneHalf) / (Quad.One + oneHalf * x);
+					}
+					else
+					{
+						id = 3;
+						x = Quad.NegativeOne / x;
+					}
+				}
+			}
+
+			// end of argument reduction
+			z = x * x;
+			w = z * z;
+			// break sum aT[i]z**(i+1) into odd and even poly
+			s1 = z * MathQConstants.Atan.Even(w);
+			s2 = w * MathQConstants.Atan.Odd(w);
+			if (id < 0)
+				return x - x * (s1 + s2);
+			z = MathQConstants.Atan.AtanHi[id] - ((x * (s1 + s2) - MathQConstants.Atan.AtanLo[id]) - x);
+			return sign ? -z : z;
 		}
 		/// <summary>
 		/// Returns the angle whose tangent is the quotient of two specified numbers.
@@ -376,7 +475,102 @@ namespace MissingValues
 		/// <returns>An angle, θ, measured in radians, such that -π ≤ θ ≤ π, and tan(θ) = <paramref name="y"/> / <paramref name="x"/>, where (<paramref name="x"/>, <paramref name="y"/>) is a point in the Cartesian plane.</returns>
 		public static Quad Atan2(Quad y, Quad x)
 		{
-			throw new NotImplementedException();
+			Quad z;
+			int m, ex, ey;
+
+			if (Quad.IsNaN(x))
+			{
+				return x;
+			}
+			if (Quad.IsNaN(y))
+			{
+				return y;
+			}
+
+			ex = x.BiasedExponent; 
+			ey = y.BiasedExponent;
+			m = (int)(2 * (x._upper >> 63) | (y._upper >> 63));
+
+			if (y == Quad.Zero)
+			{
+				switch (m)
+				{
+					case 0:
+					case 1:
+						return y;
+					case 2:
+						return Quad.Two * PIO2_HI;
+					case 3:
+						return -Quad.Two * PIO2_HI;
+					default:
+						break;
+				}
+			}
+			if (x == Quad.Zero)
+			{
+				return ((m & 1) != 0)  ? -PIO2_HI : PIO2_HI;
+			}
+			if (ex == 0x7FFF)
+			{
+				if (ey == 0x7FFF)
+				{
+					Quad oneHalf = new Quad(0x3FFF_8000_0000_0000, 0x0000_0000_0000_0000);
+					switch (m)
+					{
+						case 0: // atan(+INF,+INF)
+							return PIO2_HI / Quad.Two;
+						case 1: // atan(-INF,+INF)
+							return -PIO2_HI / Quad.Two;
+						case 2: // atan(+INF,-INF)
+							return oneHalf * PIO2_HI;
+						case 3: // atan(-INF,-INF)
+							return -oneHalf * PIO2_HI;
+						default:
+							break;
+					}
+				}
+				else
+				{
+					switch (m)
+					{
+						case 0: // atan(+...,+INF)
+							return Quad.Zero;
+						case 1: // atan(-...,+INF)
+							return Quad.NegativeZero;
+						case 2: // atan(+...,-INF)
+							return Quad.Two * PIO2_HI;
+						case 3: // atan(-...,-INF)
+							return -Quad.Two * PIO2_HI;
+						default:
+							break;
+					}
+				}
+			}
+			if (ex + 120 < ey || ey == 0x7FFF)
+			{
+				return ((m & 1) != 0) ? -PIO2_HI : PIO2_HI;
+			}
+			// z = atan(|y/x|) without spurious underflow
+			if (((m & 2) != 0) && ey + 120 < ex)
+			{
+				z = Quad.Zero;
+			}
+			else
+			{
+				z = Atan(Abs(y / x));
+			}
+
+			switch (m)
+			{
+				case 0: // atan(+,+)
+					return z;
+				case 1: // atan(-,+)
+					return -z;
+				case 2: // atan(+,-)
+					return Quad.Two * PIO2_HI - (z - Quad.Two * PIO2_LO);
+				default: // atan(-,-)
+					return (z - Quad.Two * PIO2_LO) - Quad.Two * PIO2_HI;
+			}
 		}
 		/// <summary>
 		/// Returns the angle whose hyperbolic tangent is the specified number.

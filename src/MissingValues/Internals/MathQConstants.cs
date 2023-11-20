@@ -76,13 +76,59 @@ internal static class MathQConstants
 	}
 	public static class Atan
 	{
-		public static ReadOnlySpan<Quad> AtanTBL => new Quad[]
+		public static ReadOnlySpan<Quad> AtanHi => new Quad[4]
 		{
-
+			new Quad(0x3FFD_DAC6_7056_1BB4, 0xF68A_DFC8_8BD9_7875),
+			new Quad(0x3FFE_921F_B544_42D1, 0x8469_898C_C517_01B8),
+			new Quad(0x3FFE_F730_BD28_1F69, 0xB200_F10F_5E19_7794),
+			new Quad(0x3FFF_921F_B544_42D1, 0x8469_898C_C517_01B8),
+		};
+		public static ReadOnlySpan<Quad> AtanLo => new Quad[4]
+		{
+			new Quad(0x3F89_A06D_C282_B0E4, 0xC39B_E01C_59E2_DCDD),
+			new Quad(0x3F8B_CD12_9024_E088, 0xA67C_C740_20BB_EA64),
+			new Quad(0xBF8B_EBE5_66C9_9ADA, 0x9F23_1BCC_AE27_916C),
+			new Quad(0x3F8C_CD12_9024_E088, 0xA67C_C740_20BB_EA64),
+		};
+		public static ReadOnlySpan<Quad> AT => new Quad[24]
+		{
+			new Quad(0x3FFD_5555_5555_5555, 0x5555_5555_5555_5551),
+			new Quad(0xBFFC_9999_9999_9999, 0x9999_9999_9999_149E),
+			new Quad(0x3FFC_2492_4924_9249, 0x2492_4924_9079_4362),
+			new Quad(0xBFFB_C71C_71C7_1C71, 0xC71C_71C1_C2AF_E323),
+			new Quad(0x3FFB_745D_1745_D174, 0x5D17_4185_B65D_7596),
+			new Quad(0xBFFB_3B13_B13B_13B1, 0x3B11_8C19_75E2_A610),
+			new Quad(0x3FFB_1111_1111_1111, 0x1057_D0A5_38CA_D4F9),
+			new Quad(0xBFFA_E1E1_E1E1_E1E1, 0x889E_87FC_4C05_8330),
+			new Quad(0x3FFA_AF28_6BCA_1AE2, 0x8E03_7B91_71F0_F80C),
+			new Quad(0xBFFA_8618_6186_1632, 0x788A_5CC7_2D12_DD95),
+			new Quad(0x3FFA_642C_8590_766C, 0xAC82_36DD_0429_4B9B),
+			new Quad(0xBFFA_47AE_1475_D4D4, 0x58F3_E5A9_9BC9_E94B),
+			new Quad(0x3FFA_2F68_4B82_58F7, 0x459A_07ED_D01D_F529),
+			new Quad(0xBFFA_1A7B_9140_F096, 0x5161_0294_D698_0DCE),
+			new Quad(0x3FFA_0841_D983_C8EF, 0xF246_7423_A0A8_6E23),
+			new Quad(0xBFF9_F078_1F2D_5643, 0x79FD_ACD9_A939_4763),
+			new Quad(0x3FF9_D3FE_EE0C_8B8D, 0xBEED_3888_2F4E_9337),
+			new Quad(0xBFF9_BA14_C1DA_11FB, 0x7C8B_AE68_A03D_216F),
+			new Quad(0x3FF9_A078_FBEB_F61B, 0xE4A8_F661_AE4E_EFE2),
+			new Quad(0xBFF9_8129_5361_0BD4, 0x4D6F_FEC7_D9A2_3D57),
+			new Quad(0x3FF9_4F98_EB13_94EE, 0xE119_CF2D_75D7_C25B),
+			new Quad(0xBFF8_FA3B_3B6B_7AE1, 0xB137_A049_9210_FD65),
+			new Quad(0x3FF8_1B46_E017_27FC, 0x7DCF_338D_5EAA_9BA0),
+			new Quad(0xBFF6_52D9_4B40_71FF, 0x85CE_62C9_80D9_F92C),
 		};
 
-
-
-		public static Quad Huge => new Quad(0x7FF8_136C_69CE_8ADF, 0xF439_7B05_0CAE_44C6);
+		public static Quad Even(Quad x)
+		{
+			return (AT[0] + x * (AT[2] + x * (AT[4] + x * (AT[6] + x * (AT[8] +
+				x * (AT[10] + x * (AT[12] + x * (AT[14] + x * (AT[16] +
+				x * (AT[18] + x * (AT[20] + x * AT[22])))))))))));
+		}
+		public static Quad Odd(Quad x)
+		{
+			return (AT[1] + x * (AT[3] + x * (AT[5] + x * (AT[7] + x * (AT[9] +
+				x * (AT[11] + x * (AT[13] + x * (AT[15] + x * (AT[17] +
+				x * (AT[19] + x * (AT[21] + x * AT[23])))))))))));
+		}
 	}
 }
