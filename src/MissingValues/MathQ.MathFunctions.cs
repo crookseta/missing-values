@@ -579,7 +579,24 @@ namespace MissingValues
 		/// <returns>An angle, θ, measured in radians, such that -∞ < θ <-1, or 1 < θ < ∞.</returns>
 		public static Quad Atanh(Quad x)
 		{
-			throw new NotImplementedException();
+			var exponent = x.BiasedExponent;
+			var sign = Quad.IsNegative(x);
+
+			x = Abs(x);
+
+			if (exponent < 0x3FF - 1)
+			{
+				if (exponent >= 0x3FF - 113 / 2)
+				{
+					x = Quad.HalfOne * Quad.LogP1(Quad.Two * x + Quad.Two * x * x / (Quad.One - x));
+				}
+			}
+			else
+			{
+				x = Quad.HalfOne * Quad.LogP1(Quad.Two * (x / (Quad.One - x)));
+			}
+
+			return sign ? -x : x;
 		}
 		/// <summary>
 		/// Returns the largest value that compares less than a specified value.
