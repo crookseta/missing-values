@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MissingValues.Internals;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -398,6 +399,12 @@ internal static partial class NumberFormatter
 			var fd = QuadToFloatingDecimal128(in value);
 			charsWritten = ToCharSpan(in fd, destination, info is null ? NumberFormatInfo.CurrentInfo : info!, out isExceptional);
 		}
+		public static void Format<TChar>(in Quad value, scoped Span<TChar> destination, out int charsWritten, out bool isExceptional, NumberFormatInfo? info, int? precision = null)
+			where TChar : unmanaged, IUtfCharacter<TChar>
+		{
+			var fd = QuadToFloatingDecimal128(in value);
+			charsWritten = ToCharSpan(in fd, destination, info is null ? NumberFormatInfo.CurrentInfo : info!, out isExceptional);
+		}
 
 		public static int ToCharSpan(in FloatingDecimal128 v, Span<char> destination, NumberFormatInfo info, out bool isExceptional)
 		{
@@ -482,6 +489,94 @@ internal static partial class NumberFormatter
 			{
 				(exp, int c) = int.DivRem(exp, 10);
 				destination[(int)(index + elength - 1 - i)] = (char)('0' + c);
+			}
+			index += (int)elength;
+			return index;
+		}
+		public static int ToCharSpan<TChar>(in FloatingDecimal128 v, Span<TChar> destination, NumberFormatInfo info, out bool isExceptional)
+			where TChar : unmanaged, IUtfCharacter<TChar>
+		{
+			if (v.Exponent == FD128ExceptionalExponent)
+			{
+				isExceptional = true;
+				ReadOnlySpan<TChar> symbol;
+				if (v.Mantissa != 0)
+				{
+					symbol = TChar.NaNSymbol(info);
+					symbol.CopyTo(destination);
+					return symbol.Length;
+				}
+				if (v.Sign)
+				{
+					symbol = TChar.NegativeInfinitySymbol(info);
+				}
+				else
+				{
+					symbol = TChar.PositiveInfinitySymbol(info);
+				}
+				symbol.CopyTo(destination);
+				return symbol.Length;
+			}
+
+			isExceptional = false;
+
+			// Step 5: Print the decimal representation.
+			ReadOnlySpan<TChar> negativeSign = TChar.NegativeSign(info);
+
+			int index = 0;
+			if (v.Sign)
+			{
+				negativeSign.CopyTo(destination[index..]);
+				index += negativeSign.Length;
+			}
+
+			UInt128 output = v.Mantissa;
+			uint olength = (uint)BitHelper.CountDigits(output);
+
+			for (uint i = 0; i < olength - 1; ++i)
+			{
+				(output, UInt128 c) = UInt128.DivRem(output, 10);
+				destination[(int)(index + olength - i)] = (TChar)(char)('0' + c);
+			}
+			destination[index] = (TChar)(char)('0' + (output % 10));
+
+			// Print decimal point if needed
+			if (olength > 1)
+			{
+				ReadOnlySpan<TChar> numberDecimalSeparator = TChar.NumberDecimalSeparator(info);
+
+				numberDecimalSeparator.CopyTo(destination[(index + 1)..]);
+
+				index += (int)olength + numberDecimalSeparator.Length;
+			}
+			else
+			{
+				++index;
+			}
+
+			// Print the exponent.
+			destination[index++] = (TChar)'E';
+			int exp = (int)(v.Exponent + olength - 1);
+
+			if (exp < 0)
+			{
+				negativeSign.CopyTo(destination[index..]);
+				index += negativeSign.Length;
+				exp = -exp;
+			}
+			else
+			{
+				ReadOnlySpan<TChar> positiveSign = TChar.PositiveSign(info);
+				positiveSign.CopyTo(destination[index..]);
+				index += positiveSign.Length;
+			}
+
+			uint elength = (uint)BitHelper.CountDigits((UInt128)exp);
+
+			for (int i = 0; i < elength; ++i)
+			{
+				(exp, int c) = int.DivRem(exp, 10);
+				destination[(int)(index + elength - 1 - i)] = (TChar)(char)('0' + c);
 			}
 			index += (int)elength;
 			return index;
