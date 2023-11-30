@@ -30,6 +30,7 @@ namespace MissingValues.Tests.Core
 
 		private static (Quad, Quad)[] _unaryNegationOperationData =
 		{
+			(Zero, NegativeZero),
 			(One, NegativeOne),
 			(Two, NegativeTwo),
 			(Ten, NegativeTen),

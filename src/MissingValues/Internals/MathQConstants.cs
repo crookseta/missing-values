@@ -131,4 +131,11 @@ internal static class MathQConstants
 				x * (AT[19] + x * (AT[21] + x * AT[23])))))))))));
 		}
 	}
+
+	public static class Exp
+	{
+		public static Quad LN2HI => new Quad(0x3FFE_62E4_2FEF_A39E, 0xF357_93C7_6730_07E5);
+		public static Quad LN2LO => new Quad(0x3F19_2CB2_8EF7_5125, 0x44DD_5BD7_A1CD_3EB9);
+		public static Quad LOG2E => new Quad();
+	}
 }

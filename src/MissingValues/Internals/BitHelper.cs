@@ -474,7 +474,7 @@ namespace MissingValues
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		internal static ulong PackToQuadUI64(bool sign, int exp, ulong sig64) => ((Convert.ToUInt64(sign) << 63) + ((ulong)(exp) << 48) + (sig64));
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		internal static UInt128 PackToQuad(bool sign, int exp, UInt128 sig) => (((sign ? UInt128.One : UInt128.Zero) << Quad.SignShift) + (((UInt128)exp) << Quad.BiasedExponentShift) + (sig));
+		internal static UInt128 PackToQuad(bool sign, int exp, UInt128 sig) => ((new UInt128(sign ? 1UL << 63 : 0, 0)) + (((UInt128)exp) << Quad.BiasedExponentShift) + (sig));
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		internal static UInt128 ShortShiftRightJamExtra(UInt128 a, ulong extra, int dist, out ulong ext)
 		{
@@ -518,7 +518,7 @@ namespace MissingValues
 		{
 			ushort u8NegDist;
 			UInt128 z;
-			ulong a64 = (ulong)(a >> 64), a0 = (ulong)a;
+			ulong a64 = a.GetUpperBits(), a0 = a.GetLowerBits();
 
 			u8NegDist = (ushort)-dist;
 			if (dist < 64)
@@ -672,7 +672,8 @@ namespace MissingValues
 			if (doIncrement)
 			{
 				UInt128 sig128 = sig + UInt128.One;
-				sig = sig128 & new UInt128(0xFFFF_FFFF_FFFF_FFFF, ((ulong)sig128 & ~Convert.ToUInt64(!Convert.ToBoolean(sigExtra & 0x7FFF_FFFF_FFFF_FFFF)) & 1));
+				sig = sig128 & new UInt128(0xFFFF_FFFF_FFFF_FFFF, ((ulong)sig128 & ~Convert.ToUInt64(!Convert.ToBoolean(sigExtra & 0x7FFF_FFFF_FFFF_FFFF))));
+				//sig = sig128 & new UInt128(0xFFFF_FFFF_FFFF_FFFF, ((ulong)sig128 & ~Convert.ToUInt64(!Convert.ToBoolean(sigExtra & 0x7FFF_FFFF_FFFF_FFFF)) & 1));
 				//sig = new UInt128((ulong)(sig128 >> 64), ((ulong)sig128 & ~Convert.ToUInt64(!Convert.ToBoolean(sigExtra & 0x7FFF_FFFF_FFFF_FFFF)) & 1));
 			}
 			else
@@ -755,8 +756,6 @@ namespace MissingValues
 
 				if (expA == 0)
 				{
-					//uiZ = new UInt128(PackToQuadUI64(signZ, 0, (ulong)(sigZ >> 64)), (ulong)sigZ);
-					//goto uiZ;
 					return PackToQuad(signZ, 0, sigZ);
 				}
 				expZ = expA;
@@ -780,7 +779,7 @@ namespace MissingValues
 
 				if (expA != 0)
 				{
-					sigA |= new UInt128(0x0001000000000000, 0);
+					sigA |= new UInt128(0x0001_0000_0000_0000, 0);
 				}
 				else
 				{

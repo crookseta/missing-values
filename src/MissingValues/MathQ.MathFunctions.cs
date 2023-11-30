@@ -94,8 +94,9 @@ namespace MissingValues
 	{
 		internal const int MaxRoundingDigits = 34;
 
-		private static Quad PIO2_HI = new Quad(0x3FFF_921F_B544_42D1, 0x8469_898C_C517_01B8);
-		private static Quad PIO2_LO = new Quad(0x3F8C_CD12_9024_E088, 0xA67C_C740_20BB_EA64);
+		private static Quad Epsilon => new Quad(0x406F_0000_0000_0000, 0x0000_0000_0000_0000);
+		private static Quad PIO2_HI => new Quad(0x3FFF_921F_B544_42D1, 0x8469_898C_C517_01B8);
+		private static Quad PIO2_LO => new Quad(0x3F8C_CD12_9024_E088, 0xA67C_C740_20BB_EA64);
 		private static Quad M_PI_2 => new Quad(0x3FFF_921F_B544_42D1, 0x8469_898C_C517_01B8); // pi / 2
 		private static Quad M_PI_4 => new Quad(0x3FFE_921F_B544_42D1, 0x8469_B288_3370_1F13); // pi / 4
 		private static Quad LN2 => new Quad(0x3FFE_62E4_2FEF_A39E, 0xF357_ADEB_B905_E4BD);
@@ -663,7 +664,98 @@ namespace MissingValues
 		/// <returns>The cube root of <paramref name="x"/>.</returns>
 		public static Quad Cbrt(Quad x)
 		{
-			throw new NotImplementedException();
+			const uint B1 = 709958130; // B1 = (127 - 127.0/3 - 0.03306235651) * 2^23
+
+			Quad r, s, t, w;
+			double dr, dt, dx;
+			float ft;
+			int e = x.BiasedExponent;
+			int sign = Quad.IsNegative(x) ? 1 << 15 : 0;
+			Quad u = x;
+
+			/*
+			 * If x = +-Inf, then cbrt(x) = +-Inf.
+			 * If x = NaN, then cbrt(x) = NaN.
+			 */
+
+			if (e == 0x7FFF)
+			{
+				return x;
+			}
+			if (e == 0)
+			{
+				// Adjust subnormal numbers
+				u *= new Quad(0x4077_0000_0000_0000, 0x0000_0000_0000_0000); // u *= 0x1p120
+				e = u.BiasedExponent;
+				// If x = +-0, then Cbrt(x) = +-0.
+				if (e == 0)
+				{
+					return x;
+				}
+				e -= 120;
+			}
+			e -= 0x3FFF;
+			x = new Quad(false, 0x3FFF, u.TrailingSignificand);
+
+			switch (e % 3)
+			{
+				case 1:
+				case -2:
+					x *= Quad.Two;
+					e--;
+					break;
+				case 2:
+				case -1:
+					x *= new Quad(0x4001_0000_0000_0000, 0x0000_0000_0000_0000); // x *= 4
+					e -= 2;
+					break;
+			}
+
+			Quad v = Quad.UInt128BitsToQuad(Quad.PositiveOneBits & new UInt128(((ulong)(sign | (0x3FFF + e / 3)) << 48) | 0x0000_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF));
+
+			/*
+			 * The following is the guts of s_cbrtf, with the handling of
+			 * special values removed and extra care for accuracy not taken,
+			 * but with most of the extra accuracy not discarded.
+			 */
+
+			// ~5-bit estimate:
+			ft = BitConverter.UInt32BitsToSingle((BitConverter.SingleToUInt32Bits((float)x) & 0x7FFF_FFFF) / 3 + B1);
+
+			// ~16-bit estimate:
+			dx = (double)x;
+			dt = ft;
+			dr = dt * dt * dt;
+			dt = dt * (dx + dx + dr) / (dx + dr + dr);
+
+			// ~47-bit estimate:
+			dr = dt * dt * dt;
+			dt = dt * (dx + dx + dr) / (dx + dr + dr);
+
+			/*
+			 * Round dt away from zero to 47 bits.  Since we don't trust the 47,
+			 * add 2 47-bit ulps instead of 1 to round up.  Rounding is slow and
+			 * might be avoidable in this case, since on most machines dt will
+			 * have been evaluated in 53-bit precision and the technical reasons
+			 * for rounding up might not apply to either case in cbrtl() since
+			 * dt is much more accurate than needed.
+			 */
+
+			// t = dt + 0x2.0p-46 + 0x1.0p60L - 0x1.0p60
+			t = dt + new Quad(0x3FD2_0000_0000_0000, 0x0000_0000_0000_0000) + new Quad(0x403B_0000_0000_0000, 0x0000_0000_0000_0000) - new Quad(0x403B_0000_0000_0000, 0x0000_0000_0000_0000);
+
+			/*
+			 * Final step Newton iteration to 64 or 113 bits with
+			 * error < 0.667 ulps
+			 */
+
+			s = t * t;				// t*t is exact
+			r = x / s;				// error <= 0.5 ulps; |r| < |t|
+			w = t + t;				// t+t is exact
+			r = (r - t) / (w + r);	// r-t is exact; w+r ~= 3*t
+			t = t + t * r;          // error <= 0.5 + 0.5/3 + epsilon
+
+			return t * v;
 		}
 		/// <summary>
 		/// Returns the smallest integral value that is greater than or equal to the specified quadruple-precision floating-point number.
@@ -672,42 +764,34 @@ namespace MissingValues
 		/// <returns>The smallest integral value that is greater than or equal to <paramref name="x"/>. If <paramref name="x"/> is equal to <see cref="Quad.NaN"/>, <see cref="Quad.NegativeInfinity"/>, or <see cref="Quad.PositiveInfinity"/>, that value is returned. Note that this method returns a <see cref="Quad"/> instead of an integral type.</returns>
 		public static Quad Ceiling(Quad x)
 		{
-			if (Quad.IsNaN(x) || Quad.IsInfinity(x))
+			var exponent = x.BiasedExponent;
+			bool sign = Quad.IsNegative(x);
+			Quad y;
+
+			if (exponent >= 0x3FFF + Quad.MantissaDigits - 1 || x == Quad.Zero)
 			{
 				return x;
 			}
-
-			int unbiasedExponent = x.Exponent;
-			if (unbiasedExponent < 0)
+			// y = int(x) - x, where int(x) is an integer neighbor of x
+			Quad toint = Epsilon;
+			if (sign)
 			{
-				if (Quad.IsNegative(x))
-				{
-					return Quad.Zero;
-				}
-				else
-				{
-					return Quad.One;
-				}
+				y = x - toint + toint - x;
 			}
 			else
 			{
-				if (unbiasedExponent >= 112)
-				{
-					return x;
-				}
-
-				UInt128 resultBits = Quad.QuadToUInt128Bits(x);
-				int bitsToErase = 112 - unbiasedExponent;
-				resultBits = (resultBits >> bitsToErase) << bitsToErase;
-				Quad result = Quad.UInt128BitsToQuad(resultBits);
-
-				if (result != x && !Quad.IsNegative(result))
-				{
-					result++;
-				}
-
-				return result;
+				y = x + toint - toint - x;
 			}
+			// special case because of non-nearest rounding modes
+			if (exponent <= 0x3FFF - 1)
+			{
+				return sign ? Quad.NegativeZero : Quad.One;
+			}
+			if (y < Quad.Zero)
+			{
+				return x + y + Quad.One;
+			}
+			return x + y;
 		}
 		/// <summary>
 		/// Returns a value with the magnitude of <paramref name="x"/> and the sign of <paramref name="y"/>.
@@ -829,42 +913,34 @@ namespace MissingValues
 		/// <returns>The largest integral value less than or equal to <paramref name="x"/>. If <paramref name="x"/> is equal to <see cref="Quad.NaN"/>, <see cref="Quad.NegativeInfinity"/>, or <see cref="Quad.PositiveInfinity"/>, that value is returned.</returns>
 		public static Quad Floor(Quad x)
 		{
-			if (Quad.IsNaN(x) || Quad.IsInfinity(x))
+			var exponent = x.BiasedExponent;
+			bool sign = Quad.IsNegative(x);
+			Quad y;
+
+			if (exponent >= 0x3FFF + Quad.MantissaDigits - 1 || x == Quad.Zero)
 			{
 				return x;
 			}
-
-			int unbiasedExponent = x.Exponent;
-			if (unbiasedExponent < 0)
+			// y = int(x) - x, where int(x) is an integer neighbor of x
+			Quad toint = Epsilon;
+			if (sign)
 			{
-				if (Quad.IsNegative(x))
-				{
-					return Quad.NegativeOne;
-				}
-				else
-				{
-					return Quad.Zero;
-				}
+				y = x - toint + toint - x;
 			}
 			else
 			{
-				if (unbiasedExponent >= 112)
-				{
-					return x;
-				}
-
-				UInt128 resultBits = Quad.QuadToUInt128Bits(x);
-				int bitsToErase = 112 - unbiasedExponent;
-				resultBits = (resultBits >> bitsToErase) << bitsToErase;
-				Quad result = Quad.UInt128BitsToQuad(resultBits);
-
-				if (result != x && Quad.IsNegative(result))
-				{
-					result--;
-				}
-
-				return result;
+				y = x + toint - toint - x;
 			}
+			// special case because of non-nearest rounding modes
+			if (exponent <= 0x3FFF - 1)
+			{
+				return sign ? Quad.NegativeOne : Quad.Zero;
+			}
+			if (y > Quad.Zero)
+			{
+				return x + y - Quad.One;
+			}
+			return x + y;
 		}
 		/// <summary>
 		/// Returns (x * y) + z, rounded as one ternary operation.
@@ -1224,14 +1300,8 @@ namespace MissingValues
 					if (((ulong)uiZ & roundBitsMask) == 0)
 					{
 						uiZ &= new UInt128(0xFFFF_FFFF_FFFF_FFFF, ~lastBitMask0);
-						//uiZ0 = ((ulong)uiZ);
-						//uiZ0 &= ~lastBitMask0;
-						//uiZ = new UInt128((ulong)(uiZ >> 64), uiZ0);
 					}
 				}
-
-				//uiZ0 = ((ulong)uiZ);
-				//uiZ0 &= ~roundBitsMask;
 
 				uiZ &= new UInt128(0xFFFF_FFFF_FFFF_FFFF, ~roundBitsMask);
 
@@ -1439,6 +1509,9 @@ namespace MissingValues
 		/// <returns>The positive square root of <paramref name="x"/>.</returns>
 		public static Quad Sqrt(Quad x)
 		{
+			// This is based on the 'Berkeley SoftFloat Release 3e' algorithm
+			// source: berkeley-softfloat-3/source/f128_sqrt.c
+
 			UInt128 bits = Quad.QuadToUInt128Bits(x);
 			bool signA = Quad.IsNegative(x);
 			int exp = Quad.ExtractBiasedExponentFromBits(bits);
@@ -1692,12 +1765,32 @@ namespace MissingValues
 		/// <returns>The integral part of <paramref name="x"/>; that is, the number that remains after any fractional digits have been discarded, or one of the values listed in the following table.</returns>
 		public static Quad Truncate(Quad x)
 		{
-			if (Quad.IsNaN(x) || Quad.IsInfinity(x))
+			var exponent = x.BiasedExponent;
+			bool sign = Quad.IsNegative(x);
+
+			Quad y;
+
+			if (exponent >= 0x3FFF + Quad.MantissaDigits - 1)
 			{
 				return x;
 			}
-
-			return (Quad)(Int128)x;
+			if (exponent <= 0x3FFF - 1)
+			{
+				return sign ? Quad.NegativeZero : Quad.Zero;
+			}
+			// y = int(|x|) - |x|, where int(|x|) is an integer neighbor of |x|
+			if (sign)
+			{
+				x = -x;
+			}
+			Quad toint = Epsilon;
+			y = x + toint - toint - x;
+			if (y > 0)
+			{
+				y--;
+			}
+			x += y;
+			return sign ? -x : x;
 		}
 
 		private unsafe static Quad PolynomialEvaluator(Quad x, ref Quad p, int n)
