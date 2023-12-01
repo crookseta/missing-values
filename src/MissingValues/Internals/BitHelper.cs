@@ -21,14 +21,14 @@ namespace MissingValues
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static void GetUpperAndLowerBits(UInt128 value, out ulong upper, out ulong lower)
 		{
-			lower = (ulong)value;
-			upper = (ulong)(value >> 64);
+			lower = value.GetLowerBits();
+			upper = value.GetUpperBits();
 		}
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static void GetUpperAndLowerBits(Int128 value, out ulong upper, out ulong lower)
 		{
-			lower = (ulong)value;
-			upper = (ulong)(value >> 64);
+			lower = value.GetLowerBits();
+			upper = value.GetUpperBits();
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -187,26 +187,26 @@ namespace MissingValues
 			// Basically, it's an optimized version of FOIL method applied to
 			// low and high dwords of each operand
 
-			UInt128 al = (ulong)a;
-			UInt128 ah = (ulong)(a >> 64);
+			UInt128 al = a.GetLowerBits();
+			UInt128 ah = a.GetUpperBits();
 
-			UInt128 bl = (ulong)b;
-			UInt128 bh = (ulong)(b >> 64);
+			UInt128 bl = b.GetLowerBits();
+			UInt128 bh = b.GetUpperBits();
 
 			UInt128 mull = al * bl;
-			UInt128 t = ah * bl + (ulong)(mull >> 64);
-			UInt128 tl = al * bh + (ulong)t;
+			UInt128 t = ah * bl + mull.GetUpperBits();
+			UInt128 tl = al * bh + t.GetLowerBits();
 
-			lower = new UInt128((ulong)tl, (ulong)mull);
+			lower = new UInt128(tl.GetLowerBits(), mull.GetLowerBits());
 
-			return ah * bh + (ulong)(t >> 64) + (ulong)(tl >> 64);
+			return ah * bh + t.GetUpperBits() + tl.GetUpperBits();
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		internal static int SizeOf<T>()
 			where T : struct
 		{
-			return Marshal.SizeOf(typeof(T));
+			return Unsafe.SizeOf<T>();
 		}
 
 		internal static int CountDigits(UInt128 num)
@@ -474,13 +474,13 @@ namespace MissingValues
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		internal static ulong PackToQuadUI64(bool sign, int exp, ulong sig64) => ((Convert.ToUInt64(sign) << 63) + ((ulong)(exp) << 48) + (sig64));
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		internal static UInt128 PackToQuad(bool sign, int exp, UInt128 sig) => ((new UInt128(sign ? 1UL << 63 : 0, 0)) + (((UInt128)exp) << Quad.BiasedExponentShift) + (sig));
+		internal static UInt128 PackToQuad(bool sign, int exp, UInt128 sig) => ((new UInt128(sign ? 1UL << 63 : 0, 0)) + ((((UInt128)exp) << Quad.BiasedExponentShift) & Quad.BiasedExponentMask) + (sig));
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		internal static UInt128 ShortShiftRightJamExtra(UInt128 a, ulong extra, int dist, out ulong ext)
 		{
 			int negDist = -dist;
 
-			ulong a64 = (ulong)(a >> 64), a0 = (ulong)a;
+			ulong a64 = a.GetUpperBits(), a0 = a.GetLowerBits();
 
 			ulong z64 = a64 >> dist, z0 = a64 << (negDist & 63) | a0 >> dist;
 			ext = a0 << (negDist & 63) | ((extra != 0) ? 1UL : 0UL);
@@ -495,25 +495,6 @@ namespace MissingValues
 		internal static uint ShiftRightJam(uint i, int dist) => dist < 31 ? (i >> dist) | (i << (-dist & 31) != 0 ? 1U : 0U) : (i != 0 ? 1U : 0U);
 		internal static ulong ShiftRightJam(ulong l, int dist) => dist < 63 ? (l >> dist) | (l << (-dist & 63) != 0 ? 1UL : 0UL) : (l != 0 ? 1UL : 0UL);
 		internal static UInt128 ShiftRightJam(UInt128 l, int dist) => dist < 127 ? (l >> dist) | (l << (-dist & 127) != 0 ? 1UL : 0UL) : (l != 0 ? 1UL : 0UL);
-		//internal static UInt128 ShiftRightJam(UInt128 oddExpA, int dist)
-		//{
-		//	ulong a64 = (ulong)(oddExpA >> 64), a0 = (ulong)oddExpA;
-		//	UInt128 z;
-
-		//	if (dist < 64)
-		//	{
-		//		byte u8NegDist = (byte)-dist;
-		//		z = new UInt128(a64 >> dist, a64 << (u8NegDist & 63) | a0 >> dist | Convert.ToUInt64((a0 << (u8NegDist & 63)) != 0));
-		//	}
-		//	else
-		//	{
-		//		z = new UInt128(0, (dist < 127)
-		//		? a64 >> (dist & 63) | Convert.ToUInt64(((a64 & (((ulong)1 << (dist & 63)) - 1)) | a0) != 0)
-		//		: Convert.ToUInt64((a64 | a0) != 0));
-		//	}
-
-		//	return z;
-		//}
 		private static UInt128 ShiftRightJamExtra(UInt128 a, ulong extra, int dist, out ulong ext)
 		{
 			ushort u8NegDist;
@@ -660,7 +641,15 @@ namespace MissingValues
 
 			if (0x7FFD <= unchecked((uint)exp))
 			{
-				if (0x7FFD < exp || ((exp == 0x7FFD) && sig == new UInt128(0x0001FFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF) && doIncrement))
+				if (exp < 0)
+				{
+					bool isTiny = (exp < -1) || !doIncrement || sig < new UInt128(0x0001FFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF);
+					sig = ShiftRightJamExtra(sig, sigExtra, -exp, out sigExtra);
+					exp = 0;
+
+					doIncrement = 0x8000_0000_0000_0000 <= sigExtra;
+				}
+				else if (0x7FFD < exp || ((exp == 0x7FFD) && sig == new UInt128(0x0001FFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF) && doIncrement))
 				{
 					uiZ64 = PackToQuadUI64(sign, 0x7FFF, 0);
 					uiZ0 = 0;
@@ -673,8 +662,6 @@ namespace MissingValues
 			{
 				UInt128 sig128 = sig + UInt128.One;
 				sig = sig128 & new UInt128(0xFFFF_FFFF_FFFF_FFFF, ((ulong)sig128 & ~Convert.ToUInt64(!Convert.ToBoolean(sigExtra & 0x7FFF_FFFF_FFFF_FFFF))));
-				//sig = sig128 & new UInt128(0xFFFF_FFFF_FFFF_FFFF, ((ulong)sig128 & ~Convert.ToUInt64(!Convert.ToBoolean(sigExtra & 0x7FFF_FFFF_FFFF_FFFF)) & 1));
-				//sig = new UInt128((ulong)(sig128 >> 64), ((ulong)sig128 & ~Convert.ToUInt64(!Convert.ToBoolean(sigExtra & 0x7FFF_FFFF_FFFF_FFFF)) & 1));
 			}
 			else
 			{
@@ -685,8 +672,6 @@ namespace MissingValues
 			}
 
 			return PackToQuad(sign, exp, sig);
-			//uiZ64 = PackToQuadUI64(sign, exp, (ulong)(sig >> 64));
-			//uiZ0 = (ulong)sig;
 
 		uiZ:
 			return new UInt128(uiZ64, uiZ0);
@@ -695,11 +680,6 @@ namespace MissingValues
 		{
 			ulong sigExtra;
 
-			//if (((ulong)(sig >> 64)) == 0)
-			//{
-			//	exp -= 64;
-			//	sig <<= 64;
-			//}
 			int shiftDist = (int)(UInt128.LeadingZeroCount(sig) - 15);
 			exp -= shiftDist;
 
@@ -713,7 +693,6 @@ namespace MissingValues
 				if ((uint)exp < 0x7FFD)
 				{
 					return PackToQuad(sign, sig != UInt128.Zero ? exp : 0, sig);
-					//return new UInt128(PackToQuadUI64(sign, sig != UInt128.Zero ? exp : 0, (ulong)(sig >> 64)), unchecked((ulong)sig));
 				}
 
 				sigExtra = 0;
@@ -878,16 +857,6 @@ namespace MissingValues
 			{
 				expZ = 1;
 			}
-			//ulong sigA64 = (ulong)(sigA >> 64), sigA0 = unchecked((ulong)sigA);
-			//ulong sigB64 = (ulong)(sigB >> 64), sigB0 = unchecked((ulong)sigB);
-			//if (sigB64 < sigA64 || sigB0 < sigA0)
-			//{
-			//	goto aBigger;
-			//}
-			//if (sigA64 < sigB64 || sigA0 < sigB0)
-			//{
-			//	goto bBigger;
-			//}
 			if (sigB < sigA)
 			{
 				goto aBigger;

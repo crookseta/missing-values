@@ -785,7 +785,6 @@ namespace MissingValues
 
 		public static Quad operator %(Quad left, Quad right)
 		{
-			//return left - Quad.Truncate(left / right) * right;
 			return (MathQ.Abs(left) - (MathQ.Abs(right) * (MathQ.Floor(MathQ.Abs(left) / MathQ.Abs(right))))) * MathQ.Sign(left);
 		}
 

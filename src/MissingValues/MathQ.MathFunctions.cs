@@ -745,7 +745,7 @@ namespace MissingValues
 			t = dt + new Quad(0x3FD2_0000_0000_0000, 0x0000_0000_0000_0000) + new Quad(0x403B_0000_0000_0000, 0x0000_0000_0000_0000) - new Quad(0x403B_0000_0000_0000, 0x0000_0000_0000_0000);
 
 			/*
-			 * Final step Newton iteration to 64 or 113 bits with
+			 * Final step Newton iteration to 113 bits with
 			 * error < 0.667 ulps
 			 */
 
@@ -827,7 +827,6 @@ namespace MissingValues
 		public static Quad Cos(Quad x)
 		{
 			Quad x0 = x;
-			Shape u = new Shape(ref x0);
 			ushort exponent = x.BiasedExponent;
 			uint n;
 			Span<Quad> y = stackalloc Quad[2];
