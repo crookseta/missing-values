@@ -2,6 +2,7 @@
 using System;
 using System.Buffers.Binary;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
@@ -59,24 +60,7 @@ namespace MissingValues
 		
 		public static Quad Ceiling(Quad x) => MathQ.Ceiling(x);
 
-		public static Quad Clamp(Quad value, Quad min, Quad max)
-		{
-			if (min > max)
-			{
-				Thrower.MinMaxError(min, max);
-			}
-
-			if (value < min)
-			{
-				return min;
-			}
-			else if (value > max)
-			{
-				return max;
-			}
-
-			return value;
-		}
+		public static Quad Clamp(Quad value, Quad min, Quad max) => MathQ.Clamp(value, min, max);
 
 		public static Quad CopySign(Quad value, Quad sign) => MathQ.CopySign(value, sign);
 
@@ -656,7 +640,10 @@ namespace MissingValues
 		public static Quad ScaleB(Quad x, int n) => MathQ.ScaleB(x, n);
 
 		public static Quad Exp(Quad x) => MathQ.Exp(x);
-		public static Quad ExpM1(Quad x) => MathQ.Exp(x) - One;
+		public static Quad ExpM1(Quad x)
+		{
+			throw new NotImplementedException();
+		}
 
 		public static Quad Exp10(Quad x)
 		{
@@ -683,7 +670,10 @@ namespace MissingValues
 		public static Quad Tanh(Quad x) => MathQ.Tanh(x);
 
 		public static Quad Log(Quad x) => MathQ.Log(x);
-		public static Quad LogP1(Quad x) => MathQ.Log(x + One);
+		public static Quad LogP1(Quad x) 
+		{
+			throw new NotImplementedException();
+		}
 
 		public static Quad Log(Quad x, Quad newBase) => MathQ.Log(x, newBase);
 
@@ -708,7 +698,122 @@ namespace MissingValues
 
 		public static Quad RootN(Quad x, int n)
 		{
-			throw new NotImplementedException();
+			Quad result;
+
+			if (n > 0)
+			{
+				if (n == 2)
+				{
+					result = (x != Quad.Zero) ? Sqrt(x) : Quad.Zero;
+				}
+				else if (n == 3)
+				{
+					result = Cbrt(x);
+				}
+				else
+				{
+					result = PositiveN(x, n);
+				}
+			}
+			else if (n < 0)
+			{
+				result = NegativeN(x, n);
+			}
+			else
+			{
+				Debug.Assert(n == 0);
+				result = NaN;
+			}
+			return result;
+
+			static Quad PositiveN(Quad x, int n)
+			{
+				Quad result;
+
+				if (IsFinite(x))
+				{
+					if (x != Zero)
+					{
+						if ((x > Zero) || int.IsOddInteger(n))
+						{
+							result = Pow(Abs(x), ReciprocalEstimate(n));
+							result = CopySign(result, x);
+						}
+						else
+						{
+							result = NaN;
+						}
+					}
+					else if (int.IsEvenInteger(n))
+					{
+						result = Zero;
+					}
+					else
+					{
+						result = CopySign(Zero, x);
+					}
+				}
+				else if (IsNaN(x))
+				{
+					result = NaN;
+				}
+				else if (x > Quad.Zero)
+				{
+					Debug.Assert(IsPositiveInfinity(x));
+					result = PositiveInfinity;
+				}
+				else
+				{
+					Debug.Assert(IsNegativeInfinity(x));
+					result = int.IsOddInteger(n) ? NegativeInfinity : NaN;
+				}
+
+				return result;
+			}
+			static Quad NegativeN(Quad x, int n)
+			{
+				Quad result;
+
+				if (IsFinite(x))
+				{
+					if (x != Zero)
+					{
+						if ((x > Zero) || int.IsOddInteger(n))
+						{
+							result = Pow(Abs(x), ReciprocalEstimate(n));
+							result = CopySign(result, x);
+						}
+						else
+						{
+							result = NaN;
+						}
+					}
+					else if (int.IsEvenInteger(n))
+					{
+						result = PositiveInfinity;
+					}
+					else
+					{
+						result = CopySign(PositiveInfinity, x);
+					}
+				}
+				else if (IsNaN(x))
+				{
+					result = NaN;
+				}
+				else if (x > Zero)
+				{
+					Debug.Assert(IsPositiveInfinity(x));
+					result = Zero;
+				}
+				else
+				{
+					Debug.Assert(IsNegativeInfinity(x));
+					result = int.IsOddInteger(n) ? NegativeZero : NaN;
+				}
+
+				return result;
+			}
 		}
 
 		public static Quad Acos(Quad x) => MathQ.Acos(x);

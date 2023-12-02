@@ -136,6 +136,20 @@ internal static class MathQConstants
 	{
 		public static Quad LN2HI => new Quad(0x3FFE_62E4_2FEF_A39E, 0xF357_93C7_6730_07E5);
 		public static Quad LN2LO => new Quad(0x3F19_2CB2_8EF7_5125, 0x44DD_5BD7_A1CD_3EB9);
-		public static Quad LOG2E => new Quad();
+		public static Quad LOG2E => new Quad(0x3FFF_7154_7652_B82F, 0xE177_7D0F_FDA0_D23A);
+
+		public static ReadOnlySpan<Quad> P => new Quad[3]
+		{
+			new Quad(0x3FF2_089C_DD5E_44BE, 0x849C_AB27_66C1_9BDE),
+			new Quad(0x3FF9_F06D_10CC_A2C7, 0xE73B_0536_AC11_FB2A),
+			new Quad(0x3FFE_FFFF_FFFF_FFFF, 0xFFFC_B055_D0BC_B086)
+		};
+		public static ReadOnlySpan<Quad> Q => new Quad[4]
+		{
+			new Quad(0x3FEC_92EB_6BC3_65F9, 0xFE3B_198E_CB29_3C5F),
+			new Quad(0x3FF6_4AE3_9B50_8B6B, 0xFE7C_531A_DD08_7F78),
+			new Quad(0x3FFC_D170_9988_7E07, 0x3DC1_298B_B9C7_7489),
+			new Quad(0x4000_0000_0000_0000, 0x0000_D3CC_52B0_C3C7)
+		};
 	}
 }
