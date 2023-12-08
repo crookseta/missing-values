@@ -495,6 +495,7 @@ namespace MissingValues
 		internal static uint ShiftRightJam(uint i, int dist) => dist < 31 ? (i >> dist) | (i << (-dist & 31) != 0 ? 1U : 0U) : (i != 0 ? 1U : 0U);
 		internal static ulong ShiftRightJam(ulong l, int dist) => dist < 63 ? (l >> dist) | (l << (-dist & 63) != 0 ? 1UL : 0UL) : (l != 0 ? 1UL : 0UL);
 		internal static UInt128 ShiftRightJam(UInt128 l, int dist) => dist < 127 ? (l >> dist) | (l << (-dist & 127) != 0 ? 1UL : 0UL) : (l != 0 ? 1UL : 0UL);
+		internal static UInt256 ShiftRightJam(UInt256 l, int dist) => dist < 255 ? (l >> dist) | (l << (-dist & 255) != 0 ? 1UL : 0UL) : (l != 0 ? 1UL : 0UL);
 		private static UInt128 ShiftRightJamExtra(UInt128 a, ulong extra, int dist, out ulong ext)
 		{
 			ushort u8NegDist;
@@ -758,7 +759,7 @@ namespace MissingValues
 
 				if (expA != 0)
 				{
-					sigA |= new UInt128(0x0001_0000_0000_0000, 0);
+					sigA |= Quad.SignificandSignMask;
 				}
 				else
 				{
@@ -788,7 +789,7 @@ namespace MissingValues
 
 				if (expB != 0)
 				{
-					sigB |= new UInt128(0x0001000000000000, 0);
+					sigB |= Quad.SignificandSignMask;
 				}
 				else
 				{
@@ -803,7 +804,7 @@ namespace MissingValues
 				sigB = ShiftRightJamExtra(sigB, 0, expDiff, out sigZExtra);
 			}
 		newlyAligned:
-			sigZ = (sigA | new UInt128(0x0001_0000_0000_0000, 0x0)) + sigB;
+			sigZ = (sigA | Quad.SignificandSignMask) + sigB;
 			--expZ;
 			if (sigZ < new UInt128(0x0002_0000_0000_0000, 0x0))
 			{
@@ -943,6 +944,302 @@ namespace MissingValues
 
 		uiZ:
 			return uiZ;
+		}
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		internal static UInt128 MulAddQuadBits(UInt128 uiA, UInt128 uiB, UInt128 uiC)
+		{
+			bool signA = (uiA & new UInt128(0x8000_0000_0000_0000, 0x0)) != UInt128.Zero;
+			ushort expA = Quad.ExtractBiasedExponentFromBits(uiA);
+			UInt128 sigA = Quad.ExtractTrailingSignificandFromBits(uiA);
+
+			bool signB = (uiB & new UInt128(0x8000_0000_0000_0000, 0x0)) != UInt128.Zero;
+			ushort expB = Quad.ExtractBiasedExponentFromBits(uiB);
+			UInt128 sigB = Quad.ExtractTrailingSignificandFromBits(uiB);
+
+			bool signC = (uiC & new UInt128(0x8000_0000_0000_0000, 0x0)) != UInt128.Zero;
+			ushort expC = Quad.ExtractBiasedExponentFromBits(uiC);
+			UInt128 sigC = Quad.ExtractTrailingSignificandFromBits(uiC);
+
+			UInt128 uiZ;
+			short expZ;
+			bool signZ = signA ^ signB;
+
+			if (expA == 0x7FFF)
+			{
+				if (sigA != UInt128.Zero || ((expB == 0x7FFF) && (sigB != UInt128.Zero)))
+				{
+					return Quad.CreateQuadNaNBits(signZ, sigA | sigB);
+				}
+
+				if ((expB | sigB) != UInt128.Zero)
+				{
+					uiZ = PackToQuad(signZ, 0x7FFF, UInt128.Zero);
+					if (expC != 0x7FFF)
+					{
+						return uiZ;
+					}
+					if (sigC != UInt128.Zero)
+					{
+						return Quad.CreateQuadNaNBits(signZ, sigC);
+					}
+					if (signZ == signC)
+					{
+						return uiZ;
+					}
+				}
+
+				return Quad.PositiveQNaNBits;
+			}
+			if (expB == 0x7FFF)
+			{
+				if (sigB != UInt128.Zero)
+				{
+					return Quad.CreateQuadNaNBits(signZ, sigA | sigB);
+				}
+
+				if ((expA | sigA) != UInt128.Zero)
+				{
+					uiZ = PackToQuad(signZ, 0x7FFF, UInt128.Zero);
+					if (expC != 0x7FFF)
+					{
+						return uiZ;
+					}
+					if (sigC != UInt128.Zero)
+					{
+						return Quad.CreateQuadNaNBits(signZ, sigC);
+					}
+					if (signZ == signC)
+					{
+						return uiZ;
+					}
+				}
+
+				return Quad.PositiveQNaNBits;
+			}
+			if (expC == 0x7FFF)
+			{
+				if (sigC != UInt128.Zero)
+				{
+					return Quad.CreateQuadNaNBits(signZ, sigC);
+				}
+
+				return uiC;
+			}
+
+			if (expA == 0)
+			{
+				if (sigA == UInt128.Zero)
+				{
+					return uiC;
+				}
+
+				(expA, sigA) = NormalizeSubnormalF128Sig(sigA);
+			}
+			if (expB == 0)
+			{
+				if (sigB == UInt128.Zero)
+				{
+					return uiC;
+				}
+
+				(expB, sigB) = NormalizeSubnormalF128Sig(sigB);
+			}
+
+			expZ = (short)((short)(expA + expB) - 0x3FFE);
+			sigA |= Quad.SignificandSignMask;
+			sigB |= Quad.SignificandSignMask;
+			sigA <<= 8;
+			sigB <<= 15;
+			UInt256 sig256Z = (UInt256)sigA * sigB;
+			UInt128 sigZ = sig256Z.Upper;
+			int shiftDist = 0;
+			if ((sigZ.GetUpperBits() & 0x0100000000000000) == UInt128.Zero)
+			{
+				--expZ; 
+				shiftDist = -1;
+			}
+			if (expC == 0)
+			{
+				if (sigC == UInt128.Zero)
+				{
+					shiftDist += 8;
+					goto sigZ;
+				}
+				(expC, sigC) = NormalizeSubnormalF128Sig(sigC);
+			}
+			sigC = (sigC | Quad.SignificandSignMask) << 8;
+
+			int expDiff = expZ - expC;
+			UInt256 sig256C;
+			if (expDiff < 0)
+			{
+				expZ = (short)expC;
+				if ((signZ == signC) || (expDiff < -1))
+				{
+					shiftDist -= expDiff;
+					if (shiftDist != 0)
+					{
+						sigZ = ShiftRightJam(sigZ, shiftDist);
+					}
+				}
+				else
+				{
+					if (shiftDist == 0)
+					{
+						UInt128 x128 = sig256Z.Lower >> 1;
+						x128 = (sigZ << 127) | x128;
+						sigZ >>= 1;
+						sig256Z = new UInt256(sigZ, x128);
+					}
+				}
+				sig256C = default;
+			}
+			else
+			{
+				if (shiftDist != 0)
+				{
+					sig256Z += sig256Z;
+				}
+				if (expDiff == 0)
+				{
+					sigZ = sig256Z.Upper;
+					sig256C = default;
+				}
+				else
+				{
+					sig256C = new UInt256(sigC, UInt128.Zero);
+					sig256C = ShiftRightJam(sig256C, expDiff);
+				}
+			}
+
+			shiftDist = 8;
+			ulong sigZExtra = default;
+			if (signZ == signC)
+			{
+				if (expDiff <= 0)
+				{
+					sigZ = sigC + sigZ;
+				}
+				else
+				{
+					sig256Z += sig256C;
+					sigZ = sig256Z.Upper;
+				}
+
+				if ((sigZ.GetUpperBits() & 0x0200000000000000) != UInt128.Zero)
+				{
+					++expZ;
+					shiftDist = 9;
+				}
+			}
+			else
+			{
+				if (expDiff < 0)
+				{
+					signZ = signC;
+					if (expDiff < -1)
+					{
+						sigZ = sigC - sigZ;
+						sigZExtra = sig256Z.Lower.GetUpperBits() | sig256Z.Upper.GetLowerBits();
+						if (sigZExtra != 0)
+						{
+							--sigZ;
+						}
+						if ((sigZ.GetUpperBits() & 0x0100000000000000) == 0)
+						{
+							--expZ; 
+							shiftDist = 7;
+						}
+						goto shiftRightRoundPack;
+					}
+					else
+					{
+						sig256C = new UInt256(sigC, UInt128.Zero);
+						sig256Z = sig256C - sig256Z;
+					}
+				}
+				else if (expDiff != 0)
+				{
+					sigZ -= sigC;
+
+					if (sigZ == UInt128.Zero && sig256Z.Lower == UInt128.Zero)
+					{
+						return Quad.PositiveZeroBits;
+					}
+
+					sig256Z = new UInt256(sigZ, sig256Z.Lower);
+					if ((sigZ.GetUpperBits() & 0x8000000000000000) != 0)
+					{
+						signZ = !signZ;
+						sig256Z = -sig256Z;
+					}
+				}
+				else
+				{
+					sig256Z -= sig256C;
+
+					if (1 < expDiff)
+					{
+						sigZ = sig256Z.Upper;
+						if ((sigZ.GetUpperBits() & 0x0100000000000000) == 0)
+						{
+							--expZ;
+							shiftDist = 7;
+						}
+						goto sigZ;
+					}
+				}
+
+				sigZ = sig256Z.Upper;
+				GetUpperAndLowerBits(sig256Z.Lower, out sigZExtra, out ulong sig256Z0);
+				if (sigZ.GetUpperBits() != 0)
+				{
+					if (sig256Z0 != 0)
+					{
+						sigZExtra |= 1;
+					}
+				}
+				else
+				{
+					expZ -= 64;
+					sigZ = new UInt128(sigZ.GetLowerBits(), sigZExtra);
+					sigZExtra = sig256Z0;
+					if (sigZ.GetUpperBits() == 0)
+					{
+						expZ -= 64;
+						sigZ = new UInt128(sigZ.GetLowerBits(), sigZExtra);
+						sigZExtra = sig256Z0;
+						if (sigZ.GetUpperBits() == 0)
+						{
+							expZ -= 64;
+							sigZ = new UInt128(sigZ.GetLowerBits(), 0);
+						}
+					}
+				}
+				shiftDist = BitOperations.LeadingZeroCount(sigZ.GetUpperBits());
+				expZ += (short)(7 - shiftDist);
+				shiftDist = 15 - shiftDist;
+				if (0 < shiftDist)
+				{
+					goto shiftRightRoundPack;
+				}
+				if (shiftDist != 0)
+				{
+					shiftDist = -shiftDist;
+					sigZ <<= shiftDist;
+					GetUpperAndLowerBits((UInt128)sigZExtra << shiftDist, out ulong x64, out sigZExtra);
+					sigZ |= x64;
+				}
+				goto roundPack;
+			}
+
+		sigZ:
+			sigZExtra = sig256Z.Lower.GetUpperBits() | sig256Z.Lower.GetLowerBits();
+		shiftRightRoundPack:
+			sigZExtra = ((sigZ.GetLowerBits() << (64 - shiftDist)) | (sigZExtra != 0 ? 1UL : 0UL));
+			sigZ = sigZ >> shiftDist;
+		roundPack:
+			return RoundPackToQuad(signZ, expZ - 1, sigZ, sigZExtra);
 		}
 	}
 }

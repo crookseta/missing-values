@@ -205,10 +205,14 @@ namespace MissingValues
 
 		internal static Quad CreateQuadNaN(bool sign, UInt128 significand)
 		{
+			return UInt128BitsToQuad(CreateQuadNaNBits(sign, significand));
+		}
+		internal static UInt128 CreateQuadNaNBits(bool sign, UInt128 significand)
+		{
 			UInt128 signInt = (sign ? 1UL : 0UL) << 63;
 			UInt128 sigInt = significand >> 12;
 
-			return UInt128BitsToQuad(signInt | (BiasedExponentMask | new UInt128(0x0000_8000_0000_0000, 0x0)) | sigInt);
+			return signInt | (BiasedExponentMask | new UInt128(0x0000_8000_0000_0000, 0x0)) | sigInt;
 		}
 
 		#region From Quad

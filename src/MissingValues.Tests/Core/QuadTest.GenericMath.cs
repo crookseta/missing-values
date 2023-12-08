@@ -345,7 +345,7 @@ namespace MissingValues.Tests.Core
 			GenericFloatingPointFunctions.Cbrt(Float.PositiveInfinity)
 				.Should().Be(Float.PositiveInfinity);
 			GenericFloatingPointFunctions.Cbrt(NegativeFour)
-				.Should().Be(Float.NaN);
+				.Should().BeApproximately(Values.CreateQuad(0xBFFF_965F_EA53_D6E3, 0xC82B_0599_9AB4_3DC5), Delta);
 			GenericFloatingPointFunctions.Cbrt(Float.NaN)
 				.Should().Be(Float.NaN);
 		}
@@ -465,7 +465,7 @@ namespace MissingValues.Tests.Core
 			FloatingPointIeee754<Float>.ILogB(Values.CreateQuad(0xC03F_0000_0000_0000, 0x0000_0000_0000_0000))
 				.Should().Be(64);
 			FloatingPointIeee754<Float>.ILogB(Zero)
-				.Should().Be(int.MaxValue);
+				.Should().Be(int.MinValue);
 		}
 		[Fact]
 		public static void LogTest()

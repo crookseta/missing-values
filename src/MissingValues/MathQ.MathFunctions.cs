@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
+using System.IO.Compression;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -711,7 +712,7 @@ namespace MissingValues
 					break;
 			}
 
-			Quad v = Quad.UInt128BitsToQuad(Quad.PositiveOneBits & new UInt128(((ulong)(sign | (0x3FFF + e / 3)) << 48) | 0x0000_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF));
+			Quad v = Quad.UInt128BitsToQuad(new UInt128(((ulong)(sign | (0x3FFF + e / 3)) << 48), 0));
 
 			/*
 			 * The following is the guts of s_cbrtf, with the handling of
@@ -834,7 +835,306 @@ namespace MissingValues
 
 		private static int __rem_pio2l(Quad x, Span<Quad> y)
 		{
-			throw new NotImplementedException();
+			/* origin: FreeBSD /usr/src/lib/msun/ld128/e_rem_pio2.c */
+			const int ROUND1 = 51;
+			const int ROUND2 = 119;
+			const int NX = 5;
+			const int NY = 3;
+
+			Quad u = x, z, w, t, r, fn;
+			Span<double> tx = stackalloc double[NX];
+			Span<double> ty = stackalloc double[NY];
+			long n;
+			int e0, ex, i, j, nx;
+			short expsign;
+
+			ex = x.BiasedExponent;
+
+			if (ex < Quad.ExponentBias + 45 || ex == Quad.ExponentBias + 45 && x.TrailingSignificand < new UInt128(0x0000_921F_B544_42D1, 0x8469_898C_C517_01B8))
+			{ // |x| ~< 2^45*(pi/2), medium size
+				fn = x * PIO2_HI + Epsilon - Epsilon;
+				n = (long)fn;
+				r = x - fn * MathQConstants.RemPio.PIO2_1;
+				w = fn * MathQConstants.RemPio.PIO2_1T; // 1st round good to 180 bit
+														// Matters with directed rounding
+				Quad temp = r - w;
+				if (temp < -Pio4)
+				{
+					n--;
+					fn--;
+					r = x - fn * MathQConstants.RemPio.PIO2_1;
+					w = fn * MathQConstants.RemPio.PIO2_1T;
+				}
+				else if(temp > Pio4)
+				{
+					n++;
+					fn++;
+					r = x - fn * MathQConstants.RemPio.PIO2_1;
+					w = fn * MathQConstants.RemPio.PIO2_1T;
+				}
+
+				y[0] = r - w;
+				u = y[0];
+				int ey = u.BiasedExponent;
+				if (ex - ey > ROUND1) // 2nd iteration needed, good to 248
+				{
+					t = r;
+					w = fn * MathQConstants.RemPio.PIO2_2;
+					r = t - w;
+					w = fn * MathQConstants.RemPio.PIO2_2T - ((t - r) - w);
+					y[0] = r - w;
+					u = y[0];
+					ey = u.BiasedExponent;
+					if (ex - ey > ROUND2) // 3rd iteration need, 316 bits acc
+					{
+						t = r; // will cover all possible cases
+						w = fn * MathQConstants.RemPio.PIO2_3;
+						r = t - w;
+						w = fn * MathQConstants.RemPio.PIO2_3T - ((t - r) - w);
+						y[0] = r - w;
+					}
+				}
+				y[1] = (r - y[0]) - w;
+				return (int)n;
+			}
+
+			// All other (large) arguments
+			if (ex == 0x7FFF)
+			{
+				y[0] = y[1] = x;
+				return 0;
+			}
+			// set z = scalbn(|x|,-ilogb(x)+23)
+			z = new Quad(false, 0x3FFF + 23, x.TrailingSignificand);
+
+			for (i = 0; i < NX - 1; i++)
+			{
+				tx[i] = (double)(int)z;
+				z = (z - tx[i]) * new Quad(0x4017_0000_0000_0000, 0x0000_0000_0000_0000);
+			}
+			tx[i] = (double)z;
+			while (tx[i] == 0)
+			{
+				i--;
+			}
+			n = __rem_pio2_large(tx, ty, ex - 0x3FFF - 23, i + 1, NY);
+			t = (Quad)ty[2] + ty[1];
+			r = t + ty[0];
+			w = ty[0] - (r - t);
+			if (Quad.IsNegative(u))
+			{
+				y[0] = -r;
+				y[1] = -w;
+				return -(int)n;
+			}
+			y[0] = r;
+			y[1] = w;
+			return (int)n;
+
+			static int __rem_pio2_large(Span<double> x, Span<double> y, int e0, int nx, int prec)
+			{
+				int jz, jx, jv, jp, jk, carry, n, i, j, k, m, q0, ih;
+				Span<int> iq = stackalloc int[20];
+				double z, fw;
+				Span<double> f = stackalloc double[20];
+				Span<double> fq = stackalloc double[20];
+				Span<double> q = stackalloc double[20];
+
+				/* initialize jk*/
+				jk = MathQConstants.RemPio.INIT_JK[prec];
+				jp = jk;
+
+				/* determine jx,jv,q0, note that 3>q0 */
+				jx = nx - 1;
+				jv = (e0 - 3) / 24; if (jv < 0) jv = 0;
+				q0 = e0 - 24 * (jv + 1);
+
+				/* set up f[0] to f[jx+jk] where f[jx+jk] = ipio2[jv+jk] */
+				j = jv - jx; m = jx + jk;
+				for (i = 0; i <= m; i++, j++)
+					f[i] = j < 0 ? 0.0 : (double)MathQConstants.RemPio.IPIO2[j];
+
+				/* compute q[0],q[1],...q[jk] */
+				for (i = 0; i <= jk; i++)
+				{
+					for (j = 0, fw = 0.0; j <= jx; j++)
+						fw += x[j] * f[jx + i - j];
+					q[i] = fw;
+				}
+
+				jz = jk;
+			recompute:
+				/* distill q[] into iq[] reversingly */
+				for (i = 0, j = jz, z = q[jz]; j > 0; i++, j--)
+				{
+					fw = (double)(int)(5.9604644775390625E-8 * z);
+					iq[i] = (int)(z - 1.6777216E7 * fw);
+					z = q[j - 1] + fw;
+				}
+				// compute n
+				z = Math.ScaleB(z, q0);		// actual value of z
+				z -= 8.0 * Math.Floor(z * 0.125);   // trim off integer >= 8 
+				n = (int)z;
+				z -= n;
+				ih = 0;
+
+				if (q0 > 0)
+				{  /* need iq[jz-1] to determine n */
+					i = iq[jz - 1] >> (24 - q0); n += i;
+					iq[jz - 1] -= i << (24 - q0);
+					ih = iq[jz - 1] >> (23 - q0);
+				}
+				else if (q0 == 0) 
+					ih = iq[jz - 1] >> 23;
+				else if (z >= 0.5) 
+					ih = 2;
+
+				if (ih > 0)
+				{  /* q > 0.5 */
+					n += 1; carry = 0;
+					for (i = 0; i < jz; i++)
+					{  /* compute 1-q */
+						j = iq[i];
+						if (carry == 0)
+						{
+							if (j != 0)
+							{
+								carry = 1;
+								iq[i] = 0x1000000 - j;
+							}
+						}
+						else
+							iq[i] = 0xffffff - j;
+					}
+					if (q0 > 0)
+					{  /* rare case: chance is 1 in 12 */
+						switch (q0)
+						{
+							case 1:
+								iq[jz - 1] &= 0x7fffff; break;
+							case 2:
+								iq[jz - 1] &= 0x3fffff; break;
+						}
+					}
+					if (ih == 2)
+					{
+						z = 1.0 - z;
+						if (carry != 0)
+							z -= Math.ScaleB(1.0, q0);
+					}
+				}
+
+				/* check if recomputation is needed */
+				if (z == 0.0)
+				{
+					j = 0;
+					for (i = jz - 1; i >= jk; i--) j |= iq[i];
+					if (j == 0)
+					{  /* need recomputation */
+						for (k = 1; iq[jk - k] == 0; k++) ;  /* k = no. of terms needed */
+
+						for (i = jz + 1; i <= jz + k; i++)
+						{  /* add q[jz+1] to q[jz+k] */
+							f[jx + i] = (double)MathQConstants.RemPio.IPIO2[jv + i];
+							for (j = 0, fw = 0.0; j <= jx; j++)
+								fw += x[j] * f[jx + i - j];
+							q[i] = fw;
+						}
+						jz += k;
+						goto recompute;
+					}
+				}
+
+				/* chop off zero terms */
+				if (z == 0.0)
+				{
+					jz -= 1;
+					q0 -= 24;
+					while (iq[jz] == 0)
+					{
+						jz--;
+						q0 -= 24;
+					}
+				}
+				else
+				{ /* break z into 24-bit if necessary */
+					z = Math.ScaleB(z, -q0);
+					if (z >= 1.6777216E7) 
+					{
+						fw = (double)(int)(5.9604644775390625E-8 * z);
+						iq[jz] = (int)(z - 1.6777216E7 * fw);
+						jz += 1;
+						q0 += 24;
+						iq[jz] = (int)fw;
+					} 
+					else
+						iq[jz] = (int)z;
+				}
+
+				/* convert integer "bit" chunk to floating-point value */
+				fw = Math.ScaleB(1.0, q0);
+				for (i = jz; i >= 0; i--)
+				{
+					q[i] = fw * (double)iq[i];
+					fw *= 5.9604644775390625E-8;
+				}
+
+				/* compute PIo2[0,...,jp]*q[jz,...,0] */
+				for (i = jz; i >= 0; i--)
+				{
+					for (fw = 0.0, k = 0; k <= jp && k <= jz - i; k++)
+						fw += MathQConstants.RemPio.PIO2[k] * q[i + k];
+					fq[jz - i] = fw;
+				}
+
+				switch (prec)
+				{
+					case 0:
+						fw = 0.0;
+						for (i = jz; i >= 0; i--)
+							fw += fq[i];
+						y[0] = ih == 0 ? fw : -fw;
+						break;
+					case 1:
+					case 2:
+						fw = 0.0;
+						for (i = jz; i >= 0; i--)
+							fw += fq[i];
+						fw = (double)fw;
+						y[0] = ih == 0 ? fw : -fw;
+						fw = fq[0] - fw;
+						for (i = 1; i <= jz; i++)
+							fw += fq[i];
+						y[1] = ih == 0 ? fw : -fw;
+						break;
+					case 3: // Painful
+						for (i = jz; i > 0; i--)
+						{
+							fw = fq[i - 1] + fq[i];
+							fq[i] += fq[i - 1] - fw;
+							fq[i - 1] = fw;
+						}
+						for (i = jz; i > 1; i--)
+						{
+							fw = fq[i - 1] + fq[i];
+							fq[i] += fq[i - 1] - fw;
+							fq[i - 1] = fw;
+						}
+						for (fw = 0.0, i = jz; i >= 2; i--)
+							fw += fq[i];
+						if (ih == 0)
+						{
+							y[0] = fq[0]; y[1] = fq[1]; y[2] = fw;
+						}
+						else
+						{
+							y[0] = -fq[0]; y[1] = -fq[1]; y[2] = -fw;
+						}
+						break;
+				}
+
+				return n & 7;
+			}
 		}
 
 		/// <summary>
@@ -1026,7 +1326,9 @@ namespace MissingValues
 		/// <returns>(x * y) + z, rounded as one ternary operation.</returns>
 		public static Quad FusedMultiplyAdd(Quad x, Quad y, Quad z)
 		{
-			throw new NotImplementedException();
+			UInt128 result = BitHelper.MulAddQuadBits(Quad.QuadToUInt128Bits(x), Quad.QuadToUInt128Bits(y), Quad.QuadToUInt128Bits(z));
+
+			return Quad.UInt128BitsToQuad(result);
 		}
 		/// <summary>
 		/// Returns the remainder resulting from the division of a specified number by another specified number.
@@ -1036,7 +1338,128 @@ namespace MissingValues
 		/// <returns>A number equal to <paramref name="x"/> - (<paramref name="y"/> Q), where Q is the quotient of <paramref name="x"/> / <paramref name="y"/> rounded to the nearest integer</returns>
 		public static Quad IEEERemainder(Quad x, Quad y)
 		{
-			throw new NotImplementedException();
+			UInt128 uiA = Quad.QuadToUInt128Bits(x);
+			bool signA = Quad.IsNegative(x);
+			short expA = (short)Quad.ExtractBiasedExponentFromBits(uiA);
+			UInt128 sigA = Quad.ExtractTrailingSignificandFromBits(uiA);
+
+			UInt128 uiB = Quad.QuadToUInt128Bits(y);
+			short expB = (short)Quad.ExtractBiasedExponentFromBits(uiB);
+			UInt128 sigB = Quad.ExtractTrailingSignificandFromBits(uiB);
+
+			if (expA == 0x7FFF)
+			{
+				if ((sigA != UInt128.Zero) || ((expB == 0x7FFF) && (sigB != UInt128.Zero)))
+				{
+					return Quad.CreateQuadNaN(Quad.IsNegative(y), sigB);
+				}
+				return Quad.NaN;
+			}
+			if (expB == 0x7FFF)
+			{
+				if (sigB != UInt128.Zero)
+				{
+					return Quad.CreateQuadNaN(Quad.IsNegative(y), sigB);
+				}
+				return x;
+			}
+
+			if (expB == 0)
+			{
+				if (sigB == UInt128.Zero)
+				{
+					return Quad.NaN;
+				}
+				(var exp, sigA) = BitHelper.NormalizeSubnormalF128Sig(sigA);
+				expA = (short)exp;
+			}
+
+			sigA |= new UInt128(0x0001_0000_0000_0000, 0x0);
+			sigB |= new UInt128(0x0001_0000_0000_0000, 0x0);
+			UInt128 rem = sigA, altRem;
+			int expDiff = expA - expB;
+			uint q, recip32;
+			if (expDiff < 1)
+			{
+				if (expDiff < -1)
+				{
+					return x;
+				}
+				if (expDiff != 0)
+				{
+					--expB;
+					sigB += sigB;
+					q = 0;
+				}
+				else
+				{
+					q = sigB <= rem ? 1U : 0U;
+					if (q != 0)
+					{
+						rem -= sigB;
+					}
+				}
+			}
+			else
+			{
+				recip32 = BitHelper.ReciprocalApproximate((uint)(sigB >> 81));
+				expDiff -= 30;
+
+				UInt128 term;
+				ulong q64;
+				while (true)
+				{
+					q64 = (ulong)(rem >> 83) * recip32;
+					if (expDiff < 0)
+					{
+						break;
+					}
+					q = (uint)((q64 + 0x80000000) >> 32);
+					rem <<= 29;
+					term = sigB * q;
+					rem -= term;
+					if ((rem & new UInt128(0x8000_0000_0000_0000, 0x0)) != UInt128.Zero)
+					{
+						rem += sigB;
+					}
+
+					expDiff -= 29;
+				}
+				// ('expDiff' cannot be less than -29 here.)
+				Debug.Assert(expDiff >= -29);
+
+				q = (uint)(q64 >> 32) >> (~expDiff & 31);
+				rem <<= expDiff + 30;
+				term = sigB * q;
+				rem -= term;
+				if ((rem & new UInt128(0x8000_0000_0000_0000, 0x0)) != UInt128.Zero)
+				{
+					altRem = rem + sigB;
+					goto selectRem;
+				}
+			}
+
+			do
+			{
+				altRem = rem;
+				++q;
+				rem -= sigB;
+			} while ((rem & new UInt128(0x8000_0000_0000_0000, 0x0)) == UInt128.Zero);
+		selectRem:
+			UInt128 meanRem = rem + altRem;
+			if (((meanRem & new UInt128(0x8000_0000_0000_0000, 0x0)) != UInt128.Zero)
+				|| ((meanRem == UInt128.Zero) && ((q & 1) != 0)))
+			{
+				rem = altRem;
+			}
+			bool signRem = signA;
+			if ((rem & new UInt128(0x8000_0000_0000_0000, 0x0)) != UInt128.Zero)
+			{
+				signRem = !signRem;
+				rem = -rem;
+			}
+			UInt128 resultBits = BitHelper.NormalizeRoundPack(signRem, expB - 1, rem);
+			return Quad.UInt128BitsToQuad(resultBits);
 		}
 		/// <summary>
 		/// Returns the base 2 integer logarithm of a specified number.
@@ -1306,7 +1729,7 @@ namespace MissingValues
 		/// Returns a specified number raised to the specified power.
 		/// </summary>
 		/// <param name="x">A quadruple-precision floating-point number to be raised to a power.</param>
-		/// <param name="y">A quadruple-precision floating-point number to be raised to a power.</param>
+		/// <param name="y">A quadruple-precision floating-point number that specifies a power.</param>
 		/// <returns>The number <paramref name="x"/> raised to the power <paramref name="y"/>.</returns>
 		public static Quad Pow(Quad x, Quad y)
 		{
@@ -1645,7 +2068,41 @@ namespace MissingValues
 		/// <returns>The sine and cosine of <paramref name="x"/>. If <paramref name="x"/> is equal to <see cref="Quad.NaN"/>, <see cref="Quad.NegativeInfinity"/>, or <see cref="Quad.PositiveInfinity"/>, this method returns <see cref="Quad.NaN"/>.</returns>
 		public static (Quad Sin, Quad Cos) SinCos(Quad x)
 		{
-			throw new NotImplementedException();
+			uint n;
+			Span<Quad> y = stackalloc Quad[2];
+			Quad s, c;
+
+			var se = x.BiasedExponent;
+			if (se == 0x7FFF)
+			{
+				return (x, x);
+			}
+			x = Abs(x);
+			if (x < M_PI_4)
+			{
+				if (se < 0x3FFF - Quad.MantissaDigits)
+				{
+					// raise underflow if subnormal
+					return (x, Quad.One + x);
+				}
+				return (__sin(x, Quad.Zero, 0), __cos(in x, Quad.Zero));
+			}
+			n = (uint)__rem_pio2l(x, y);
+			s = __sin(y[0], y[1], 1);
+			c = __cos(in y[0], in y[1]);
+
+			switch (n & 3)
+			{
+				case 0:
+					return (s, c);
+				case 1:
+					return (c, -s);
+				case 2:
+					return (-s, -c);
+				case 3:
+				default:
+					return (-c, s);
+			}
 		}
 		/// <summary>
 		/// Returns the hyperbolic sine of the specified angle.
@@ -1654,7 +2111,36 @@ namespace MissingValues
 		/// <returns>The hyperbolic sine of <paramref name="x"/>. If <paramref name="x"/> is equal to <see cref="Quad.NaN"/>, <see cref="Quad.NegativeInfinity"/>, or <see cref="Quad.PositiveInfinity"/>, this method returns a <see cref="Quad"/> equal to <paramref name="x"/>.</returns>
 		public static Quad Sinh(Quad x)
 		{
-			throw new NotImplementedException();
+			var ex = x.BiasedExponent;
+			Quad h, t, absx;
+
+			h = Quad.HalfOne;
+			if (Quad.IsNegative(x))
+			{
+				h = -h;
+			}
+
+			absx = Abs(x);
+
+			// |x| < log(LDBL_MAX)
+			if (absx < new Quad(0x400C_62E4_2FEF_A39E, 0xF357_93C7_6730_07E6))
+			{
+				t = Quad.ExpM1(absx);
+				if (ex < 0x3FFF)
+				{
+					if (ex < 0x3FFF - 32)
+					{
+						return x;
+					}
+					return h * (Quad.Two * t - t * t / (Quad.One + t));
+				}
+				return h * (t + t / (t + Quad.One));
+			}
+
+			// |x| > log(LDBL_MAX) or nan
+
+			t = Exp(Quad.HalfOne * absx);
+			return h * t * t;
 		}
 		/// <summary>
 		/// Returns the square root of a specified number.
@@ -1910,7 +2396,40 @@ namespace MissingValues
 		/// <returns>The hyperbolic tangent of <paramref name="x"/>. If <paramref name="x"/> is equal to <see cref="Quad.NegativeInfinity"/>, this method returns -1. If value is equal to <see cref="Quad.PositiveInfinity"/>, this method returns 1. If <paramref name="x"/> is equal to <see cref="Quad.NaN"/>, this method returns <see cref="Quad.NaN"/>.</returns>
 		public static Quad Tanh(Quad x)
 		{
-			throw new NotImplementedException();
+			var ex = x.BiasedExponent;
+			var sign = Quad.IsNegative(x);
+			Quad t;
+
+			x = Quad.Abs(x);
+
+			if (x > new Quad(0x3FFE_193E_A7AA_D030, 0xA976_A419_8D55_053B))
+			{
+				// |x| > log(3)/2
+				if (ex >= 0x3FFF + 5)
+				{
+					// |x| >= 32
+					t = Quad.One;
+				}
+				else
+				{
+					t = Quad.ExpM1(Quad.Two * x);
+					t = Quad.One - Quad.Two / (t + Quad.Two);
+				}
+			}
+			else if (x > new Quad(0x3FFD_058A_EFA8_1145, 0x1A72_76BC_2F82_043B))
+			{
+				// |x| > log(5/3)/2
+				t = Quad.ExpM1(Quad.Two * x);
+				t = t / (t + Quad.Two);
+			}
+			else
+			{
+				// |x| is small
+				t = Quad.ExpM1(-Quad.Two * x);
+				t = -t / (t + Quad.Two);
+			}
+
+			return sign ? -t : t;
 		}
 		/// <summary>
 		/// Calculates the integral part of a specified quadruple-precision floating-point number.
