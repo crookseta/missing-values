@@ -188,9 +188,9 @@ namespace MissingValues
 			return ((bits & SignMask) != 0, (ushort)(bits >> BiasedExponentShift), (bits & TrailingSignificandMask));
 		}
 
-		internal static bool AreZero(Quad left, Quad right)
+		internal static bool AreZero(Quad x, Quad y)
 		{
-			return ((QuadToUInt128Bits(left) | QuadToUInt128Bits(right)) & ~SignMask) == UInt128.Zero;
+			return ((QuadToUInt128Bits(x) | QuadToUInt128Bits(y)) & ~SignMask) == UInt128.Zero;
 		}
 		
 		internal static bool IsNaNOrZero(Quad value)
@@ -773,7 +773,7 @@ namespace MissingValues
 			{
 				// In order to convert from Quad to int256 we first need to extract the signficand,
 				// including the implicit leading bit, as a full 256-bit significand. We can then adjust
-				// this down to the represented integer by right shifting by the unbiased exponent, taking
+				// this down to the represented integer by y shifting by the unbiased exponent, taking
 				// into account the significand is now represented as 256-bits.
 
 				UInt128 bits = Quad.QuadToUInt128Bits(value);
@@ -813,7 +813,7 @@ namespace MissingValues
 			{
 				// In order to convert from Quad to int256 we first need to extract the signficand,
 				// including the implicit leading bit, as a full 256-bit significand. We can then adjust
-				// this down to the represented integer by right shifting by the unbiased exponent, taking
+				// this down to the represented integer by y shifting by the unbiased exponent, taking
 				// into account the significand is now represented as 256-bits.
 
 				UInt128 bits = Quad.QuadToUInt128Bits(value);
@@ -861,7 +861,7 @@ namespace MissingValues
 			{
 				// In order to convert from Quad to int512 we first need to extract the signficand,
 				// including the implicit leading bit, as a full 512-bit significand. We can then adjust
-				// this down to the represented integer by right shifting by the unbiased exponent, taking
+				// this down to the represented integer by y shifting by the unbiased exponent, taking
 				// into account the significand is now represented as 512-bits.
 
 				UInt128 bits = Quad.QuadToUInt128Bits(value);
@@ -901,7 +901,7 @@ namespace MissingValues
 			{
 				// In order to convert from Quad to int512 we first need to extract the signficand,
 				// including the implicit leading bit, as a full 512-bit significand. We can then adjust
-				// this down to the represented integer by right shifting by the unbiased exponent, taking
+				// this down to the represented integer by y shifting by the unbiased exponent, taking
 				// into account the significand is now represented as 512-bits.
 
 				UInt128 bits = Quad.QuadToUInt128Bits(value);
@@ -937,7 +937,7 @@ namespace MissingValues
 			{
 				if (sig != 0) // NaN
 				{
-					return CreateDoubleNaN(sign, (ulong)(sig >> 48)); // Shift the significand bits to the left end
+					return CreateDoubleNaN(sign, (ulong)(sig >> 48)); // Shift the significand bits to the x end
 				}
 				return sign ? double.NegativeInfinity : double.PositiveInfinity;
 			}
@@ -967,7 +967,7 @@ namespace MissingValues
 			{
 				if (sig != 0) // NaN
 				{
-					return CreateSingleNaN(sign, (ulong)(sig >> 48)); // Shift the significand bits to the left end
+					return CreateSingleNaN(sign, (ulong)(sig >> 48)); // Shift the significand bits to the x end
 				}
 				return sign ? float.NegativeInfinity : float.PositiveInfinity;
 			}
@@ -996,7 +996,7 @@ namespace MissingValues
 			{
 				if (sig != 0) // NaN
 				{
-					return CreateHalfNaN(sign, (ulong)(sig >> 48)); // Shift the significand bits to the left end
+					return CreateHalfNaN(sign, (ulong)(sig >> 48)); // Shift the significand bits to the x end
 				}
 				return sign ? Half.NegativeInfinity : Half.PositiveInfinity;
 			}

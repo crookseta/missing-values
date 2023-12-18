@@ -9,6 +9,7 @@ using System.Linq;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -642,18 +643,123 @@ namespace MissingValues
 		public static Quad Exp(Quad x) => MathQ.Exp(x);
 		public static Quad ExpM1(Quad x)
 		{
+			// TODO: Replace with an actual implementation
+			return Exp(x) - One;
+			/* origin: FreeBSD /usr/src/lib/msun/ld128/s_expl.c */
 			throw new NotImplementedException();
 		}
 
 		public static Quad Exp10(Quad x)
 		{
-			throw new NotImplementedException();
+			ReadOnlySpan<Quad> P10 = stackalloc Quad[]
+			{
+				new Quad(0x3FCD_203A_F9EE_7561, 0x59B2_1F3A_6E02_97EC), // 1E-15
+				new Quad(0x3FD0_6849_B86A_12B9, 0xB01E_A709_0983_3DE7), // 1E-14
+				new Quad(0x3FD3_C25C_2684_9768, 0x1C26_50CB_4BE4_0D61), // 1E-13
+				new Quad(0x3FD7_1979_9812_DEA1, 0x1197_F27F_0F6E_885D), // 1E-12
+				new Quad(0x3FDA_5FD7_FE17_9649, 0x55FD_EF1E_D34A_2A74), // 1E-11
+				new Quad(0x3FDD_B7CD_FD9D_7BDB, 0xAB7D_6AE6_881C_B511), // 1E-10
+				new Quad(0x3FE1_12E0_BE82_6D69, 0x4B2E_62D0_1511_F12A), // 1E-09
+				new Quad(0x3FE4_5798_EE23_08C3, 0x9DF9_FB84_1A56_6D75), // 1E-08
+				new Quad(0x3FE7_AD7F_29AB_CAF4, 0x8578_7A65_20EC_08D2), // 1E-07
+				new Quad(0x3FEB_0C6F_7A0B_5ED8, 0xD36B_4C7F_3493_8583), // 1E-06
+				new Quad(0x3FEE_4F8B_588E_368F, 0x0846_1F9F_01B8_66E4), // 1E-05
+				new Quad(0x3FF1_A36E_2EB1_C432, 0xCA57_A786_C226_809D), // 1E-04
+				new Quad(0x3FF5_0624_DD2F_1A9F, 0xBE76_C8B4_3958_1062), // 1E-03
+				new Quad(0x3FF8_47AE_147A_E147, 0xAE14_7AE1_47AE_147B), // 1E-02
+				new Quad(0x3FFB_9999_9999_9999, 0x9999_9999_9999_999A), // 1E-01
+				new Quad(0x3FFF_0000_0000_0000, 0x0000_0000_0000_0000), // 1E00
+				new Quad(0x4002_4000_0000_0000, 0x0000_0000_0000_0000), // 1E01
+				new Quad(0x4005_9000_0000_0000, 0x0000_0000_0000_0000), // 1E02
+				new Quad(0x4008_F400_0000_0000, 0x0000_0000_0000_0000), // 1E03
+				new Quad(0x400C_3880_0000_0000, 0x0000_0000_0000_0000), // 1E04
+				new Quad(0x400F_86A0_0000_0000, 0x0000_0000_0000_0000), // 1E05
+				new Quad(0x4012_E848_0000_0000, 0x0000_0000_0000_0000), // 1E06
+				new Quad(0x4016_312D_0000_0000, 0x0000_0000_0000_0000), // 1E07
+				new Quad(0x4019_7D78_4000_0000, 0x0000_0000_0000_0000), // 1E08
+				new Quad(0x401C_DCD6_5000_0000, 0x0000_0000_0000_0000), // 1E09
+				new Quad(0x4020_2A05_F200_0000, 0x0000_0000_0000_0000), // 1E10
+				new Quad(0x4023_7487_6E80_0000, 0x0000_0000_0000_0000), // 1E11
+				new Quad(0x4026_D1A9_4A20_0000, 0x0000_0000_0000_0000), // 1E12
+				new Quad(0x402A_2309_CE54_0000, 0x0000_0000_0000_0000), // 1E13
+				new Quad(0x402D_6BCC_41E9_0000, 0x0000_0000_0000_0000), // 1E14
+				new Quad(0x4030_C6BF_5263_4000, 0x0000_0000_0000_0000), // 1E15
+			};
+			Quad y = MathQ.ModF(x, out Quad n);
+
+			// Abs(n) < 16 without raising invalid NaN
+			if (n.BiasedExponent < 0x3FFF + 4)
+			{
+				if (y == Quad.Zero)
+				{
+					return P10[(int)n + 15];
+				}
+				y = Exp2(new Quad(0x4000_A934_F097_9A37, 0x15FC_9257_EDFE_9B5F) * y); // y = exp2l(3.32192809488736234787031942948939L * y)
+				return y * P10[(int)n + 15];
+			}
+
+			return Pow(P10[16], x);
 		}
 		public static Quad Exp10M1(Quad x) => Exp10(x) - One;
 
 		public static Quad Exp2(Quad x)
 		{
-			throw new NotImplementedException();
+			int e = x.BiasedExponent;
+			Quad r, z, t;
+			uint i0;
+			(uint u, int i) k;
+
+			// Filter out exceptional cases
+			if (e >= 0x3FFF + 14) // |x| >= 16384 or x is NaN 
+			{
+				if (x.BiasedExponent >= 0x3FFF + 15 && !IsNegative(x))
+				{
+					return PositiveInfinity;
+				}
+				if (Quad.IsNaN(x))
+				{
+					return x;
+				}
+				if (e == 0x7FFF)
+				{
+					return Zero;
+				}
+				if (x < new Quad(0xC00D_00F8_0000_0000, 0x0000_0000_0000_0000))
+				{
+					return Zero;
+				}
+			}
+			else if (e < 0x3FFF - 114)
+			{
+				return One + x;
+			}
+
+			/*
+			 * Reduce x, computing z, i0, and k. The low bits of x + redux
+			 * contain the 16-bit integer part of the exponent (k) followed by
+			 * TBLBITS fractional bits (i0). We use bit tricks to extract these
+			 * as integers, then set z to the remainder.
+			 *
+			 * Example: Suppose x is 0xabc.123456p0 and TBLBITS is 8.
+			 * Then the low-order word of x + redux is 0x000abc12,
+			 * We split this into k = 0xabc and i0 = 0x12 (adjusted to
+			 * index into the table), then we compute z = 0x0.003456p0.
+			 */
+			Quad u = x + MathQConstants.Exp.redux;
+			i0 = (uint)(u._lower) + MathQConstants.Exp.TBLSIZE / 2;
+			k = (i0 / MathQConstants.Exp.TBLSIZE * MathQConstants.Exp.TBLSIZE, 0);
+			k.i = ((int)k.u) / MathQConstants.Exp.TBLSIZE;
+			i0 %= MathQConstants.Exp.TBLSIZE;
+			u -= MathQConstants.Exp.redux;
+			z = x - u;
+
+			// Compute r = exp2(y) = exp2t[i0] * p(z - eps[i]).
+			t = MathQConstants.Exp.Tbl[(int)i0];
+			z -= MathQConstants.Exp.Eps[(int)i0];
+			r = t + t * z * (MathQConstants.Exp.P1 + z * (MathQConstants.Exp.P2 + z * (MathQConstants.Exp.P3 + z * (MathQConstants.Exp.P4 + z * (MathQConstants.Exp.P5 + z * (MathQConstants.Exp.P6
+		+ z * (MathQConstants.Exp.P7 + z * (MathQConstants.Exp.P8 + z * (MathQConstants.Exp.P9 + z * MathQConstants.Exp.P10)))))))));
+
+			return MathQ.ScaleB(r, k.i);
 		}
 		public static Quad Exp2M1(Quad x) => Exp2(x) - One;
 
@@ -672,6 +778,9 @@ namespace MissingValues
 		public static Quad Log(Quad x) => MathQ.Log(x);
 		public static Quad LogP1(Quad x) 
 		{
+			// TODO: Replace with an actual implementation
+			return MathQ.Log(x + One);
+			/* origin: FreeBSD /usr/src/lib/msun/ld128/s_logl.c */
 			throw new NotImplementedException();
 		}
 
@@ -689,7 +798,61 @@ namespace MissingValues
 
 		public static Quad Hypot(Quad x, Quad y)
 		{
-			throw new NotImplementedException();
+			int ex = x.BiasedExponent, ey = y.BiasedExponent;
+
+			if (ex < ey)
+			{
+				(ex, ey) = (ey, ex);
+				(x, y) = (Abs(y), Abs(x));
+			}
+			else
+			{
+				x = Abs(x);
+				y = Abs(y);
+			}
+
+			if (ex == 0x7FFF && IsInfinity(y))
+			{
+				return y;
+			}
+			if (ex == 0x7FFF || y == Quad.Zero)
+			{
+				return x;
+			}
+			if (ex - ey > MantissaDigits)
+			{
+				return x + y;
+			}
+
+			Quad z = Quad.One;
+			Quad huge = new Quad(0x670F_0000_0000_0000, 0x0000_0000_0000_0000); // 0x1p10000
+			Quad tiny = new Quad(0x18EF_0000_0000_0000, 0x0000_0000_0000_0000); // 0x1p-10000
+			if (ex > 0x3FFF+8000)
+			{
+				z = huge;
+				x *= tiny; 
+				y *= tiny;
+			}
+			else if (ey < 0x3FFF-8000)
+			{
+				z = tiny;
+				x *= huge;
+				y *= huge;
+			}
+
+			Sq(x, out Quad hx, out Quad lx);
+			Sq(y, out Quad hy, out Quad ly);
+			return z * MathQ.Sqrt(ly + lx + hy + hx);
+
+			static void Sq(Quad x, out Quad hi, out Quad lo)
+			{
+				Quad xh, xl, xc;
+				xc = x * new Quad(0x4038_0000_0000_0000, 0x0080_0000_0000_0000); // SPLIT = 0x1p57 + 1
+				xh = x - xc + xc;
+				xl = x - xh;
+				hi = x * x;
+				lo = xh * xh - hi + Quad.Two * xh * xl + xl * xl;
+			}
 		}
 
 		public static Quad ReciprocalEstimate(Quad x) => MathQ.ReciprocalEstimate(x);

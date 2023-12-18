@@ -107,41 +107,41 @@ namespace MissingValues
 		private static Quad RoundLimit => new Quad(0x4073_3426_172C_74D8, 0x22B8_78FE_8000_0000); // 1E35
 		internal static ReadOnlySpan<Quad> RoundPower10 => new Quad[MaxRoundingDigits + 1] 
 		{ 
-			new Quad(0x3FFF_0000_0000_0000, 0x0000_0000_0000_0000),
-			new Quad(0x4002_4000_0000_0000, 0x0000_0000_0000_0000),
-			new Quad(0x4005_9000_0000_0000, 0x0000_0000_0000_0000),
-			new Quad(0x4008_F400_0000_0000, 0x0000_0000_0000_0000),
-			new Quad(0x400C_3880_0000_0000, 0x0000_0000_0000_0000),
-			new Quad(0x400F_86A0_0000_0000, 0x0000_0000_0000_0000),
-			new Quad(0x4012_E848_0000_0000, 0x0000_0000_0000_0000),
-			new Quad(0x4016_312D_0000_0000, 0x0000_0000_0000_0000),
-			new Quad(0x4019_7D78_4000_0000, 0x0000_0000_0000_0000),
-			new Quad(0x401C_DCD6_5000_0000, 0x0000_0000_0000_0000),
-			new Quad(0x4020_2A05_F200_0000, 0x0000_0000_0000_0000),
-			new Quad(0x4023_7487_6E80_0000, 0x0000_0000_0000_0000),
-			new Quad(0x4026_D1A9_4A20_0000, 0x0000_0000_0000_0000),
-			new Quad(0x402A_2309_CE54_0000, 0x0000_0000_0000_0000),
-			new Quad(0x402D_6BCC_41E9_0000, 0x0000_0000_0000_0000),
-			new Quad(0x4030_C6BF_5263_4000, 0x0000_0000_0000_0000),
-			new Quad(0x4034_1C37_937E_0800, 0x0000_0000_0000_0000),
-			new Quad(0x4037_6345_785D_8A00, 0x0000_0000_0000_0000),
-			new Quad(0x403A_BC16_D674_EC80, 0x0000_0000_0000_0000),
-			new Quad(0x403E_158E_4609_13D0, 0x0000_0000_0000_0000),
-			new Quad(0x4041_5AF1_D78B_58C4, 0x0000_0000_0000_0000),
-			new Quad(0x4044_B1AE_4D6E_2EF5, 0x0000_0000_0000_0000),
-			new Quad(0x4048_0F0C_F064_DD59, 0x2000_0000_0000_0000),
-			new Quad(0x404B_52D0_2C7E_14AF, 0x6800_0000_0000_0000),
-			new Quad(0x404E_A784_379D_99DB, 0x4200_0000_0000_0000),
-			new Quad(0x4052_08B2_A2C2_8029, 0x0940_0000_0000_0000),
-			new Quad(0x4055_4ADF_4B73_2033, 0x4B90_0000_0000_0000),
-			new Quad(0x4058_9D97_1E4F_E840, 0x1E74_0000_0000_0000),
-			new Quad(0x405C_027E_72F1_F128, 0x1308_8000_0000_0000),
-			new Quad(0x405F_431E_0FAE_6D72, 0x17CA_A000_0000_0000),
-			new Quad(0x4062_93E5_939A_08CE, 0x9DBD_4800_0000_0000),
-			new Quad(0x4065_F8DE_F880_8B02, 0x452C_9A00_0000_0000),
-			new Quad(0x4069_3B8B_5B50_56E1, 0x6B3B_E040_0000_0000),
-			new Quad(0x406C_8A6E_3224_6C99, 0xC60A_D850_0000_0000),
-			new Quad(0x406F_ED09_BEAD_87C0, 0x378D_8E64_0000_0000),
+			new Quad(0x3FFF_0000_0000_0000, 0x0000_0000_0000_0000), // 1E00
+			new Quad(0x4002_4000_0000_0000, 0x0000_0000_0000_0000), // 1E01
+			new Quad(0x4005_9000_0000_0000, 0x0000_0000_0000_0000), // 1E02
+			new Quad(0x4008_F400_0000_0000, 0x0000_0000_0000_0000), // 1E03
+			new Quad(0x400C_3880_0000_0000, 0x0000_0000_0000_0000), // 1E04
+			new Quad(0x400F_86A0_0000_0000, 0x0000_0000_0000_0000), // 1E05
+			new Quad(0x4012_E848_0000_0000, 0x0000_0000_0000_0000), // 1E06
+			new Quad(0x4016_312D_0000_0000, 0x0000_0000_0000_0000), // 1E07
+			new Quad(0x4019_7D78_4000_0000, 0x0000_0000_0000_0000), // 1E08
+			new Quad(0x401C_DCD6_5000_0000, 0x0000_0000_0000_0000), // 1E09
+			new Quad(0x4020_2A05_F200_0000, 0x0000_0000_0000_0000), // 1E10
+			new Quad(0x4023_7487_6E80_0000, 0x0000_0000_0000_0000), // 1E11
+			new Quad(0x4026_D1A9_4A20_0000, 0x0000_0000_0000_0000), // 1E12
+			new Quad(0x402A_2309_CE54_0000, 0x0000_0000_0000_0000), // 1E13
+			new Quad(0x402D_6BCC_41E9_0000, 0x0000_0000_0000_0000), // 1E14
+			new Quad(0x4030_C6BF_5263_4000, 0x0000_0000_0000_0000), // 1E15
+			new Quad(0x4034_1C37_937E_0800, 0x0000_0000_0000_0000), // 1E16
+			new Quad(0x4037_6345_785D_8A00, 0x0000_0000_0000_0000), // 1E17
+			new Quad(0x403A_BC16_D674_EC80, 0x0000_0000_0000_0000), // 1E18
+			new Quad(0x403E_158E_4609_13D0, 0x0000_0000_0000_0000), // 1E19
+			new Quad(0x4041_5AF1_D78B_58C4, 0x0000_0000_0000_0000), // 1E20
+			new Quad(0x4044_B1AE_4D6E_2EF5, 0x0000_0000_0000_0000), // 1E21
+			new Quad(0x4048_0F0C_F064_DD59, 0x2000_0000_0000_0000), // 1E22
+			new Quad(0x404B_52D0_2C7E_14AF, 0x6800_0000_0000_0000), // 1E23
+			new Quad(0x404E_A784_379D_99DB, 0x4200_0000_0000_0000), // 1E24
+			new Quad(0x4052_08B2_A2C2_8029, 0x0940_0000_0000_0000), // 1E25
+			new Quad(0x4055_4ADF_4B73_2033, 0x4B90_0000_0000_0000), // 1E26
+			new Quad(0x4058_9D97_1E4F_E840, 0x1E74_0000_0000_0000), // 1E27
+			new Quad(0x405C_027E_72F1_F128, 0x1308_8000_0000_0000), // 1E28
+			new Quad(0x405F_431E_0FAE_6D72, 0x17CA_A000_0000_0000), // 1E29
+			new Quad(0x4062_93E5_939A_08CE, 0x9DBD_4800_0000_0000), // 1E30
+			new Quad(0x4065_F8DE_F880_8B02, 0x452C_9A00_0000_0000), // 1E31
+			new Quad(0x4069_3B8B_5B50_56E1, 0x6B3B_E040_0000_0000), // 1E32
+			new Quad(0x406C_8A6E_3224_6C99, 0xC60A_D850_0000_0000), // 1E33
+			new Quad(0x406F_ED09_BEAD_87C0, 0x378D_8E64_0000_0000), // 1E34
 		};
 
 		// Domain [-0.7854, 0.7854], range ~[-1.80e-37, 1.79e-37]:
@@ -245,13 +245,21 @@ namespace MissingValues
 			{
 				return M_PI_2;
 			}
-			if (x == Quad.One)
+			if (x >= Quad.One)
 			{
-				return Quad.Zero;
+				if (x == Quad.One)
+				{
+					return Quad.Zero;
+				}
+				return Quad.NaN;
 			}
-			if (x == Quad.NegativeOne)
+			if (x <= Quad.NegativeOne)
 			{
-				return Quad.Pi;
+				if (x == Quad.NegativeOne)
+				{
+					return Quad.Pi;
+				}
+				return Quad.NaN;
 			}
 
 			y = Atan(Sqrt(Quad.One - (x * x)) / x);
@@ -626,7 +634,7 @@ namespace MissingValues
 			// Negative values need to be incremented
 			// Positive values need to be decremented
 
-			bits += unchecked((UInt128)(((Int128)bits < 0) ? Int128.One : Int128.NegativeOne));
+			bits += unchecked((UInt128)(((Int128)bits < Int128.Zero) ? Int128.One : Int128.NegativeOne));
 			return Quad.UInt128BitsToQuad(bits);
 		}
 		/// <summary>
@@ -655,7 +663,7 @@ namespace MissingValues
 			// Negative values need to be decremented
 			// Positive values need to be incremented
 
-			bits += unchecked((UInt128)(((Int128)bits < 0) ? Int128.NegativeOne : Int128.One));
+			bits += unchecked((UInt128)(((Int128)bits < Int128.Zero) ? Int128.NegativeOne : Int128.One));
 			return Quad.UInt128BitsToQuad(bits);
 		}
 		/// <summary>
@@ -1153,7 +1161,7 @@ namespace MissingValues
 			exponent &= 0x7FFF;
 			if (exponent == 0x7FFF)
 			{
-				return x;
+				return Quad.NaN;
 			}
 			x = x0;
 
@@ -1247,39 +1255,65 @@ namespace MissingValues
 		/// <returns>The number <seealso cref="Quad.E"/> raised to the power <paramref name="x"/>. If <paramref name="x"/> equals <see cref="Quad.NaN"/> or <see cref="Quad.PositiveInfinity"/>, that value is returned. If <paramref name="x"/> equals <see cref="Quad.NegativeInfinity"/>, 0 is returned.</returns>
 		public static Quad Exp(Quad x)
 		{
-			Quad px, xx;
-			int k;
+			Quad t, twopk;
 
-			if (Quad.IsNaN(x))
+			ushort ix;
+
+			ix = x.BiasedExponent;
+			if (ix >= Quad.ExponentBias + 13)
 			{
-				return x;
+				if (ix == Quad.ExponentBias + Quad.ExponentBias + 1)
+				{
+					if (Quad.IsNegativeInfinity(x))
+					{
+						return Quad.Zero;
+					}
+					return x + x;
+				}
+				if (x > new Quad(0x400C_62E4_2FEF_A39E, 0xF357_93C7_6730_07E5))
+				{
+					return Quad.PositiveInfinity;
+				}
+				if (x < new Quad(0xC00C_654B_B3B2_C73E, 0xBB05_9FAB_B506_FF33))
+				{
+					return Quad.Zero;
+				}
 			}
-			if (x > new Quad(0x400C_62E4_2FEF_A39E, 0xF357_93C7_6730_07E6)) // x > ln(2^16384 - 0.5)
+			else if (ix < Quad.ExponentBias - 114)
 			{
-				return Quad.MaxValue; // x * 2^16383
-			}
-			if (x < new Quad(0xC00C_643B_FCFE_13C5, 0x7553_509E_905B_FE6E)) // x < ln(2^-16446)
-			{
-				return Quad.Zero; // -2^-16445 / x
+				return Quad.One + x;
 			}
 
-			// Express e**x = e**f 2**k
-			//  = e**(f + k ln(2))
+			Exp(x, out Quad hi, out Quad lo, out int k);
 
-			px = Floor(MathQConstants.Exp.LOG2E * x + Quad.HalfOne);
-			k = (int)px;
-			x -= px * MathQConstants.Exp.LN2HI;
-			x -= px * MathQConstants.Exp.LN2LO;
+			t = hi + lo;
+			return ScaleB(t, k);
+		}
+		private static void Exp(Quad x, out Quad hip, out Quad lop, out int kp)
+		{
+			Quad q, r, r1, t, z;
+			double dr, fn, r2;
+			int n, n2;
 
-			// rational approximation of the fractional part:
-			// e**a =  1 + 2x P(x**2)/(Q(x**2) - x P(x**2))
+			/* Reduce x to (k*ln2 + endpoint[n2] + r1 + r2). */
+			fn = (double)x * MathQConstants.Exp.INV_L;
+			n = (int)fn;
+			n2 = (int)((uint)n % MathQConstants.Exp.Intervals);
+			/* Depend on the sign bit being propagated: */
+			kp = n >> MathQConstants.Exp.Log2Intervals;
+			r1 = x - fn * MathQConstants.Exp.L1;
+			r2 = fn * -MathQConstants.Exp.L2;
+			r = r1 + r2;
 
-			xx = x * x;
-			px = x * PolynomialEvaluator(xx, ref MemoryMarshal.GetReference(MathQConstants.Exp.P), 2);
-			x = px / (PolynomialEvaluator(xx, ref MemoryMarshal.GetReference(MathQConstants.Exp.Q), 3) - px);
-			x = Quad.One + Quad.Two * x;
+			/* Evaluate expl(endpoint[n2] + r1 + r2) = tbl[n2] * expl(r1 + r2). */
 
-			return ScaleB(x, k);
+			var tbl = MathQConstants.Exp.Table[n2];
+			dr = (double)r;
+			q = r2 + r * r * (MathQConstants.Exp.A2 + r * (MathQConstants.Exp.A3 + r * (MathQConstants.Exp.A4 + r * (MathQConstants.Exp.A5 + r * (MathQConstants.Exp.A6 +
+				dr * (MathQConstants.Exp.A7 + dr * (MathQConstants.Exp.A8 + dr * (MathQConstants.Exp.A9 + dr * MathQConstants.Exp.A10))))))));
+			t = tbl.lo + tbl.hi;
+			hip = tbl.hi;
+			lop = tbl.lo + t * (q + r1);
 		}
 		/// <summary>
 		/// Returns the largest integral value less than or equal to the specified quadruple-precision floating-point number.
@@ -1496,7 +1530,84 @@ namespace MissingValues
 		/// <returns>If positive, 	The natural logarithm of <paramref name="x"/>; that is, ln <paramref name="x"/>, or log e <paramref name="x"/></returns>
 		public static Quad Log(Quad x)
 		{
-			throw new NotImplementedException();
+			/* origin: FreeBSD /usr/src/lib/msun/ld128/s_logl.c */
+
+			Log(x, out MathQConstants.Log.LD r);
+
+			if (r.LoSet == 0)
+			{
+				return r.Hi;
+			}
+			return r.Hi + r.Lo;
+		}
+		private static void Log(Quad x, out MathQConstants.Log.LD rp)
+		{
+			/* origin: FreeBSD /usr/src/lib/msun/ld128/s_logl.c */
+
+			rp = default;
+			Quad d, valHi, valLo;
+			double dd;
+			double dk;
+			UInt128 lx = x.TrailingSignificand;
+			int i, k;
+			ushort hx = x.BiasedExponent;
+			k = -16383;
+
+			if (Quad.IsNegative(x) || Quad.IsNaNOrZero(x))
+			{
+				if ((hx | lx) == UInt128.Zero)
+				{
+					rp.Hi = Quad.NegativeInfinity;
+					return;
+				}
+				// log(neg or NaN) = qNaN
+				rp.Hi = Quad.NaN;
+				return;
+			}
+			if (Quad.IsInfinity(x))
+			{
+				rp.Hi = x;
+				return;
+			}
+			if (Quad.IsSubnormal(x))
+			{ // Scale up x
+				x *= new Quad(0x4070_0000_0000_0000, 0x0000_0000_0000_0000);
+				k = -16383 - 113;
+				lx = Quad.QuadToUInt128Bits(x);
+				hx = x.BiasedExponent;
+			}
+
+			k += hx;
+			dk = k;
+
+			x = new Quad(false, 0x3fff, x.TrailingSignificand);
+
+			const int L2I = 49 - MathQConstants.Log.Log2Intervals;
+			i = (int)((lx + (1 << (L2I - 2))) >> (L2I - 1));
+
+			d = (x - MathQConstants.Log.H(i)) * MathQConstants.Log.G(i) + MathQConstants.Log.E(i);
+
+			/*
+			 * Our algorithm depends on exact cancellation of F_lo(i) and
+			 * F_hi(i) with dk*ln_2_lo and dk*ln2_hi when k is -1 and i is
+			 * at the end of the table.  This and other technical complications
+			 * make it difficult to avoid the double scaling in (dk*ln2) *
+			 * log(base) for base != e without losing more accuracy and/or
+			 * efficiency than is gained.
+			 */
+
+			dd = (double)d;
+			valLo = d * d * d * (MathQConstants.Log.P3 +
+		d * (MathQConstants.Log.P4 + d * (MathQConstants.Log.P5 + d * (MathQConstants.Log.P6 + d * (MathQConstants.Log.P7 + d * (MathQConstants.Log.P8 +
+		dd * (MathQConstants.Log.P9 + dd * (MathQConstants.Log.P10 + dd * (MathQConstants.Log.P11 + dd * (MathQConstants.Log.P12 + dd * (MathQConstants.Log.P13 +
+		dd * MathQConstants.Log.P14))))))))))) + (MathQConstants.Log.FLo(i) + dk * MathQConstants.Log.LN2LO) + d * d * MathQConstants.Log.P2;
+			valHi = d;
+
+			MathQConstants.Log._3sumF(ref valHi, ref valLo, MathQConstants.Log.FHi(i) + dk * MathQConstants.Log.LN2HI);
+
+			rp.Hi = valHi;
+			rp.Lo = valLo;
+			rp.LoSet = 1;
 		}
 		/// <summary>
 		/// Returns the logarithm of a specified number in a specified base.
@@ -1535,7 +1646,21 @@ namespace MissingValues
 		/// <returns>The base 10 log of <paramref name="x"/>; that is, log 10<paramref name="x"/>.</returns>
 		public static Quad Log10(Quad x)
 		{
-			throw new NotImplementedException();
+			Quad hi, lo;
+
+			Log(x, out MathQConstants.Log.LD r);
+			if (r.LoSet == 0)
+			{
+				return r.Hi;
+			}
+
+			Quad w = r.Hi + r.Lo;
+			r.Lo = (r.Hi - w) + r.Lo;
+			r.Hi = w;
+
+			hi = (float)r.Hi;
+			lo = r.Lo + (r.Hi - hi);
+			return (MathQConstants.Log.InvLn10Hi * hi + (MathQConstants.Log.InvLn10LoPHi * lo + MathQConstants.Log.InvLn10Lo * hi));
 		}
 		/// <summary>
 		/// Returns the base 2 logarithm of a specified number.
@@ -1544,74 +1669,21 @@ namespace MissingValues
 		/// <returns>The base 2 log of <paramref name="x"/>; that is, log 2<paramref name="x"/>.</returns>
 		public static Quad Log2(Quad x)
 		{
-			Quad y, z;
-			short e = 0;
+			Quad hi, lo;
 
-			if (Quad.IsNaN(x))
+			Log(x, out MathQConstants.Log.LD r);
+			if (r.LoSet == 0)
 			{
-				return x;
-			}
-			if (Quad.IsInfinity(x))
-			{
-				return x;
-			}
-			if (x <= Quad.Zero)
-			{
-				if (x == Quad.Zero)
-				{
-					return Quad.NegativeInfinity;
-				}
-				return Quad.NaN;
+				return r.Hi;
 			}
 
-			x = Quad.SeparateExponent(x, ref e);
+			Quad w = r.Hi + r.Lo;
+			r.Lo = (r.Hi - w) + r.Lo;
+			r.Hi = w;
 
-			/* logarithm using log(y) = z + z**3 P(z)/Q(z),
-			 * where z = 2(y-1)/y+1)
-			 */
-
-			if (e > 2 || e < -2)
-			{
-				if (x < SQRTH) // 2(2x-1)/(2x+1)
-				{
-					e -= 1;
-					z = x - Quad.HalfOne;
-					y = Quad.HalfOne * z + Quad.HalfOne;
-				}
-				else // 2 (y-1)/(y+1)
-				{
-					z = x - Quad.HalfOne;
-					z -= Quad.HalfOne;
-					y = Quad.HalfOne * x + Quad.HalfOne;
-				}
-				x = z / y;
-				z = x * x;
-				y = x * (z * PolynomialEvaluator(z, ref MemoryMarshal.GetReference(MathQConstants.Log2.R), 3) / PolynomialEvaluator1(z, ref MemoryMarshal.GetReference(MathQConstants.Log2.S), 3));
-				goto done;
-			}
-
-			// logarithm using log(1+y) = y - .5x**2 + y**3 P(y)/Q(y)
-			if (x < SQRTH)
-			{
-				e -= 1;
-				x = Quad.Two * x - Quad.One;
-			}
-			else
-			{
-				x -= Quad.One;
-			}
-
-			z = x * x;
-			y = x * (z * PolynomialEvaluator(x, ref MemoryMarshal.GetReference(MathQConstants.Log2.P), 6) / PolynomialEvaluator1(x, ref MemoryMarshal.GetReference(MathQConstants.Log2.Q), 7));
-			y -= Quad.HalfOne * z;
-
-		done:
-			z = y * LOG2EA;
-			z += x * LOG2EA;
-			z += y;
-			z += x;
-			z += e;
-			return z;
+			hi = (float)r.Hi;
+			lo = r.Lo + (r.Hi - hi);
+			return (MathQConstants.Log.InvLn2Hi * hi + (MathQConstants.Log.InvLn2LoPHi * lo + MathQConstants.Log.InvLn2Lo * hi));
 		}
 		/// <summary>
 		/// Returns the larger of two quadruple-precision floating-point numbers.
@@ -1733,7 +1805,366 @@ namespace MissingValues
 		/// <returns>The number <paramref name="x"/> raised to the power <paramref name="y"/>.</returns>
 		public static Quad Pow(Quad x, Quad y)
 		{
-			throw new NotImplementedException();
+			/* origin: FreeBSD /usr/src/lib/msun/ld128/e_powl.c */
+
+			Quad z, ax, z_h, z_l, p_h, p_l;
+			Quad yy1, t1, t2, r, s, t, u, v, w;
+			Quad s2, s_h, s_l, t_h, t_l;
+			int i, j, k, yisint, n;
+			uint ix, iy;
+			int hx, hy;
+			MathQConstants.Pow.QuadShape o, p, q;
+
+			Unsafe.SkipInit(out p);
+			p.Value = x;
+			hx = (int)p.UpperHi;
+			ix = (uint)(hx & 0x7fffffff);
+
+			Unsafe.SkipInit(out q);
+			q.Value = y;
+			hy = (int)q.UpperHi;
+			iy = (uint)(hy & 0x7fffffff);
+
+			/* y==zero: x**0 = 1 */
+			if ((iy | q.UpperLo | q.LowerHi | q.LowerLo) == 0)
+			{
+				return Quad.One;
+			}
+
+			/* 1.0**y = 1; -1.0**+-Inf = 1 */
+			if (x == Quad.One)
+			{
+				return Quad.One;
+			}
+			if (x == Quad.NegativeOne && iy == 0x7fff0000
+				&& (q.UpperLo | q.LowerHi | q.LowerLo) == 0)
+			{
+				return Quad.One;
+			}
+
+			/* +-NaN return x+y */
+			if ((ix > 0x7fff0000)
+				|| ((ix == 0x7fff0000)
+				&& ((p.UpperLo | p.LowerHi | p.LowerLo) != 0))
+				|| (iy > 0x7fff0000)
+				|| ((iy == 0x7fff0000)
+				&& ((q.UpperLo | q.LowerHi | q.LowerLo) != 0))
+				)
+			{
+				return Quad.NaN;
+			}
+
+			/* determine if y is an odd int when x < 0
+			 * yisint = 0       ... y is not an integer
+			 * yisint = 1       ... y is an odd int
+			 * yisint = 2       ... y is an even int
+			 */
+			yisint = 0;
+			if (hx < 0)
+			{
+				if (iy >= 0x4070_0000) /* 2^113 */
+				{
+					yisint = 2; /* even integer y */
+				}
+				else if (iy >= 0x3fff0000) /* 1.0 */
+				{
+					if (Quad.IsInteger(y))
+					{
+						z = Quad.HalfOne * y;
+						if (Quad.IsInteger(z))
+						{
+							yisint = 2;
+						}
+						else
+						{
+							yisint = 1;
+						}
+					}
+				}
+			}
+
+			/* special value of y */
+			if ((q.UpperLo | q.LowerHi | q.LowerLo) == 0)
+			{
+				if (iy == 0x7fff0000) /* y is +-inf */
+				{
+					if (((ix - 0x3FFF_0000) | p.UpperLo | p.LowerHi | p.LowerLo) == 0)
+					{
+						return Quad.NaN; /* +-1**inf is NaN */
+					}
+					else if (ix >= 0x3fff0000) /* (|x|>1)**+-inf = inf,0 */
+					{
+						return (hy >= 0) ? y : Quad.Zero;
+					}
+					else /* (|x|<1)**-,+inf = inf,0 */
+					{
+						return (hy < 0) ? -y : Quad.Zero;
+					}
+				}
+				if (iy == 0x3fff0000) /* y is  +-1 */
+				{
+					if (hy < 0)
+					{
+						return ReciprocalEstimate(x);
+					}
+					else
+					{
+						return x;
+					}
+				}
+
+				if (hy == 0x40000000)  /* y is  2 */
+				{
+					return x * x;
+				}
+
+				if (hy == 0x3ffe0000) /* y is  0.5 */
+				{
+					if (hx >= 0) /* x >= +0 */
+					{
+						Sqrt(x);
+					}
+				}
+			}
+
+			ax = Abs(x);
+			/* Special value of x */
+			if ((q.UpperLo | q.LowerHi | q.LowerLo) == 0)
+			{
+				if (ix == 0x7fff0000 || ix == 0 || ix == 0x3fff0000)
+				{
+					z = ax; /*x is +-0,+-inf,+-1 */
+					if (hy < 0)
+					{
+						z = ReciprocalEstimate(z);
+					}
+					if (hx < 0)
+					{
+						if (((ix - 0x3fff_0000) | (uint)yisint) == 0)
+						{
+							z = Quad.NaN;
+						}
+						else if (yisint == 1)
+						{
+							z = -z;
+						}
+					}
+					return z;
+				}
+			}
+
+			/* (x<0)**(non-int) is NaN */
+			if (((((uint)hx >> 31) - 1) | (uint)yisint) == 0)
+			{
+				return Quad.NaN;
+			}
+
+			/* |y| is Huge.
+				2^-16495 = 1/2 of smallest representable value.
+				If (1 - 1/131072)^y underflows, y > 1.4986e9 */
+			if (iy > 0x401d654b)
+			{
+				Quad huge = MathQConstants.Pow.Huge;
+				Quad tiny = MathQConstants.Pow.Tiny;
+
+				/* if (1 - 2^-113)^y underflows, y > 1.1873e38 */
+				if (iy > 0x407d654b)
+				{
+					if (ix <= 0x3ffeffff)
+					{
+						return (hy < 0) ? huge * huge : tiny * tiny;
+					}
+					if (ix >= 0x3fff0000)
+					{
+						return (hy > 0) ? huge * huge : tiny * tiny;
+					}
+				}
+				/* over/underflow if x is not close to one */
+				if (ix < 0x3ffeffff)
+					return (hy < 0) ? huge * huge : tiny * tiny;
+				if (ix > 0x3fff0000)
+					return (hy > 0) ? huge * huge : tiny * tiny;
+			}
+
+			n = 0;
+			Unsafe.SkipInit(out o);
+			/* take care subnormal number */
+			if (ix < 0x00010000)
+			{
+				ax *= MathQConstants.Pow.Two113;
+				n -= 113;
+				o.Value = ax;
+				ix = o.UpperHi;
+			}
+
+			n += (int)((ix) >> 16) - 0x3FFF;
+			j = (int)(ix & 0x0000ffff);
+			/* determine interval */
+			ix = (uint)(j | 0x3fff0000); /* normalize ix */
+			if (j <= 0x3988)
+			{
+				k = 0;
+			}
+			else if (j < 0xbb67)
+			{
+				k = 1;
+			}
+			else
+			{
+				k = 0;
+				n += 1;
+				ix -= 0x00010000;
+			}
+
+			o.Value = ax;
+			o.UpperHi = ix;
+			ax = o.Value;
+
+
+			/* compute s = s_h+s_l = (x-1)/(x+1) or (x-1.5)/(x+1.5) */
+			u = ax - MathQConstants.Pow.bp[k]; /* bp[0]=1.0, bp[1]=1.5 */
+			v = Quad.One / (ax + MathQConstants.Pow.bp[k]);
+			s = u * v;
+			s_h = s;
+
+			o.Value = s_h;
+			o.LowerLo = 0;
+			o.LowerHi &= 0xf8000000;
+			s_h = o.Value;
+			/* t_h=ax+bp[k] High */
+			t_h = ax + MathQConstants.Pow.bp[k];
+			o.Value = t_h;
+			o.LowerLo = 0;
+			o.LowerHi &= 0xf8000000;
+			t_h = o.Value;
+			t_l = ax - (t_h - MathQConstants.Pow.bp[k]);
+			s_l = v * ((u - s_h * t_h) - s_h * t_l);
+			/* compute log(ax) */
+			s2 = s * s;
+			u = MathQConstants.Pow.LN[0] + s2 * (MathQConstants.Pow.LN[1] + s2 * (MathQConstants.Pow.LN[2] + s2 * (MathQConstants.Pow.LN[3] + s2 * MathQConstants.Pow.LN[4])));
+			v = MathQConstants.Pow.LD[0] + s2 * (MathQConstants.Pow.LD[1] + s2 * (MathQConstants.Pow.LD[2] + s2 * (MathQConstants.Pow.LD[3] + s2 * (MathQConstants.Pow.LD[4] + s2))));
+			r = s2 * s2 * u / v;
+			r += s_l * (s_h + s);
+			s2 = s_h * s_h;
+			t_h = new Quad(0x4000_8000_0000_0000, 0x0000_0000_0000_0000) + s2 + r; // t_h = 3.0 + s2 + r
+			o.Value = t_h;
+			o.LowerLo = 0;
+			o.LowerHi &= 0xf8000000;
+			t_h = o.Value;
+			t_l = r - ((t_h - new Quad(0x4000_8000_0000_0000, 0x0000_0000_0000_0000)) - s2); // t_l = r - ((t_h - 3.0) - s2)
+			/* u+v = s*(1+...) */
+			u = s_h * t_h;
+			v = s_l * t_h + t_l * s;
+			/* 2/(3log2)*(s+...) */
+			p_h = u + v;
+			o.Value = p_h;
+			o.LowerLo = 0;
+			o.LowerHi &= 0xf8000000;
+			p_h = o.Value;
+			p_l = v - (p_h - u);
+			z_h = MathQConstants.Pow.CP_H * p_h;       /* cp_h+cp_l = 2/(3*log2) */
+			z_l = MathQConstants.Pow.CP_L * p_h + p_l * MathQConstants.Pow.CP + MathQConstants.Pow.dp_l[k];
+			/* log2(ax) = (s+..)*2/(3*log2) = n + dp_h + z_h + z_l */
+			t = n;
+			t1 = (((z_h + z_l) + MathQConstants.Pow.dp_h[k]) + t);
+			o.Value = t1;
+			o.LowerLo = 0;
+			o.LowerHi &= 0xf8000000;
+			t1 = o.Value;
+			t2 = z_l - (((t1 - t) - MathQConstants.Pow.dp_h[k]) - z_h);
+
+			/* s (sign of result -ve**odd) = -1 else = 1 */
+			s = Quad.One;
+			if (((((uint)hx >> 31) - 1) | (uint)(yisint - 1)) == 0)
+			{
+				s = Quad.NegativeOne;           /* (-ve)**(odd int) */
+			}
+
+			/* split up y into yy1+y2 and compute (yy1+y2)*(t1+t2) */
+			yy1 = y;
+			o.Value = yy1;
+			o.LowerLo = 0;
+			o.LowerHi &= 0xf8000000;
+			yy1 = o.Value;
+			p_l = (y - yy1) * t1 + y * t2;
+			p_h = yy1 * t1;
+			z = p_l + p_h;
+			o.Value = z;
+			j = (int)o.UpperHi;
+			if (j >= 0x400d0000) /* z >= 16384 */
+			{
+				Quad huge = MathQConstants.Pow.Huge;
+				/* if z > 16384 */
+				if (((uint)(j - 0x400d0000) | o.UpperLo | o.LowerHi |
+					o.LowerLo) != 0)
+				{
+					return s * huge * huge;
+				}
+				else
+				{
+					if (p_l + MathQConstants.Pow.OVT > z - p_h)
+					{
+						return s * huge * huge;
+					}
+				}
+			}
+			else if ((j & 0x7fffffff) >= 0x400d01b9) /* z <= -16495 */
+			{
+				Quad tiny = MathQConstants.Pow.Tiny;
+				/* z < -16495 */
+				if (((uint)(j - 0xc00d01bc) | o.UpperLo | o.LowerHi |
+					o.LowerLo) != 0)
+				{
+					return s * tiny * tiny; /* underflow */
+				}
+				else
+				{
+					if (p_l <= z - p_h)
+					{
+						return s * tiny * tiny; /* underflow */
+					}
+				}
+			}
+			/* compute 2**(p_h+p_l) */
+			i = j & 0x7fffffff;
+			k = (i >> 16) - 0x3fff;
+			n = 0;
+			if (i > 0x3ffe0000)
+			{
+				n = (int)Floor(z + Quad.HalfOne);
+				t = n;
+				p_h -= t;
+			}
+
+			t = p_l + p_h;
+			o.Value = t;
+			o.LowerLo = 0;
+			o.LowerHi &= 0xf8000000;
+			t = o.Value;
+			u = t * MathQConstants.Pow.LG2_H;
+			v = (p_l - (t - p_h)) * MathQConstants.Pow.LG2 + t * MathQConstants.Pow.LG2_L;
+			z = u + v;
+			w = v - (z - u);
+			/*  exp(z) */
+			t = z * z;
+			u = MathQConstants.Pow.PN[0] + t * (MathQConstants.Pow.PN[1] + t * (MathQConstants.Pow.PN[2] + t * (MathQConstants.Pow.PN[3] + t * MathQConstants.Pow.PN[4])));
+			v = MathQConstants.Pow.PD[0] + t * (MathQConstants.Pow.PD[1] + t * (MathQConstants.Pow.PD[2] + t * (MathQConstants.Pow.PD[3] + t)));
+			t1 = z - t * u / v;
+			r = (z * t1) / (t1 - Quad.Two) - (w + z * w);
+			z = Quad.One - (r - z);
+			o.Value = z;
+			j = (int)o.UpperHi;
+			j += (n << 16);
+			if ((j >> 16) <= 0)
+			{
+				z = ScaleB(z, n);
+			}
+			else
+			{
+				o.UpperHi = (uint)j;
+				z = o.Value;
+			}
+			return s * z;
 		}
 		/// <summary>
 		/// Returns an estimate of the reciprocal of a specified number.
@@ -1742,6 +2173,27 @@ namespace MissingValues
 		/// <returns>An estimate of the reciprocal of <paramref name="x"/>.</returns>
 		public static Quad ReciprocalEstimate(Quad x)
 		{
+			/*
+			 * source:
+			 * Gaurav Agrawal, Ankit Khandelwal. 
+			 * A Newton Raphson Divider Based on 
+			 * Improved Reciprocal Approximation Algorithm
+			 * http://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.134.725&rep=rep1&type=pd
+			 */
+
+			if (x == Quad.Zero)
+			{
+				return Quad.PositiveInfinity;
+			}
+			if (Quad.IsInfinity(x))
+			{
+				return Quad.IsNegative(x) ? Quad.NegativeZero : Quad.Zero;
+			}
+			if (Quad.IsNaN(x))
+			{
+				return x;
+			}
+
 			// Uses Newton Raphton Series to find 1/y
 			Quad x0;
 			var bits = Quad.ExtractFromBits(Quad.QuadToUInt128Bits(x));
@@ -2172,7 +2624,7 @@ namespace MissingValues
 			}
 			if (signA)
 			{
-				if (((UInt128)exp | sig) != UInt128.Zero)
+				if (((UInt128)exp | sig) == UInt128.Zero)
 				{
 					return x;
 				}
@@ -2223,7 +2675,7 @@ namespace MissingValues
 			{
 				term = BitHelper.Mul64ByShifted32To128(x64 + sig64Z, q);
 				rem = y - term;
-				if (((ulong)(rem >> 64) & 0x8000_0000_0000_0000) == 0)
+				if (((rem.GetUpperBits()) & 0x8000_0000_0000_0000) == 0)
 				{
 					break;
 				}
@@ -2240,7 +2692,7 @@ namespace MissingValues
 			{
 				term = (UInt128)sig64Z << 32;
 				term += (ulong)q << 6;
-				term += q;
+				term *= q;
 				rem = y - term;
 				if (((ulong)(rem >> 64) & 0x8000_0000_0000_0000) == 0)
 				{
@@ -2271,13 +2723,13 @@ namespace MissingValues
 				 * The concatenation of `term' and `x.v0' is now the negative remainder
 				 * (3 words altogether).
 				 */
-				if (((ulong)(term >> 64) & 0x8000_0000_0000_0000) != 0)
+				if ((term.GetUpperBits() & 0x8000_0000_0000_0000) != 0)
 				{
 					sigZExtra |= 1;
 				}
 				else
 				{
-					if ((term | (ulong)y) != UInt128.Zero)
+					if ((term | y.GetLowerBits()) != UInt128.Zero)
 					{
 						if (sigZExtra != 0)
 						{
@@ -2464,6 +2916,52 @@ namespace MissingValues
 			}
 			x += y;
 			return sign ? -x : x;
+		}
+
+		internal static Quad ModF(Quad x, out Quad iptr)
+		{
+			int e = x.Exponent;
+			bool s = Quad.IsNegative(x);
+			Quad absX;
+			Quad y;
+
+			// no fractional part
+			if (e >= Quad.MantissaDigits - 1)
+			{
+				iptr = x;
+				if (Quad.IsNaN(x))
+				{
+					return x;
+				}
+				return s ? Quad.NegativeZero : Quad.Zero;
+			}
+
+			// no integral part
+			if (e < 0)
+			{
+				iptr = s ? Quad.NegativeZero : Quad.Zero;
+				return x;
+			}
+
+			// raises spurious inexact
+			absX = Quad.Abs(x);
+			Quad toint = Epsilon;
+			y = absX + toint - toint - absX;
+			if (y == Quad.Zero)
+			{
+				iptr = x;
+				return s ? Quad.NegativeZero : Quad.Zero;
+			}
+			if (y > Quad.Zero)
+			{
+				y -= Quad.One;
+			}
+			if (s)
+			{
+				y = -y;
+			}
+			iptr = x + y;
+			return -y;
 		}
 
 		private unsafe static Quad PolynomialEvaluator(Quad x, ref Quad p, int n)

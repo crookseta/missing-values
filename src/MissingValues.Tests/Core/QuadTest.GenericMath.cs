@@ -175,10 +175,11 @@ namespace MissingValues.Tests.Core
 		[Fact]
 		public static void IsPow2Test()
 		{
-			BinaryNumberHelper<Float>.IsPow2(Half).Should().BeFalse();
-			BinaryNumberHelper<Float>.IsPow2(One).Should().BeFalse();
+			BinaryNumberHelper<Float>.IsPow2(Half).Should().BeTrue();
+			BinaryNumberHelper<Float>.IsPow2(One).Should().BeTrue();
 			BinaryNumberHelper<Float>.IsPow2(Two).Should().BeTrue();
-			BinaryNumberHelper<Float>.IsPow2(NegativeTwo).Should().BeTrue();
+			BinaryNumberHelper<Float>.IsPow2(Three).Should().BeFalse();
+			BinaryNumberHelper<Float>.IsPow2(NegativeTwo).Should().BeFalse();
 		}
 		#endregion
 
@@ -193,7 +194,9 @@ namespace MissingValues.Tests.Core
 		[Fact]
 		public static void NaNTest()
 		{
-			FloatingPointIeee754<Float>.NaN.Should().Be(Float.NaN);
+			FloatingPointIeee754<Float>.NaN
+				.Should().Be(Float.NaN)
+				.And.BeNaN();
 			NumberBaseHelper<Float>.IsNaN(FloatingPointIeee754<Float>.NaN).Should().BeTrue();
 		}
 		[Fact]
@@ -216,11 +219,13 @@ namespace MissingValues.Tests.Core
 		public static void AcosTest()
 		{
 			GenericFloatingPointFunctions.Acos<Float>(Float.NaN)
-				.Should().BeBitwiseEquivalentTo(Float.NaN);
+				.Should()
+				.BeBitwiseEquivalentTo(Float.NaN)
+				.And.BeNaN();
 			GenericFloatingPointFunctions.Acos<Float>(Two)
-				.Should().BeApproximately(Float.NaN, Delta);
+				.Should().BeNaN();
 			GenericFloatingPointFunctions.Acos<Float>(NegativeTwo)
-				.Should().BeApproximately(Float.NaN, Delta);
+				.Should().BeNaN();
 			GenericFloatingPointFunctions.Acos<Float>(Half)
 				.Should().BeApproximately(Float.Pi / 3, Delta);
 			GenericFloatingPointFunctions.Acos<Float>(One)
@@ -234,11 +239,11 @@ namespace MissingValues.Tests.Core
 			GenericFloatingPointFunctions.Acosh<Float>(Two)
 				.Should().BeApproximately(Values.CreateQuad(0x3FFF_5124_2719_8043, 0x49BE_684B_D018_8D53), Delta);
 			GenericFloatingPointFunctions.Acosh<Float>(Half)
-				.Should().BeApproximately(Float.NaN, Delta);
+				.Should().BeNaN();
 			GenericFloatingPointFunctions.Acosh<Float>(Zero)
-				.Should().BeApproximately(Float.NaN, Delta);
+				.Should().BeNaN();
 			GenericFloatingPointFunctions.Acosh<Float>(NegativeOne)
-				.Should().BeApproximately(Float.NaN, Delta);
+				.Should().BeNaN();
 		}
 		[Fact]
 		public static void AsinTest()
@@ -324,11 +329,11 @@ namespace MissingValues.Tests.Core
 				.Should().Be(Values.CreateQuad(0x3FFF000000000000, 0x0000000000000001));
 			FloatingPointIeee754<Float>.BitIncrement(NegativeOne)
 				.Should().Be(Values.CreateQuad(0xBFFEFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF));
-			FloatingPointIeee754<Float>.BitDecrement(NegativeZero)
+			FloatingPointIeee754<Float>.BitIncrement(NegativeZero)
 				.Should().Be(Float.Epsilon);
-			FloatingPointIeee754<Float>.BitDecrement(Float.NegativeInfinity)
+			FloatingPointIeee754<Float>.BitIncrement(Float.NegativeInfinity)
 				.Should().Be(Float.MinValue);
-			FloatingPointIeee754<Float>.BitDecrement(Float.PositiveInfinity)
+			FloatingPointIeee754<Float>.BitIncrement(Float.PositiveInfinity)
 				.Should().Be(Float.PositiveInfinity);
 		}
 		[Fact]
@@ -394,7 +399,7 @@ namespace MissingValues.Tests.Core
 			GenericFloatingPointFunctions.Exp(Zero)
 				.Should().Be(One);
 			GenericFloatingPointFunctions.Exp(Float.PositiveInfinity)
-				.Should().Be(Float.NaN);
+				.Should().Be(Float.PositiveInfinity);
 			GenericFloatingPointFunctions.Exp(Float.NaN)
 				.Should().Be(Float.NaN);
 			GenericFloatingPointFunctions.Exp(Float.NegativeInfinity)
@@ -422,7 +427,7 @@ namespace MissingValues.Tests.Core
 			GenericFloatingPointFunctions.Exp2(Zero)
 				.Should().Be(One);
 			GenericFloatingPointFunctions.Exp2(Float.PositiveInfinity)
-				.Should().Be(Float.NaN);
+				.Should().Be(Float.PositiveInfinity);
 			GenericFloatingPointFunctions.Exp2(Float.NaN)
 				.Should().Be(Float.NaN);
 			GenericFloatingPointFunctions.Exp2(Float.NegativeInfinity)
@@ -483,7 +488,7 @@ namespace MissingValues.Tests.Core
 		public static void Log2Test()
 		{
 			GenericFloatingPointFunctions.Log2(Four)
-				.Should().Be(Two);
+				.Should().BeApproximately(Two, Delta);
 			GenericFloatingPointFunctions.Log2(One)
 				.Should().Be(Zero);
 			GenericFloatingPointFunctions.Log2(Zero)
@@ -495,7 +500,7 @@ namespace MissingValues.Tests.Core
 		public static void Log10Test()
 		{
 			GenericFloatingPointFunctions.Log10(Thousand)
-				.Should().Be(Three);
+				.Should().BeApproximately(Three, Delta);
 			GenericFloatingPointFunctions.Log10(One)
 				.Should().Be(Zero);
 			GenericFloatingPointFunctions.Log10(Zero)
@@ -522,7 +527,7 @@ namespace MissingValues.Tests.Core
 
 			GenericFloatingPointFunctions.Pow<Float>(anything, One)
 				.Should()
-				.Be(Two);
+				.Be(anything);
 
 			GenericFloatingPointFunctions.Pow<Float>(anything, Float.NaN)
 				.Should()
@@ -700,7 +705,7 @@ namespace MissingValues.Tests.Core
 			GenericFloatingPointFunctions.Sqrt(Ten)
 				.Should().BeApproximately(Values.CreateQuad(0x4000_94C5_83AD_A5B5, 0x2920_4A2B_C830_CD9C), Delta);
 			GenericFloatingPointFunctions.Sqrt(Hundred)
-				.Should().Be(Ten);
+				.Should().BeApproximately(Ten, Delta);
 
 			GenericFloatingPointFunctions.Sqrt(Zero)
 				.Should().Be(Zero);

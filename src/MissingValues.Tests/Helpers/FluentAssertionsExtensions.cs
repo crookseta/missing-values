@@ -65,6 +65,18 @@ namespace MissingValues.Tests.Helpers
 			return new AndConstraint<NumericAssertions<Quad>>(parent);
 		}
 
+		public static AndConstraint<NumericAssertions<Quad>> BeNaN(this NumericAssertions<Quad> parent, string because = "", params object[] becauseArgs)
+		{
+			bool condition = Quad.IsNaN(parent.Subject!.Value);
+
+			Execute.Assertion
+			.ForCondition(condition)
+			.BecauseOf(because, becauseArgs)
+			.FailWith("Expected {context:object} to be {0}.", Quad.NaN);
+
+			return new AndConstraint<NumericAssertions<Quad>>(parent);
+		}
+
 		private static void FailIfDifferenceOutsidePrecision<T>(
 			bool differenceWithinPrecision,
 			NumericAssertions<T> parent, T expectedValue, T precision, T actualDifference,
