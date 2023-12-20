@@ -48,9 +48,7 @@ namespace MissingValues.Tests.Core
 		public static readonly Quad UInt16MaxValue = Values.CreateQuad(0x400E_FFFE_0000_0000, 0x0000_0000_0000_0000);
 		public static readonly Quad UInt32MaxValue = Values.CreateQuad(0x401E_FFFF_FFFE_0000, 0x0000_0000_0000_0000);
 		public static readonly Quad UInt64MaxValue = Values.CreateQuad(0x403E_FFFF_FFFF_FFFF, 0xFFFE_0000_0000_0000);
-		public static readonly Quad UInt128MaxValue = Values.CreateQuad(0x407F_0000_0000_0000, 0x0000_0000_0000_0000);
-		public static readonly Quad UInt256MaxValue = Values.CreateQuad(0x40FF_0000_0000_0000, 0x0000_0000_0000_0000);
-		public static readonly Quad UInt512MaxValue = Values.CreateQuad(0x41FF_0000_0000_0000, 0x0000_0000_0000_0000);
+		public static readonly Quad TwoOver127 = Values.CreateQuad(0x407E_0000_0000_0000, 0x0000_0000_0000_0000);
 
 		public static readonly Quad SByteMaxValue = Values.CreateQuad(0x4005_FC00_0000_0000, 0x0000_0000_0000_0000);
 		public static readonly Quad SByteMinValue = Values.CreateQuad(0xC006_0000_0000_0000, 0x0000_0000_0000_0000);

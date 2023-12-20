@@ -413,7 +413,7 @@ namespace MissingValues.Tests.Core
 			GenericFloatingPointFunctions.Exp10(Zero)
 				.Should().Be(One);
 			GenericFloatingPointFunctions.Exp10(Float.PositiveInfinity)
-				.Should().Be(Float.NaN);
+				.Should().Be(Float.PositiveInfinity);
 			GenericFloatingPointFunctions.Exp10(Float.NaN)
 				.Should().Be(Float.NaN);
 			GenericFloatingPointFunctions.Exp10(Float.NegativeInfinity)
@@ -676,20 +676,20 @@ namespace MissingValues.Tests.Core
 			Float sin, cos;
 
 			(sin, cos) = GenericFloatingPointFunctions.SinCos(Zero);
-			sin.Should().Be(Zero);
-			cos.Should().Be(One);
+			sin.Should().BeApproximately(Zero, Delta);
+			cos.Should().BeApproximately(One, Delta);
 
 			(sin, cos) = GenericFloatingPointFunctions.SinCos(Float.Pi);
-			sin.Should().Be(Zero);
-			cos.Should().Be(NegativeOne);
+			sin.Should().BeApproximately(Zero, Delta);
+			cos.Should().BeApproximately(NegativeOne, Delta);
 			
 			(sin, cos) = GenericFloatingPointFunctions.SinCos(Float.Pi / Two);
-			sin.Should().Be(One);
-			cos.Should().Be(Zero);
+			sin.Should().BeApproximately(One, Delta);
+			cos.Should().BeApproximately(Zero, Delta);
 
 			(sin, cos) = GenericFloatingPointFunctions.SinCos(Float.Pi * Two);
-			sin.Should().Be(Zero);
-			cos.Should().Be(One);
+			sin.Should().BeApproximately(Zero, Delta);
+			cos.Should().BeApproximately(One, Delta);
 		}
 		[Fact]
 		public static void SinhTest()
@@ -1008,9 +1008,9 @@ namespace MissingValues.Tests.Core
 			NumberBaseHelper<short>.CreateChecked<Float>(Int16MaxValue).Should().Be(short.MaxValue);
 			NumberBaseHelper<int>.CreateChecked<Float>(Int32MaxValue).Should().Be(int.MaxValue);
 			NumberBaseHelper<long>.CreateChecked<Float>(Int64MaxValue).Should().Be(long.MaxValue);
-			NumberBaseHelper<UInt128>.CreateChecked<Float>(UInt128MaxValue).Should().Be(UInt128.MaxValue);
-			NumberBaseHelper<UInt256>.CreateChecked<Float>(UInt256MaxValue).Should().Be(UInt256.MaxValue);
-			NumberBaseHelper<UInt512>.CreateChecked<Float>(UInt512MaxValue).Should().Be(UInt512.MaxValue);
+			NumberBaseHelper<UInt128>.CreateChecked<Float>(TwoOver127).Should().Be(UInt128.Parse("170141183460469231731687303715884105728"));
+			NumberBaseHelper<UInt256>.CreateChecked<Float>(TwoOver127).Should().Be(UInt256.Parse("170141183460469231731687303715884105728"));
+			NumberBaseHelper<UInt512>.CreateChecked<Float>(TwoOver127).Should().Be(UInt512.Parse("170141183460469231731687303715884105728"));
 
 			NumberBaseHelper<Half>.CreateChecked<Float>(Half).Should().Be((Half)0.5f);
 			NumberBaseHelper<float>.CreateChecked<Float>(Half).Should().Be(0.5f);
@@ -1023,9 +1023,9 @@ namespace MissingValues.Tests.Core
 			NumberBaseHelper<short>.CreateSaturating<Float>(Int16MaxValue).Should().Be(short.MaxValue);
 			NumberBaseHelper<int>.CreateSaturating<Float>(Int32MaxValue).Should().Be(int.MaxValue);
 			NumberBaseHelper<long>.CreateSaturating<Float>(Int64MaxValue).Should().Be(long.MaxValue);
-			NumberBaseHelper<UInt128>.CreateSaturating<Float>(UInt128MaxValue).Should().Be(UInt128.MaxValue);
-			NumberBaseHelper<UInt256>.CreateSaturating<Float>(UInt256MaxValue).Should().Be(UInt256.MaxValue);
-			NumberBaseHelper<UInt512>.CreateSaturating<Float>(UInt512MaxValue).Should().Be(UInt512.MaxValue);
+			NumberBaseHelper<UInt128>.CreateSaturating<Float>(TwoOver127).Should().Be(UInt128.Parse("170141183460469231731687303715884105728"));
+			NumberBaseHelper<UInt256>.CreateSaturating<Float>(TwoOver127).Should().Be(UInt256.Parse("170141183460469231731687303715884105728"));
+			NumberBaseHelper<UInt512>.CreateSaturating<Float>(TwoOver127).Should().Be(UInt512.Parse("170141183460469231731687303715884105728"));
 
 			NumberBaseHelper<Half>.CreateSaturating<Float>(Half).Should().Be((Half)0.5f);
 			NumberBaseHelper<float>.CreateSaturating<Float>(Half).Should().Be(0.5f);
@@ -1038,9 +1038,9 @@ namespace MissingValues.Tests.Core
 			NumberBaseHelper<short>.CreateTruncating<Float>(Int16MaxValue).Should().Be(short.MaxValue);
 			NumberBaseHelper<int>.CreateTruncating<Float>(Int32MaxValue).Should().Be(int.MaxValue);
 			NumberBaseHelper<long>.CreateTruncating<Float>(Int64MaxValue).Should().Be(long.MaxValue);
-			NumberBaseHelper<UInt128>.CreateTruncating<Float>(UInt128MaxValue).Should().Be(UInt128.MaxValue);
-			NumberBaseHelper<UInt256>.CreateTruncating<Float>(UInt256MaxValue).Should().Be(UInt256.MaxValue);
-			NumberBaseHelper<UInt512>.CreateTruncating<Float>(UInt512MaxValue).Should().Be(UInt512.MaxValue);
+			NumberBaseHelper<UInt128>.CreateTruncating<Float>(TwoOver127).Should().Be(UInt128.Parse("170141183460469231731687303715884105728"));
+			NumberBaseHelper<UInt256>.CreateTruncating<Float>(TwoOver127).Should().Be(UInt256.Parse("170141183460469231731687303715884105728"));
+			NumberBaseHelper<UInt512>.CreateTruncating<Float>(TwoOver127).Should().Be(UInt512.Parse("170141183460469231731687303715884105728"));
 
 			NumberBaseHelper<Half>.CreateTruncating<Float>(Half).Should().Be((Half)0.5f);
 			NumberBaseHelper<float>.CreateTruncating<Float>(Half).Should().Be(0.5f);
@@ -1053,9 +1053,12 @@ namespace MissingValues.Tests.Core
 			NumberBaseHelper<Float>.CreateChecked<short>(short.MaxValue).Should().Be(Int16MaxValue);
 			NumberBaseHelper<Float>.CreateChecked<int>(int.MaxValue).Should().Be(Int32MaxValue);
 			NumberBaseHelper<Float>.CreateChecked<long>(long.MaxValue).Should().Be(Int64MaxValue);
-			NumberBaseHelper<Float>.CreateChecked<UInt128>(UInt128.MaxValue).Should().Be(UInt128MaxValue);
-			NumberBaseHelper<Float>.CreateChecked<UInt256>(UInt256.MaxValue).Should().Be(UInt256MaxValue);
-			NumberBaseHelper<Float>.CreateChecked<UInt512>(UInt512.MaxValue).Should().Be(UInt512MaxValue);
+			NumberBaseHelper<Float>.CreateChecked<UInt128>(UInt128.Parse("170141183460469231731687303715884105728"))
+				.Should().Be(TwoOver127);
+			NumberBaseHelper<Float>.CreateChecked<UInt256>(UInt256.Parse("170141183460469231731687303715884105728"))
+				.Should().Be(TwoOver127);
+			NumberBaseHelper<Float>.CreateChecked<UInt512>(UInt512.Parse("170141183460469231731687303715884105728"))
+				.Should().Be(TwoOver127);
 
 			NumberBaseHelper<Float>.CreateChecked<Half>((Half)0.5f).Should().Be(Half);
 			NumberBaseHelper<Float>.CreateChecked<float>(0.5f).Should().Be(Half);
@@ -1068,9 +1071,12 @@ namespace MissingValues.Tests.Core
 			NumberBaseHelper<Float>.CreateChecked<short>(short.MaxValue).Should().Be(Int16MaxValue);
 			NumberBaseHelper<Float>.CreateChecked<int>(int.MaxValue).Should().Be(Int32MaxValue);
 			NumberBaseHelper<Float>.CreateChecked<long>(long.MaxValue).Should().Be(Int64MaxValue);
-			NumberBaseHelper<Float>.CreateChecked<UInt128>(UInt128.MaxValue).Should().Be(UInt128MaxValue);
-			NumberBaseHelper<Float>.CreateChecked<UInt256>(UInt256.MaxValue).Should().Be(UInt256MaxValue);
-			NumberBaseHelper<Float>.CreateChecked<UInt512>(UInt512.MaxValue).Should().Be(UInt512MaxValue);
+			NumberBaseHelper<Float>.CreateChecked<UInt128>(UInt128.Parse("170141183460469231731687303715884105728"))
+				.Should().Be(TwoOver127);
+			NumberBaseHelper<Float>.CreateChecked<UInt256>(UInt256.Parse("170141183460469231731687303715884105728"))
+				.Should().Be(TwoOver127);
+			NumberBaseHelper<Float>.CreateChecked<UInt512>(UInt512.Parse("170141183460469231731687303715884105728"))
+				.Should().Be(TwoOver127);
 
 			NumberBaseHelper<Float>.CreateChecked<Half>((Half)0.5f).Should().Be(Half);
 			NumberBaseHelper<Float>.CreateChecked<float>(0.5f).Should().Be(Half);
@@ -1083,9 +1089,12 @@ namespace MissingValues.Tests.Core
 			NumberBaseHelper<Float>.CreateChecked<short>(short.MaxValue).Should().Be(Int16MaxValue);
 			NumberBaseHelper<Float>.CreateChecked<int>(int.MaxValue).Should().Be(Int32MaxValue);
 			NumberBaseHelper<Float>.CreateChecked<long>(long.MaxValue).Should().Be(Int64MaxValue);
-			NumberBaseHelper<Float>.CreateChecked<UInt128>(UInt128.MaxValue).Should().Be(UInt128MaxValue);
-			NumberBaseHelper<Float>.CreateChecked<UInt256>(UInt256.MaxValue).Should().Be(UInt256MaxValue);
-			NumberBaseHelper<Float>.CreateChecked<UInt512>(UInt512.MaxValue).Should().Be(UInt512MaxValue);
+			NumberBaseHelper<Float>.CreateChecked<UInt128>(UInt128.Parse("170141183460469231731687303715884105728"))
+				.Should().Be(TwoOver127);
+			NumberBaseHelper<Float>.CreateChecked<UInt256>(UInt256.Parse("170141183460469231731687303715884105728"))
+				.Should().Be(TwoOver127);
+			NumberBaseHelper<Float>.CreateChecked<UInt512>(UInt512.Parse("170141183460469231731687303715884105728"))
+				.Should().Be(TwoOver127);
 
 			NumberBaseHelper<Float>.CreateChecked<Half>((Half)0.5f).Should().Be(Half);
 			NumberBaseHelper<Float>.CreateChecked<float>(0.5f).Should().Be(Half);

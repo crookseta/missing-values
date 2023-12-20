@@ -96,10 +96,11 @@ namespace MissingValues
 		internal const int MaxRoundingDigits = 34;
 
 		private static Quad Epsilon => new Quad(0x406F_0000_0000_0000, 0x0000_0000_0000_0000);
+		private static Quad INVPIO2 => new Quad(0x3FFE_45F3_06DC_9C88, 0x2A53_F84E_AFA3_EA6A);
 		private static Quad PIO2_HI => new Quad(0x3FFF_921F_B544_42D1, 0x8469_898C_C517_01B8);
 		private static Quad PIO2_LO => new Quad(0x3F8C_CD12_9024_E088, 0xA67C_C740_20BB_EA64);
 		private static Quad M_PI_2 => new Quad(0x3FFF_921F_B544_42D1, 0x8469_898C_C517_01B8); // pi / 2
-		private static Quad M_PI_4 => new Quad(0x3FFE_921F_B544_42D1, 0x8469_B288_3370_1F13); // pi / 4
+		private static Quad M_PI_4 => new Quad(0x3FFE_921F_B544_42D1, 0x8469_898C_C517_01B8); // pi / 4
 		private static Quad LN2 => new Quad(0x3FFE_62E4_2FEF_A39E, 0xF357_ADEB_B905_E4BD);
 		private static Quad LOG2EA => new Quad();
 		private static Quad SQRTH => new Quad();
@@ -168,10 +169,10 @@ namespace MissingValues
 		private static Quad S6 => new Quad(0x3FDE_6124_613A_86D0, 0x97C5_C00C_FA3D_6509);
 		private static Quad S7 => new Quad(0xBFD6_AE7F_3E73_3B81, 0xDC97_972A_DED6_8D8D);
 		private static Quad S8 => new Quad(0x3FCE_952C_7703_0A96, 0x9D8A_B423_F5C4_7870);
-		private static Quad S9 => new Quad(0xBFC6_2F49_B467_96FE, 0x2939_DA87_05A1_8D0A);
-		private static Quad S10 => new Quad(0x3FBD_71B8_EE20_94BA, 0xE4FA_A8EE_0F63_1EF8);
-		private static Quad S11 => new Quad(0xBFB4_7619_0E26_27FC, 0xD447_C8CE_C732_8FCB);
-		private static Quad S12 => new Quad(0x3FAB_3D19_FFD7_AD8B, 0xF1DD_C6F8_CBDE_24B6);
+		private static Quad S9 => new Quad(0xBFC6_2F49_B467_96FE, 0x3000_0000_0000_0000);
+		private static Quad S10 => new Quad(0x3FBD_71B8_EE20_94BA, 0xE000_0000_0000_0000);
+		private static Quad S11 => new Quad(0xBFB4_7619_0E26_27FC, 0xD000_0000_0000_0000);
+		private static Quad S12 => new Quad(0x3FAB_3D19_FFD7_AD8B, 0xF000_0000_0000_0000);
 		// Domain [-0.67434, 0.67434], range ~[-3.37e-36, 1.982e-37]
 		// |tan(newBase)/newBase - t(newBase)| < 2**-117.8 (XXX should be ~1e-37)
 		private static Quad T3 => new Quad(0x3FFD_5555_5555_5555, 0x5555_5555_5555_5555);
@@ -853,15 +854,14 @@ namespace MissingValues
 			Span<double> tx = stackalloc double[NX];
 			Span<double> ty = stackalloc double[NY];
 			long n;
-			int e0, ex, i, j, nx;
-			short expsign;
+			int ex, i;
 
 			ex = x.BiasedExponent;
 
-			if (ex < Quad.ExponentBias + 45 || ex == Quad.ExponentBias + 45 && x.TrailingSignificand < new UInt128(0x0000_921F_B544_42D1, 0x8469_898C_C517_01B8))
+			if (Abs(x) < new Quad(0x402C_921F_0000_0000, 0x0000_0000_0000_0000))
 			{ // |x| ~< 2^45*(pi/2), medium size
-				fn = x * PIO2_HI + Epsilon - Epsilon;
-				n = (long)fn;
+				fn = x * INVPIO2 + Epsilon - Epsilon; /* rint(x/(pi/2)) */
+				n = ((uint)(long)fn & 0x7FFF_FFFF);
 				r = x - fn * MathQConstants.RemPio.PIO2_1;
 				w = fn * MathQConstants.RemPio.PIO2_1T; // 1st round good to 180 bit
 														// Matters with directed rounding
@@ -1205,13 +1205,11 @@ namespace MissingValues
 			Quad hz, z, r, w;
 
 			z = x * x;
-			r = Poly(in z);
+			r = (z * (C1 + z * (C2 + z * (C3 + z * (C4 + z * (C5 + z * (C6 + z * (C7 + z * (C8 + z * (C9 + z * (C10 + z * C11)))))))))));
 			hz = Quad.HalfOne * z;
 			w = Quad.One - hz;
 
 			return w + (((Quad.One - w) - hz) + (z * r - x * y));
-
-			static Quad Poly(in Quad z) => (z * (C1 + z * (C2 + z * (C3 + z * (C4 + z * (C5 + z * (C6 + z * (C7 + z * (C8 + z * (C9 + z * (C10 + z * C11)))))))))));
 		}
 		/// <summary>
 		/// Returns the hyperbolic cosine of the specified angle.
@@ -1583,7 +1581,7 @@ namespace MissingValues
 			x = new Quad(false, 0x3fff, x.TrailingSignificand);
 
 			const int L2I = 49 - MathQConstants.Log.Log2Intervals;
-			i = (int)((lx + (1 << (L2I - 2))) >> (L2I - 1));
+			i = (int)(((ulong)(lx >> 64) + (1 << (L2I - 2))) >> (L2I - 1));
 
 			d = (x - MathQConstants.Log.H(i)) * MathQConstants.Log.G(i) + MathQConstants.Log.E(i);
 
@@ -2428,6 +2426,13 @@ namespace MissingValues
 						n = MinExponent;
 					}
 				}
+
+				Quad result = x * new Quad((ulong)(0x3FFF + n) << 48, 0x0000_0000_0000_0000);
+				if (Quad.IsInfinity(result))
+				{
+					return Quad.Zero;
+				}
+				return result;
 			}
 
 			return x * new Quad((ulong)(0x3FFF + n) << 48, 0x0000_0000_0000_0000);
@@ -2499,7 +2504,7 @@ namespace MissingValues
 
 			z = x * x;
 			v = z * x;
-			r = Poly(in z);
+			r = (S2 + z * (S3 + z * (S4 + z * (S5 + z * (S6 + z * (S7 + z * (S8 + z * (S9 + z * (S10 + z * (S11 + z * S12))))))))));
 
 			if (iy == 0)
 			{
@@ -2507,11 +2512,6 @@ namespace MissingValues
 			}
 
 			return x - ((z * (Quad.HalfOne * y - v * r) - y) - v * S1);
-
-			static Quad Poly(in Quad z)
-			{
-				return (S2 + z * (S3 + z * (S4 + z * (S5 + z * (S6 + z * (S7 + z * (S8 + z * (S9 + z * (S10 + z * (S11 + z * S12))))))))));
-			}
 		}
 		/// <summary>
 		/// Returns the sine and cosine of the specified angle.
@@ -2529,8 +2529,7 @@ namespace MissingValues
 			{
 				return (x, x);
 			}
-			x = Abs(x);
-			if (x < M_PI_4)
+			if (Abs(x) < M_PI_4)
 			{
 				if (se < 0x3FFF - Quad.MantissaDigits)
 				{
