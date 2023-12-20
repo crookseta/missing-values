@@ -1268,11 +1268,11 @@ namespace MissingValues
 					}
 					return x + x;
 				}
-				if (x > new Quad(0x400C_62E4_2FEF_A39E, 0xF357_93C7_6730_07E5))
+				if (x > MathQConstants.Exp.O_THRESHOLD)
 				{
 					return Quad.PositiveInfinity;
 				}
-				if (x < new Quad(0xC00C_654B_B3B2_C73E, 0xBB05_9FAB_B506_FF33))
+				if (x < MathQConstants.Exp.U_THRESHOLD)
 				{
 					return Quad.Zero;
 				}
@@ -1546,14 +1546,14 @@ namespace MissingValues
 			Quad d, valHi, valLo;
 			double dd;
 			double dk;
-			UInt128 lx = x.TrailingSignificand;
+			ulong lx;
 			int i, k;
 			ushort hx = x.BiasedExponent;
 			k = -16383;
 
 			if (Quad.IsNegative(x) || Quad.IsNaNOrZero(x))
 			{
-				if ((hx | lx) == UInt128.Zero)
+				if ((hx | x.TrailingSignificand) == UInt128.Zero)
 				{
 					rp.Hi = Quad.NegativeInfinity;
 					return;
@@ -1571,17 +1571,21 @@ namespace MissingValues
 			{ // Scale up x
 				x *= new Quad(0x4070_0000_0000_0000, 0x0000_0000_0000_0000);
 				k = -16383 - 113;
-				lx = Quad.QuadToUInt128Bits(x);
+				lx = (ulong)(x.TrailingSignificand >> 64);
 				hx = x.BiasedExponent;
 			}
+			else
+			{
+				lx = (ulong)(x.TrailingSignificand >> 64);
+			}
 
-			k += hx;
+			k += hx | (Quad.IsNegative(x) ? 1 << 15 : 0);
 			dk = k;
 
 			x = new Quad(false, 0x3fff, x.TrailingSignificand);
 
 			const int L2I = 49 - MathQConstants.Log.Log2Intervals;
-			i = (int)(((ulong)(lx >> 64) + (1 << (L2I - 2))) >> (L2I - 1));
+			i = (int)((lx + (1 << (L2I - 2))) >> (L2I - 1));
 
 			d = (x - MathQConstants.Log.H(i)) * MathQConstants.Log.G(i) + MathQConstants.Log.E(i);
 

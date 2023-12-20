@@ -406,6 +406,14 @@ namespace MissingValues.Tests.Core
 				.Should().Be(Zero);
 		}
 		[Fact]
+		public static void ExpM1Test()
+		{
+			GenericFloatingPointFunctions.ExpM1(Two)
+				.Should().BeApproximately(GenericFloatingPointFunctions.Exp(Two) - One, Delta);
+			GenericFloatingPointFunctions.ExpM1(NegativeHalf)
+				.Should().BeApproximately(GenericFloatingPointFunctions.Exp(NegativeHalf) - One, Delta);
+		}
+		[Fact]
 		public static void Exp10Test()
 		{
 			GenericFloatingPointFunctions.Exp10(Two)
@@ -482,6 +490,19 @@ namespace MissingValues.Tests.Core
 			GenericFloatingPointFunctions.Log(Zero)
 				.Should().Be(Float.NegativeInfinity);
 			GenericFloatingPointFunctions.Log(NegativeFive)
+				.Should().Be(Float.NaN);
+		}
+		[Fact]
+		public static void LogP1Test()
+		{
+			GenericFloatingPointFunctions.LogP1(One)
+				.Should().Be(GenericFloatingPointFunctions.Log(Two))
+				.And.BeApproximately(Values.CreateQuad(0x3FFE_62E4_2FEF_A39E, 0xF357_93C7_6730_07E6), Delta);
+			GenericFloatingPointFunctions.LogP1(Zero)
+				.Should().Be(Zero);
+			GenericFloatingPointFunctions.LogP1(NegativeOne)
+				.Should().Be(Float.NegativeInfinity);
+			GenericFloatingPointFunctions.LogP1(NegativeFive)
 				.Should().Be(Float.NaN);
 		}
 		[Fact]

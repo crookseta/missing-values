@@ -488,6 +488,11 @@ internal static class MathQConstants
 		public const int TBLBITS = 7;
 		public const int TBLSIZE = (1 << TBLBITS);
 
+		public static Quad TINY => new Quad(0x18EF_0000_0000_0000, 0x0000_0000_0000_0000);
+
+		public static Quad O_THRESHOLD => new Quad(0x400C_62E4_2FEF_A39E, 0xF357_93C7_6730_07E5);
+		public static Quad U_THRESHOLD => new Quad(0xC00C_654B_B3B2_C73E, 0xBB05_9FAB_B506_FF33);
+
 		public static Quad L1 => new Quad(0x3FF7_62E4_2FEF_A39E, 0xF357_93C7_6800_0000);
 		public const double L2 = -1.0253670638894731e-29;
 		public const double INV_L = 1.8466496523378731e+2;
@@ -910,6 +915,46 @@ internal static class MathQConstants
 			(new Quad(0x3FFF_FA7C_1819_E90D, 0x82E9_0A7E_7400_0000), new Quad(0x3FA6_64C7_83B8_0C18, 0x6DEE_CA16_981E_4675)),
 			(new Quad(0x3FFF_FD3C_22B8_F71F, 0x1097_5BA4_B200_0000), new Quad(0x3FA7_2BCF_3A5E_12D2, 0x69D8_AD7C_1A4A_8875)),
 		};
+
+
+		public const double T1 = -0.1659;
+		public const double T2 = 0.1659;
+		public const double T3 = 0.03125;
+
+		public static Quad C3 => new Quad(0x3FFC_5555_5555_5555, 0x5555_5555_5555_5555);
+		public static Quad C4 => new Quad(0x3FFA_5555_5555_5555, 0x5555_5555_5555_5555);
+		public static Quad C5 => new Quad(0x3FF8_1111_1111_1111, 0x1111_1111_1111_1210);
+		public static Quad C6 => new Quad(0x3FF5_6C16_C16C_16C1, 0x6C16_C16C_16C3_49BB);
+		public static Quad C7 => new Quad(0x3FF2_A01A_01A0_1A01, 0xA01A_01A0_1705_DF4D);
+		public static Quad C8 => new Quad(0x3FEF_A01A_01A0_1A01, 0xA01A_019A_1378_E5FF);
+		public static Quad C9 => new Quad(0x3FEC_71DE_3A55_6C73, 0x38FA_ACF0_D2CA_7A76);
+		public static Quad C10 => new Quad(0x3FE9_27E4_FB77_89F5, 0xC735_B315_7B02_281A);
+		public static Quad C11 => new Quad(0x3FE5_AE64_567F_544E, 0x40AA_E1AD_408F_F6F6);
+		public static Quad C12 => new Quad(0x3FE2_1EED_8EFF_8D87, 0x5892_66C9_2620_C7F8);
+		public static Quad C13 => new Quad(0x3FDE_6124_613A_7DB6, 0x9258_5198_970E_8AB2);
+
+		public const double C14 = 1.1470745580491932e-11;
+		public const double C15 = 7.6471620181090468e-13;
+		public const double C16 = 4.7793721460260450e-14;
+		public const double C17 = 2.8074757356658877e-15;
+		public const double C18 = 1.4760610323699476e-16;
+
+		public static Quad D3 => new Quad(0x3FFC_5555_5555_5555, 0x5555_5555_5555_57DC);
+		public static Quad D4 => new Quad(0x3FFA_5555_5555_5555, 0x5555_5555_554D_1BF7);
+		public static Quad D5 => new Quad(0x3FF8_1111_1111_1111, 0x1111_1111_1D39_4AC0);
+		public static Quad D6 => new Quad(0x3FF5_6C16_C16C_16C1, 0x6C16_C156_6C41_F8CD);
+		public static Quad D7 => new Quad(0x3FF2_A01A_01A0_1A01, 0xA01A_1BAA_3B05_95A8);
+		public static Quad D8 => new Quad(0x3FEF_A01A_01A0_1A01, 0xA003_A377_84AA_1CC4);
+		public static Quad D9 => new Quad(0x3FEC_71DE_3A55_6C73, 0x472C_BF84_45DA_065C);
+		public static Quad D10 => new Quad(0x3FE9_27E4_FB77_89EE, 0xFEBF_E259_FF3A_096A);
+		public static Quad D11 => new Quad(0x3FE5_AE64_567F_593A, 0xDF45_05DB_A46C_FCDD);
+		public static Quad D12 => new Quad(0x3FE2_1EED_8EFE_319A, 0x2583_3D8F_7F44_69B4);
+		public static Quad D13 => new Quad(0x3FDE_6124_61CB_7935, 0x9D69_C3EC_6E4A_DF76);
+
+		public const double D14 = 1.1470726176204336e-11;
+		public const double D15 = 7.6478532249581686e-13;
+		public const double D16 = 4.7628892832607741e-14;
+		public const double D17 = 3.0524857220358650e-15;
 	}
 	public static class RemPio
 	{

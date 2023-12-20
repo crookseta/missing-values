@@ -623,10 +623,7 @@ namespace MissingValues
 
 		public static Quad Atan2(Quad y, Quad x) => MathQ.Atan2(y, x);
 
-		public static Quad Atan2Pi(Quad y, Quad x)
-		{
-			throw new NotImplementedException();
-		}
+		public static Quad Atan2Pi(Quad y, Quad x) => Atan2(y, x) / Pi;
 
 		public static Quad BitDecrement(Quad x) => MathQ.BitDecrement(x);
 
@@ -643,10 +640,138 @@ namespace MissingValues
 		public static Quad Exp(Quad x) => MathQ.Exp(x);
 		public static Quad ExpM1(Quad x)
 		{
-			// TODO: Replace with an actual implementation
-			return Exp(x) - One;
 			/* origin: FreeBSD /usr/src/lib/msun/ld128/s_expl.c */
-			throw new NotImplementedException();
+			Quad hx2_hi, hx2_lo, q, r, r1, t, twomk, twopk, x_hi;
+			Quad x_lo, x2;
+			double dr, dx, fn, r2;
+			int k, n, n2;
+			ushort hx, ix;
+
+			/* Filter out exceptional cases. */
+			hx = (ushort)(x._upper >> 48);
+			ix = (ushort)(hx & 0x7FFF);
+			if (ix >= Quad.ExponentBias + 7) /* |x| >= 128 or x is NaN */
+			{
+				if (ix == Quad.ExponentBias + Quad.ExponentBias + 1)
+				{
+					if ((hx & 0x8000) != 0)
+					{
+						return Quad.NegativeOne / x - Quad.One;
+					}
+					return x;
+				}
+				if (x > MathQConstants.Exp.O_THRESHOLD)
+				{
+					return Quad.PositiveInfinity;
+				}
+				/*
+				 * expm1l() never underflows, but it must avoid
+				 * unrepresentable large negative exponents.  We used a
+				 * much smaller threshold for large |x| above than in
+				 * expl() so as to handle not so large negative exponents
+				 * in the same way as large ones here.
+				 */
+				if ((hx & 0x8000) != 0)
+				{
+					return MathQConstants.Exp.TINY - Quad.One;
+				}
+			}
+
+			if (MathQConstants.Exp.T1 < x && x < MathQConstants.Exp.T2)
+			{
+				x2 = x * x;
+				dx = (double)x;
+
+				if (x < MathQConstants.Exp.T3)
+				{
+					if (ix < Quad.ExponentBias - 113)
+					{
+						return (x == Quad.Zero ? x :
+							new Quad(0x40C7_0000_0000_0000, 0x0000_0000_0000_0000) * x + Abs(x)) * new Quad(0x3F37_0000_0000_0000, 0x0000_0000_0000_0000);
+					}
+					q = x * x2 * MathQConstants.Exp.C3 + x2 * x2 * (MathQConstants.Exp.C4 + x * (MathQConstants.Exp.C5 + x * (MathQConstants.Exp.C6 +
+						x * (MathQConstants.Exp.C7 + x * (MathQConstants.Exp.C8 + x * (MathQConstants.Exp.C9 + x * (MathQConstants.Exp.C10 +
+						x * (MathQConstants.Exp.C11 + x * (MathQConstants.Exp.C12 + x * (MathQConstants.Exp.C13 +
+						dx * (MathQConstants.Exp.C14 + dx * (MathQConstants.Exp.C15 + dx * (MathQConstants.Exp.C16 +
+						dx * (MathQConstants.Exp.C17 + dx * MathQConstants.Exp.C18))))))))))))));
+				}
+				else
+				{
+					q = x * x2 * MathQConstants.Exp.D3 + x2 * x2 * (MathQConstants.Exp.D4 + x * (MathQConstants.Exp.D5 + x * (MathQConstants.Exp.D6 +
+						x * (MathQConstants.Exp.D7 + x * (MathQConstants.Exp.D8 + x * (MathQConstants.Exp.D9 + x * (MathQConstants.Exp.D10 +
+						x * (MathQConstants.Exp.D11 + x * (MathQConstants.Exp.D12 + x * (MathQConstants.Exp.D13 +
+						dx * (MathQConstants.Exp.D14 + dx * (MathQConstants.Exp.D15 + dx * (MathQConstants.Exp.D16 +
+						dx * MathQConstants.Exp.D17)))))))))))));
+				}
+
+				x_hi = (float)x;
+				x_lo = x - x_hi;
+				hx2_hi = x_hi * x_hi / Quad.Two;
+				hx2_lo = x_lo * (x + x_hi) / Quad.Two;
+				if (ix < Quad.ExponentBias - 7)
+				{
+					return ((hx2_hi + x_hi) + (hx2_lo + x_lo + q));
+				}
+				else
+				{
+					return (x + (hx2_lo + q + hx2_hi));
+				}
+			}
+
+			/* Reduce x to (k*ln2 + endpoint[n2] + r1 + r2). */
+			fn = (double)x * MathQConstants.Exp.INV_L;
+			n = (int)fn;
+			n2 = (int)((uint)n % MathQConstants.Exp.Intervals);
+			k = n >> MathQConstants.Exp.Log2Intervals;
+			r1 = x - fn * MathQConstants.Exp.L1;
+			r2 = fn * -MathQConstants.Exp.L2;
+			r = r1 + r2;
+
+			/* Prepare scale factor. */
+			twopk = new Quad((ulong)(Quad.ExponentBias + k) << 48, 0x0);
+
+			/*
+			 * Evaluate lower terms of
+			 * expl(endpoint[n2] + r1 + r2) = tbl[n2] * expl(r1 + r2).
+			 */
+			dr = (double)r;
+			q = r2 + r * r * (MathQConstants.Exp.A2 + r * (MathQConstants.Exp.A3 + r * (MathQConstants.Exp.A4 + r * (MathQConstants.Exp.A5 + r * (MathQConstants.Exp.A6 +
+		dr * (MathQConstants.Exp.A7 + dr * (MathQConstants.Exp.A8 + dr * (MathQConstants.Exp.A9 + dr * MathQConstants.Exp.A10))))))));
+
+			var tbl = MathQConstants.Exp.Table[n2];
+			t = tbl.lo + tbl.hi;
+
+			switch (k)
+			{
+				case 0:
+					t = (tbl.hi - One) + (tbl.lo * (r1 + One) + t * q + tbl.hi * r1);
+					return t;
+				case -1:
+					t = (tbl.hi - Two) + (tbl.lo * (r1 + One) + t * q + tbl.hi * r1);
+					return t / Quad.Two;
+				case < -7:
+					t = (tbl.hi) + (tbl.lo + t * (q + r1));
+					return t * twopk - Quad.One;
+				case > 2 * MantissaDigits - 1:
+					t = (tbl.hi) + (tbl.lo + t * (q + r1));
+					if (k == Quad.ExponentBias + 1)
+					{
+						return t * Quad.Two * new Quad(0x7FFE_0000_0000_0000, 0x0000_0000_0000_0000) - Quad.One;
+					}
+					return t * twopk - Quad.One;
+			}
+
+			twomk = new Quad((ulong)(Quad.ExponentBias - k) << 48, 0x0);
+
+			if (k > MantissaDigits - 1)
+			{
+				t = (tbl.hi) + (tbl.lo - twomk + t * (q + r1));
+			}
+			else
+			{
+				t = (tbl.hi - twomk) + (tbl.lo + t * (q + r1));
+			}
+			return t * twopk;
 		}
 
 		public static Quad Exp10(Quad x)
@@ -778,10 +903,109 @@ namespace MissingValues
 		public static Quad Log(Quad x) => MathQ.Log(x);
 		public static Quad LogP1(Quad x) 
 		{
-			// TODO: Replace with an actual implementation
-			return MathQ.Log(x + One);
 			/* origin: FreeBSD /usr/src/lib/msun/ld128/s_logl.c */
-			throw new NotImplementedException();
+			Quad d, d_hi, f_lo, val_hi, val_lo;
+			Quad f_hi, twopminusk;
+			double d_lo, dd, dk;
+			ulong lx;
+			int i, k;
+			short ax, hx;
+
+			hx = (short)(x.BiasedExponent | (IsNegative(x) ? 1U << 15 : 0U));
+			if (hx < 0x3FFF) /* x < 1, or x neg NaN */
+			{
+				ax = (short)(hx & 0x7FFF);
+				if (ax >= 0x3FFF) /* x <= -1, or x neg NaN */
+				{
+					if (ax == 0x3FFF && x.TrailingSignificand == UInt128.Zero)
+					{
+						return Quad.NegativeInfinity; /* log1p(-1) = -Inf */
+					}
+					/* log1p(x < 1, or x NaN) = qNaN: */
+					return Quad.CreateQuadNaN(Quad.IsNegative(x), x.TrailingSignificand);
+				}
+				if (ax <= 0x3F8D) /* |x| < 2**-113 */
+				{
+					if ((long)x == 0)
+					{
+						return x; /* x with inexact if x != 0 */
+					}
+				}
+				f_hi = Quad.One;
+				f_lo = x;
+			}
+			else if (hx >= 0x7FFF) /* x +Inf or non-neg NaN */
+			{
+				return x; /* log1p(Inf or NaN) = Inf or qNaN */
+			}
+			else if (hx < 0x40E1) /* 1 <= x < 2**226 */
+			{
+				f_hi = x;
+				f_lo = Quad.One;
+			}
+			else /* 2**226 <= x < +Inf */
+			{
+				f_hi = x;
+				f_lo = Quad.Zero; /* avoid underflow of the P3 term */
+			}
+
+			x = f_hi + f_lo;
+			f_lo = (f_hi - x) + f_lo;
+
+			hx = (short)x.BiasedExponent;
+			lx = (ulong)(x.TrailingSignificand >> 64);
+			k = -16383;
+
+			k += hx | (Quad.IsNegative(x) ? 1 << 15 : 0);
+			dk = k;
+
+			x = new Quad(false, 0x3fff, x.TrailingSignificand);
+			twopminusk = new Quad((ulong)(0x7ffe - hx) << 48, 0x0);
+			f_lo *= twopminusk;
+
+			const int L2I = 49 - MathQConstants.Log.Log2Intervals;
+			i = (int)((lx + (1UL << (L2I - 2))) >> (L2I - 1));
+
+			/*
+			 * x*G(i)-1 (with a reduced x) can be represented exactly, as
+			 * above, but now we need to evaluate the polynomial on d =
+			 * (x+f_lo)*G(i)-1 and extra precision is needed for that.
+			 * Since x+x_lo is a hi+lo decomposition and subtracting 1
+			 * doesn't lose too many bits, an inexact calculation for
+			 * f_lo*G(i) is good enough.
+			 */
+			d_hi = (x - MathQConstants.Log.H(i)) * MathQConstants.Log.G(i) + MathQConstants.Log.E(i);
+
+			d_lo = (double)(f_lo * MathQConstants.Log.G(i));
+
+			/*
+			 * This is _2sumF(d_hi, d_lo) inlined.  The condition
+			 * (d_hi == 0 || |d_hi| >= |d_lo|) for using _2sumF() is not
+			 * always satisifed, so it is not clear that this works, but
+			 * it works in practice.  It works even if it gives a wrong
+			 * normalized d_lo, since |d_lo| > |d_hi| implies that i is
+			 * nonzero and d is tiny, so the F(i) term dominates d_lo.
+			 * In float precision:
+			 * (By exhaustive testing, the worst case is d_hi = 0x1.bp-25.
+			 * And if d is only a little tinier than that, we would have
+			 * another underflow problem for the P3 term; this is also ruled
+			 * out by exhaustive testing.)
+			 */
+			d = d_hi + d_lo;
+			d_lo = (double)(d_hi - d + d_lo);
+			d_hi = d;
+
+			dd = (double)d;
+			val_lo = d * d * d * (MathQConstants.Log.P3 +
+		d * (MathQConstants.Log.P4 + d * (MathQConstants.Log.P5 + d * (MathQConstants.Log.P6 + d * (MathQConstants.Log.P7 + d * (MathQConstants.Log.P8 +
+		dd * (MathQConstants.Log.P9 + dd * (MathQConstants.Log.P10 + dd * (MathQConstants.Log.P11 + dd * (MathQConstants.Log.P12 + dd * (MathQConstants.Log.P13 +
+		dd * MathQConstants.Log.P14))))))))))) + (MathQConstants.Log.FLo(i) + dk * MathQConstants.Log.LN2LO + d_lo) + d * d * MathQConstants.Log.P2;
+			val_hi = d_hi;
+
+			MathQConstants.Log._3sumF(ref val_hi, ref val_lo, MathQConstants.Log.FHi(i) + dk * MathQConstants.Log.LN2HI);
+
+			return val_hi + val_lo;
+			return MathQ.Log(x + One);
 		}
 
 		public static Quad Log(Quad x, Quad newBase) => MathQ.Log(x, newBase);
@@ -981,24 +1205,15 @@ namespace MissingValues
 
 		public static Quad Acos(Quad x) => MathQ.Acos(x);
 
-		public static Quad AcosPi(Quad x)
-		{
-			throw new NotImplementedException();
-		}
+		public static Quad AcosPi(Quad x) => Acos(x) / Pi;
 
 		public static Quad Asin(Quad x) => MathQ.Asin(x);
 
-		public static Quad AsinPi(Quad x)
-		{
-			throw new NotImplementedException();
-		}
+		public static Quad AsinPi(Quad x) => Asin(x) / Pi;
 
 		public static Quad Atan(Quad x) => MathQ.Atan(x);
 
-		public static Quad AtanPi(Quad x)
-		{
-			throw new NotImplementedException();
-		}
+		public static Quad AtanPi(Quad x) => Atan(x) / Pi;
 
 		public static Quad Cos(Quad x) => MathQ.Cos(x);
 
@@ -1026,6 +1241,11 @@ namespace MissingValues
 		public static Quad TanPi(Quad x)
 		{
 			throw new NotImplementedException();
+
+			static Quad __tanPi(Quad x)
+			{
+				throw new NotImplementedException();
+			}
 		}
 
 		public static Quad operator +(Quad value) => value;
@@ -1164,6 +1384,15 @@ namespace MissingValues
 			UInt128 rightBits = QuadToUInt128Bits(right);
 
 			return (rightBits == leftBits) || ((rightBits < leftBits) ^ rightIsNegative);
+		}
+
+		private static Quad __cosPi(Quad x)
+		{
+			throw new NotImplementedException();
+		}
+		private static Quad __sinPi(Quad x)
+		{
+			throw new NotImplementedException();
 		}
 	}
 }
