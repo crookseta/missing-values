@@ -1,17 +1,11 @@
 ﻿using MissingValues.Internals;
-using System;
 using System.Buffers.Binary;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
-using System.Linq;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using System.Security.Cryptography.X509Certificates;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace MissingValues
 {
@@ -57,7 +51,7 @@ namespace MissingValues
 		static ReadOnlySpan<Quad> IFormattableFloatingPoint<Quad>.PowersOfTen => MathQ.RoundPower10;
 
 		public static Quad Abs(Quad value) => MathQ.Abs(value);
-		
+
 		public static Quad Ceiling(Quad x) => MathQ.Ceiling(x);
 
 		public static Quad Clamp(Quad value, Quad min, Quad max) => MathQ.Clamp(value, min, max);
@@ -304,7 +298,7 @@ namespace MissingValues
 			}
 			return result;
 		}
-		
+
 		public static Quad Round(Quad x) => MathQ.Round(x);
 
 		public static Quad Round(Quad x, int digits) => MathQ.Round(x, digits);
@@ -312,7 +306,7 @@ namespace MissingValues
 		public static Quad Round(Quad x, MidpointRounding mode) => MathQ.Round(x, mode);
 
 		public static Quad Round(Quad x, int digits, MidpointRounding mode) => MathQ.Round(x, digits, mode);
-		
+
 		public static int Sign(Quad value) => MathQ.Sign(value);
 
 		public static Quad Sqrt(Quad x) => MathQ.Sqrt(x);
@@ -899,7 +893,7 @@ namespace MissingValues
 		public static Quad Tanh(Quad x) => MathQ.Tanh(x);
 
 		public static Quad Log(Quad x) => MathQ.Log(x);
-		public static Quad LogP1(Quad x) 
+		public static Quad LogP1(Quad x)
 		{
 			/* origin: FreeBSD /usr/src/lib/msun/ld128/s_logl.c */
 			Quad d, d_hi, f_lo, val_hi, val_lo;
@@ -1048,13 +1042,13 @@ namespace MissingValues
 			Quad z = Quad.One;
 			Quad huge = new Quad(0x670F_0000_0000_0000, 0x0000_0000_0000_0000); // 0x1p10000
 			Quad tiny = new Quad(0x18EF_0000_0000_0000, 0x0000_0000_0000_0000); // 0x1p-10000
-			if (ex > 0x3FFF+8000)
+			if (ex > 0x3FFF + 8000)
 			{
 				z = huge;
-				x *= tiny; 
+				x *= tiny;
 				y *= tiny;
 			}
-			else if (ey < 0x3FFF-8000)
+			else if (ey < 0x3FFF - 8000)
 			{
 				z = tiny;
 				x *= huge;
@@ -1318,7 +1312,7 @@ namespace MissingValues
 			Quad pi_hi = new Quad(0x4000_921F_B544_42D1, 0x8400_0000_0000_0000);
 			Quad pi_lo = new Quad(0x3FC6_A626_3314_5C06, 0xE0E6_8948_1270_4453);
 
-			Quad ai, ar, ax, hi, lo, s, xhi, xlo;
+			Quad ai, ar, ax, hi, lo, s;
 
 			ax = Abs(x);
 
