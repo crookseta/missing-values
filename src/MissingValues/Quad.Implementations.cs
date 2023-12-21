@@ -17,7 +17,6 @@ namespace MissingValues
 {
 	public partial struct Quad :
 		IBinaryFloatingPointIeee754<Quad>,
-		IFloatingPoint<Quad>,
 		IFormattableFloatingPoint<Quad>,
 		IMinMaxValue<Quad>
 	{
@@ -110,7 +109,7 @@ namespace MissingValues
 
 		static bool INumberBase<Quad>.IsComplexNumber(Quad value) => false;
 
-		public static bool IsEvenInteger(Quad value) => IsInteger(value) && (Abs(value % 2) == 0);
+		public static bool IsEvenInteger(Quad value) => IsInteger(value) && (Abs(value % Two) == Zero);
 
 		public static bool IsFinite(Quad value)
 		{
@@ -142,7 +141,7 @@ namespace MissingValues
 			return (bits < infBits) && (bits != Int128.Zero) && ((bits & infBits) != Int128.Zero);
 		}
 
-		public static bool IsOddInteger(Quad value) => IsInteger(value) && (Abs(value % 2) == 1);
+		public static bool IsOddInteger(Quad value) => IsInteger(value) && (Abs(value % Two) == One);
 
 		public static bool IsPositive(Quad value) => Int128.IsPositive(Quad.QuadToInt128Bits(value));
 
@@ -316,7 +315,6 @@ namespace MissingValues
 		
 		public static int Sign(Quad value) => MathQ.Sign(value);
 
-		/// <inheritdoc cref="IRootFunctions{TSelf}.Sqrt(TSelf)"/>
 		public static Quad Sqrt(Quad x) => MathQ.Sqrt(x);
 
 		public static Quad Truncate(Quad x) => MathQ.Truncate(x);
@@ -979,8 +977,8 @@ namespace MissingValues
 			d_lo = (double)(f_lo * MathQConstants.Log.G(i));
 
 			/*
-			 * This is _2sumF(d_hi, d_lo) inlined.  The condition
-			 * (d_hi == 0 || |d_hi| >= |d_lo|) for using _2sumF() is not
+			 * This is Sum2(d_hi, d_lo) inlined.  The condition
+			 * (d_hi == 0 || |d_hi| >= |d_lo|) for using Sum2() is not
 			 * always satisifed, so it is not clear that this works, but
 			 * it works in practice.  It works even if it gives a wrong
 			 * normalized d_lo, since |d_lo| > |d_hi| implies that i is
@@ -1002,10 +1000,9 @@ namespace MissingValues
 		dd * MathQConstants.Log.P14))))))))))) + (MathQConstants.Log.FLo(i) + dk * MathQConstants.Log.LN2LO + d_lo) + d * d * MathQConstants.Log.P2;
 			val_hi = d_hi;
 
-			MathQConstants.Log._3sumF(ref val_hi, ref val_lo, MathQConstants.Log.FHi(i) + dk * MathQConstants.Log.LN2HI);
+			MathQ.Sum3(ref val_hi, ref val_lo, MathQConstants.Log.FHi(i) + dk * MathQConstants.Log.LN2HI);
 
 			return val_hi + val_lo;
-			return MathQ.Log(x + One);
 		}
 
 		public static Quad Log(Quad x, Quad newBase) => MathQ.Log(x, newBase);
@@ -1219,32 +1216,296 @@ namespace MissingValues
 
 		public static Quad CosPi(Quad x)
 		{
-			throw new NotImplementedException();
+			Quad ai, ar, ax, c;
+
+			ax = Abs(x);
+
+			if (ax <= One)
+			{
+				if (ax < Quarter)
+				{
+					if (ax < new Quad(0x3FC3_0000_0000_0000, 0x0000_0000_0000_0000)) // ax < 0x1p-60
+					{
+						if ((int)x == 0)
+						{
+							return One;
+						}
+					}
+					return __cosPi(ax);
+				}
+
+				if (ax < HalfOne)
+				{
+					c = __sinPi(HalfOne - ax);
+				}
+				else if (ax < ThreeFourth)
+				{
+					if (ax == HalfOne)
+					{
+						return Zero;
+					}
+					c = -__sinPi(ax - HalfOne);
+				}
+				else
+				{
+					c = -__cosPi(One - ax);
+				}
+				return c;
+			}
+
+			if (ax < new Quad(0x406F_0000_0000_0000, 0x0000_0000_0000_0000)) // ax < 0x1p112
+			{
+				BitHelper.FastFloor(ax, out ai, out ar);
+
+				if (ar < HalfOne)
+				{
+					if (ar < Quarter)
+					{
+						c = ar == Zero ? One : __cosPi(ar);
+					}
+					else
+					{
+						c = __sinPi(HalfOne - ar);
+					}
+				}
+				else
+				{
+					if (ar < ThreeFourth)
+					{
+						if (ar == HalfOne)
+						{
+							return Zero;
+						}
+						c = -__sinPi(ar - HalfOne);
+					}
+					else
+					{
+						c = -__cosPi(One - ar);
+					}
+				}
+				return (IsEvenInteger(ai) ? c : -c);
+			}
+
+			if (IsInfinity(x) || IsNaN(x))
+			{
+				return NaN;
+			}
+
+			/*
+			 * For |x| >= 0x1p113, it is always an even integer, so return 1.
+			 */
+			if (ax >= new Quad(0x4070_0000_0000_0000, 0x0000_0000_0000_0000))
+			{
+				return One;
+			}
+
+			/*
+			 * For 0x1p112 <= |x| < 0x1p113 need to determine if x is an even
+			 * or odd integer to return 1 or -1.
+			 */
+
+			return IsEvenInteger(ax) ? One : NegativeOne;
 		}
 
 		public static Quad Sin(Quad x) => MathQ.Sin(x);
 
 		public static (Quad Sin, Quad Cos) SinCos(Quad x) => MathQ.SinCos(x);
 
-		public static (Quad SinPi, Quad CosPi) SinCosPi(Quad x)
-		{
-			throw new NotImplementedException();
-		}
+		public static (Quad SinPi, Quad CosPi) SinCosPi(Quad x) => (SinPi(x), CosPi(x));
 
 		public static Quad SinPi(Quad x)
 		{
-			throw new NotImplementedException();
+			Quad pi_hi = new Quad(0x4000_921F_B544_42D1, 0x8400_0000_0000_0000);
+			Quad pi_lo = new Quad(0x3FC6_A626_3314_5C06, 0xE0E6_8948_1270_4453);
+
+			Quad ai, ar, ax, hi, lo, s, xhi, xlo;
+
+			ax = Abs(x);
+
+			if (ax < One)
+			{
+				if (ax < Quarter)
+				{
+					if (ax < new Quad(0x3FC3_0000_0000_0000, 0x0000_0000_0000_0000))
+					{
+						if (x == Zero)
+						{
+							return x;
+						}
+						hi = (double)x;
+						hi *= new Quad(0x4070_0000_0000_0000, 0x0000_0000_0000_0000);
+						lo = x * new Quad(0x4070_0000_0000_0000, 0x0000_0000_0000_0000) - hi;
+						s = (pi_lo + pi_hi) * lo + pi_lo * lo + pi_hi * hi;
+						return (s * new Quad(0x3F8E_0000_0000_0000, 0x0000_0000_0000_0000)); // s * 0x1p-113L
+					}
+
+					s = __sinPi(ax);
+					return x < Zero ? -s : s;
+				}
+
+				if (ax < HalfOne)
+				{
+					s = __cosPi(HalfOne - ax);
+				}
+				else if (ax < ThreeFourth)
+				{
+					s = __cosPi(ax - HalfOne);
+				}
+				else
+				{
+					s = __sinPi(One - ax);
+				}
+				return x < Zero ? -s : s;
+			}
+
+			if (ax < new Quad(0x406F_0000_0000_0000, 0x0000_0000_0000_0000))
+			{
+				/* Split ax = ai + ar with 0 <= ar < 1. */
+				BitHelper.FastFloor(ax, out ai, out ar);
+				if (ar == Zero)
+				{
+					s = Zero;
+				}
+				else
+				{
+					if (ar < HalfOne)
+					{
+						if (ar <= Quarter)
+						{
+							s = __sinPi(ar);
+						}
+						else
+						{
+							s = __cosPi(HalfOne - ar);
+						}
+					}
+					else
+					{
+						if (ar < ThreeFourth)
+						{
+							s = __cosPi(ar - HalfOne);
+						}
+						else
+						{
+							s = __sinPi(One - ar);
+						}
+					}
+
+					s = IsEvenInteger(ai) ? s : -s;
+				}
+
+				return x < Zero ? -s : s;
+			}
+
+			if (IsInfinity(x) || IsNaN(x))
+			{
+				return NaN;
+			}
+
+			return CopySign(Zero, x);
 		}
 
 		public static Quad Tan(Quad x) => MathQ.Tan(x);
 
 		public static Quad TanPi(Quad x)
 		{
-			throw new NotImplementedException();
+			Quad pi_hi = new Quad(0x4000_921F_B544_42D1, 0x8400_0000_0000_0000);
+			Quad pi_lo = new Quad(0x3FC6_A626_3314_5C06, 0xE0E6_8948_1270_4453);
+
+			Quad ai, ar, ax, hi, lo, t;
+			Quad odd;
+
+			ax = Abs(x);
+
+			if (ax < One)
+			{
+				if (ax < HalfOne)
+				{
+					if (ax < new Quad(0x3FC3_0000_0000_0000, 0x0000_0000_0000_0000))
+					{
+						if (x == Zero)
+						{
+							return x;
+						}
+						hi = (double)x;
+						hi *= new Quad(0x4070_0000_0000_0000, 0x0000_0000_0000_0000);
+						lo = x * new Quad(0x4070_0000_0000_0000, 0x0000_0000_0000_0000) - hi;
+						t = (pi_lo + pi_hi) * lo + pi_lo * lo + pi_hi * hi;
+
+						return (t * new Quad(0x3F8E_0000_0000_0000, 0x0000_0000_0000_0000));
+					}
+					t = __tanPi(ax);
+				}
+				else if (ax == HalfOne)
+				{
+					t = PositiveInfinity;
+				}
+				else
+				{
+					t = -__tanPi(One - ax);
+				}
+
+				return x < 0 ? -t : t;
+			}
+
+			if (ax < new Quad(0x406F_0000_0000_0000, 0x0000_0000_0000_0000))
+			{
+				BitHelper.FastFloor(ax, out ai, out ar);
+				odd = IsEvenInteger(ai) ? One : NegativeOne;
+				if (ar < HalfOne)
+				{
+					t = ar == Zero ? CopySign(Zero, odd) : __tanPi(ar);
+				}
+				else if (ar == HalfOne)
+				{
+					t = odd / Zero;
+				}
+				else
+				{
+					t = -__tanPi(One - ar);
+				}
+				return x < Zero ? -t : t;
+			}
+
+			if (IsInfinity(x) || IsNaN(x))
+			{
+				return NaN;
+			}
+
+			t = IsEvenInteger(ax) ? Zero : NegativeZero;
+			return CopySign(t, x);
 
 			static Quad __tanPi(Quad x)
 			{
-				throw new NotImplementedException();
+				Quad pi_hi = new Quad(0x4000_921F_B544_42D1, 0x8400_0000_0000_0000);
+				Quad pi_lo = new Quad(0x3FC6_A626_3314_5C06, 0xE0E6_8948_1270_4453);
+				Quad hi, lo, t;
+
+				if (x < Quarter)
+				{
+					hi = (double)x;
+					lo = x - hi;
+					lo = lo * (pi_lo + pi_hi) + hi * pi_lo;
+					hi *= pi_hi;
+					MathQ.Sum2(ref hi, ref lo);
+					t = MathQ.__tan(hi, lo, -1);
+				}
+				else if (x > Quarter)
+				{
+					x = HalfOne - x;
+					hi = (double)x;
+					lo = x - hi;
+					lo = lo * (pi_lo + pi_hi) + hi * pi_lo;
+					hi *= pi_hi;
+					MathQ.Sum2(ref hi, ref lo);
+					t = -MathQ.__tan(hi, lo, 1);
+				}
+				else
+				{
+					t = One;
+				}
+
+				return t;
 			}
 		}
 
@@ -1254,9 +1515,8 @@ namespace MissingValues
 
 		public static Quad operator -(Quad value)
 		{
-			Quad signMask = new Quad(0x8000_0000_0000_0000, 0x0000_0000_0000_0000);
 			// Invert the sign bit
-			return value ^ signMask;
+			return value ^ new Quad(0x8000_0000_0000_0000, 0x0000_0000_0000_0000);
 		}
 
 		public static Quad operator -(Quad left, Quad right) => MathQ.Sub(left, right);
@@ -1388,11 +1648,33 @@ namespace MissingValues
 
 		private static Quad __cosPi(Quad x)
 		{
-			throw new NotImplementedException();
+			Quad pi_hi = new Quad(0x4000_921F_B544_42D1, 0x8400_0000_0000_0000);
+			Quad pi_lo = new Quad(0x3FC6_A626_3314_5C06, 0xE0E6_8948_1270_4453);
+
+			Quad hi, lo;
+
+			hi = (double)x;
+			lo = x - hi;
+			lo = lo * (pi_lo + pi_hi) + hi * pi_lo;
+			hi *= pi_hi;
+			MathQ.Sum2(ref hi, ref lo);
+
+			return MathQ.__cos(in hi, in lo);
 		}
 		private static Quad __sinPi(Quad x)
 		{
-			throw new NotImplementedException();
+			Quad pi_hi = new Quad(0x4000_921F_B544_42D1, 0x8400_0000_0000_0000);
+			Quad pi_lo = new Quad(0x3FC6_A626_3314_5C06, 0xE0E6_8948_1270_4453);
+
+			Quad hi, lo;
+
+			hi = (double)x;
+			lo = x - hi;
+			lo = lo * (pi_lo + pi_hi) + hi * pi_lo;
+			hi *= pi_hi;
+			MathQ.Sum2(ref hi, ref lo);
+
+			return MathQ.__sin(hi, lo, 1);
 		}
 	}
 }

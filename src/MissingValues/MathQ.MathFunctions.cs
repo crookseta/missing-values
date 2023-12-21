@@ -1187,7 +1187,7 @@ namespace MissingValues
 				_ => __sin(hi, lo, 1),
 			};
 		}
-		private static Quad __cos(in Quad x, in Quad y)
+		internal static Quad __cos(in Quad x, in Quad y)
 		{
 			/* origin: FreeBSD /usr/src/lib/msun/ld128/k_cosl.c */
 			/*
@@ -1605,7 +1605,7 @@ namespace MissingValues
 		dd * MathQConstants.Log.P14))))))))))) + (MathQConstants.Log.FLo(i) + dk * MathQConstants.Log.LN2LO) + d * d * MathQConstants.Log.P2;
 			valHi = d;
 
-			MathQConstants.Log._3sumF(ref valHi, ref valLo, MathQConstants.Log.FHi(i) + dk * MathQConstants.Log.LN2HI);
+			Sum3(ref valHi, ref valLo, MathQConstants.Log.FHi(i) + dk * MathQConstants.Log.LN2HI);
 
 			rp.Hi = valHi;
 			rp.Lo = valLo;
@@ -2502,7 +2502,7 @@ namespace MissingValues
 				_ => -__cos(in hi, in lo),
 			};
 		}
-		private static Quad __sin(Quad x, Quad y, int iy)
+		internal static Quad __sin(Quad x, Quad y, int iy)
 		{
 			Quad z, r, v;
 
@@ -2777,7 +2777,7 @@ namespace MissingValues
 			n = __rem_pio2l(x, y);
 			return __tan(y[0], y[1], n & 1);
 		}
-		private static Quad __tan(Quad x, Quad y, int odd)
+		internal static Quad __tan(Quad x, Quad y, int odd)
 		{
 			Quad z, r, v, w, s, a, t;
 			bool big, sign = false;
@@ -2826,9 +2826,9 @@ namespace MissingValues
 			z = w;
 			z = z + temp - temp;
 			v = r - (z - x);        /* z+v = r+x */
-			t = a = -1.0 / w;       /* x = -1.0/w */
+			t = a = Quad.NegativeOne / w;       /* x = -1.0/w */
 			t = t + temp - temp;
-			s = 1.0 + t * z;
+			s = Quad.One + t * z;
 			return t + a * (s + t * v);
 
 			static Quad RPoly(Quad w)
@@ -2967,30 +2967,22 @@ namespace MissingValues
 			return -y;
 		}
 
-		private unsafe static Quad PolynomialEvaluator(Quad x, ref Quad p, int n)
+		internal static void Sum2(ref Quad a, ref Quad b)
 		{
-			Quad y = p;
+			Quad w;
 
-			do
-			{
-				p = ref Unsafe.Add(ref p, 1);
-				y = y * x + p;
-			} while (--n != 0);
-
-			return y;
+			w = a + b;
+			b = (a - w) + b;
+			a = w;
 		}
-		private unsafe static Quad PolynomialEvaluator1(Quad x, ref Quad p, int n)
+		internal static void Sum3(ref Quad a, ref Quad b, double c)
 		{
-			--n;
-			Quad y = x + p;
+			Quad tmp;
 
-			do
-			{
-				p = ref Unsafe.Add(ref p, 1);
-				y = y * x + p;
-			} while (--n != 0);
-
-			return y;
+			tmp = c;
+			Sum2(ref tmp, ref a);
+			b += a;
+			a = tmp;
 		}
 	}
 }

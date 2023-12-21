@@ -706,6 +706,27 @@ namespace MissingValues
 			return RoundPackToQuad(sign, exp, sig, sigExtra);
 		}
 
+		internal static void FastFloor(in Quad x, out Quad ai, out Quad ar)
+		{
+			ulong m;
+			int e;
+			e = x.Exponent;
+			if (e < 48)
+			{
+				UInt128 man = x.TrailingSignificand;
+				m = ((1LU << 49) -1) >> (e + 1);
+				man = man & ((UInt128)(~m) << 64);
+				ai = new Quad(false, x.BiasedExponent, man);
+			}
+			else
+			{
+				m = unchecked((ulong)-1) >> (e - 48);
+
+				ai = new Quad(x._upper, x._lower & (~m));
+			}
+			ar = x - ai;
+		}
+
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		internal static UInt128 AddQuadBits(UInt128 uiA, UInt128 uiB, bool signZ)
 		{

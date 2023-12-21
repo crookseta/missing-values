@@ -54,7 +54,9 @@ namespace MissingValues
 		internal static UInt128 EBits => new UInt128(0x4000_5BF0_A8B1_4576, 0x9535_5FB8_AC40_4E7A);
 		#endregion
 		#region Constants
+		internal static Quad Quarter => new(0x3FFD_0000_0000_0000, 0x0000_0000_0000_0000);
 		internal static Quad HalfOne => new(0x3FFE_0000_0000_0000, 0x0000_0000_0000_0000);
+		internal static Quad ThreeFourth => new(0x3FFE_8000_0000_0000, 0x0000_0000_0000_0000);
 		internal static Quad Two => new(0x4000_0000_0000_0000, 0x0000_0000_0000_0000);
 		#endregion
 
