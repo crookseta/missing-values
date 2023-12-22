@@ -12,8 +12,6 @@ using System.Threading.Tasks;
 
 namespace MissingValues
 {
-	// TODO: Finish implementing math functions so that Quad can implemente the IBinaryFloatingPointIEEE interface...
-
 	internal ref struct Shape
 	{
 		internal ref Word i;
@@ -91,7 +89,7 @@ namespace MissingValues
 		}
 	}
 
-	internal static partial class MathQ
+	public static partial class MathQ
 	{
 		internal const int MaxRoundingDigits = 34;
 
@@ -341,12 +339,12 @@ namespace MissingValues
 					return x;
 				}
 
-				return x + x * MathQConstants.Asin.R(x * x);
+				return x + x * Constants.Asin.R(x * x);
 			}
 			// 1 > |x| >= 0.5
 			z = (Quad.One - Quad.Abs(x)) * Quad.HalfOne;
 			s = Sqrt(z);
-			r = MathQConstants.Asin.R(z);
+			r = Constants.Asin.R(z);
 			if (((x._upper >> 32) & 0xFFFF) >= 0xEE00) // Close to 1
 			{
 				x = PIO2_HI - (Quad.Two * (s + s * r) - PIO2_LO);
@@ -413,7 +411,7 @@ namespace MissingValues
 				{
 					return x;
 				}
-				return sign ? -MathQConstants.Atan.AtanHi[3] : MathQConstants.Atan.AtanHi[3];
+				return sign ? -Constants.Atan.AtanHi[3] : Constants.Atan.AtanHi[3];
 			}
 
 			// Extract the exponent and the first few bits of the mantissa.
@@ -471,11 +469,11 @@ namespace MissingValues
 			z = x * x;
 			w = z * z;
 			// break sum aT[i]z**(i+1) into odd and even poly
-			s1 = z * MathQConstants.Atan.Even(w);
-			s2 = w * MathQConstants.Atan.Odd(w);
+			s1 = z * Constants.Atan.Even(w);
+			s2 = w * Constants.Atan.Odd(w);
 			if (id < 0)
 				return x - x * (s1 + s2);
-			z = MathQConstants.Atan.AtanHi[id] - ((x * (s1 + s2) - MathQConstants.Atan.AtanLo[id]) - x);
+			z = Constants.Atan.AtanHi[id] - ((x * (s1 + s2) - Constants.Atan.AtanLo[id]) - x);
 			return sign ? -z : z;
 		}
 		/// <summary>
@@ -862,23 +860,23 @@ namespace MissingValues
 			{ // |x| ~< 2^45*(pi/2), medium size
 				fn = x * INVPIO2 + Epsilon - Epsilon; /* rint(x/(pi/2)) */
 				n = ((uint)(long)fn & 0x7FFF_FFFF);
-				r = x - fn * MathQConstants.RemPio.PIO2_1;
-				w = fn * MathQConstants.RemPio.PIO2_1T; // 1st round good to 180 bit
+				r = x - fn * Constants.RemPio.PIO2_1;
+				w = fn * Constants.RemPio.PIO2_1T; // 1st round good to 180 bit
 														// Matters with directed rounding
 				Quad temp = r - w;
 				if (temp < -Pio4)
 				{
 					n--;
 					fn--;
-					r = x - fn * MathQConstants.RemPio.PIO2_1;
-					w = fn * MathQConstants.RemPio.PIO2_1T;
+					r = x - fn * Constants.RemPio.PIO2_1;
+					w = fn * Constants.RemPio.PIO2_1T;
 				}
 				else if(temp > Pio4)
 				{
 					n++;
 					fn++;
-					r = x - fn * MathQConstants.RemPio.PIO2_1;
-					w = fn * MathQConstants.RemPio.PIO2_1T;
+					r = x - fn * Constants.RemPio.PIO2_1;
+					w = fn * Constants.RemPio.PIO2_1T;
 				}
 
 				y[0] = r - w;
@@ -887,18 +885,18 @@ namespace MissingValues
 				if (ex - ey > ROUND1) // 2nd iteration needed, good to 248
 				{
 					t = r;
-					w = fn * MathQConstants.RemPio.PIO2_2;
+					w = fn * Constants.RemPio.PIO2_2;
 					r = t - w;
-					w = fn * MathQConstants.RemPio.PIO2_2T - ((t - r) - w);
+					w = fn * Constants.RemPio.PIO2_2T - ((t - r) - w);
 					y[0] = r - w;
 					u = y[0];
 					ey = u.BiasedExponent;
 					if (ex - ey > ROUND2) // 3rd iteration need, 316 bits acc
 					{
 						t = r; // will cover all possible cases
-						w = fn * MathQConstants.RemPio.PIO2_3;
+						w = fn * Constants.RemPio.PIO2_3;
 						r = t - w;
-						w = fn * MathQConstants.RemPio.PIO2_3T - ((t - r) - w);
+						w = fn * Constants.RemPio.PIO2_3T - ((t - r) - w);
 						y[0] = r - w;
 					}
 				}
@@ -949,7 +947,7 @@ namespace MissingValues
 				Span<double> q = stackalloc double[20];
 
 				/* initialize jk*/
-				jk = MathQConstants.RemPio.INIT_JK[prec];
+				jk = Constants.RemPio.INIT_JK[prec];
 				jp = jk;
 
 				/* determine jx,jv,q0, note that 3>q0 */
@@ -960,7 +958,7 @@ namespace MissingValues
 				/* set up f[0] to f[jx+jk] where f[jx+jk] = ipio2[jv+jk] */
 				j = jv - jx; m = jx + jk;
 				for (i = 0; i <= m; i++, j++)
-					f[i] = j < 0 ? 0.0 : (double)MathQConstants.RemPio.IPIO2[j];
+					f[i] = j < 0 ? 0.0 : (double)Constants.RemPio.IPIO2[j];
 
 				/* compute q[0],q[1],...q[jk] */
 				for (i = 0; i <= jk; i++)
@@ -1043,7 +1041,7 @@ namespace MissingValues
 
 						for (i = jz + 1; i <= jz + k; i++)
 						{  /* add q[jz+1] to q[jz+k] */
-							f[jx + i] = (double)MathQConstants.RemPio.IPIO2[jv + i];
+							f[jx + i] = (double)Constants.RemPio.IPIO2[jv + i];
 							for (j = 0, fw = 0.0; j <= jx; j++)
 								fw += x[j] * f[jx + i - j];
 							q[i] = fw;
@@ -1091,7 +1089,7 @@ namespace MissingValues
 				for (i = jz; i >= 0; i--)
 				{
 					for (fw = 0.0, k = 0; k <= jp && k <= jz - i; k++)
-						fw += MathQConstants.RemPio.PIO2[k] * q[i + k];
+						fw += Constants.RemPio.PIO2[k] * q[i + k];
 					fq[jz - i] = fw;
 				}
 
@@ -1268,11 +1266,11 @@ namespace MissingValues
 					}
 					return x + x;
 				}
-				if (x > MathQConstants.Exp.O_THRESHOLD)
+				if (x > Constants.Exp.O_THRESHOLD)
 				{
 					return Quad.PositiveInfinity;
 				}
-				if (x < MathQConstants.Exp.U_THRESHOLD)
+				if (x < Constants.Exp.U_THRESHOLD)
 				{
 					return Quad.Zero;
 				}
@@ -1294,21 +1292,21 @@ namespace MissingValues
 			int n, n2;
 
 			/* Reduce x to (k*ln2 + endpoint[n2] + r1 + r2). */
-			fn = (double)x * MathQConstants.Exp.INV_L;
+			fn = (double)x * Constants.Exp.INV_L;
 			n = (int)fn;
-			n2 = (int)((uint)n % MathQConstants.Exp.Intervals);
+			n2 = (int)((uint)n % Constants.Exp.Intervals);
 			/* Depend on the sign bit being propagated: */
-			kp = n >> MathQConstants.Exp.Log2Intervals;
-			r1 = x - fn * MathQConstants.Exp.L1;
-			r2 = fn * -MathQConstants.Exp.L2;
+			kp = n >> Constants.Exp.Log2Intervals;
+			r1 = x - fn * Constants.Exp.L1;
+			r2 = fn * -Constants.Exp.L2;
 			r = r1 + r2;
 
 			/* Evaluate expl(endpoint[n2] + r1 + r2) = tbl[n2] * expl(r1 + r2). */
 
-			var tbl = MathQConstants.Exp.Table[n2];
+			var tbl = Constants.Exp.Table[n2];
 			dr = (double)r;
-			q = r2 + r * r * (MathQConstants.Exp.A2 + r * (MathQConstants.Exp.A3 + r * (MathQConstants.Exp.A4 + r * (MathQConstants.Exp.A5 + r * (MathQConstants.Exp.A6 +
-				dr * (MathQConstants.Exp.A7 + dr * (MathQConstants.Exp.A8 + dr * (MathQConstants.Exp.A9 + dr * MathQConstants.Exp.A10))))))));
+			q = r2 + r * r * (Constants.Exp.A2 + r * (Constants.Exp.A3 + r * (Constants.Exp.A4 + r * (Constants.Exp.A5 + r * (Constants.Exp.A6 +
+				dr * (Constants.Exp.A7 + dr * (Constants.Exp.A8 + dr * (Constants.Exp.A9 + dr * Constants.Exp.A10))))))));
 			t = tbl.lo + tbl.hi;
 			hip = tbl.hi;
 			lop = tbl.lo + t * (q + r1);
@@ -1530,7 +1528,7 @@ namespace MissingValues
 		{
 			/* origin: FreeBSD /usr/src/lib/msun/ld128/s_logl.c */
 
-			Log(x, out MathQConstants.Log.LD r);
+			Log(x, out Constants.Log.LD r);
 
 			if (r.LoSet == 0)
 			{
@@ -1538,7 +1536,7 @@ namespace MissingValues
 			}
 			return r.Hi + r.Lo;
 		}
-		private static void Log(Quad x, out MathQConstants.Log.LD rp)
+		private static void Log(Quad x, out Constants.Log.LD rp)
 		{
 			/* origin: FreeBSD /usr/src/lib/msun/ld128/s_logl.c */
 
@@ -1584,10 +1582,10 @@ namespace MissingValues
 
 			x = new Quad(false, 0x3fff, x.TrailingSignificand);
 
-			const int L2I = 49 - MathQConstants.Log.Log2Intervals;
+			const int L2I = 49 - Constants.Log.Log2Intervals;
 			i = (int)((lx + (1 << (L2I - 2))) >> (L2I - 1));
 
-			d = (x - MathQConstants.Log.H(i)) * MathQConstants.Log.G(i) + MathQConstants.Log.E(i);
+			d = (x - Constants.Log.H(i)) * Constants.Log.G(i) + Constants.Log.E(i);
 
 			/*
 			 * Our algorithm depends on exact cancellation of F_lo(i) and
@@ -1599,13 +1597,13 @@ namespace MissingValues
 			 */
 
 			dd = (double)d;
-			valLo = d * d * d * (MathQConstants.Log.P3 +
-		d * (MathQConstants.Log.P4 + d * (MathQConstants.Log.P5 + d * (MathQConstants.Log.P6 + d * (MathQConstants.Log.P7 + d * (MathQConstants.Log.P8 +
-		dd * (MathQConstants.Log.P9 + dd * (MathQConstants.Log.P10 + dd * (MathQConstants.Log.P11 + dd * (MathQConstants.Log.P12 + dd * (MathQConstants.Log.P13 +
-		dd * MathQConstants.Log.P14))))))))))) + (MathQConstants.Log.FLo(i) + dk * MathQConstants.Log.LN2LO) + d * d * MathQConstants.Log.P2;
+			valLo = d * d * d * (Constants.Log.P3 +
+		d * (Constants.Log.P4 + d * (Constants.Log.P5 + d * (Constants.Log.P6 + d * (Constants.Log.P7 + d * (Constants.Log.P8 +
+		dd * (Constants.Log.P9 + dd * (Constants.Log.P10 + dd * (Constants.Log.P11 + dd * (Constants.Log.P12 + dd * (Constants.Log.P13 +
+		dd * Constants.Log.P14))))))))))) + (Constants.Log.FLo(i) + dk * Constants.Log.LN2LO) + d * d * Constants.Log.P2;
 			valHi = d;
 
-			Sum3(ref valHi, ref valLo, MathQConstants.Log.FHi(i) + dk * MathQConstants.Log.LN2HI);
+			Sum3(ref valHi, ref valLo, Constants.Log.FHi(i) + dk * Constants.Log.LN2HI);
 
 			rp.Hi = valHi;
 			rp.Lo = valLo;
@@ -1650,7 +1648,7 @@ namespace MissingValues
 		{
 			Quad hi, lo;
 
-			Log(x, out MathQConstants.Log.LD r);
+			Log(x, out Constants.Log.LD r);
 			if (r.LoSet == 0)
 			{
 				return r.Hi;
@@ -1662,7 +1660,7 @@ namespace MissingValues
 
 			hi = (float)r.Hi;
 			lo = r.Lo + (r.Hi - hi);
-			return (MathQConstants.Log.InvLn10Hi * hi + (MathQConstants.Log.InvLn10LoPHi * lo + MathQConstants.Log.InvLn10Lo * hi));
+			return (Constants.Log.InvLn10Hi * hi + (Constants.Log.InvLn10LoPHi * lo + Constants.Log.InvLn10Lo * hi));
 		}
 		/// <summary>
 		/// Returns the base 2 logarithm of a specified number.
@@ -1673,7 +1671,7 @@ namespace MissingValues
 		{
 			Quad hi, lo;
 
-			Log(x, out MathQConstants.Log.LD r);
+			Log(x, out Constants.Log.LD r);
 			if (r.LoSet == 0)
 			{
 				return r.Hi;
@@ -1685,7 +1683,7 @@ namespace MissingValues
 
 			hi = (float)r.Hi;
 			lo = r.Lo + (r.Hi - hi);
-			return (MathQConstants.Log.InvLn2Hi * hi + (MathQConstants.Log.InvLn2LoPHi * lo + MathQConstants.Log.InvLn2Lo * hi));
+			return (Constants.Log.InvLn2Hi * hi + (Constants.Log.InvLn2LoPHi * lo + Constants.Log.InvLn2Lo * hi));
 		}
 		/// <summary>
 		/// Returns the larger of two quadruple-precision floating-point numbers.
@@ -1815,7 +1813,7 @@ namespace MissingValues
 			int i, j, k, yisint, n;
 			uint ix, iy;
 			int hx, hy;
-			MathQConstants.Pow.QuadShape o, p, q;
+			Constants.Pow.QuadShape o, p, q;
 
 			Unsafe.SkipInit(out p);
 			p.Value = x;
@@ -1966,8 +1964,8 @@ namespace MissingValues
 				If (1 - 1/131072)^y underflows, y > 1.4986e9 */
 			if (iy > 0x401d654b)
 			{
-				Quad huge = MathQConstants.Pow.Huge;
-				Quad tiny = MathQConstants.Pow.Tiny;
+				Quad huge = Constants.Pow.Huge;
+				Quad tiny = Constants.Pow.Tiny;
 
 				/* if (1 - 2^-113)^y underflows, y > 1.1873e38 */
 				if (iy > 0x407d654b)
@@ -1993,7 +1991,7 @@ namespace MissingValues
 			/* take care subnormal number */
 			if (ix < 0x00010000)
 			{
-				ax *= MathQConstants.Pow.Two113;
+				ax *= Constants.Pow.Two113;
 				n -= 113;
 				o.Value = ax;
 				ix = o.UpperHi;
@@ -2024,8 +2022,8 @@ namespace MissingValues
 
 
 			/* compute s = s_h+s_l = (x-1)/(x+1) or (x-1.5)/(x+1.5) */
-			u = ax - MathQConstants.Pow.bp[k]; /* bp[0]=1.0, bp[1]=1.5 */
-			v = Quad.One / (ax + MathQConstants.Pow.bp[k]);
+			u = ax - Constants.Pow.bp[k]; /* bp[0]=1.0, bp[1]=1.5 */
+			v = Quad.One / (ax + Constants.Pow.bp[k]);
 			s = u * v;
 			s_h = s;
 
@@ -2034,17 +2032,17 @@ namespace MissingValues
 			o.LowerHi &= 0xf8000000;
 			s_h = o.Value;
 			/* t_h=ax+bp[k] High */
-			t_h = ax + MathQConstants.Pow.bp[k];
+			t_h = ax + Constants.Pow.bp[k];
 			o.Value = t_h;
 			o.LowerLo = 0;
 			o.LowerHi &= 0xf8000000;
 			t_h = o.Value;
-			t_l = ax - (t_h - MathQConstants.Pow.bp[k]);
+			t_l = ax - (t_h - Constants.Pow.bp[k]);
 			s_l = v * ((u - s_h * t_h) - s_h * t_l);
 			/* compute log(ax) */
 			s2 = s * s;
-			u = MathQConstants.Pow.LN[0] + s2 * (MathQConstants.Pow.LN[1] + s2 * (MathQConstants.Pow.LN[2] + s2 * (MathQConstants.Pow.LN[3] + s2 * MathQConstants.Pow.LN[4])));
-			v = MathQConstants.Pow.LD[0] + s2 * (MathQConstants.Pow.LD[1] + s2 * (MathQConstants.Pow.LD[2] + s2 * (MathQConstants.Pow.LD[3] + s2 * (MathQConstants.Pow.LD[4] + s2))));
+			u = Constants.Pow.LN[0] + s2 * (Constants.Pow.LN[1] + s2 * (Constants.Pow.LN[2] + s2 * (Constants.Pow.LN[3] + s2 * Constants.Pow.LN[4])));
+			v = Constants.Pow.LD[0] + s2 * (Constants.Pow.LD[1] + s2 * (Constants.Pow.LD[2] + s2 * (Constants.Pow.LD[3] + s2 * (Constants.Pow.LD[4] + s2))));
 			r = s2 * s2 * u / v;
 			r += s_l * (s_h + s);
 			s2 = s_h * s_h;
@@ -2064,16 +2062,16 @@ namespace MissingValues
 			o.LowerHi &= 0xf8000000;
 			p_h = o.Value;
 			p_l = v - (p_h - u);
-			z_h = MathQConstants.Pow.CP_H * p_h;       /* cp_h+cp_l = 2/(3*log2) */
-			z_l = MathQConstants.Pow.CP_L * p_h + p_l * MathQConstants.Pow.CP + MathQConstants.Pow.dp_l[k];
+			z_h = Constants.Pow.CP_H * p_h;       /* cp_h+cp_l = 2/(3*log2) */
+			z_l = Constants.Pow.CP_L * p_h + p_l * Constants.Pow.CP + Constants.Pow.dp_l[k];
 			/* log2(ax) = (s+..)*2/(3*log2) = n + dp_h + z_h + z_l */
 			t = n;
-			t1 = (((z_h + z_l) + MathQConstants.Pow.dp_h[k]) + t);
+			t1 = (((z_h + z_l) + Constants.Pow.dp_h[k]) + t);
 			o.Value = t1;
 			o.LowerLo = 0;
 			o.LowerHi &= 0xf8000000;
 			t1 = o.Value;
-			t2 = z_l - (((t1 - t) - MathQConstants.Pow.dp_h[k]) - z_h);
+			t2 = z_l - (((t1 - t) - Constants.Pow.dp_h[k]) - z_h);
 
 			/* s (sign of result -ve**odd) = -1 else = 1 */
 			s = Quad.One;
@@ -2095,7 +2093,7 @@ namespace MissingValues
 			j = (int)o.UpperHi;
 			if (j >= 0x400d0000) /* z >= 16384 */
 			{
-				Quad huge = MathQConstants.Pow.Huge;
+				Quad huge = Constants.Pow.Huge;
 				/* if z > 16384 */
 				if (((uint)(j - 0x400d0000) | o.UpperLo | o.LowerHi |
 					o.LowerLo) != 0)
@@ -2104,7 +2102,7 @@ namespace MissingValues
 				}
 				else
 				{
-					if (p_l + MathQConstants.Pow.OVT > z - p_h)
+					if (p_l + Constants.Pow.OVT > z - p_h)
 					{
 						return s * huge * huge;
 					}
@@ -2112,7 +2110,7 @@ namespace MissingValues
 			}
 			else if ((j & 0x7fffffff) >= 0x400d01b9) /* z <= -16495 */
 			{
-				Quad tiny = MathQConstants.Pow.Tiny;
+				Quad tiny = Constants.Pow.Tiny;
 				/* z < -16495 */
 				if (((uint)(j - 0xc00d01bc) | o.UpperLo | o.LowerHi |
 					o.LowerLo) != 0)
@@ -2143,14 +2141,14 @@ namespace MissingValues
 			o.LowerLo = 0;
 			o.LowerHi &= 0xf8000000;
 			t = o.Value;
-			u = t * MathQConstants.Pow.LG2_H;
-			v = (p_l - (t - p_h)) * MathQConstants.Pow.LG2 + t * MathQConstants.Pow.LG2_L;
+			u = t * Constants.Pow.LG2_H;
+			v = (p_l - (t - p_h)) * Constants.Pow.LG2 + t * Constants.Pow.LG2_L;
 			z = u + v;
 			w = v - (z - u);
 			/*  exp(z) */
 			t = z * z;
-			u = MathQConstants.Pow.PN[0] + t * (MathQConstants.Pow.PN[1] + t * (MathQConstants.Pow.PN[2] + t * (MathQConstants.Pow.PN[3] + t * MathQConstants.Pow.PN[4])));
-			v = MathQConstants.Pow.PD[0] + t * (MathQConstants.Pow.PD[1] + t * (MathQConstants.Pow.PD[2] + t * (MathQConstants.Pow.PD[3] + t)));
+			u = Constants.Pow.PN[0] + t * (Constants.Pow.PN[1] + t * (Constants.Pow.PN[2] + t * (Constants.Pow.PN[3] + t * Constants.Pow.PN[4])));
+			v = Constants.Pow.PD[0] + t * (Constants.Pow.PD[1] + t * (Constants.Pow.PD[2] + t * (Constants.Pow.PD[3] + t)));
 			t1 = z - t * u / v;
 			r = (z * t1) / (t1 - Quad.Two) - (w + z * w);
 			z = Quad.One - (r - z);
@@ -2463,7 +2461,8 @@ namespace MissingValues
 			}
 
 			// TODO: Add arithmetic exception to Thrower class.
-			throw new ArithmeticException($"{nameof(x)} cannot be {NumberFormatInfo.CurrentInfo.NaNSymbol}");
+			Thrower.InvalidNaN();
+			return default;
 		}
 		/// <summary>
 		/// Returns the sine of the specified angle.

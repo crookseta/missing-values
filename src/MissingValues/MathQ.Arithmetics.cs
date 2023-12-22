@@ -44,7 +44,7 @@ namespace MissingValues
 
 		 */
 
-	internal static partial class MathQ
+	public static partial class MathQ
 	{
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]	
 		internal static Quad Add(Quad left, Quad right)

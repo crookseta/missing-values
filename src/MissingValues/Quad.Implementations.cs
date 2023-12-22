@@ -652,7 +652,7 @@ namespace MissingValues
 					}
 					return x;
 				}
-				if (x > MathQConstants.Exp.O_THRESHOLD)
+				if (x > Constants.Exp.O_THRESHOLD)
 				{
 					return Quad.PositiveInfinity;
 				}
@@ -665,35 +665,35 @@ namespace MissingValues
 				 */
 				if ((hx & 0x8000) != 0)
 				{
-					return MathQConstants.Exp.TINY - Quad.One;
+					return Constants.Exp.TINY - Quad.One;
 				}
 			}
 
-			if (MathQConstants.Exp.T1 < x && x < MathQConstants.Exp.T2)
+			if (Constants.Exp.T1 < x && x < Constants.Exp.T2)
 			{
 				x2 = x * x;
 				dx = (double)x;
 
-				if (x < MathQConstants.Exp.T3)
+				if (x < Constants.Exp.T3)
 				{
 					if (ix < Quad.ExponentBias - 113)
 					{
 						return (x == Quad.Zero ? x :
 							new Quad(0x40C7_0000_0000_0000, 0x0000_0000_0000_0000) * x + Abs(x)) * new Quad(0x3F37_0000_0000_0000, 0x0000_0000_0000_0000);
 					}
-					q = x * x2 * MathQConstants.Exp.C3 + x2 * x2 * (MathQConstants.Exp.C4 + x * (MathQConstants.Exp.C5 + x * (MathQConstants.Exp.C6 +
-						x * (MathQConstants.Exp.C7 + x * (MathQConstants.Exp.C8 + x * (MathQConstants.Exp.C9 + x * (MathQConstants.Exp.C10 +
-						x * (MathQConstants.Exp.C11 + x * (MathQConstants.Exp.C12 + x * (MathQConstants.Exp.C13 +
-						dx * (MathQConstants.Exp.C14 + dx * (MathQConstants.Exp.C15 + dx * (MathQConstants.Exp.C16 +
-						dx * (MathQConstants.Exp.C17 + dx * MathQConstants.Exp.C18))))))))))))));
+					q = x * x2 * Constants.Exp.C3 + x2 * x2 * (Constants.Exp.C4 + x * (Constants.Exp.C5 + x * (Constants.Exp.C6 +
+						x * (Constants.Exp.C7 + x * (Constants.Exp.C8 + x * (Constants.Exp.C9 + x * (Constants.Exp.C10 +
+						x * (Constants.Exp.C11 + x * (Constants.Exp.C12 + x * (Constants.Exp.C13 +
+						dx * (Constants.Exp.C14 + dx * (Constants.Exp.C15 + dx * (Constants.Exp.C16 +
+						dx * (Constants.Exp.C17 + dx * Constants.Exp.C18))))))))))))));
 				}
 				else
 				{
-					q = x * x2 * MathQConstants.Exp.D3 + x2 * x2 * (MathQConstants.Exp.D4 + x * (MathQConstants.Exp.D5 + x * (MathQConstants.Exp.D6 +
-						x * (MathQConstants.Exp.D7 + x * (MathQConstants.Exp.D8 + x * (MathQConstants.Exp.D9 + x * (MathQConstants.Exp.D10 +
-						x * (MathQConstants.Exp.D11 + x * (MathQConstants.Exp.D12 + x * (MathQConstants.Exp.D13 +
-						dx * (MathQConstants.Exp.D14 + dx * (MathQConstants.Exp.D15 + dx * (MathQConstants.Exp.D16 +
-						dx * MathQConstants.Exp.D17)))))))))))));
+					q = x * x2 * Constants.Exp.D3 + x2 * x2 * (Constants.Exp.D4 + x * (Constants.Exp.D5 + x * (Constants.Exp.D6 +
+						x * (Constants.Exp.D7 + x * (Constants.Exp.D8 + x * (Constants.Exp.D9 + x * (Constants.Exp.D10 +
+						x * (Constants.Exp.D11 + x * (Constants.Exp.D12 + x * (Constants.Exp.D13 +
+						dx * (Constants.Exp.D14 + dx * (Constants.Exp.D15 + dx * (Constants.Exp.D16 +
+						dx * Constants.Exp.D17)))))))))))));
 				}
 
 				x_hi = (float)x;
@@ -711,12 +711,12 @@ namespace MissingValues
 			}
 
 			/* Reduce x to (k*ln2 + endpoint[n2] + r1 + r2). */
-			fn = (double)x * MathQConstants.Exp.INV_L;
+			fn = (double)x * Constants.Exp.INV_L;
 			n = (int)fn;
-			n2 = (int)((uint)n % MathQConstants.Exp.Intervals);
-			k = n >> MathQConstants.Exp.Log2Intervals;
-			r1 = x - fn * MathQConstants.Exp.L1;
-			r2 = fn * -MathQConstants.Exp.L2;
+			n2 = (int)((uint)n % Constants.Exp.Intervals);
+			k = n >> Constants.Exp.Log2Intervals;
+			r1 = x - fn * Constants.Exp.L1;
+			r2 = fn * -Constants.Exp.L2;
 			r = r1 + r2;
 
 			/* Prepare scale factor. */
@@ -727,10 +727,10 @@ namespace MissingValues
 			 * expl(endpoint[n2] + r1 + r2) = tbl[n2] * expl(r1 + r2).
 			 */
 			dr = (double)r;
-			q = r2 + r * r * (MathQConstants.Exp.A2 + r * (MathQConstants.Exp.A3 + r * (MathQConstants.Exp.A4 + r * (MathQConstants.Exp.A5 + r * (MathQConstants.Exp.A6 +
-		dr * (MathQConstants.Exp.A7 + dr * (MathQConstants.Exp.A8 + dr * (MathQConstants.Exp.A9 + dr * MathQConstants.Exp.A10))))))));
+			q = r2 + r * r * (Constants.Exp.A2 + r * (Constants.Exp.A3 + r * (Constants.Exp.A4 + r * (Constants.Exp.A5 + r * (Constants.Exp.A6 +
+		dr * (Constants.Exp.A7 + dr * (Constants.Exp.A8 + dr * (Constants.Exp.A9 + dr * Constants.Exp.A10))))))));
 
-			var tbl = MathQConstants.Exp.Table[n2];
+			var tbl = Constants.Exp.Table[n2];
 			t = tbl.lo + tbl.hi;
 
 			switch (k)
@@ -862,19 +862,19 @@ namespace MissingValues
 			 * We split this into k = 0xabc and i0 = 0x12 (adjusted to
 			 * index into the table), then we compute z = 0x0.003456p0.
 			 */
-			Quad u = x + MathQConstants.Exp.redux;
-			i0 = (uint)(u._lower) + MathQConstants.Exp.TBLSIZE / 2;
-			k = (i0 / MathQConstants.Exp.TBLSIZE * MathQConstants.Exp.TBLSIZE, 0);
-			k.i = ((int)k.u) / MathQConstants.Exp.TBLSIZE;
-			i0 %= MathQConstants.Exp.TBLSIZE;
-			u -= MathQConstants.Exp.redux;
+			Quad u = x + Constants.Exp.redux;
+			i0 = (uint)(u._lower) + Constants.Exp.TBLSIZE / 2;
+			k = (i0 / Constants.Exp.TBLSIZE * Constants.Exp.TBLSIZE, 0);
+			k.i = ((int)k.u) / Constants.Exp.TBLSIZE;
+			i0 %= Constants.Exp.TBLSIZE;
+			u -= Constants.Exp.redux;
 			z = x - u;
 
 			// Compute r = exp2(y) = exp2t[i0] * p(z - eps[i]).
-			t = MathQConstants.Exp.Tbl[(int)i0];
-			z -= MathQConstants.Exp.Eps[(int)i0];
-			r = t + t * z * (MathQConstants.Exp.P1 + z * (MathQConstants.Exp.P2 + z * (MathQConstants.Exp.P3 + z * (MathQConstants.Exp.P4 + z * (MathQConstants.Exp.P5 + z * (MathQConstants.Exp.P6
-		+ z * (MathQConstants.Exp.P7 + z * (MathQConstants.Exp.P8 + z * (MathQConstants.Exp.P9 + z * MathQConstants.Exp.P10)))))))));
+			t = Constants.Exp.Tbl[(int)i0];
+			z -= Constants.Exp.Eps[(int)i0];
+			r = t + t * z * (Constants.Exp.P1 + z * (Constants.Exp.P2 + z * (Constants.Exp.P3 + z * (Constants.Exp.P4 + z * (Constants.Exp.P5 + z * (Constants.Exp.P6
+		+ z * (Constants.Exp.P7 + z * (Constants.Exp.P8 + z * (Constants.Exp.P9 + z * Constants.Exp.P10)))))))));
 
 			return MathQ.ScaleB(r, k.i);
 		}
@@ -955,7 +955,7 @@ namespace MissingValues
 			twopminusk = new Quad((ulong)(0x7ffe - hx) << 48, 0x0);
 			f_lo *= twopminusk;
 
-			const int L2I = 49 - MathQConstants.Log.Log2Intervals;
+			const int L2I = 49 - Constants.Log.Log2Intervals;
 			i = (int)((lx + (1UL << (L2I - 2))) >> (L2I - 1));
 
 			/*
@@ -966,9 +966,9 @@ namespace MissingValues
 			 * doesn't lose too many bits, an inexact calculation for
 			 * f_lo*G(i) is good enough.
 			 */
-			d_hi = (x - MathQConstants.Log.H(i)) * MathQConstants.Log.G(i) + MathQConstants.Log.E(i);
+			d_hi = (x - Constants.Log.H(i)) * Constants.Log.G(i) + Constants.Log.E(i);
 
-			d_lo = (double)(f_lo * MathQConstants.Log.G(i));
+			d_lo = (double)(f_lo * Constants.Log.G(i));
 
 			/*
 			 * This is Sum2(d_hi, d_lo) inlined.  The condition
@@ -988,13 +988,13 @@ namespace MissingValues
 			d_hi = d;
 
 			dd = (double)d;
-			val_lo = d * d * d * (MathQConstants.Log.P3 +
-		d * (MathQConstants.Log.P4 + d * (MathQConstants.Log.P5 + d * (MathQConstants.Log.P6 + d * (MathQConstants.Log.P7 + d * (MathQConstants.Log.P8 +
-		dd * (MathQConstants.Log.P9 + dd * (MathQConstants.Log.P10 + dd * (MathQConstants.Log.P11 + dd * (MathQConstants.Log.P12 + dd * (MathQConstants.Log.P13 +
-		dd * MathQConstants.Log.P14))))))))))) + (MathQConstants.Log.FLo(i) + dk * MathQConstants.Log.LN2LO + d_lo) + d * d * MathQConstants.Log.P2;
+			val_lo = d * d * d * (Constants.Log.P3 +
+		d * (Constants.Log.P4 + d * (Constants.Log.P5 + d * (Constants.Log.P6 + d * (Constants.Log.P7 + d * (Constants.Log.P8 +
+		dd * (Constants.Log.P9 + dd * (Constants.Log.P10 + dd * (Constants.Log.P11 + dd * (Constants.Log.P12 + dd * (Constants.Log.P13 +
+		dd * Constants.Log.P14))))))))))) + (Constants.Log.FLo(i) + dk * Constants.Log.LN2LO + d_lo) + d * d * Constants.Log.P2;
 			val_hi = d_hi;
 
-			MathQ.Sum3(ref val_hi, ref val_lo, MathQConstants.Log.FHi(i) + dk * MathQConstants.Log.LN2HI);
+			MathQ.Sum3(ref val_hi, ref val_lo, Constants.Log.FHi(i) + dk * Constants.Log.LN2HI);
 
 			return val_hi + val_lo;
 		}

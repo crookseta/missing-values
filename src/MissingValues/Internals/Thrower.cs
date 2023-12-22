@@ -50,6 +50,11 @@ namespace MissingValues.Internals
 			throw new DivideByZeroException();
 		}
 		[DoesNotReturn]
+		public static void InvalidNaN()
+		{
+			throw new ArithmeticException($"{nameof(x)} cannot be {NumberFormatInfo.CurrentInfo.NaNSymbol}");
+		}
+		[DoesNotReturn]
 		public static void InvalidFormat(string format)
 		{
 			throw new FormatException($"The format '{format}' is invalid.");

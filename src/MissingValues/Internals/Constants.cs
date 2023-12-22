@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace MissingValues.Internals;
 
-internal static class MathQConstants
+internal static class Constants
 {
 	public static class Log
 	{
