@@ -892,6 +892,17 @@ namespace MissingValues
 
 		public static Quad Tanh(Quad x) => MathQ.Tanh(x);
 
+		/// <summary>Performs a linear interpolation between two values based on the given weight.</summary>
+		/// <param name="value1">The first value, which is intended to be the lower bound.</param>
+		/// <param name="value2">The second value, which is intended to be the upper bound.</param>
+		/// <param name="amount">A value, intended to be between 0 and 1, that indicates the weight of the interpolation.</param>
+		/// <returns>The interpolated value.</returns>
+		/// <remarks>This method presumes inputs are well formed and does not validate that <c>value1 &lt; value2</c> nor that <c>0 &lt;= amount &lt;= 1</c>.</remarks>
+		public static Quad Lerp(Quad value1, Quad value2, Quad amount)
+		{
+			return (value1 * (One - amount)) + (value2 * amount);
+		}
+
 		public static Quad Log(Quad x) => MathQ.Log(x);
 		public static Quad LogP1(Quad x)
 		{
@@ -1192,6 +1203,18 @@ namespace MissingValues
 
 				return result;
 			}
+		}
+
+		public static Quad DegreesToRadians(Quad degrees)
+		{
+			// (degrees * Pi) / 180
+			return (degrees * Pi) / new Quad(0x4006_6800_0000_0000, 0x0000_0000_0000_0000);
+		}
+		
+		public static Quad RadiansToDegrees(Quad radians)
+		{
+			// (degrees * 180) / Pi
+			return (radians * new Quad(0x4006_6800_0000_0000, 0x0000_0000_0000_0000)) / Pi;
 		}
 
 		public static Quad Acos(Quad x) => MathQ.Acos(x);

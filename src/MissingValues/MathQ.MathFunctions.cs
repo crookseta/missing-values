@@ -50,44 +50,6 @@ namespace MissingValues
 #endif
 		}
 	}
-	internal readonly ref struct ReadOnlyShape
-	{
-		internal readonly ref Word i;
-		internal readonly ref Word64 i2;
-
-		public ReadOnlyShape(ref Quad quad)
-		{
-			i = ref Unsafe.As<Quad, Word>(ref quad);
-			i2 = ref Unsafe.As<Quad, Word64>(ref quad);
-		}
-
-		[StructLayout(LayoutKind.Sequential)]
-		public readonly struct Word
-		{
-#if BIGENDIAN
-			internal readonly ushort se;
-			internal readonly ushort top;
-			internal readonly uint mid;
-			internal readonly ulong lo;
-#else
-			internal readonly ulong lo;
-			internal readonly uint mid;
-			internal readonly ushort top;
-			internal readonly ushort se;
-#endif
-		}
-		[StructLayout(LayoutKind.Sequential)]
-		public readonly struct Word64
-		{
-#if BIGENDIAN
-			internal readonly ulong hi;
-			internal readonly ulong lo;
-#else
-			internal readonly ulong lo;
-			internal readonly ulong hi;
-#endif
-		}
-	}
 
 	public static partial class MathQ
 	{
