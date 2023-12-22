@@ -1153,9 +1153,15 @@ namespace MissingValues
 			}
 		}
 
-		public static bool operator ==(Int512 left, Int512 right) => (left._lower == right._lower) && (left._upper == right._upper);
+		public static bool operator ==(Int512 left, Int512 right)
+		{
+			return (left._lower == right._lower) && (left._upper == right._upper);
+		}
 
-		public static bool operator !=(Int512 left, Int512 right) => (left._lower != right._lower) || (left._upper != right._upper);
+		public static bool operator !=(Int512 left, Int512 right)
+		{
+			return (left._lower != right._lower) || (left._upper != right._upper);
+		}
 
 		public static bool operator <(Int512 left, Int512 right)
 		{

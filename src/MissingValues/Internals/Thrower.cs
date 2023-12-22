@@ -45,6 +45,11 @@ namespace MissingValues.Internals
 			throw new OverflowException($"{operation} operation ended in overflow.");
 		}
 		[DoesNotReturn]
+		public static void DivideByZero()
+		{
+			throw new DivideByZeroException();
+		}
+		[DoesNotReturn]
 		public static void InvalidFormat(string format)
 		{
 			throw new FormatException($"The format '{format}' is invalid.");
