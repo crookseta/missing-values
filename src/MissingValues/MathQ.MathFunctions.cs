@@ -2460,8 +2460,7 @@ namespace MissingValues
 				return 0;
 			}
 
-			// TODO: Add arithmetic exception to Thrower class.
-			Thrower.InvalidNaN();
+			Thrower.InvalidNaN(x);
 			return default;
 		}
 		/// <summary>

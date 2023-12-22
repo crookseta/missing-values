@@ -50,7 +50,8 @@ namespace MissingValues.Internals
 			throw new DivideByZeroException();
 		}
 		[DoesNotReturn]
-		public static void InvalidNaN()
+		public static void InvalidNaN<T>(T x)
+			where T : IFloatingPointIeee754<T>
 		{
 			throw new ArithmeticException($"{nameof(x)} cannot be {NumberFormatInfo.CurrentInfo.NaNSymbol}");
 		}
