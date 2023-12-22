@@ -17,7 +17,7 @@ namespace MissingValues
 		internal const int Size = 32;
 		private const int BroadcastLookupVectorCount = 16;
 
-		private static ReadOnlySpan<byte> _broadcastLookup => new byte[BroadcastLookupVectorCount * 32]
+		private static ReadOnlySpan<byte> _broadcastLookup => new byte[BroadcastLookupVectorCount * Size]
 		{
 			0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
 			0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
