@@ -51,12 +51,12 @@ The library introduces the `Quad` struct, representing a quadruple-precision flo
 
 Here is a chart comparing the existing IEEE floating point numbers to `Quad`:
 
-| Name   	| Size 	| Significand Digits 	| Decimal Digits 	| Max Exponent 	| Min Exponent 	| Max Value 	| Min Value  	|
-|--------	|------	|--------------------	|----------------	|--------------	|--------------	|-----------	|------------	|
-| Half   	| 16   	| 11                 	| 3.31           	| 15           	| -14          	| ~65504     	| ~-65500     	|
-| Single 	| 32   	| 24                 	| 7.22           	| 127          	| -126         	| ~3.40e38   	| ~-3.40e38   	|
-| Double 	| 64   	| 53                 	| 15.95          	| 1023         	| -1022        	| ~1.80e308  	| ~-1.79e308  	|
-| Quad   	| 128  	| 113                	| 34.02          	| 16383        	| -16382       	| ~1.19e4932 	| ~-1.18e4932 	|
+| Name   	| Size 		| Significand Digits 	| Decimal Digits 	| Max Exponent 	| Min Exponent 	| Max Value 	| Min Value  	|
+|--------	|--------	|--------------------	|----------------	|--------------	|--------------	|-----------	|------------	|
+| Half   	| 16 bits  	| 11                 	| 3.31           	| 15           	| -14          	| ~65504     	| ~-65500     	|
+| Single 	| 32 bits  	| 24                 	| 7.22           	| 127          	| -126         	| ~3.40e38   	| ~-3.40e38   	|
+| Double 	| 64 bits  	| 53                 	| 15.95          	| 1023         	| -1022        	| ~1.80e308  	| ~-1.79e308  	|
+| Quad   	| 128 bits 	| 113                	| 34.02          	| 16383        	| -16382       	| ~1.19e4932 	| ~-1.18e4932 	|
 
 **Example Usage**
 
