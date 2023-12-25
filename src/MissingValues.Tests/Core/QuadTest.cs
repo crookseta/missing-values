@@ -13,6 +13,8 @@ namespace MissingValues.Tests.Core
 		public static readonly Quad NegativeThousand = Values.CreateQuad(0xC008_F400_0000_0000, 0x0000_0000_0000_0000);
 		public static readonly Quad NegativeHundred = Values.CreateQuad(0xC005_9000_0000_0000, 0x0000_0000_0000_0000);
 		public static readonly Quad NegativeTen = Values.CreateQuad(0xC002_4000_0000_0000, 0x0000_0000_0000_0000);
+		public static readonly Quad NegativeSix = Values.CreateQuad(0xC001_8000_0000_0000, 0x0000_0000_0000_0000);
+		public static readonly Quad NegativeFive = Values.CreateQuad(0xC001_4000_0000_0000, 0x0000_0000_0000_0000);
 		public static readonly Quad NegativeFour = Values.CreateQuad(0xC001_0000_0000_0000, 0x0000_0000_0000_0000);
 		public static readonly Quad NegativeThree = Values.CreateQuad(0xC000_8000_0000_0000, 0x0000_0000_0000_0000);
 		public static readonly Quad NegativeTwo = Values.CreateQuad(0xC000_0000_0000_0000, 0x0000_0000_0000_0000);
@@ -27,6 +29,8 @@ namespace MissingValues.Tests.Core
 		public static readonly Quad Two = Values.CreateQuad(0x4000_0000_0000_0000, 0x0000_0000_0000_0000);
 		public static readonly Quad Three = Values.CreateQuad(0x4000_8000_0000_0000, 0x0000_0000_0000_0000);
 		public static readonly Quad Four = Values.CreateQuad(0x4001_0000_0000_0000, 0x0000_0000_0000_0000);
+		public static readonly Quad Five = Values.CreateQuad(0x4001_4000_0000_0000, 0x0000_0000_0000_0000);
+		public static readonly Quad Six = Values.CreateQuad(0x4001_8000_0000_0000, 0x0000_0000_0000_0000);
 		public static readonly Quad Ten = Values.CreateQuad(0x4002_4000_0000_0000, 0x0000_0000_0000_0000);
 		public static readonly Quad Hundred = Values.CreateQuad(0x4005_9000_0000_0000, 0x0000_0000_0000_0000);
 		public static readonly Quad Thousand = Values.CreateQuad(0x4008_F400_0000_0000, 0x0000_0000_0000_0000);
@@ -44,9 +48,7 @@ namespace MissingValues.Tests.Core
 		public static readonly Quad UInt16MaxValue = Values.CreateQuad(0x400E_FFFE_0000_0000, 0x0000_0000_0000_0000);
 		public static readonly Quad UInt32MaxValue = Values.CreateQuad(0x401E_FFFF_FFFE_0000, 0x0000_0000_0000_0000);
 		public static readonly Quad UInt64MaxValue = Values.CreateQuad(0x403E_FFFF_FFFF_FFFF, 0xFFFE_0000_0000_0000);
-		public static readonly Quad UInt128MaxValue = Values.CreateQuad(0x407F_0000_0000_0000, 0x0000_0000_0000_0000);
-		public static readonly Quad UInt256MaxValue = Values.CreateQuad(0x40FF_0000_0000_0000, 0x0000_0000_0000_0000);
-		public static readonly Quad UInt512MaxValue = Values.CreateQuad(0x41FF_0000_0000_0000, 0x0000_0000_0000_0000);
+		public static readonly Quad TwoOver127 = Values.CreateQuad(0x407E_0000_0000_0000, 0x0000_0000_0000_0000);
 
 		public static readonly Quad SByteMaxValue = Values.CreateQuad(0x4005_FC00_0000_0000, 0x0000_0000_0000_0000);
 		public static readonly Quad SByteMinValue = Values.CreateQuad(0xC006_0000_0000_0000, 0x0000_0000_0000_0000);
@@ -56,6 +58,8 @@ namespace MissingValues.Tests.Core
 		public static readonly Quad Int32MinValue = Values.CreateQuad(0xC01E_0000_0000_0000, 0x0000_0000_0000_0000);
 		public static readonly Quad Int64MaxValue = Values.CreateQuad(0x403D_FFFF_FFFF_FFFF, 0xFFFC_0000_0000_0000);
 		public static readonly Quad Int64MinValue = Values.CreateQuad(0xC03E_0000_0000_0000, 0x0000_0000_0000_0000);
+
+		public static readonly Quad Delta = Values.CreateQuad(0x406F_0000_0000_0000, 0x0000_0000_0000_0000);
 
 		public static readonly int Radix = 2;
 

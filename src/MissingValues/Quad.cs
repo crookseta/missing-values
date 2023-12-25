@@ -1,6 +1,8 @@
 ﻿using MissingValues.Internals;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
@@ -54,7 +56,9 @@ namespace MissingValues
 		internal static UInt128 EBits => new UInt128(0x4000_5BF0_A8B1_4576, 0x9535_5FB8_AC40_4E7A);
 		#endregion
 		#region Constants
+		internal static Quad Quarter => new(0x3FFD_0000_0000_0000, 0x0000_0000_0000_0000);
 		internal static Quad HalfOne => new(0x3FFE_0000_0000_0000, 0x0000_0000_0000_0000);
+		internal static Quad ThreeFourth => new(0x3FFE_8000_0000_0000, 0x0000_0000_0000_0000);
 		internal static Quad Two => new(0x4000_0000_0000_0000, 0x0000_0000_0000_0000);
 		#endregion
 
@@ -104,7 +108,7 @@ namespace MissingValues
 		[CLSCompliant(false)]
 		public Quad(bool sign, ushort exp, UInt128 sig)
 		{
-			UInt128 value = (((sign ? UInt128.One : UInt128.Zero) << SignShift) + (((UInt128)exp) << BiasedExponentShift) + (sig & TrailingSignificandMask));
+			UInt128 value = (((sign ? UInt128.One : UInt128.Zero) << SignShift) + ((((UInt128)exp) << BiasedExponentShift) & BiasedExponentMask) + (sig & TrailingSignificandMask));
 			_lower = unchecked((ulong)value);
 			_upper = unchecked((ulong)(value >> 64));
 		}
@@ -139,42 +143,18 @@ namespace MissingValues
 		}
 
 		[CLSCompliant(false)]
+		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static unsafe Quad UInt128BitsToQuad(UInt128 bits) => *((Quad*)&bits);
+		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static unsafe Quad Int128BitsToQuad(Int128 bits) => *((Quad*)&bits);
 
 		[CLSCompliant(false)]
+		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static unsafe UInt128 QuadToUInt128Bits(Quad value) => *((UInt128*)&value);
+		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static unsafe Int128 QuadToInt128Bits(Quad value) => *((Int128*)&value);
 
-		internal static Quad SeparateExponent(Quad x, ref short exponent)
-		{
-			Quad f = x;
-			Shape u = new Shape(ref f);
-			int ee = u.i.se & 0x7FFF;
-
-			if (ee == 0)
-			{
-				if (x == Zero)
-				{
-					x = SeparateExponent(x * new Quad(0x4077_0000_0000_0000, 0x0000_0000_0000_0000), ref exponent);
-					exponent -= 128;
-				}
-				else
-				{
-					exponent = 0;
-				}
-				return x;
-			}
-			else if (ee == 0x7FFF)
-			{
-				return x;
-			}
-
-			exponent = (short)(ee - 0x3FFE);
-			u.i.se &= 0x8000;
-			u.i.se |= 0x3FFE;
-			return f;
-		}
+		
 		internal static ushort ExtractBiasedExponentFromBits(UInt128 bits)
 		{
 			return (ushort)((bits >> BiasedExponentShift) & ShiftedBiasedExponentMask);
@@ -188,9 +168,9 @@ namespace MissingValues
 			return ((bits & SignMask) != 0, (ushort)(bits >> BiasedExponentShift), (bits & TrailingSignificandMask));
 		}
 
-		internal static bool AreZero(Quad left, Quad right)
+		internal static bool AreZero(Quad x, Quad y)
 		{
-			return ((QuadToUInt128Bits(left) | QuadToUInt128Bits(right)) & ~SignMask) == UInt128.Zero;
+			return ((QuadToUInt128Bits(x) | QuadToUInt128Bits(y)) & ~SignMask) == UInt128.Zero;
 		}
 		
 		internal static bool IsNaNOrZero(Quad value)
@@ -205,10 +185,14 @@ namespace MissingValues
 
 		internal static Quad CreateQuadNaN(bool sign, UInt128 significand)
 		{
+			return UInt128BitsToQuad(CreateQuadNaNBits(sign, significand));
+		}
+		internal static UInt128 CreateQuadNaNBits(bool sign, UInt128 significand)
+		{
 			UInt128 signInt = (sign ? 1UL : 0UL) << 63;
 			UInt128 sigInt = significand >> 12;
 
-			return UInt128BitsToQuad(signInt | (BiasedExponentMask | new UInt128(0x0000_8000_0000_0000, 0x0)) | sigInt);
+			return signInt | (BiasedExponentMask | new UInt128(0x0000_8000_0000_0000, 0x0)) | sigInt;
 		}
 
 		#region From Quad
@@ -769,7 +753,7 @@ namespace MissingValues
 			{
 				// In order to convert from Quad to int256 we first need to extract the signficand,
 				// including the implicit leading bit, as a full 256-bit significand. We can then adjust
-				// this down to the represented integer by right shifting by the unbiased exponent, taking
+				// this down to the represented integer by y shifting by the unbiased exponent, taking
 				// into account the significand is now represented as 256-bits.
 
 				UInt128 bits = Quad.QuadToUInt128Bits(value);
@@ -809,7 +793,7 @@ namespace MissingValues
 			{
 				// In order to convert from Quad to int256 we first need to extract the signficand,
 				// including the implicit leading bit, as a full 256-bit significand. We can then adjust
-				// this down to the represented integer by right shifting by the unbiased exponent, taking
+				// this down to the represented integer by y shifting by the unbiased exponent, taking
 				// into account the significand is now represented as 256-bits.
 
 				UInt128 bits = Quad.QuadToUInt128Bits(value);
@@ -857,7 +841,7 @@ namespace MissingValues
 			{
 				// In order to convert from Quad to int512 we first need to extract the signficand,
 				// including the implicit leading bit, as a full 512-bit significand. We can then adjust
-				// this down to the represented integer by right shifting by the unbiased exponent, taking
+				// this down to the represented integer by y shifting by the unbiased exponent, taking
 				// into account the significand is now represented as 512-bits.
 
 				UInt128 bits = Quad.QuadToUInt128Bits(value);
@@ -897,7 +881,7 @@ namespace MissingValues
 			{
 				// In order to convert from Quad to int512 we first need to extract the signficand,
 				// including the implicit leading bit, as a full 512-bit significand. We can then adjust
-				// this down to the represented integer by right shifting by the unbiased exponent, taking
+				// this down to the represented integer by y shifting by the unbiased exponent, taking
 				// into account the significand is now represented as 512-bits.
 
 				UInt128 bits = Quad.QuadToUInt128Bits(value);
@@ -933,7 +917,7 @@ namespace MissingValues
 			{
 				if (sig != 0) // NaN
 				{
-					return CreateDoubleNaN(sign, (ulong)(sig >> 48)); // Shift the significand bits to the left end
+					return CreateDoubleNaN(sign, (ulong)(sig >> 48)); // Shift the significand bits to the x end
 				}
 				return sign ? double.NegativeInfinity : double.PositiveInfinity;
 			}
@@ -963,7 +947,7 @@ namespace MissingValues
 			{
 				if (sig != 0) // NaN
 				{
-					return CreateSingleNaN(sign, (ulong)(sig >> 48)); // Shift the significand bits to the left end
+					return CreateSingleNaN(sign, (ulong)(sig >> 48)); // Shift the significand bits to the x end
 				}
 				return sign ? float.NegativeInfinity : float.PositiveInfinity;
 			}
@@ -992,7 +976,7 @@ namespace MissingValues
 			{
 				if (sig != 0) // NaN
 				{
-					return CreateHalfNaN(sign, (ulong)(sig >> 48)); // Shift the significand bits to the left end
+					return CreateHalfNaN(sign, (ulong)(sig >> 48)); // Shift the significand bits to the x end
 				}
 				return sign ? Half.NegativeInfinity : Half.PositiveInfinity;
 			}

@@ -45,6 +45,17 @@ namespace MissingValues.Internals
 			throw new OverflowException($"{operation} operation ended in overflow.");
 		}
 		[DoesNotReturn]
+		public static void DivideByZero()
+		{
+			throw new DivideByZeroException();
+		}
+		[DoesNotReturn]
+		public static void InvalidNaN<T>(T x)
+			where T : IFloatingPointIeee754<T>
+		{
+			throw new ArithmeticException($"{nameof(x)} cannot be {NumberFormatInfo.CurrentInfo.NaNSymbol}");
+		}
+		[DoesNotReturn]
 		public static void InvalidFormat(string format)
 		{
 			throw new FormatException($"The format '{format}' is invalid.");

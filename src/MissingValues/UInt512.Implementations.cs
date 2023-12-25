@@ -946,6 +946,10 @@ namespace MissingValues
 
 		public static UInt512 operator /(UInt512 left, UInt512 right)
 		{
+			if ((right._lower == UInt256.Zero) && (right._upper == UInt256.Zero))
+			{
+				Thrower.DivideByZero();
+			}
 			if ((left._upper == UInt256.Zero) && (right._upper == UInt256.Zero))
 			{
 				return left._lower / right._lower;

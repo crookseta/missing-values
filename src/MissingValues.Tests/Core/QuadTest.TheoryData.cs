@@ -30,6 +30,7 @@ namespace MissingValues.Tests.Core
 
 		private static (Quad, Quad)[] _unaryNegationOperationData =
 		{
+			(Zero, NegativeZero),
 			(One, NegativeOne),
 			(Two, NegativeTwo),
 			(Ten, NegativeTen),
@@ -56,6 +57,9 @@ namespace MissingValues.Tests.Core
 			(One, One, Two),
 			(One, NegativeOne, Zero),
 			(One, NegativeTwo, NegativeOne),
+			(One, Four, Five),
+			(Three, Two, Five),
+			(SmallestSubnormal, GreatestSubnormal, Values.CreateQuad(0x0001_0000_0000_0000, 0x0000_0000_0000_0000)),
 			(Quad.PositiveInfinity, Quad.One, Quad.PositiveInfinity),
 			(Quad.NegativeInfinity, Quad.One, Quad.NegativeInfinity),
 			(Quad.PositiveInfinity, Quad.PositiveInfinity, Quad.PositiveInfinity),
@@ -66,6 +70,7 @@ namespace MissingValues.Tests.Core
 			(One, One, Zero),
 			(One, NegativeOne, Two),
 			(One, Two, NegativeOne),
+			(SmallestSubnormal, GreatestSubnormal, Values.CreateQuad(0x8000_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFE)),
 			(Quad.PositiveInfinity, Quad.PositiveInfinity, Quad.NaN),
 			(Quad.NegativeInfinity, Quad.NegativeInfinity, Quad.NaN),
 		};
@@ -75,6 +80,7 @@ namespace MissingValues.Tests.Core
 			(One, NegativeOne, NegativeOne),
 			(Ten, Ten, Hundred),
 			(NegativeHundred, Ten, NegativeThousand),
+			(NegativeTen, Hundred, NegativeThousand),
 			(Zero, NegativeThousand, NegativeZero),
 			(Zero, Quad.PositiveInfinity, Quad.NaN),
 			(NegativeZero, Quad.NegativeInfinity, Quad.NaN),
@@ -698,6 +704,13 @@ namespace MissingValues.Tests.Core
 			(SmallestSubnormal, GreatestSubnormal, true)
 		};
 
+		private static (Quad, Quad, Quad, Quad)[] _fmaData =
+		{
+			(One, One, One, Two),
+			(Ten, Ten, Zero, Hundred),
+			(Five, Zero, Five, Five),
+		};
+
 
 		public static TryParseTheoryData<Quad> TryParseTheoryData = new(_tryParseData);
 
@@ -756,6 +769,8 @@ namespace MissingValues.Tests.Core
 		public static ComparisonOperatorsTheoryData<Quad, Quad> LessThanTheoryData = new(_lessThanData);
 		public static ComparisonOperatorsTheoryData<Quad, Quad> EqualToTheoryData = new(_equalToData);
 		public static ComparisonOperatorsTheoryData<Quad, Quad> NotEqualToTheoryData = new(_notEqualToData);
+
+		public static FusedMultiplyAddTheoryData<Quad> FMATheoryData = new(_fmaData);
 #pragma warning restore S3263 // Static fields should appear in the order they must be initialized 
 	}
 }
