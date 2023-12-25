@@ -13,12 +13,6 @@ namespace MissingValues
 	internal static class BitHelper
 	{
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public static void GetUpperAndLowerBits(ulong value, out uint upper, out uint lower)
-		{
-			lower = (uint)value;
-			upper = (uint)(value >> 32);
-		}
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static void GetUpperAndLowerBits(UInt128 value, out ulong upper, out ulong lower)
 		{
 			lower = value.GetLowerBits();
@@ -31,6 +25,37 @@ namespace MissingValues
 			upper = value.GetUpperBits();
 		}
 
+#if NET8_0_OR_GREATER
+		[UnsafeAccessor(UnsafeAccessorKind.Field, Name = "_upper")]
+		private static extern ref ulong GetUpperBitsInternal(UInt128 uInt128);
+		[UnsafeAccessor(UnsafeAccessorKind.Field, Name = "_lower")]
+		private static extern ref ulong GetLowerBitsInternal(UInt128 uInt128);
+		[UnsafeAccessor(UnsafeAccessorKind.Field, Name = "_upper")]
+		private static extern ref ulong GetUpperBitsInternal(Int128 int128);
+		[UnsafeAccessor(UnsafeAccessorKind.Field, Name = "_lower")]
+		private static extern ref ulong GetLowerBitsInternal(Int128 int128);
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static ulong GetUpperBits(this in UInt128 value)
+		{
+			return GetUpperBitsInternal(value);
+		}
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static ulong GetUpperBits(this in Int128 value)
+		{
+			return GetUpperBitsInternal(value);
+		}
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static ulong GetLowerBits(this in UInt128 value)
+		{
+			return GetLowerBitsInternal(value);
+		}
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static ulong GetLowerBits(this in Int128 value)
+		{
+			return GetLowerBitsInternal(value);
+		}
+#else
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static ulong GetUpperBits(this in UInt128 value)
 		{
@@ -51,6 +76,7 @@ namespace MissingValues
 		{
 			return unchecked((ulong)(value));
 		}
+#endif
 
 		public static void GetDoubleParts(double dbl, out int sign, out int exp, out ulong man, out bool fFinite)
 		{

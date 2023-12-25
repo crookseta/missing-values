@@ -59,7 +59,6 @@ namespace MissingValues.Tests.Core
 		public static readonly Quad Int64MaxValue = Values.CreateQuad(0x403D_FFFF_FFFF_FFFF, 0xFFFC_0000_0000_0000);
 		public static readonly Quad Int64MinValue = Values.CreateQuad(0xC03E_0000_0000_0000, 0x0000_0000_0000_0000);
 
-		//public static readonly Quad Delta = Values.CreateQuad(0x4033_0000_0000_0000, 0x0000_0000_0000_0000);
 		public static readonly Quad Delta = Values.CreateQuad(0x406F_0000_0000_0000, 0x0000_0000_0000_0000);
 
 		public static readonly int Radix = 2;

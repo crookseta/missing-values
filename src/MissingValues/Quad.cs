@@ -1,6 +1,8 @@
 ﻿using MissingValues.Internals;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
@@ -141,42 +143,18 @@ namespace MissingValues
 		}
 
 		[CLSCompliant(false)]
+		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static unsafe Quad UInt128BitsToQuad(UInt128 bits) => *((Quad*)&bits);
+		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static unsafe Quad Int128BitsToQuad(Int128 bits) => *((Quad*)&bits);
 
 		[CLSCompliant(false)]
+		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static unsafe UInt128 QuadToUInt128Bits(Quad value) => *((UInt128*)&value);
+		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static unsafe Int128 QuadToInt128Bits(Quad value) => *((Int128*)&value);
 
-		internal static Quad SeparateExponent(Quad x, ref short exponent)
-		{
-			Quad f = x;
-			Shape u = new Shape(ref f);
-			int ee = u.i.se & 0x7FFF;
-
-			if (ee == 0)
-			{
-				if (x == Zero)
-				{
-					x = SeparateExponent(x * new Quad(0x4077_0000_0000_0000, 0x0000_0000_0000_0000), ref exponent);
-					exponent -= 128;
-				}
-				else
-				{
-					exponent = 0;
-				}
-				return x;
-			}
-			else if (ee == 0x7FFF)
-			{
-				return x;
-			}
-
-			exponent = (short)(ee - 0x3FFE);
-			u.i.se &= 0x8000;
-			u.i.se |= 0x3FFE;
-			return f;
-		}
+		
 		internal static ushort ExtractBiasedExponentFromBits(UInt128 bits)
 		{
 			return (ushort)((bits >> BiasedExponentShift) & ShiftedBiasedExponentMask);

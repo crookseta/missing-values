@@ -569,7 +569,7 @@ namespace MissingValues
 
 		public bool TryWriteSignificandBigEndian(Span<byte> destination, out int bytesWritten)
 		{
-			if (destination.Length >= sizeof(ulong))
+			if (destination.Length >= Unsafe.SizeOf<UInt128>())
 			{
 				UInt128 significand = Significand;
 
@@ -580,7 +580,7 @@ namespace MissingValues
 
 				Unsafe.WriteUnaligned(ref MemoryMarshal.GetReference(destination), significand);
 
-				bytesWritten = sizeof(ulong);
+				bytesWritten = Unsafe.SizeOf<UInt128>();
 				return true;
 			}
 			else
@@ -592,7 +592,7 @@ namespace MissingValues
 
 		public bool TryWriteSignificandLittleEndian(Span<byte> destination, out int bytesWritten)
 		{
-			if (destination.Length >= sizeof(ulong))
+			if (destination.Length >= Unsafe.SizeOf<UInt128>())
 			{
 				UInt128 significand = Significand;
 
@@ -603,7 +603,7 @@ namespace MissingValues
 
 				Unsafe.WriteUnaligned(ref MemoryMarshal.GetReference(destination), significand);
 
-				bytesWritten = sizeof(ulong);
+				bytesWritten = Unsafe.SizeOf<UInt128>();
 				return true;
 			}
 			else
