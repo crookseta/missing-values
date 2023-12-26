@@ -399,3 +399,4 @@ FodyWeavers.xsd
 /src/MissingValues/MathQ.MathFunctions.cs
 /src/MissingValues/Properties/MissingValues.AssemblyInfo.cs
 /src/MissingValues/Properties/AssemblyInfo.cs
+/src/MissingValues.Benchmarks/MissingValues.Benchmarks.csproj
