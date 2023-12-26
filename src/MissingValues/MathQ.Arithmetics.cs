@@ -44,7 +44,7 @@ namespace MissingValues
 
 		 */
 
-	internal static partial class MathQ
+	public static partial class MathQ
 	{
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]	
 		internal static Quad Add(Quad left, Quad right)
@@ -101,11 +101,11 @@ namespace MissingValues
 
 			signA = Quad.IsNegative(left);
 			expA = left.BiasedExponent;
-			sigA = left.Significand;
+			sigA = left.TrailingSignificand;
 
 			signB = Quad.IsNegative(right);
 			expB = right.BiasedExponent;
-			sigB = right.Significand;
+			sigB = right.TrailingSignificand;
 			signZ = signA ^ signB;
 
 			if (expA == 0x7FFF)

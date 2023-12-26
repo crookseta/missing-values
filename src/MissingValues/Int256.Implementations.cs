@@ -9,6 +9,8 @@ using System.Linq;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Runtime.Intrinsics.X86;
+using System.Runtime.Intrinsics;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -1066,7 +1068,15 @@ namespace MissingValues
 
 		public static Int256 operator ~(Int256 value)
 		{
-			return new Int256(~value._upper, ~value._lower);
+			if (Vector256.IsHardwareAccelerated)
+			{
+				var v = Unsafe.As<Int256, Vector256<ulong>>(ref Unsafe.AsRef(in value));
+				return Unsafe.As<Vector256<ulong>, Int256>(ref Unsafe.AsRef(~v));
+			}
+			else
+			{
+				return new(~value._upper, ~value._lower);
+			}
 		}
 
 		public static Int256 operator ++(Int256 value)
@@ -1159,17 +1169,65 @@ namespace MissingValues
 
 		public static Int256 operator &(Int256 left, Int256 right)
 		{
-			return new Int256(left._upper & right._upper, left._lower & right._lower);
+			if (Vector256.IsHardwareAccelerated)
+			{
+				var v1 = Unsafe.As<Int256, Vector256<ulong>>(ref Unsafe.AsRef(in left));
+				var v2 = Unsafe.As<Int256, Vector256<ulong>>(ref Unsafe.AsRef(in right));
+				return Unsafe.As<Vector256<ulong>, Int256>(ref Unsafe.AsRef(v1 & v2));
+			}
+			else if (Avx2.IsSupported)
+			{
+				var v1 = Unsafe.As<Int256, Vector256<ulong>>(ref Unsafe.AsRef(in left));
+				var v2 = Unsafe.As<Int256, Vector256<ulong>>(ref Unsafe.AsRef(in right));
+				var result = Avx2.And(v1, v2);
+				return Unsafe.As<Vector256<ulong>, Int256>(ref result);
+			}
+			else
+			{
+				return new(left._upper & right._upper, left._lower & right._lower);
+			}
 		}
 
 		public static Int256 operator |(Int256 left, Int256 right)
 		{
-			return new Int256(left._upper | right._upper, left._lower | right._lower);
+			if (Vector256.IsHardwareAccelerated)
+			{
+				var v1 = Unsafe.As<Int256, Vector256<ulong>>(ref Unsafe.AsRef(in left));
+				var v2 = Unsafe.As<Int256, Vector256<ulong>>(ref Unsafe.AsRef(in right));
+				return Unsafe.As<Vector256<ulong>, Int256>(ref Unsafe.AsRef(v1 | v2));
+			}
+			else if (Avx2.IsSupported)
+			{
+				var v1 = Unsafe.As<Int256, Vector256<ulong>>(ref Unsafe.AsRef(in left));
+				var v2 = Unsafe.As<Int256, Vector256<ulong>>(ref Unsafe.AsRef(in right));
+				var result = Avx2.Or(v1, v2);
+				return Unsafe.As<Vector256<ulong>, Int256>(ref result);
+			}
+			else
+			{
+				return new(left._upper | right._upper, left._lower | right._lower);
+			}
 		}
 
 		public static Int256 operator ^(Int256 left, Int256 right)
 		{
-			return new Int256(left._upper ^ right._upper, left._lower ^ right._lower);
+			if (Vector256.IsHardwareAccelerated)
+			{
+				var v1 = Unsafe.As<Int256, Vector256<ulong>>(ref Unsafe.AsRef(in left));
+				var v2 = Unsafe.As<Int256, Vector256<ulong>>(ref Unsafe.AsRef(in right));
+				return Unsafe.As<Vector256<ulong>, Int256>(ref Unsafe.AsRef(v1 ^ v2));
+			}
+			else if (Avx2.IsSupported)
+			{
+				var v1 = Unsafe.As<Int256, Vector256<ulong>>(ref Unsafe.AsRef(in left));
+				var v2 = Unsafe.As<Int256, Vector256<ulong>>(ref Unsafe.AsRef(in right));
+				var result = Avx2.Xor(v1, v2);
+				return Unsafe.As<Vector256<ulong>, Int256>(ref result);
+			}
+			else
+			{
+				return new(left._upper ^ right._upper, left._lower ^ right._lower);
+			}
 		}
 
 		public static Int256 operator <<(Int256 value, int shiftAmount)
@@ -1265,9 +1323,49 @@ namespace MissingValues
 			}
 		}
 
-		public static bool operator ==(Int256 left, Int256 right) => (left._lower == right._lower) && (left._upper == right._upper);
+		public static bool operator ==(Int256 left, Int256 right)
+		{
+			if (Vector256.IsHardwareAccelerated)
+			{
+				var v1 = Unsafe.As<Int256, Vector256<ulong>>(ref Unsafe.AsRef(in left));
+				var v2 = Unsafe.As<Int256, Vector256<ulong>>(ref Unsafe.AsRef(in right));
+				return v1 == v2;
+			}
+			else if (Avx2.IsSupported)
+			{
+				var v1 = Unsafe.As<Int256, Vector256<byte>>(ref Unsafe.AsRef(in left));
+				var v2 = Unsafe.As<Int256, Vector256<byte>>(ref Unsafe.AsRef(in right));
+				var equals = Avx2.CompareEqual(v1, v2);
+				var result = Avx2.MoveMask(equals);
+				return (result & 0xFFFF_FFFF) == 0xFFFF_FFFF;
+			}
+			else
+			{
+				return (left._upper == right._upper) && (left._lower == right._lower);
+			}
+		}
 
-		public static bool operator !=(Int256 left, Int256 right) => (left._lower != right._lower) || (left._upper != right._upper);
+		public static bool operator !=(Int256 left, Int256 right)
+		{
+			if (Vector256.IsHardwareAccelerated)
+			{
+				var v1 = Unsafe.As<Int256, Vector256<ulong>>(ref Unsafe.AsRef(in left));
+				var v2 = Unsafe.As<Int256, Vector256<ulong>>(ref Unsafe.AsRef(in right));
+				return v1 != v2;
+			}
+			else if (Avx2.IsSupported)
+			{
+				var v1 = Unsafe.As<Int256, Vector256<byte>>(ref Unsafe.AsRef(in left));
+				var v2 = Unsafe.As<Int256, Vector256<byte>>(ref Unsafe.AsRef(in right));
+				var equals = Avx2.CompareEqual(v1, v2);
+				var result = Avx2.MoveMask(equals);
+				return (result & 0xFFFF_FFFF) != 0xFFFF_FFFF;
+			}
+			else
+			{
+				return (left._upper != right._upper) || (left._lower != right._lower);
+			}
+		}
 
 		public static bool operator <(Int256 left, Int256 right)
 		{

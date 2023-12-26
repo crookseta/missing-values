@@ -9,6 +9,8 @@ using System.Linq;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Runtime.Intrinsics;
+using System.Runtime.Intrinsics.X86;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -806,7 +808,7 @@ namespace MissingValues
 			UInt128 carry = (lower < left._lower) ? 1UL : 0UL;
 
 			UInt128 upper = checked(left._upper + right._upper + carry);
-			return new UInt256(upper, lower);
+			return new UInt256(upper, lower); 
 		}
 
 		public static UInt256 operator -(UInt256 value)
@@ -827,10 +829,11 @@ namespace MissingValues
 			UInt128 borrow = (lower > left._lower) ? 1UL : 0UL;
 
 			UInt128 upper = left._upper - right._upper - borrow;
-			return new UInt256(upper, lower);
+			return new UInt256(upper, lower); 
 		}
 		public static UInt256 operator checked -(UInt256 left, UInt256 right)
 		{
+			
 			// For unsigned subtract, we can detect overflow by checking `(x - y) > x`
 			// This gives us the borrow to subtract from upper to compute the correct result
 
@@ -838,12 +841,21 @@ namespace MissingValues
 			UInt128 borrow = (lower > left._lower) ? 1UL : 0UL;
 
 			UInt128 upper = checked(left._upper - right._upper - borrow);
-			return new UInt256(upper, lower);
+			return new UInt256(upper, lower); 
+			
 		}
 
 		public static UInt256 operator ~(UInt256 value)
 		{
-			return new(~value._upper, ~value._lower);
+			if (Vector256.IsHardwareAccelerated)
+			{
+				var v = Unsafe.As<UInt256, Vector256<ulong>>(ref Unsafe.AsRef(in value));
+				return Unsafe.As<Vector256<ulong>, UInt256>(ref Unsafe.AsRef(~v));
+			}
+			else
+			{
+				return new(~value._upper, ~value._lower);
+			}
 		}
 
 		public static UInt256 operator ++(UInt256 value)
@@ -884,7 +896,11 @@ namespace MissingValues
 
 		public static UInt256 operator /(UInt256 left, UInt256 right)
 		{
-			if((left._upper == UInt128.Zero) && (right._upper == UInt128.Zero))
+			if ((right._lower == UInt128.Zero) && (right._upper == UInt128.Zero))
+			{
+				Thrower.DivideByZero();
+			}
+			if ((left._upper == UInt128.Zero) && (right._upper == UInt128.Zero))
 			{
 				return left._lower / right._lower;
 			}
@@ -1080,17 +1096,65 @@ namespace MissingValues
 
 		public static UInt256 operator &(UInt256 left, UInt256 right)
 		{
-			return new(left._upper & right._upper, left._lower & right._lower);
+			if (Vector256.IsHardwareAccelerated)
+			{
+				var v1 = Unsafe.As<UInt256, Vector256<ulong>>(ref Unsafe.AsRef(in left));
+				var v2 = Unsafe.As<UInt256, Vector256<ulong>>(ref Unsafe.AsRef(in right));
+				return Unsafe.As<Vector256<ulong>, UInt256>(ref Unsafe.AsRef(v1 & v2));
+			}
+			else if (Avx2.IsSupported)
+			{
+				var v1 = Unsafe.As<UInt256, Vector256<ulong>>(ref Unsafe.AsRef(in left));
+				var v2 = Unsafe.As<UInt256, Vector256<ulong>>(ref Unsafe.AsRef(in right));
+				var result = Avx2.And(v1, v2);
+				return Unsafe.As<Vector256<ulong>, UInt256>(ref result);
+			}
+			else
+			{
+				return new(left._upper & right._upper, left._lower & right._lower);
+			}
 		}
 
 		public static UInt256 operator |(UInt256 left, UInt256 right)
 		{
-			return new(left._upper | right._upper, left._lower | right._lower);
+			if (Vector256.IsHardwareAccelerated)
+			{
+				var v1 = Unsafe.As<UInt256, Vector256<ulong>>(ref Unsafe.AsRef(in left));
+				var v2 = Unsafe.As<UInt256, Vector256<ulong>>(ref Unsafe.AsRef(in right));
+				return Unsafe.As<Vector256<ulong>, UInt256>(ref Unsafe.AsRef(v1 | v2));
+			}
+			else if (Avx2.IsSupported)
+			{
+				var v1 = Unsafe.As<UInt256, Vector256<ulong>>(ref Unsafe.AsRef(in left));
+				var v2 = Unsafe.As<UInt256, Vector256<ulong>>(ref Unsafe.AsRef(in right));
+				var result = Avx2.Or(v1, v2);
+				return Unsafe.As<Vector256<ulong>, UInt256>(ref result);
+			}
+			else
+			{
+				return new(left._upper | right._upper, left._lower | right._lower);
+			}
 		}
 
 		public static UInt256 operator ^(UInt256 left, UInt256 right)
 		{
-			return new(left._upper ^ right._upper, left._lower ^ right._lower);
+			if (Vector256.IsHardwareAccelerated)
+			{
+				var v1 = Unsafe.As<UInt256, Vector256<ulong>>(ref Unsafe.AsRef(in left));
+				var v2 = Unsafe.As<UInt256, Vector256<ulong>>(ref Unsafe.AsRef(in right));
+				return Unsafe.As<Vector256<ulong>, UInt256>(ref Unsafe.AsRef(v1 ^ v2));
+			}
+			else if (Avx2.IsSupported)
+			{
+				var v1 = Unsafe.As<UInt256, Vector256<ulong>>(ref Unsafe.AsRef(in left));
+				var v2 = Unsafe.As<UInt256, Vector256<ulong>>(ref Unsafe.AsRef(in right));
+				var result = Avx2.Xor(v1, v2);
+				return Unsafe.As<Vector256<ulong>, UInt256>(ref result);
+			}
+			else
+			{
+				return new(left._upper ^ right._upper, left._lower ^ right._lower);
+			}
 		}
 
 		public static UInt256 operator <<(UInt256 value, int shiftAmount)
@@ -1128,18 +1192,53 @@ namespace MissingValues
 
 		public static bool operator ==(UInt256 left, UInt256 right)
 		{
-			return (left._upper == right._upper) && (left._lower == right._lower);
+			if (Vector256.IsHardwareAccelerated)
+			{
+				var v1 = Unsafe.As<UInt256, Vector256<ulong>>(ref Unsafe.AsRef(in left));
+				var v2 = Unsafe.As<UInt256, Vector256<ulong>>(ref Unsafe.AsRef(in right));
+				return v1 == v2;
+			}
+			else if (Avx2.IsSupported)
+			{
+				var v1 = Unsafe.As<UInt256, Vector256<byte>>(ref Unsafe.AsRef(in left));
+				var v2 = Unsafe.As<UInt256, Vector256<byte>>(ref Unsafe.AsRef(in right));
+				var equals = Avx2.CompareEqual(v1, v2);
+				var result = Avx2.MoveMask(equals);
+				return (result & 0xFFFF_FFFF) == 0xFFFF_FFFF;
+			}
+			else
+			{
+				return (left._upper == right._upper) && (left._lower == right._lower);
+			}
 		}
 
 		public static bool operator !=(UInt256 left, UInt256 right)
 		{
-			return (left._upper != right._upper) || (left._lower != right._lower);
+			if (Vector256.IsHardwareAccelerated)
+			{
+				var v1 = Unsafe.As<UInt256, Vector256<ulong>>(ref Unsafe.AsRef(in left));
+				var v2 = Unsafe.As<UInt256, Vector256<ulong>>(ref Unsafe.AsRef(in right));
+				return v1 != v2;
+			}
+			else if (Avx2.IsSupported)
+			{
+				var v1 = Unsafe.As<UInt256, Vector256<byte>>(ref Unsafe.AsRef(in left));
+				var v2 = Unsafe.As<UInt256, Vector256<byte>>(ref Unsafe.AsRef(in right));
+				var equals = Avx2.CompareEqual(v1, v2);
+				var result = Avx2.MoveMask(equals);
+				return (result & 0xFFFF_FFFF) != 0xFFFF_FFFF;
+			}
+			else
+			{
+				return (left._upper != right._upper) || (left._lower != right._lower);
+			}
 		}
 
 		public static bool operator <(UInt256 left, UInt256 right)
 		{
 			return (left._upper < right._upper)
 				|| (left._upper == right._upper) && (left._lower < right._lower);
+			
 		}
 
 		public static bool operator >(UInt256 left, UInt256 right)

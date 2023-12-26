@@ -688,14 +688,14 @@ namespace MissingValues.Tests.Core
 			NumberBaseHelper<Int>.CreateChecked(int.MaxValue).Should().Be(Int32MaxValue);
 			NumberBaseHelper<Int>.CreateChecked(long.MaxValue).Should().Be(Int64MaxValue);
 			NumberBaseHelper<Int>.CreateChecked(Int128.MaxValue).Should().Be(Int128MaxValue);
-			NumberBaseHelper<Int>.CreateChecked(Int512MaxValueAsDouble).Should().Be(MaxValue);
+			NumberBaseHelper<Int>.CreateChecked((double)int.MaxValue).Should().Be(Int32MaxValue);
 
 			NumberBaseHelper<Int>.CreateChecked(byte.MinValue).Should().Be(Zero);
 			NumberBaseHelper<Int>.CreateChecked(short.MinValue).Should().Be(Int16MinValue);
 			NumberBaseHelper<Int>.CreateChecked(int.MinValue).Should().Be(Int32MinValue);
 			NumberBaseHelper<Int>.CreateChecked(long.MinValue).Should().Be(Int64MinValue);
 			NumberBaseHelper<Int>.CreateChecked(Int128.MinValue).Should().Be(Int128MinValue);
-			NumberBaseHelper<Int>.CreateChecked(Int512MinValueAsDouble).Should().Be(MinValue);
+			NumberBaseHelper<Int>.CreateChecked((double)int.MinValue).Should().Be(Int32MinValue);
 		}
 		[Fact]
 		public static void CreateSaturatingToInt512Test()

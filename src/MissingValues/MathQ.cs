@@ -11,7 +11,7 @@ namespace MissingValues
 	/// <summary>
 	/// Provides constants and static methods for trigonometric, logarithmic, and other common mathematical functions.
 	/// </summary>
-	internal static partial class MathQ
+	public static partial class MathQ
 	{
 		public static int CountDigits<T>(T num, T numberBase)
 			where T : struct, IBinaryInteger<T>
@@ -26,7 +26,7 @@ namespace MissingValues
 			return count;
 		}
 
-		public static T GetGoldenRatio<T>()
+		internal static T GetGoldenRatio<T>()
 			where T : unmanaged, IFloatingPoint<T>
 		{
 			T ratio;
@@ -94,35 +94,6 @@ namespace MissingValues
 			}
 
 			return result;
-		}
-
-		public static T Sum<T>(params T[] values)
-			where T : IBinaryFloatingPointIeee754<T>
-		{
-			T sum = T.Zero;
-
-			// Variable to store error
-			T c = T.Zero;
-
-			foreach (T f in values)
-			{
-				T y = f - c;
-				T t = sum + y;
-
-				// Algebraically, c is always 0
-				// when t is replaced by its
-				// value from the above expression.
-				// But, when there is a loss,
-				// the higher-order y is cancelled
-				// out by subtracting y from c and
-				// all that remains is the
-				// lower-order error in c
-
-				c = (t - sum) - y;
-				sum = t;
-			}
-
-			return sum;
 		}
 	}
 }
