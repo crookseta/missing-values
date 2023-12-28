@@ -349,7 +349,7 @@ namespace MissingValues.Tests.Core
 
 		[Theory]
 		[MemberData(nameof(TryParseTheoryData))]
-		public void TryParseTest(string s, bool success, Quad returnValue)
+		public void BasicTryParseTest(string s, bool success, Quad returnValue)
 		{
 			Quad result;
 

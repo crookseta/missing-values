@@ -142,6 +142,18 @@ namespace MissingValues
 				destination[i] = numbers[rem.ToInt32()];
 			}
 		}
+		public static void UnsignedNumberToCharSpan<TNumber, TChar>(TNumber value, in TNumber numberBase, int digits, Span<TChar> destination)
+			where TNumber : struct, IFormattableInteger<TNumber>, IUnsignedNumber<TNumber>
+			where TChar : unmanaged, IUtfCharacter<TChar>
+		{
+			var numbers = TChar.Digits;
+
+            for (int i = digits - 1; i >= 0; i--)
+            {
+				(value, var rem) = TNumber.DivRem(value, numberBase);
+				destination[i] = numbers[rem.ToInt32()];
+			}
+        }
 
 		public static string UnsignedNumberToDecimalString<T>(in T value)
 			where T : struct, IFormattableInteger<T>, IUnsignedNumber<T>
@@ -176,35 +188,6 @@ namespace MissingValues
 					int i = num.ToInt32() * 2;
 					chars[next] = DigitTable[i + 1];
 					chars[next - 1] = DigitTable[i];
-				}
-			});
-		}
-		public static string UnsignedNumberToBinaryString<T>(in T value)
-			where T : struct, IFormattableInteger<T>, IUnsignedNumber<T>
-		{
-			int digits = BitHelper.CountDigits<T>(value, T.Two);
-
-			return string.Create(digits, value, (chars, num) =>
-			{
-				for (int i = chars.Length - 1; i >= 0; i--)
-				{
-					(num, var rem) = T.DivRem(num, T.Two);
-					chars[i] = (char)(rem.ToChar() + 48U);
-				}
-			});
-		}
-		public static string UnsignedNumberToHexString<T>(in T value)
-			where T : struct, IFormattableInteger<T>, IUnsignedNumber<T>
-		{
-			int digits = BitHelper.CountDigits<T>(value, T.Sixteen);
-
-			return string.Create(digits, value, (chars, num) =>
-			{
-				for (int i = chars.Length - 1; i >= 0; i--)
-				{
-					(num, var rem) = T.DivRem(num, T.Sixteen);
-					chars[i] = (char)(rem.ToChar() + 48U);
-					chars[i] = chars[i] <= '9' ? chars[i] : (char)(chars[i] + 7U);
 				}
 			});
 		}
@@ -249,8 +232,9 @@ namespace MissingValues
 
 			return UnsignedNumberToString(in value, fmtBase, precision);
 		}
-		public static bool TryFormatUnsignedNumber<T>(in T value, Span<char> destination, out int charsWritten, ReadOnlySpan<char> format, IFormatProvider? provider)
-			where T : struct, IFormattableInteger<T>, IUnsignedNumber<T>
+		public static bool TryFormatUnsignedNumber<TNumber, TChar>(in TNumber value, Span<TChar> destination, out int charsWritten, ReadOnlySpan<char> format, IFormatProvider? provider)
+			where TNumber : struct, IFormattableInteger<TNumber>, IUnsignedNumber<TNumber>
+			where TChar : unmanaged, IUtfCharacter<TChar>
 		{
 			int precision = 0;
 			if (format.Length > 1 && !int.TryParse(format[1..], out precision))
@@ -270,14 +254,14 @@ namespace MissingValues
 				isUpper = char.IsUpper(format[0]);
 			}
 
-			T fmtBase = fmt switch
+			TNumber fmtBase = fmt switch
 			{
-				'b' => T.Two,
-				'x' => T.Sixteen,
-				_ => T.Ten,
+				'b' => TNumber.Two,
+				'x' => TNumber.Sixteen,
+				_ => TNumber.Ten,
 			};
 
-			if (fmtBase != T.Ten)
+			if (fmtBase != TNumber.Ten)
 			{
 				precision = int.Max(precision, BitHelper.CountDigits(value, fmtBase));
 			}
@@ -286,14 +270,14 @@ namespace MissingValues
 				precision = BitHelper.CountDigits(value, fmtBase);
 			}
 
-			Span<char> output = stackalloc char[precision];
+			Span<TChar> output = stackalloc TChar[precision];
 			UnsignedNumberToCharSpan(value, in fmtBase, precision, output);
 
 			if (isUpper)
 			{
 				for (int i = 0; i < output.Length; i++)
 				{
-					output[i] = char.ToUpper(output[i]);
+					output[i] = TChar.ToUpper(output[i]);
 				}
 			}
 
@@ -364,9 +348,10 @@ namespace MissingValues
 			}
 		}
 
-		public static bool TryFormatSignedNumber<TSigned, TUnsigned>(in TSigned value, Span<char> destination, out int charsWritten, ReadOnlySpan<char> format, IFormatProvider? provider)
+		public static bool TryFormatSignedNumber<TSigned, TUnsigned, TChar>(in TSigned value, Span<TChar> destination, out int charsWritten, ReadOnlySpan<char> format, IFormatProvider? provider)
 			where TSigned : struct, IFormattableSignedInteger<TSigned, TUnsigned>, IMinMaxValue<TSigned>
 			where TUnsigned : struct, IFormattableUnsignedInteger<TUnsigned, TSigned>
+			where TChar : unmanaged, IUtfCharacter<TChar>
 		{
 			int precision = 0;
 			if (format.Length > 1 && !int.TryParse(format[1..], out precision))
@@ -408,20 +393,20 @@ namespace MissingValues
 				v = value == TSigned.MinValue ? (TSigned.MaxValue + TSigned.One) : TSigned.Abs(value);
 			}
 
-			Span<char> output = stackalloc char[precision];
+			Span<TChar> output = stackalloc TChar[precision];
 			UnsignedNumberToCharSpan(v.ToUnsigned(), fmtBase.ToUnsigned(), precision, output);
 
 			if (isUpper)
 			{
 				for (int i = 0; i < output.Length; i++)
 				{
-					output[i] = char.ToUpper(output[i]);
+					output[i] = TChar.ToUpper(output[i]);
 				}
 			}
 
 			if (isNegative && fmtBase == TSigned.Ten)
 			{
-				output[0] = '-';
+				TChar.NegativeSign(NumberFormatInfo.GetInstance(provider)).CopyTo(output[..1]);
 			}
 
 			bool success = output.TryCopyTo(destination);
@@ -432,29 +417,30 @@ namespace MissingValues
 		}
 		#endregion
 		#region Float
-		public static string QuadToString(
-			in Quad value, 
+		public static string FloatToString<TFloat>(
+			in TFloat value, 
 			ReadOnlySpan<char> format, 
 			IFormatProvider? provider)
+			where TFloat : struct, IFormattableBinaryFloatingPoint<TFloat>
 		{
-			const int MaxSignificandPrecision = 33;
-			const int MaxBufferAlloc = MaxSignificandPrecision + 4 + 4 + 4; // 33 significant decimal digits precision, 4 possible special symbols, 4 exponent decimal digits
+			int maxSignificandPrecision = TFloat.MaxSignificandPrecision;
+			int maxBufferAlloc = maxSignificandPrecision + 4 + 4 + 4; // N significant decimal digits precision, 4 possible special symbols, 4 exponent decimal digits
 
 			int precision;
 
 			if (format.IsEmpty)
 			{
-				precision = MaxSignificandPrecision;
+				precision = maxSignificandPrecision;
 			}
 			else
 			{
 				if (int.TryParse(format.Trim()[1..], out int p))
 				{
-					precision = p > MaxSignificandPrecision ? MaxSignificandPrecision : p;
+					precision = p > maxSignificandPrecision ? maxSignificandPrecision : p;
 				}
 				else
 				{
-					precision = MaxSignificandPrecision;
+					precision = maxSignificandPrecision;
 				}
 
 				if (!(format.Contains("F", StringComparison.OrdinalIgnoreCase)
@@ -468,42 +454,44 @@ namespace MissingValues
 
 			NumberFormatInfo info = NumberFormatInfo.GetInstance(provider);
 
-			Span<char> buffer = stackalloc char[MaxBufferAlloc]; 
+			Span<Utf16Char> buffer = stackalloc Utf16Char[maxBufferAlloc]; 
 			Ryu.Format(in value, buffer, out _, out bool isExceptional, info, precision);
 
 			if (isExceptional || format.Contains("E", StringComparison.OrdinalIgnoreCase))
 			{
-				return new string(buffer.TrimEnd('\0'));
+				return new string(Utf16Char.CastToCharSpan(buffer).TrimEnd('\0'));
 			}
 
-			return new string(GetGeneralFromScientificFloatChars(buffer, info, precision));
+			return new string(Utf16Char.CastToCharSpan(GetGeneralFromScientificFloatChars(buffer, info, precision)));
 		}
 
-		public static bool TryFormatQuad(
-			in Quad value, 
-			Span<char> destination, 
-			out int charsWritten, 
-			ReadOnlySpan<char> format, 
+		public static bool TryFormatFloat<TFloat, TChar>(
+			in TFloat value,
+			Span<TChar> destination,
+			out int charsWritten,
+			ReadOnlySpan<char> format,
 			IFormatProvider? provider)
+			where TFloat : struct, IFormattableBinaryFloatingPoint<TFloat>
+			where TChar : unmanaged, IUtfCharacter<TChar>
 		{
-			const int MaxSignificandPrecision = 33;
-			const int MaxBufferAlloc = MaxSignificandPrecision + 4 + 4 + 4; // 33 significant decimal digits precision, 4 possible special symbols, 4 exponent decimal digits
+			int maxSignificandPrecision = TFloat.MaxSignificandPrecision;
+			int MaxBufferAlloc = maxSignificandPrecision + 4 + 4 + 4; // 33 significant decimal digits precision, 4 possible special symbols, 4 exponent decimal digits
 
 			int precision;
 
 			if (format.IsEmpty)
 			{
-				precision = MaxSignificandPrecision;
+				precision = maxSignificandPrecision;
 			}
 			else
 			{
 				if (int.TryParse(format.Trim()[1..], out int p))
 				{
-					precision = p > MaxSignificandPrecision ? MaxSignificandPrecision : p;
+					precision = p > maxSignificandPrecision ? maxSignificandPrecision : p;
 				}
 				else
 				{
-					precision = MaxSignificandPrecision;
+					precision = maxSignificandPrecision;
 				}
 
 				if (!(format.Contains("F", StringComparison.OrdinalIgnoreCase)
@@ -517,33 +505,33 @@ namespace MissingValues
 
 			NumberFormatInfo info = NumberFormatInfo.GetInstance(provider);
 
-			Span<char> buffer = stackalloc char[MaxBufferAlloc];
+			Span<TChar> buffer = stackalloc TChar[MaxBufferAlloc];
 			Ryu.Format(in value, buffer, out charsWritten, out bool isExceptional, info, precision);
 
 			if (isExceptional || format.Contains("E", StringComparison.OrdinalIgnoreCase))
 			{
-				return buffer.TrimEnd('\0').TryCopyTo(destination);
+				return buffer.TrimEnd(TChar.NullCharacter).TryCopyTo(destination);
 			}
 
-			ReadOnlySpan<char> general = GetGeneralFromScientificFloatChars(buffer, info, precision);
+			ReadOnlySpan<TChar> general = GetGeneralFromScientificFloatChars(buffer, info, precision);
 			charsWritten = general.Length;
 			return general.TryCopyTo(destination);
 		}
-
-		private static ReadOnlySpan<char> GetGeneralFromScientificFloatChars(Span<char> buffer, NumberFormatInfo info, int precision)
+		private static ReadOnlySpan<TChar> GetGeneralFromScientificFloatChars<TChar>(Span<TChar> buffer, NumberFormatInfo info, int precision)
+			where TChar : unmanaged, IUtfCharacter<TChar>
 		{
 			const int MaxSignificandPrecision = 33;
 
-			Span<char> actualValue = buffer.TrimEnd('\0');
+			Span<TChar> actualValue = buffer.TrimEnd(TChar.NullCharacter);
 
-			int eIndex = actualValue.IndexOf('E');
-			if (eIndex <= 0 || !int.TryParse(actualValue[(eIndex + 1)..], out int exponent))
+			int eIndex = actualValue.IndexOf((TChar)'E');
+			if (eIndex <= 0 || !TChar.TryParseInteger(actualValue[(eIndex + 1)..], out int exponent))
 			{
 				exponent = 0;
 			}
 
-			ReadOnlySpan<char> numberDecimalSeparator = info.NumberDecimalSeparator;
-			ReadOnlySpan<char> negativeSign = info.NegativeSign;
+			ReadOnlySpan<TChar> numberDecimalSeparator = TChar.NumberDecimalSeparator(info);
+			ReadOnlySpan<TChar> negativeSign = TChar.NegativeSign(info);
 
 			bool isNegativeExponent = exponent < 0;
 			bool isNegative = buffer.IndexOf(negativeSign) == 0;
@@ -566,7 +554,7 @@ namespace MissingValues
 			}
 
 			// Get rid of the scientific notation
-			actualValue[eIndex..].Fill('\0');
+			actualValue[eIndex..].Fill(TChar.NullCharacter);
 			actualValue = actualValue[..eIndex];
 
 
@@ -587,20 +575,20 @@ namespace MissingValues
 					{
 						i = 4;
 						buffer[2 + numberDecimalSeparator.Length] = buffer[1];
-						buffer[1] = '0';
+						buffer[1] = (TChar)'0';
 						numberDecimalSeparator.CopyTo(buffer[2..]);
 					}
 					else
 					{
 						i = 3;
 						buffer[1 + numberDecimalSeparator.Length] = buffer[0];
-						buffer[0] = '0';
+						buffer[0] = (TChar)'0';
 						numberDecimalSeparator.CopyTo(buffer[1..]);
 					}
 
 					for (int leadingZeroes = (-exponent) - 1; leadingZeroes > 0 && i < buffer.Length; leadingZeroes--, i++)
 					{
-						(buffer[i - 1], buffer[i]) = ('0', buffer[i - 1]);
+						(buffer[i - 1], buffer[i]) = ((TChar)'0', buffer[i - 1]);
 					}
 				}
 				else if (exponent != 0) // ie: 5E1 = 50
@@ -610,7 +598,7 @@ namespace MissingValues
 					 */
 					for (int i = isNegative ? 2 : 1, trailingZeroes = exponent; trailingZeroes > 0 && i < buffer.Length; i++, trailingZeroes--)
 					{
-						buffer[i] = '0';
+						buffer[i] = (TChar)'0';
 					}
 				}
 
@@ -618,16 +606,16 @@ namespace MissingValues
 			}
 			else if (isNegativeExponent) // ie: 1.1E-5 = 0.000011
 			{
-				Span<char> digits = stackalloc char[actualValue.Length - 1];
+				Span<TChar> digits = stackalloc TChar[actualValue.Length - 1];
 				digits[0] = isNegative ? actualValue[1] : actualValue[0];
 				actualValue[(dotIndex + 1)..].CopyTo(digits[1..]);
 
-				buffer[isNegative ? 1 : 0] = '0';
+				buffer[isNegative ? 1 : 0] = (TChar)'0';
 				int i;
 
 				for (i = isNegative ? 3 : 2, temp = exponent; temp > 0 && i < buffer.Length - digits.Length; i++, temp--)
 				{
-					buffer[i] = '0';
+					buffer[i] = (TChar)'0';
 				}
 
 				digits.CopyTo(buffer[i..]);
@@ -639,7 +627,7 @@ namespace MissingValues
 				if (decimalDigits < exponent && exponent < buffer.Length)
 				{
 					i = actualValue.Length;
-					buffer.Slice(i, exponent - decimalDigits).Fill('0');
+					buffer.Slice(i, exponent - decimalDigits).Fill((TChar)'0');
 				}
 				i = isNegative ? 3 : 2;
 				for (temp = exponent; temp > 0 && i < buffer.Length; i++, temp--)
@@ -648,7 +636,7 @@ namespace MissingValues
 				}
 			}
 
-			actualValue = buffer.TrimEnd('\0');
+			actualValue = buffer.TrimEnd(TChar.NullCharacter);
 
 			if (actualValue.EndsWith(numberDecimalSeparator))
 			{

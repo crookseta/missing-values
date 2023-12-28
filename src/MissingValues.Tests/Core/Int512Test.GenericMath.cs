@@ -1001,6 +1001,78 @@ namespace MissingValues.Tests.Core
 				.Should().BeFalse();
 			parsedValue.Should().Be(default);
 		}
+
+		[Fact]
+		public void ParseUtf8Test()
+		{
+			NumberBaseHelper<Int>.Parse("6703903964971298549787012499102923063739682910296196688861780721860882015036773488400937149083451713845015929093243025426876941405973284973216824503042047"u8, System.Globalization.NumberStyles.Integer, CultureInfo.CurrentCulture)
+				.Should().Be(Int512MaxValue)
+				.And.BeRankedEquallyTo(Int512MaxValue);
+			NumberBaseHelper<Int>.Parse("7FFFFFFFFFFFFFFF" +
+										"FFFFFFFFFFFFFFFF" +
+										"FFFFFFFFFFFFFFFF" +
+										"FFFFFFFFFFFFFFFF" +
+										"FFFFFFFFFFFFFFFF" +
+										"FFFFFFFFFFFFFFFF" +
+										"FFFFFFFFFFFFFFFF" +
+										"FFFFFFFFFFFFFFFF", System.Globalization.NumberStyles.HexNumber, CultureInfo.CurrentCulture)
+				.Should().Be(Int512MaxValue)
+				.And.BeRankedEquallyTo(Int512MaxValue);
+			NumberBaseHelper<Int>.Parse("-6703903964971298549787012499102923063739682910296196688861780721860882015036773488400937149083451713845015929093243025426876941405973284973216824503042048"u8, System.Globalization.NumberStyles.Integer, CultureInfo.CurrentCulture)
+				.Should().Be(Int512MinValue)
+				.And.BeRankedEquallyTo(Int512MinValue);
+			NumberBaseHelper<Int>.Parse("8000000000000000"u8 +
+										"0000000000000000"u8 +
+										"0000000000000000"u8 +
+										"0000000000000000"u8 +
+										"0000000000000000"u8 +
+										"0000000000000000"u8 +
+										"0000000000000000"u8 +
+										"0000000000000000"u8, System.Globalization.NumberStyles.HexNumber, CultureInfo.CurrentCulture)
+				.Should().Be(Int512MinValue)
+				.And.BeRankedEquallyTo(Int512MinValue);
+
+			Assert.Throws<FormatException>(() => NumberBaseHelper<Int>.Parse("13407807929942597099574024998205846127479365820592393377723561443721764030073546976801874298166903427690031858186486050853753882811946569946433649006084096"u8, System.Globalization.NumberStyles.Integer, CultureInfo.CurrentCulture));
+		}
+
+		[Fact]
+		public void TryParseUtf8Test()
+		{
+			NumberBaseHelper<Int>.TryParse("6703903964971298549787012499102923063739682910296196688861780721860882015036773488400937149083451713845015929093243025426876941405973284973216824503042047"u8, System.Globalization.NumberStyles.Integer, CultureInfo.CurrentCulture, out Int parsedValue)
+				.Should().BeTrue();
+			parsedValue.Should().Be(Int512MaxValue)
+				.And.BeRankedEquallyTo(Int512MaxValue);
+			NumberBaseHelper<Int>.TryParse("7FFFFFFFFFFFFFFF"u8 +
+										"FFFFFFFFFFFFFFFF"u8 +
+										"FFFFFFFFFFFFFFFF"u8 +
+										"FFFFFFFFFFFFFFFF"u8 +
+										"FFFFFFFFFFFFFFFF"u8 +
+										"FFFFFFFFFFFFFFFF"u8 +
+										"FFFFFFFFFFFFFFFF"u8 +
+										"FFFFFFFFFFFFFFFF"u8, System.Globalization.NumberStyles.HexNumber, CultureInfo.CurrentCulture, out parsedValue)
+				.Should().BeTrue();
+			parsedValue.Should().Be(Int512MaxValue)
+				.And.BeRankedEquallyTo(Int512MaxValue);
+			NumberBaseHelper<Int>.TryParse("-6703903964971298549787012499102923063739682910296196688861780721860882015036773488400937149083451713845015929093243025426876941405973284973216824503042048"u8, System.Globalization.NumberStyles.Integer, CultureInfo.CurrentCulture, out parsedValue)
+				.Should().BeTrue();
+			parsedValue.Should().Be(Int512MinValue)
+				.And.BeRankedEquallyTo(Int512MinValue);
+			NumberBaseHelper<Int>.TryParse("8000000000000000"u8 +
+										"0000000000000000"u8 +
+										"0000000000000000"u8 +
+										"0000000000000000"u8 +
+										"0000000000000000"u8 +
+										"0000000000000000"u8 +
+										"0000000000000000"u8 +
+										"0000000000000000"u8, System.Globalization.NumberStyles.HexNumber, CultureInfo.CurrentCulture, out parsedValue)
+				.Should().BeTrue();
+			parsedValue.Should().Be(Int512MinValue)
+				.And.BeRankedEquallyTo(Int512MinValue);
+
+			NumberBaseHelper<Int>.TryParse("13407807929942597099574024998205846127479365820592393377723561443721764030073546976801874298166903427690031858186486050853753882811946569946433649006084096"u8, System.Globalization.NumberStyles.Integer, CultureInfo.CurrentCulture, out parsedValue)
+				.Should().BeFalse();
+			parsedValue.Should().Be(default);
+		}
 		#endregion
 
 		#region ISignedNumber

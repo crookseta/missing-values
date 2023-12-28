@@ -323,23 +323,35 @@ namespace MissingValues
 
 		public static Int512 Parse(ReadOnlySpan<char> s, NumberStyles style, IFormatProvider? provider)
 		{
-			return NumberParser.ParseToSigned<Int512, UInt512>(s, style, provider);
+			return NumberParser.ParseToSigned<Int512, UInt512, Utf16Char>(Utf16Char.CastFromCharSpan(s), style, provider);
 		}
 
 		public static Int512 Parse(string s, NumberStyles style, IFormatProvider? provider)
 		{
-			return NumberParser.ParseToSigned<Int512, UInt512>(s, style, provider);
+			return NumberParser.ParseToSigned<Int512, UInt512, Utf16Char>(Utf16Char.CastFromCharSpan(s), style, provider);
 		}
 
 		public static Int512 Parse(ReadOnlySpan<char> s, IFormatProvider? provider)
 		{
-			return NumberParser.ParseToSigned<Int512, UInt512>(s, NumberStyles.Integer, provider);
+			return NumberParser.ParseToSigned<Int512, UInt512, Utf16Char>(Utf16Char.CastFromCharSpan(s), NumberStyles.Integer, provider);
 		}
 
 		public static Int512 Parse(string s, IFormatProvider? provider)
 		{
-			return NumberParser.ParseToSigned<Int512, UInt512>(s, NumberStyles.Integer, provider);
+			return NumberParser.ParseToSigned<Int512, UInt512, Utf16Char>(Utf16Char.CastFromCharSpan(s), NumberStyles.Integer, provider);
 		}
+
+#if NET8_0_OR_GREATER
+		public static Int512 Parse(ReadOnlySpan<byte> utf8Text, NumberStyles style, IFormatProvider? provider)
+		{
+			return NumberParser.ParseToSigned<Int512, UInt512, Utf8Char>(Utf8Char.CastFromByteSpan(utf8Text), style, provider);
+		}
+
+		public static Int512 Parse(ReadOnlySpan<byte> utf8Text, IFormatProvider? provider)
+		{
+			return NumberParser.ParseToSigned<Int512, UInt512, Utf8Char>(Utf8Char.CastFromByteSpan(utf8Text), NumberStyles.Integer, provider);
+		} 
+#endif
 
 		public static Int512 PopCount(Int512 value)
 		{
@@ -372,8 +384,15 @@ namespace MissingValues
 
 		public bool TryFormat(Span<char> destination, out int charsWritten, ReadOnlySpan<char> format, IFormatProvider? provider)
 		{
-			return NumberFormatter.TryFormatSignedNumber<Int512, UInt512>(in this, destination, out charsWritten, format, provider);
+			return NumberFormatter.TryFormatSignedNumber<Int512, UInt512, Utf16Char>(in this, Utf16Char.CastFromCharSpan(destination), out charsWritten, format, provider);
 		}
+
+#if NET8_0_OR_GREATER
+		public bool TryFormat(Span<byte> utf8Destination, out int bytesWritten, ReadOnlySpan<char> format, IFormatProvider? provider)
+		{
+			return NumberFormatter.TryFormatSignedNumber<Int512, UInt512, Utf8Char>(in this, Utf8Char.CastFromByteSpan(utf8Destination), out bytesWritten, format, provider);
+		}
+#endif
 
 		public static bool TryParse(ReadOnlySpan<char> s, NumberStyles style, IFormatProvider? provider, [MaybeNullWhen(false)] out Int512 result)
 		{
@@ -383,7 +402,7 @@ namespace MissingValues
 				return false;
 			}
 
-			return NumberParser.TryParseToSigned<Int512, UInt512>(s, style, provider, out result);
+			return NumberParser.TryParseToSigned<Int512, UInt512, Utf16Char>(Utf16Char.CastFromCharSpan(s), style, provider, out result);
 		}
 
 		public static bool TryParse([NotNullWhen(true)] string? s, NumberStyles style, IFormatProvider? provider, [MaybeNullWhen(false)] out Int512 result)
@@ -394,7 +413,7 @@ namespace MissingValues
 				return false;
 			}
 
-			return NumberParser.TryParseToSigned<Int512, UInt512>(s, style, provider, out result);
+			return NumberParser.TryParseToSigned<Int512, UInt512, Utf16Char>(Utf16Char.CastFromCharSpan(s), style, provider, out result);
 		}
 
 		public static bool TryParse(ReadOnlySpan<char> s, IFormatProvider? provider, [MaybeNullWhen(false)] out Int512 result)
@@ -405,7 +424,7 @@ namespace MissingValues
 				return false;
 			}
 
-			return NumberParser.TryParseToSigned<Int512, UInt512>(s, NumberStyles.Integer, provider, out result);
+			return NumberParser.TryParseToSigned<Int512, UInt512, Utf16Char>(Utf16Char.CastFromCharSpan(s), NumberStyles.Integer, provider, out result);
 		}
 
 		public static bool TryParse([NotNullWhen(true)] string? s, IFormatProvider? provider, [MaybeNullWhen(false)] out Int512 result)
@@ -416,8 +435,31 @@ namespace MissingValues
 				return false;
 			}
 
-			return NumberParser.TryParseToSigned<Int512, UInt512>(s, NumberStyles.Integer, provider, out result);
+			return NumberParser.TryParseToSigned<Int512, UInt512, Utf16Char>(Utf16Char.CastFromCharSpan(s), NumberStyles.Integer, provider, out result);
 		}
+
+#if NET8_0_OR_GREATER
+		public static bool TryParse(ReadOnlySpan<byte> utf8Text, NumberStyles style, IFormatProvider? provider, [MaybeNullWhen(false)] out Int512 result)
+		{
+			if (utf8Text.Length == 0 || !utf8Text.ContainsAnyExcept((byte)' '))
+			{
+				result = default;
+				return false;
+			}
+
+			return NumberParser.TryParseToSigned<Int512, UInt512, Utf8Char>(Utf8Char.CastFromByteSpan(utf8Text), style, provider, out result);
+		}
+		public static bool TryParse(ReadOnlySpan<byte> utf8Text, IFormatProvider? provider, [MaybeNullWhen(false)] out Int512 result)
+		{
+			if (utf8Text.Length == 0 || !utf8Text.ContainsAnyExcept((byte)' '))
+			{
+				result = default;
+				return false;
+			}
+
+			return NumberParser.TryParseToSigned<Int512, UInt512, Utf8Char>(Utf8Char.CastFromByteSpan(utf8Text), NumberStyles.Integer, provider, out result);
+		}
+#endif
 
 		public static bool TryReadBigEndian(ReadOnlySpan<byte> source, bool isUnsigned, out Int512 value)
 		{
