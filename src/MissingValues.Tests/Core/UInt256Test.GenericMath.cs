@@ -981,6 +981,36 @@ namespace MissingValues.Tests.Core
 				.Should().BeFalse();
 			parsedValue.Should().Be(default);
 		}
+
+		[Fact]
+		public void ParseUtf8Test()
+		{
+			NumberBaseHelper<UInt>.Parse("115792089237316195423570985008687907853269984665640564039457584007913129639935"u8, System.Globalization.NumberStyles.Integer, CultureInfo.CurrentCulture)
+				.Should().Be(MaxValue)
+				.And.BeRankedEquallyTo(MaxValue);
+			NumberBaseHelper<UInt>.Parse("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"u8, System.Globalization.NumberStyles.HexNumber, CultureInfo.CurrentCulture)
+				.Should().Be(MaxValue)
+				.And.BeRankedEquallyTo(MaxValue);
+
+			Assert.Throws<FormatException>(() => NumberBaseHelper<UInt>.Parse("115792089237316195423570985008687907853269984665640564039457584007913129639936"u8, System.Globalization.NumberStyles.Integer, CultureInfo.CurrentCulture));
+		}
+
+		[Fact]
+		public void TryParseUtf8Test()
+		{
+			NumberBaseHelper<UInt>.TryParse("115792089237316195423570985008687907853269984665640564039457584007913129639935"u8, System.Globalization.NumberStyles.Integer, CultureInfo.CurrentCulture, out UInt parsedValue)
+				.Should().BeTrue();
+			parsedValue.Should().Be(MaxValue)
+				.And.BeRankedEquallyTo(MaxValue);
+			NumberBaseHelper<UInt>.TryParse("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"u8, System.Globalization.NumberStyles.HexNumber, CultureInfo.CurrentCulture, out parsedValue)
+				.Should().BeTrue();
+			parsedValue.Should().Be(MaxValue)
+				.And.BeRankedEquallyTo(MaxValue);
+
+			NumberBaseHelper<UInt>.TryParse("115792089237316195423570985008687907853269984665640564039457584007913129639936"u8, System.Globalization.NumberStyles.Integer, CultureInfo.CurrentCulture, out parsedValue)
+				.Should().BeFalse();
+			parsedValue.Should().Be(default);
+		}
 		#endregion
 	}
 }

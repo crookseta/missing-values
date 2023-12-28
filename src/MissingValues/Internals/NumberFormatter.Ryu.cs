@@ -394,105 +394,14 @@ internal static partial class NumberFormatter
 			0x0040000400105555u, 0x0000000000000001u,
 		};
 
-		public static void Format(in Quad value, scoped Span<char> destination, out int charsWritten, out bool isExceptional, NumberFormatInfo? info, int? precision = null)
-		{
-			var fd = QuadToFloatingDecimal128(in value);
-			charsWritten = ToCharSpan(in fd, destination, info is null ? NumberFormatInfo.CurrentInfo : info!, out isExceptional);
-		}
-		public static void Format<TChar>(in Quad value, scoped Span<TChar> destination, out int charsWritten, out bool isExceptional, NumberFormatInfo? info, int? precision = null)
+		public static void Format<TFloat, TChar>(in TFloat value, scoped Span<TChar> destination, out int charsWritten, out bool isExceptional, NumberFormatInfo? info, int? precision = null)
+			where TFloat : struct, IFormattableBinaryFloatingPoint<TFloat>
 			where TChar : unmanaged, IUtfCharacter<TChar>
 		{
-			var fd = QuadToFloatingDecimal128(in value);
+			var fd = FloatToFloatingDecimal128(in value);
 			charsWritten = ToCharSpan(in fd, destination, info is null ? NumberFormatInfo.CurrentInfo : info!, out isExceptional);
 		}
 
-		public static int ToCharSpan(in FloatingDecimal128 v, Span<char> destination, NumberFormatInfo info, out bool isExceptional)
-		{
-			if (v.Exponent == FD128ExceptionalExponent)
-			{
-				isExceptional = true;
-				ReadOnlySpan<char> symbol;
-				if (v.Mantissa != 0)
-				{
-					symbol = info.NaNSymbol;
-					symbol.CopyTo(destination);
-					return symbol.Length;
-				}
-				if (v.Sign)
-				{
-					symbol = info.NegativeInfinitySymbol;
-				}
-				else
-				{
-					symbol = info.PositiveInfinitySymbol;
-				}
-				symbol.CopyTo(destination);
-				return symbol.Length;
-			}
-
-			isExceptional = false;
-
-			// Step 5: Print the decimal representation.
-			ReadOnlySpan<char> negativeSign = info.NegativeSign.AsSpan();
-
-			int index = 0;
-			if (v.Sign)
-			{
-				negativeSign.CopyTo(destination[index..]);
-				index += negativeSign.Length;
-			}
-
-			UInt128 output = v.Mantissa;
-			uint olength = (uint)BitHelper.CountDigits(output);
-
-			for (uint i = 0; i < olength - 1; ++i)
-			{
-				(output, UInt128 c) = UInt128.DivRem(output, 10);
-				destination[(int)(index + olength - i)] = (char)('0' + c);
-			}
-			destination[index] = (char)('0' + (output % 10));
-
-			// Print decimal point if needed
-			if (olength > 1)
-			{
-				ReadOnlySpan<char> numberDecimalSeparator = info.NumberDecimalSeparator;
-
-				numberDecimalSeparator.CopyTo(destination[(index + 1)..]);
-
-				index += (int)olength + numberDecimalSeparator.Length;
-			}
-			else
-			{
-				++index;
-			}
-
-			// Print the exponent.
-			destination[index++] = 'E';
-			int exp = (int)(v.Exponent + olength - 1);
-
-			if (exp < 0)
-			{
-				negativeSign.CopyTo(destination[index..]);
-				index += negativeSign.Length;
-				exp = -exp;
-			}
-			else
-			{
-				ReadOnlySpan<char> positiveSign = info.PositiveSign;
-				positiveSign.CopyTo(destination[index..]);
-				index += positiveSign.Length;
-			}
-
-			uint elength = (uint)BitHelper.CountDigits((UInt128)exp);
-
-			for (int i = 0; i < elength; ++i)
-			{
-				(exp, int c) = int.DivRem(exp, 10);
-				destination[(int)(index + elength - 1 - i)] = (char)('0' + c);
-			}
-			index += (int)elength;
-			return index;
-		}
 		public static int ToCharSpan<TChar>(in FloatingDecimal128 v, Span<TChar> destination, NumberFormatInfo info, out bool isExceptional)
 			where TChar : unmanaged, IUtfCharacter<TChar>
 		{
@@ -582,27 +491,28 @@ internal static partial class NumberFormatter
 			return index;
 		}
 
-		public static FloatingDecimal128 QuadToFloatingDecimal128(in Quad value)
+		public static FloatingDecimal128 FloatToFloatingDecimal128<TFloat>(in TFloat value)
+			where TFloat : struct, IFormattableBinaryFloatingPoint<TFloat>
 		{
-			const int MatissaBits = 112;
-			const int ExponentBits = 15;
+			int mantissaBits = TFloat.DenormalMantissaBits;
+			int exponentBits = TFloat.ExponentBits;
 			
-			UInt128 bits = Quad.QuadToUInt128Bits(value);
+			UInt128 bits = TFloat.FloatToBits(value);
 
 
-			uint bias = (1U << (ExponentBits - 1)) - 1;
-			bool ieeeSign = ((bits >> (MatissaBits + ExponentBits)) & 1) != 0;
-			UInt128 ieeeMatissa = bits & ((UInt128.One << MatissaBits) - UInt128.One);
-			uint ieeeExponent = (uint)((bits >> MatissaBits) & ((UInt128.One << ExponentBits) - UInt128.One));
+			uint bias = (1U << (exponentBits - 1)) - 1;
+			bool ieeeSign = ((bits >> (mantissaBits + exponentBits)) & 1) != 0;
+			UInt128 ieeeMantissa = bits & ((UInt128.One << mantissaBits) - UInt128.One);
+			uint ieeeExponent = (uint)((bits >> mantissaBits) & ((UInt128.One << exponentBits) - UInt128.One));
 
-			if (ieeeExponent == 0 && ieeeMatissa == UInt128.Zero)
+			if (ieeeExponent == 0 && ieeeMantissa == UInt128.Zero)
 			{
 				return new FloatingDecimal128(0, 0, ieeeSign);
 			}
-			if (ieeeExponent == ((1U << (int)ExponentBits) - 1U))
+			if (ieeeExponent == ((1U << exponentBits) - 1U))
 			{
 				return new FloatingDecimal128(
-					   ieeeMatissa,
+					   TFloat.ExplicitLeadingBit ? ieeeMantissa & ((UInt128.One << (mantissaBits - 1)) - UInt128.One) : ieeeMantissa,
 					   FD128ExceptionalExponent,
 					   ieeeSign
 					   );
@@ -612,16 +522,32 @@ internal static partial class NumberFormatter
 			UInt128 m2;
 
 			// We subtract 2 in all cases so that the bounds computation has 2 additional bits.
-			if (ieeeExponent == 0)
+			if (TFloat.ExplicitLeadingBit)
 			{
-				e2 = (int)(1 - bias - MatissaBits - 2);
-				m2 = ieeeMatissa;
+				if (ieeeExponent == 0)
+				{
+					e2 = (int)(1 - bias - mantissaBits + 1 - 2);
+				}
+				else
+				{
+					e2 = (int)(ieeeExponent - bias - mantissaBits + 1 - 2);
+				}
+				m2 = ieeeMantissa;
 			}
 			else
 			{
-				e2 = (int)(ieeeExponent - (int)bias - MatissaBits - 2);
-				m2 = (UInt128.One << MatissaBits) | ieeeMatissa;
+				if (ieeeExponent == 0)
+				{
+					e2 = (int)(1 - bias - mantissaBits - 2);
+					m2 = ieeeMantissa;
+				}
+				else
+				{
+					e2 = (int)(ieeeExponent - (int)bias - mantissaBits - 2);
+					m2 = (UInt128.One << mantissaBits) | ieeeMantissa;
+				}
 			}
+			
 
 			bool even = (m2 & 1) == 0;
 			bool acceptBounds = even;
@@ -629,7 +555,8 @@ internal static partial class NumberFormatter
 			// Step 2: Determine the interval of legal decimal representations.
 			UInt128 mv = 4 * m2;
 			// bool -> int conversion. True is 1, false is 0.
-			uint mmShift = ((ieeeMatissa != 0) || (ieeeExponent == 0)) ? 1U : 0U;
+			uint mmShift = ((ieeeMantissa != (TFloat.ExplicitLeadingBit ? UInt128.One << (mantissaBits - 1) : UInt128.Zero)) 
+				|| (ieeeExponent == 0)) ? 1U : 0U;
 
 			// Step 3: Convert to a decimal power base using 128-bit arithmetic.
 			UInt128 vr, vp, vm;
@@ -745,6 +672,7 @@ internal static partial class NumberFormatter
 
 			return new FloatingDecimal128(output, exp, ieeeSign);
 		}
+
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		private static uint Pow5Factor(UInt128 value)
 		{

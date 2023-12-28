@@ -49,8 +49,10 @@ namespace MissingValues.Tests.Helpers
 
 		public static TSelf Parse(string s, NumberStyles style, IFormatProvider? provider) => TSelf.Parse(s, style, provider);
 		public static TSelf Parse(ReadOnlySpan<char> s, NumberStyles style, IFormatProvider? provider) => TSelf.Parse(s, style, provider);
+		public static TSelf Parse(ReadOnlySpan<byte> utf8Text, NumberStyles style, IFormatProvider? provider) => TSelf.Parse(utf8Text, style, provider);
 
 		public static bool TryParse([NotNullWhen(true)] string? s, NumberStyles style, IFormatProvider? provider, [MaybeNullWhen(false)] out TSelf result) => TSelf.TryParse(s, style, provider, out result);
 		public static bool TryParse(ReadOnlySpan<char> s, NumberStyles style, IFormatProvider? provider, [MaybeNullWhen(false)] out TSelf result) => TSelf.TryParse(s, style, provider, out result);
+		public static bool TryParse(ReadOnlySpan<byte> utf8Text, NumberStyles style, IFormatProvider? provider, [MaybeNullWhen(false)] out TSelf result) => TSelf.TryParse(utf8Text, style, provider, out result);
 	}
 }

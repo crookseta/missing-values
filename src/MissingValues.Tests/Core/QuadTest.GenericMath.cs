@@ -1,9 +1,11 @@
 ﻿using MissingValues.Tests.Helpers;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Numerics;
 using System.Text;
+using System.Text.Unicode;
 using System.Threading.Tasks;
 
 using Float = MissingValues.Quad;
@@ -1399,6 +1401,59 @@ namespace MissingValues.Tests.Core
 				.Should().Be(One);
 			NumberBaseHelper<Float>.MinMagnitudeNumber(Float.PositiveInfinity, One)
 				.Should().Be(One);
+		}
+
+		[Theory]
+		[MemberData(nameof(TryParseTheoryData))]
+		public void ParseTest(string s, bool success, Float output)
+		{
+			if (success)
+			{
+				NumberBaseHelper<Float>.Parse(s, NumberStyles.Float, NumberFormatInfo.CurrentInfo)
+					.Should().Be(output);
+			}
+			else
+			{
+				Assert.Throws<FormatException>(() => NumberBaseHelper<Float>.Parse(s, NumberStyles.Float, NumberFormatInfo.CurrentInfo));
+			}
+		}
+
+		[Theory]
+		[MemberData(nameof(TryParseTheoryData))]
+		public void TryParseTest(string s, bool success, Float output)
+		{
+			Float result;
+
+			NumberBaseHelper<Float>.TryParse(s, NumberStyles.Float, NumberFormatInfo.CurrentInfo, out result).Should().Be(success);
+			result.Should().Be(output);
+		}
+
+		[Theory]
+		[MemberData(nameof(TryParseTheoryData))]
+		public void ParseUtf8Test(string s, bool success, Float output)
+		{
+			byte[] utf8 = Encoding.UTF8.GetBytes(s);
+
+			if (success)
+			{
+				NumberBaseHelper<Float>.Parse(utf8, NumberStyles.Float, NumberFormatInfo.CurrentInfo)
+					.Should().Be(output);
+			}
+			else
+			{
+				Assert.Throws<FormatException>(() => NumberBaseHelper<Float>.Parse(utf8, NumberStyles.Float, NumberFormatInfo.CurrentInfo));
+			}
+		}
+
+		[Theory]
+		[MemberData(nameof(TryParseTheoryData))]
+		public void TryParseUtf8Test(string s, bool success, Float output)
+		{
+			ReadOnlySpan<byte> utf8 = Encoding.UTF8.GetBytes(s);
+			Float result;
+
+			NumberBaseHelper<Float>.TryParse(utf8, NumberStyles.Float, NumberFormatInfo.CurrentInfo, out result).Should().Be(success);
+			result.Should().Be(output);
 		}
 		#endregion
 	}

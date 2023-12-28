@@ -15,11 +15,26 @@ namespace MissingValues.Internals
 	internal interface IFormattableBinaryFloatingPoint<TSelf> : IFormattableFloatingPoint<TSelf>, IBinaryFloatingPointIeee754<TSelf>
 		where TSelf : IFormattableBinaryFloatingPoint<TSelf>
 	{
-		abstract static int MantissaExplicitBits { get; }
-		abstract static int MinimumExponent { get; }
-		abstract static int InfinitePower { get; }
-		abstract static int SignBitIndex { get; }
-		abstract static int LargestPowerOfTen { get; }
-		abstract static int SmallestPowerOfTen { get; }
+		abstract static bool ExplicitLeadingBit { get; }
+		abstract static int NormalMantissaBits { get; }
+		abstract static int DenormalMantissaBits { get; }
+		abstract static int MinimumDecimalExponent { get; }
+		abstract static int MaximumDecimalExponent { get; }
+		abstract static int MinBiasedExponent { get; }
+		abstract static int MaxBiasedExponent { get; }
+		abstract static int MaxSignificandPrecision { get; }
+		abstract static int ExponentBits { get; }
+		abstract static int ExponentBias { get; }
+		abstract static int OverflowDecimalExponent { get; }
+		abstract static UInt128 DenormalMantissaMask { get; }
+		abstract static UInt128 NormalMantissaMask { get; }
+		abstract static UInt128 TrailingSignificandMask { get; }
+		abstract static UInt128 PositiveZeroBits { get; }
+		abstract static UInt128 PositiveInfinityBits { get; }
+		abstract static UInt128 NegativeInfinityBits { get; }
+
+		static abstract TSelf BitsToFloat(UInt128 bits);
+		static abstract UInt128 FloatToBits(TSelf value);
+
 	}
 }
