@@ -168,6 +168,11 @@ internal unsafe ref partial struct BigNumber
 		return 128 - (uint)UInt128.LeadingZeroCount(value);
 	}
 
+	public static uint CountSignificantBits(UInt256 value)
+	{
+		return 128 - (uint)UInt256.LeadingZeroCount(value);
+	}
+
 	public static uint CountSignificantBits(ref BigNumber value)
 	{
 		if (value.IsZero())
@@ -980,7 +985,29 @@ internal unsafe ref partial struct BigNumber
 			return _blocks[0];
 		}
 
-		return 0;
+		return UInt128.Zero;
+	}
+
+	public UInt256 ToUInt256()
+	{
+		if (_length > 3)
+		{
+			return new UInt256(_blocks[3], _blocks[2], _blocks[1], _blocks[0]);
+		}
+		if (_length > 2)
+		{
+			return new UInt256(0, _blocks[2], _blocks[1], _blocks[0]);
+		}
+		if (_length > 1)
+		{
+			return new UInt256(0, 0, _blocks[1], _blocks[0]);
+		}
+		if (_length > 0)
+		{
+			return new UInt256(0, 0, 0, _blocks[0]);
+		}
+
+		return UInt256.Zero;
 	}
 
 	public override string ToString()

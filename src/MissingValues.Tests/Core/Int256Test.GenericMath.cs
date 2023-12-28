@@ -1118,6 +1118,50 @@ namespace MissingValues.Tests.Core
 				.Should().BeFalse();
 			parsedValue.Should().Be(default);
 		}
+
+		[Fact]
+		public void ParseUtf8Test()
+		{
+			NumberBaseHelper<Int>.Parse("57896044618658097711785492504343953926634992332820282019728792003956564819967"u8, System.Globalization.NumberStyles.Integer, CultureInfo.CurrentCulture)
+				.Should().Be(Int256MaxValue)
+				.And.BeRankedEquallyTo(Int256MaxValue);
+			NumberBaseHelper<Int>.Parse("7FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"u8, System.Globalization.NumberStyles.HexNumber, CultureInfo.CurrentCulture)
+				.Should().Be(Int256MaxValue)
+				.And.BeRankedEquallyTo(Int256MaxValue);
+			NumberBaseHelper<Int>.Parse("-57896044618658097711785492504343953926634992332820282019728792003956564819968"u8, System.Globalization.NumberStyles.Integer, CultureInfo.CurrentCulture)
+				.Should().Be(Int256MinValue)
+				.And.BeRankedEquallyTo(Int256MinValue);
+			NumberBaseHelper<Int>.Parse("8000000000000000000000000000000000000000000000000000000000000000"u8, System.Globalization.NumberStyles.HexNumber, CultureInfo.CurrentCulture)
+				.Should().Be(Int256MinValue)
+				.And.BeRankedEquallyTo(Int256MinValue);
+
+			Assert.Throws<FormatException>(() => NumberBaseHelper<Int>.Parse("115792089237316195423570985008687907853269984665640564039457584007913129639936"u8, System.Globalization.NumberStyles.Integer, CultureInfo.CurrentCulture));
+		}
+
+		[Fact]
+		public void TryParseUtf8Test()
+		{
+			NumberBaseHelper<Int>.TryParse("57896044618658097711785492504343953926634992332820282019728792003956564819967"u8, System.Globalization.NumberStyles.Integer, CultureInfo.CurrentCulture, out Int parsedValue)
+				.Should().BeTrue();
+			parsedValue.Should().Be(Int256MaxValue)
+				.And.BeRankedEquallyTo(Int256MaxValue);
+			NumberBaseHelper<Int>.TryParse("7FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"u8, System.Globalization.NumberStyles.HexNumber, CultureInfo.CurrentCulture, out parsedValue)
+				.Should().BeTrue();
+			parsedValue.Should().Be(Int256MaxValue)
+				.And.BeRankedEquallyTo(Int256MaxValue);
+			NumberBaseHelper<Int>.TryParse("-57896044618658097711785492504343953926634992332820282019728792003956564819968"u8, System.Globalization.NumberStyles.Integer, CultureInfo.CurrentCulture, out parsedValue)
+				.Should().BeTrue();
+			parsedValue.Should().Be(Int256MinValue)
+				.And.BeRankedEquallyTo(Int256MinValue);
+			NumberBaseHelper<Int>.TryParse("8000000000000000000000000000000000000000000000000000000000000000"u8, System.Globalization.NumberStyles.HexNumber, CultureInfo.CurrentCulture, out parsedValue)
+				.Should().BeTrue();
+			parsedValue.Should().Be(Int256MinValue)
+				.And.BeRankedEquallyTo(Int256MinValue);
+
+			NumberBaseHelper<Int>.TryParse("115792089237316195423570985008687907853269984665640564039457584007913129639936"u8, System.Globalization.NumberStyles.Integer, CultureInfo.CurrentCulture, out parsedValue)
+				.Should().BeFalse();
+			parsedValue.Should().Be(default);
+		}
 		#endregion
 
 		#region ISignedNumber

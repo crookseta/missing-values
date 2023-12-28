@@ -130,7 +130,7 @@ namespace MissingValues
 
 		public override string? ToString()
 		{
-			return NumberFormatter.QuadToString(in this, "G33", NumberFormatInfo.CurrentInfo);
+			return NumberFormatter.FloatToString(in this, "G33", NumberFormatInfo.CurrentInfo);
 		}
 
 		public static Quad Parse(ReadOnlySpan<char> s)

@@ -79,31 +79,30 @@ namespace MissingValues.Internals
 			Digits[0] = (byte)'\0';
 		}
 
-		public static Quad ConvertToQuad(ref FloatInfo number)
+		public static TFloat ConvertToFloat<TFloat>(ref FloatInfo number)
+			where TFloat : struct, IFormattableBinaryFloatingPoint<TFloat>
 		{
-			const int MinDecimalExponent = -4966;
-			const int MaxDecimalExponent = 4932;
+			TFloat result;
 
-			Quad result;
-
-			if ((number.DigitsCount == 0) || (number.Scale < MinDecimalExponent))
+			if ((number.DigitsCount == 0) || (number.Scale < TFloat.MinimumDecimalExponent))
 			{
-				result = 0;
+				result = TFloat.Zero;
 			}
-			else if (number.Scale > MaxDecimalExponent)
+			else if (number.Scale > TFloat.MaximumDecimalExponent)
 			{
-				result = Quad.PositiveInfinity;
+				result = TFloat.PositiveInfinity;
 			}
 			else
 			{
-				UInt128 bits = GetQuadBits(ref number);
-				result = Quad.UInt128BitsToQuad(bits);
+				UInt128 bits = GetFloatBits<TFloat>(ref number);
+				result = TFloat.BitsToFloat(bits);
 			}
 
 			return number.IsNegative ? -result : result;
 		}
 
-		public static unsafe bool TryParse(ReadOnlySpan<char> s, ref FloatInfo info, NumberFormatInfo formatInfo, NumberStyles styles = NumberStyles.Float)
+		public static unsafe bool TryParse<TChar>(ReadOnlySpan<TChar> s, ref FloatInfo info, NumberFormatInfo formatInfo, NumberStyles styles = NumberStyles.Float)
+			where TChar : unmanaged, IUtfCharacter<TChar>
 		{
 			const int StateSign = 0x0001;
 			const int StateParens = 0x0002;
@@ -111,24 +110,24 @@ namespace MissingValues.Internals
 			const int StateNonZero = 0x0008;
 			const int StateDecimal = 0x0010;
 
-			ReadOnlySpan<char> decSep = formatInfo.NumberDecimalSeparator;
-			ReadOnlySpan<char> groupSep = formatInfo.NumberGroupSeparator;
+			ReadOnlySpan<TChar> decSep = TChar.NumberDecimalSeparator(formatInfo);
+			ReadOnlySpan<TChar> groupSep = TChar.NumberGroupSeparator(formatInfo);
 
 			State<int> state = 0;
 
 			if ((styles & NumberStyles.AllowLeadingWhite) != 0)
 			{
-				s = s.TrimStart();
+				s = s.TrimStart(TChar.WhiteSpaceCharacter);
 			}
 			if ((styles & NumberStyles.AllowLeadingWhite) != 0)
 			{
-				s = s.TrimEnd();
+				s = s.TrimEnd(TChar.WhiteSpaceCharacter);
 			}
 
 			int totalLength = s.Length;
 			int curIndex = 0;
-			ref char ptr = ref MemoryMarshal.GetReference(s);
-			char ch = curIndex < totalLength ? ptr : '\0';
+			ref TChar ptr = ref MemoryMarshal.GetReference(s);
+			TChar ch = curIndex < totalLength ? ptr : TChar.NullCharacter;
 
 			int digCount = 0;
 			int digEnd = 0;
@@ -137,40 +136,40 @@ namespace MissingValues.Internals
 
 			if ((styles & NumberStyles.AllowLeadingSign) != 0)
 			{
-				if (s.IndexOf(formatInfo.PositiveSign) == 0)
+				if (s.IndexOf(TChar.PositiveSign(formatInfo)) == 0)
 				{
 					info.IsNegative = false;
 					state.Add(StateSign);
 
 					curIndex++;
-					ptr = ref curIndex < totalLength ? ref Unsafe.Add(ref ptr, 1) : ref Unsafe.NullRef<char>();
-					ch = curIndex < totalLength ? ptr : '\0';
+					ptr = ref curIndex < totalLength ? ref Unsafe.Add(ref ptr, 1) : ref Unsafe.NullRef<TChar>();
+					ch = curIndex < totalLength ? ptr : TChar.NullCharacter;
 				}
-				else if (s.IndexOf(formatInfo.NegativeSign) == 0)
+				else if (s.IndexOf(TChar.NegativeSign(formatInfo)) == 0)
 				{
 					info.IsNegative = true;
 					state.Add(StateSign);
 
 					curIndex++;
-					ptr = ref curIndex < totalLength ? ref Unsafe.Add(ref ptr, 1) : ref Unsafe.NullRef<char>();
-					ch = curIndex < totalLength ? ptr : '\0';
+					ptr = ref curIndex < totalLength ? ref Unsafe.Add(ref ptr, 1) : ref Unsafe.NullRef<TChar>();
+					ch = curIndex < totalLength ? ptr : TChar.NullCharacter;
 				}
 			}
 
 			while (true)
 			{
-				if (char.IsDigit(ch))
+				if (TChar.IsDigit(ch))
 				{
 					state.Add(StateDigits);
-					if (ch != '0' || state.Contains(StateNonZero))
+					if (ch != (TChar)'0' || state.Contains(StateNonZero))
 					{
 						if (digCount < maxDigCount)
 						{
 							info.Digits[digCount] = (byte)ch;
 							digEnd = digCount + 1;
-							
+
 						}
-						else if(ch != '0')
+						else if (ch != (TChar)'0')
 						{
 							// For decimal and binary floating-point numbers, we only
 							// need to store digits up to maxDigCount. However, we still
@@ -191,7 +190,7 @@ namespace MissingValues.Internals
 						{
 							// Handle a case like "53.0". We need to ignore trailing zeros in the fractional part for floating point numbers,
 							// so we keep a count of the number of trailing zeros and update digCount later
-							if (ch == '0')
+							if (ch == (TChar)'0')
 							{
 								numberOfTrailingZeros++;
 							}
@@ -203,19 +202,19 @@ namespace MissingValues.Internals
 						digCount++;
 						state.Add(StateNonZero);
 					}
-					else if(state.Contains(StateDecimal))
+					else if (state.Contains(StateDecimal))
 					{
 						info.Scale--;
 					}
 				}
-				else if (((styles & NumberStyles.AllowDecimalPoint) != 0) && (!state.Contains(StateDecimal)) && (s[curIndex..].Contains(decSep, StringComparison.OrdinalIgnoreCase)) )
+				else if (((styles & NumberStyles.AllowDecimalPoint) != 0) && (!state.Contains(StateDecimal)) && (TChar.Constains(s[curIndex..], decSep, StringComparison.OrdinalIgnoreCase)))
 				{
 					state.Add(StateDecimal);
 					int decSepIndex = s.IndexOf(decSep);
 					ptr = ref MemoryMarshal.GetReference(s[decSepIndex..]);
 					curIndex = decSepIndex;
 				}
-				else if (((styles & NumberStyles.AllowThousands) != 0) && (state.Contains(StateDigits)) && (!state.Contains(StateDecimal)) && (s[curIndex..].Contains(groupSep, StringComparison.OrdinalIgnoreCase)))
+				else if (((styles & NumberStyles.AllowThousands) != 0) && (state.Contains(StateDigits)) && (!state.Contains(StateDecimal)) && (TChar.Constains(s[curIndex..], groupSep, StringComparison.OrdinalIgnoreCase)))
 				{
 					int groupSepIndex = s[curIndex..].IndexOf(groupSep) + curIndex;
 					ptr = ref MemoryMarshal.GetReference(s[groupSepIndex..]);
@@ -227,8 +226,8 @@ namespace MissingValues.Internals
 				}
 
 				curIndex++;
-				ptr = ref curIndex < totalLength ? ref Unsafe.Add(ref ptr, 1) : ref Unsafe.NullRef<char>();
-				ch = curIndex < totalLength ? ptr : '\0';
+				ptr = ref curIndex < totalLength ? ref Unsafe.Add(ref ptr, 1) : ref Unsafe.NullRef<TChar>();
+				ch = curIndex < totalLength ? ptr : TChar.NullCharacter;
 			}
 
 			bool negExp = false;
@@ -236,47 +235,47 @@ namespace MissingValues.Internals
 			info.Digits[digEnd] = (byte)'\0';
 			if (state.Contains(StateDigits))
 			{
-				if ((ch == 'E' || ch == 'e') && ((styles & NumberStyles.AllowExponent) != 0))
+				if ((ch == (TChar)'E' || ch == (TChar)'e') && ((styles & NumberStyles.AllowExponent) != 0))
 				{
-					ref char temp = ref ptr;
+					ref TChar temp = ref ptr;
 					curIndex++;
-					ptr = ref curIndex < totalLength ? ref Unsafe.Add(ref ptr, 1) : ref Unsafe.NullRef<char>();
-					ch = curIndex < totalLength ? ptr : '\0';
+					ptr = ref curIndex < totalLength ? ref Unsafe.Add(ref ptr, 1) : ref Unsafe.NullRef<TChar>();
+					ch = curIndex < totalLength ? ptr : TChar.NullCharacter;
 
-					if (s[curIndex..].IndexOf(formatInfo.PositiveSign) == 0)
+					if (s[curIndex..].IndexOf(TChar.PositiveSign(formatInfo)) == 0)
 					{
 						curIndex++;
-						ptr = ref curIndex < totalLength ? ref Unsafe.Add(ref ptr, 1) : ref Unsafe.NullRef<char>();
-						ch = curIndex < totalLength ? ptr : '\0';
+						ptr = ref curIndex < totalLength ? ref Unsafe.Add(ref ptr, 1) : ref Unsafe.NullRef<TChar>();
+						ch = curIndex < totalLength ? ptr : TChar.NullCharacter;
 					}
-					else if (s[curIndex..].IndexOf(formatInfo.NegativeSign) == 0)
+					else if (s[curIndex..].IndexOf(TChar.NegativeSign(formatInfo)) == 0)
 					{
 						curIndex++;
-						ptr = ref curIndex < totalLength ? ref Unsafe.Add(ref ptr, 1) : ref Unsafe.NullRef<char>();
-						ch = curIndex < totalLength ? ptr : '\0';
+						ptr = ref curIndex < totalLength ? ref Unsafe.Add(ref ptr, 1) : ref Unsafe.NullRef<TChar>();
+						ch = curIndex < totalLength ? ptr : TChar.NullCharacter;
 						negExp = true;
 					}
 
-					if (char.IsDigit(ch))
+					if (TChar.IsDigit(ch))
 					{
 						int exp = 0;
 						do
 						{
-							exp = (exp * 10) + (int)(ch - '0');
+							exp = (exp * 10) + (int)((char)ch - '0');
 							curIndex++;
-							ptr = ref curIndex < totalLength ? ref Unsafe.Add(ref ptr, 1) : ref Unsafe.NullRef<char>();
-							ch = curIndex < totalLength ? ptr : '\0';
+							ptr = ref curIndex < totalLength ? ref Unsafe.Add(ref ptr, 1) : ref Unsafe.NullRef<TChar>();
+							ch = curIndex < totalLength ? ptr : TChar.NullCharacter;
 							if (exp > 5000)
 							{
 								exp = 9999;
-								while (char.IsDigit(ch))
+								while (TChar.IsDigit(ch))
 								{
 									curIndex++;
-									ptr = ref curIndex < totalLength ? ref Unsafe.Add(ref ptr, 1) : ref Unsafe.NullRef<char>();
-									ch = curIndex < totalLength ? ptr : '\0';
+									ptr = ref curIndex < totalLength ? ref Unsafe.Add(ref ptr, 1) : ref Unsafe.NullRef<TChar>();
+									ch = curIndex < totalLength ? ptr : TChar.NullCharacter;
 								}
 							}
-						} while (char.IsDigit(ch));
+						} while (TChar.IsDigit(ch));
 
 						if (negExp)
 						{
@@ -304,29 +303,29 @@ namespace MissingValues.Internals
 
 				while (true)
 				{
-					if (!char.IsWhiteSpace(ch) || (styles & NumberStyles.AllowTrailingWhite) == 0)
+					if (!TChar.IsWhiteSpace(ch) || (styles & NumberStyles.AllowTrailingWhite) == 0)
 					{
 						int tempIndex = 0;
-						if ((styles & NumberStyles.AllowTrailingSign) != 0 && (!state.Contains(StateSign)) && ((tempIndex = s[curIndex..].IndexOf(formatInfo.PositiveSign)) >= 0 || (tempIndex = s[curIndex..].IndexOf(formatInfo.NegativeSign)) >= 0) && (info.IsNegative = true))
+						if ((styles & NumberStyles.AllowTrailingSign) != 0 && (!state.Contains(StateSign)) && ((tempIndex = s[curIndex..].IndexOf(TChar.PositiveSign(formatInfo))) >= 0 || (tempIndex = s[curIndex..].IndexOf(TChar.NegativeSign(formatInfo))) >= 0) && (info.IsNegative = true))
 						{
 							state.Add(StateSign);
 							tempIndex += curIndex;
 							curIndex++;
-							ptr = ref curIndex < totalLength ? ref Unsafe.Add(ref ptr, tempIndex - curIndex) : ref Unsafe.NullRef<char>();
-							ch = curIndex < totalLength ? ptr : '\0';
+							ptr = ref curIndex < totalLength ? ref Unsafe.Add(ref ptr, tempIndex - curIndex) : ref Unsafe.NullRef<TChar>();
+							ch = curIndex < totalLength ? ptr : TChar.NullCharacter;
 						}
-						else if (ch == ')' && state.Contains(StateParens))
+						else if (ch == (TChar)')' && state.Contains(StateParens))
 						{
 							state.Remove(StateParens);
 						}
-                        else
-                        {
+						else
+						{
 							break;
-                        }
-                    }
+						}
+					}
 					curIndex++;
-					ptr = ref curIndex < totalLength ? ref Unsafe.Add(ref ptr, 1) : ref Unsafe.NullRef<char>();
-					ch = curIndex < totalLength ? ptr : '\0';
+					ptr = ref curIndex < totalLength ? ref Unsafe.Add(ref ptr, 1) : ref Unsafe.NullRef<TChar>();
+					ch = curIndex < totalLength ? ptr : TChar.NullCharacter;
 				}
 
 				if (!state.Contains(StateParens))
@@ -338,7 +337,7 @@ namespace MissingValues.Internals
 
 					// Check if we got any value after parsing, if there was any invalid character
 					// this will return false
-					if (s[curIndex..].IndexOfAnyExcept('\0') >= 0)
+					if (s[curIndex..].IndexOfAnyExcept(TChar.NullCharacter) >= 0)
 					{
 						return false;
 					}
@@ -349,11 +348,11 @@ namespace MissingValues.Internals
 			return false;
 		}
 
-
-		private static UInt128 GetQuadBits(ref FloatInfo number)
+		private static UInt128 GetFloatBits<TFloat>(ref FloatInfo number)
+			where TFloat : struct, IFormattableBinaryFloatingPoint<TFloat>
 		{
-			const int NormalMantissaBits = 113;
-			const int OverflowDecimalExponent = (16383 + (2 * 113) / 3);
+			int normalMantissaBits = TFloat.NormalMantissaBits;
+			int overflowDecimalExponent = TFloat.OverflowDecimalExponent;
 
 			uint totalDigits = (uint)(number.DigitsCount);
 			uint positiveExponent = (uint)(Math.Max(0, number.Scale));
@@ -365,7 +364,7 @@ namespace MissingValues.Internals
 			// extra bit is used to correctly round the mantissa (if there are fewer bits
 			// than this available, then that's totally okay; in that case we use what we
 			// have and we don't need to round).
-			const uint RequiredBitsOfPrecision = (uint)(NormalMantissaBits + 1);
+			uint requiredBitsOfPrecision = (uint)(normalMantissaBits + 1);
 
 			uint integerDigitsMissing = positiveExponent - integerDigitsPresent;
 
@@ -380,9 +379,9 @@ namespace MissingValues.Internals
 
 			if (integerDigitsMissing > 0)
 			{
-				if (integerDigitsMissing > OverflowDecimalExponent)
+				if (integerDigitsMissing > overflowDecimalExponent)
 				{
-					return Quad.PositiveInfinityBits;
+					return TFloat.PositiveInfinityBits;
 				}
 
 				integerValue.MultiplyPow10(integerDigitsMissing);
@@ -394,9 +393,9 @@ namespace MissingValues.Internals
 			// then we can assemble the result immediately:
 			uint integerBitsOfPrecision = BigNumber.CountSignificantBits(ref integerValue);
 
-			if ((integerBitsOfPrecision >= RequiredBitsOfPrecision) || (fractionalDigitsPresent == 0))
+			if ((integerBitsOfPrecision >= requiredBitsOfPrecision) || (fractionalDigitsPresent == 0))
 			{
-				return ConvertBigIntegerToFloatingPointBits(
+				return ConvertBigIntegerToFloatingPointBits<TFloat>(
 					ref integerValue,
 					integerBitsOfPrecision,
 					fractionalDigitsPresent != 0
@@ -418,19 +417,19 @@ namespace MissingValues.Internals
 				fractionalDenominatorExponent += (uint)(-number.Scale);
 			}
 
-			if ((integerBitsOfPrecision == 0) && (fractionalDenominatorExponent - (int)(totalDigits)) > OverflowDecimalExponent)
+			if ((integerBitsOfPrecision == 0) && (fractionalDenominatorExponent - (int)(totalDigits)) > overflowDecimalExponent)
 			{
 				// If there were any digits in the integer part, it is impossible to
 				// underflow (because the exponent cannot possibly be small enough),
 				// so if we underflow here it is a true underflow and we return zero.
-				return Quad.PositiveZeroBits;
+				return TFloat.PositiveZeroBits;
 			}
 
 			AccumulateDecimalDigitsIntoBigNumber(ref number, fractionalFirstIndex, fractionalLastIndex, out BigNumber fractionalNumerator);
 
 			if (fractionalNumerator.IsZero())
 			{
-				return ConvertBigIntegerToFloatingPointBits(
+				return ConvertBigIntegerToFloatingPointBits<TFloat>(
 					ref integerValue,
 					integerBitsOfPrecision,
 					fractionalDigitsPresent != 0
@@ -460,7 +459,7 @@ namespace MissingValues.Internals
 				fractionalNumerator.ShiftLeft(fractionalShift);
 			}
 
-			uint requiredFractionalBitsOfPrecision = RequiredBitsOfPrecision - integerBitsOfPrecision;
+			uint requiredFractionalBitsOfPrecision = requiredBitsOfPrecision - integerBitsOfPrecision;
 			uint remainingBitsOfPrecisionRequired = requiredFractionalBitsOfPrecision;
 
 			if (integerBitsOfPrecision > 0)
@@ -479,7 +478,7 @@ namespace MissingValues.Internals
 				// Thus, we need to do the division to correctly round the result.
 				if (fractionalShift > remainingBitsOfPrecisionRequired)
 				{
-					return ConvertBigIntegerToFloatingPointBits(
+					return ConvertBigIntegerToFloatingPointBits<TFloat>(
 						ref integerValue,
 						integerBitsOfPrecision,
 						fractionalDigitsPresent != 0
@@ -511,8 +510,8 @@ namespace MissingValues.Internals
 			bool hasZeroTail = !number.HasNonZeroTail && fractionalRemainder.IsZero();
 
 			// We may have produced more bits of precision than were required.  Check,
-            // and remove any "extra" bits:
-            uint fractionalMantissaBits = BigNumber.CountSignificantBits(fractionalMantissa);
+			// and remove any "extra" bits:
+			uint fractionalMantissaBits = BigNumber.CountSignificantBits(fractionalMantissa);
 			if (fractionalMantissaBits > requiredFractionalBitsOfPrecision)
 			{
 				int shift = (int)(fractionalMantissaBits - requiredFractionalBitsOfPrecision);
@@ -537,17 +536,18 @@ namespace MissingValues.Internals
 			// use in rounding.
 			int finalExponent = (integerBitsOfPrecision > 0) ? (int)(integerBitsOfPrecision) - 2 : -(int)(fractionalExponent) - 1;
 
-			return AssembleFloatingPointBits(completeMantissa, finalExponent, hasZeroTail);
+			return AssembleFloatingPointBits<TFloat>(completeMantissa, finalExponent, hasZeroTail);
 		}
 
-		private static UInt128 ConvertBigIntegerToFloatingPointBits(ref BigNumber value, uint integerBitsOfPrecision, bool hasNonZeroFractionalPart)
+		private static UInt128 ConvertBigIntegerToFloatingPointBits<TFloat>(ref BigNumber value, uint integerBitsOfPrecision, bool hasNonZeroFractionalPart)
+			where TFloat : struct, IFormattableBinaryFloatingPoint<TFloat>
 		{
-			const int baseExponent = 112;
+			int baseExponent = TFloat.DenormalMantissaBits;
 
 			// When we have 128-bits or less of precision, we can just get the mantissa directly
 			if (integerBitsOfPrecision <= 128)
 			{
-				return AssembleFloatingPointBits(value.ToUInt128(), baseExponent, !hasNonZeroFractionalPart);
+				return AssembleFloatingPointBits<TFloat>(value.ToUInt128(), baseExponent, !hasNonZeroFractionalPart);
 			}
 
 			(uint topBlockIndex, uint topBlockBits) = Math.DivRem(integerBitsOfPrecision, 64);
@@ -590,30 +590,31 @@ namespace MissingValues.Internals
 				hasZeroTail &= (value.GetBlock(i) == 0);
 			}
 
-			return AssembleFloatingPointBits(mantissa, exponent, hasZeroTail);
+			return AssembleFloatingPointBits<TFloat>(mantissa, exponent, hasZeroTail);
 		}
 
-		private static UInt128 AssembleFloatingPointBits(UInt128 initialMantissa, int initialExponent, bool hasZeroTail)
+		private static UInt128 AssembleFloatingPointBits<TFloat>(UInt128 initialMantissa, int initialExponent, bool hasZeroTail)
+			where TFloat : struct, IFormattableBinaryFloatingPoint<TFloat>
 		{
-			const int QuadDenormalMantissaBits = 112;
-			const int QuadNormalMantissaBits = 113;
+			int denormalMantissaBits = TFloat.DenormalMantissaBits;
+			int normalMantissaBits = TFloat.NormalMantissaBits;
 			// number of bits by which we must adjust the mantissa to shift it into the
 			// correct position, and compute the resulting base two exponent for the
 			// normalized mantissa:
 			uint initialMantissaBits = BigNumber.CountSignificantBits(initialMantissa);
-			int normalMantissaShift = QuadNormalMantissaBits - (int)(initialMantissaBits);
+			int normalMantissaShift = normalMantissaBits - (int)(initialMantissaBits);
 			int normalExponent = initialExponent - normalMantissaShift;
 
 			UInt128 mantissa = initialMantissa;
 			int exponent = normalExponent;
 
-			if (normalExponent > Quad.MaxBiasedExponent)
+			if (normalExponent > TFloat.MaxBiasedExponent)
 			{
 				// The exponent is too large to be represented by the floating point
 				// type; report the overflow condition:
-				return Quad.PositiveInfinityBits;
+				return TFloat.PositiveInfinityBits;
 			}
-			else if (normalExponent < (1 - Quad.MaxBiasedExponent))
+			else if (normalExponent < (1 - TFloat.MaxBiasedExponent))
 			{
 				// The exponent is too small to be represented by the floating point
 				// type as a normal value, but it may be representable as a denormal
@@ -621,11 +622,11 @@ namespace MissingValues.Internals
 				// mantissa in order to form a denormal number.  (The subtraction of
 				// an extra 1 is to account for the hidden bit of the mantissa that
 				// is not available for use when representing a denormal.)
-				int denormalMantissaShift = normalMantissaShift + normalExponent + Quad.MaxBiasedExponent - 1;
+				int denormalMantissaShift = normalMantissaShift + normalExponent + TFloat.MaxBiasedExponent - 1;
 
 				// Denormal values have an exponent of zero, so the debiased exponent is
 				// the negation of the exponent bias:
-				exponent = -Quad.MaxBiasedExponent;
+				exponent = -TFloat.MaxBiasedExponent;
 
 				if (denormalMantissaShift < 0)
 				{
@@ -637,7 +638,7 @@ namespace MissingValues.Internals
 					// If the mantissa is now zero, we have underflowed:
 					if (mantissa == 0)
 					{
-						return Quad.PositiveZeroBits;
+						return TFloat.PositiveZeroBits;
 					}
 
 					// When we round the mantissa, the result may be so large that the
@@ -656,7 +657,7 @@ namespace MissingValues.Internals
 					//
 					// We detect this case here and re-adjust the mantissa and exponent
 					// appropriately, to form a normal number:
-					if (mantissa > Quad.TrailingSignificandMask)
+					if (mantissa > TFloat.DenormalMantissaMask)
 					{
 						// We add one to the denormalMantissaShift to account for the
 						// hidden mantissa bit (we subtracted one to account for this bit
@@ -681,16 +682,16 @@ namespace MissingValues.Internals
 					// When we round the mantissa, it may produce a result that is too
 					// large.  In this case, we divide the mantissa by two and increment
 					// the exponent (this does not change the value).
-					if (mantissa > new UInt128(0x0001_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF))
+					if (mantissa > TFloat.NormalMantissaMask)
 					{
 						mantissa >>= 1;
 						exponent++;
 
 						// The increment of the exponent may have generated a value too
 						// large to be represented.  In this case, report the overflow:
-						if (exponent > Quad.MaxBiasedExponent)
+						if (exponent > TFloat.MaxBiasedExponent)
 						{
-							return Quad.PositiveInfinityBits;
+							return TFloat.PositiveInfinityBits;
 						}
 					}
 				}
@@ -700,9 +701,9 @@ namespace MissingValues.Internals
 				}
 			}
 
-			mantissa &= Quad.TrailingSignificandMask;
+			mantissa &= TFloat.TrailingSignificandMask;
 
-			UInt128 shiftedExponent = ((UInt128)(exponent + Quad.ExponentBias)) << QuadDenormalMantissaBits;
+			UInt128 shiftedExponent = ((UInt128)(exponent + TFloat.ExponentBias)) << denormalMantissaBits;
 
 			return shiftedExponent | mantissa;
 		}

@@ -11,7 +11,7 @@ namespace MissingValues
 {
 	public partial struct Quad :
 		IBinaryFloatingPointIeee754<Quad>,
-		IFormattableFloatingPoint<Quad>,
+		IFormattableBinaryFloatingPoint<Quad>,
 		IMinMaxValue<Quad>
 	{
 		public static Quad Epsilon => Quad.UInt128BitsToQuad(EpsilonBits);
@@ -49,6 +49,36 @@ namespace MissingValues
 		static Quad IBinaryNumber<Quad>.AllBitsSet => Quad.UInt128BitsToQuad(new UInt128(0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF));
 
 		static ReadOnlySpan<Quad> IFormattableFloatingPoint<Quad>.PowersOfTen => MathQ.RoundPower10;
+
+		static bool IFormattableBinaryFloatingPoint<Quad>.ExplicitLeadingBit => false;
+
+		static int IFormattableBinaryFloatingPoint<Quad>.DenormalMantissaBits => BiasedExponentShift;
+
+		static int IFormattableBinaryFloatingPoint<Quad>.NormalMantissaBits => BiasedExponentShift + 1;
+
+		static int IFormattableBinaryFloatingPoint<Quad>.MinimumDecimalExponent => -4966;
+
+		static int IFormattableBinaryFloatingPoint<Quad>.MaximumDecimalExponent => 4932;
+
+		static int IFormattableBinaryFloatingPoint<Quad>.MinBiasedExponent => MinBiasedExponent;
+
+		static int IFormattableBinaryFloatingPoint<Quad>.MaxBiasedExponent => MaxBiasedExponent;
+		static int IFormattableBinaryFloatingPoint<Quad>.MaxSignificandPrecision => 33;
+
+		static int IFormattableBinaryFloatingPoint<Quad>.ExponentBias => ExponentBias;
+		static int IFormattableBinaryFloatingPoint<Quad>.ExponentBits => 15;
+
+		static int IFormattableBinaryFloatingPoint<Quad>.OverflowDecimalExponent => (16383 + (2 * 113) / 3);
+
+		static UInt128 IFormattableBinaryFloatingPoint<Quad>.DenormalMantissaMask => TrailingSignificandMask;
+		static UInt128 IFormattableBinaryFloatingPoint<Quad>.NormalMantissaMask => new UInt128(0x0001_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF);
+		static UInt128 IFormattableBinaryFloatingPoint<Quad>.TrailingSignificandMask => TrailingSignificandMask;
+
+		static UInt128 IFormattableBinaryFloatingPoint<Quad>.PositiveZeroBits => PositiveZeroBits;
+
+		static UInt128 IFormattableBinaryFloatingPoint<Quad>.PositiveInfinityBits => PositiveInfinityBits;
+
+		static UInt128 IFormattableBinaryFloatingPoint<Quad>.NegativeInfinityBits => NegativeInfinityBits;
 
 		public static Quad Abs(Quad value) => MathQ.Abs(value);
 
@@ -299,6 +329,26 @@ namespace MissingValues
 			return result;
 		}
 
+#if NET8_0_OR_GREATER
+		public static Quad Parse(ReadOnlySpan<byte> utf8Text, NumberStyles style, IFormatProvider? provider)
+		{
+			if (!TryParse(utf8Text, style, provider, out Quad result))
+			{
+				Thrower.ParsingError<Quad>(utf8Text.ToString());
+			}
+			return result;
+		}
+
+		public static Quad Parse(ReadOnlySpan<byte> utf8Text, IFormatProvider? provider)
+		{
+			if (!TryParse(utf8Text, NumberStyles.Float, provider, out Quad result))
+			{
+				Thrower.ParsingError<Quad>(utf8Text.ToString());
+			}
+			return result;
+		}
+#endif
+
 		public static Quad Round(Quad x) => MathQ.Round(x);
 
 		public static Quad Round(Quad x, int digits) => MathQ.Round(x, digits);
@@ -315,23 +365,34 @@ namespace MissingValues
 
 		public static bool TryParse(ReadOnlySpan<char> s, NumberStyles style, IFormatProvider? provider, [MaybeNullWhen(false)] out Quad result)
 		{
-			return NumberParser.TryParseQuad(s, style, provider, out result);
+			return NumberParser.TryParseFloat(Utf16Char.CastFromCharSpan(s), style, provider, out result);
 		}
 
 		public static bool TryParse([NotNullWhen(true)] string? s, NumberStyles style, IFormatProvider? provider, [MaybeNullWhen(false)] out Quad result)
 		{
-			return NumberParser.TryParseQuad(s, style, provider, out result);
+			return NumberParser.TryParseFloat(Utf16Char.CastFromCharSpan(s), style, provider, out result);
 		}
 
 		public static bool TryParse(ReadOnlySpan<char> s, IFormatProvider? provider, [MaybeNullWhen(false)] out Quad result)
 		{
-			return NumberParser.TryParseQuad(s, NumberStyles.Float, provider, out result);
+			return NumberParser.TryParseFloat(Utf16Char.CastFromCharSpan(s), NumberStyles.Float, provider, out result);
 		}
 
 		public static bool TryParse([NotNullWhen(true)] string? s, IFormatProvider? provider, [MaybeNullWhen(false)] out Quad result)
 		{
-			return NumberParser.TryParseQuad(s, NumberStyles.Float, provider, out result);
+			return NumberParser.TryParseFloat(Utf16Char.CastFromCharSpan(s), NumberStyles.Float, provider, out result);
 		}
+
+#if NET8_0_OR_GREATER
+		public static bool TryParse(ReadOnlySpan<byte> s, NumberStyles style, IFormatProvider? provider, [MaybeNullWhen(false)] out Quad result)
+		{
+			return NumberParser.TryParseFloat(Utf8Char.CastFromByteSpan(s), style, provider, out result);
+		}
+		public static bool TryParse(ReadOnlySpan<byte> s, IFormatProvider? provider, [MaybeNullWhen(false)] out Quad result)
+		{
+			return NumberParser.TryParseFloat(Utf8Char.CastFromByteSpan(s), NumberStyles.Float, provider, out result);
+		}
+#endif
 
 		static bool INumberBase<Quad>.TryConvertFromChecked<TOther>(TOther value, out Quad result) => TryConvertFrom(value, out result);
 
@@ -513,13 +574,20 @@ namespace MissingValues
 
 		public string ToString(string? format, IFormatProvider? formatProvider)
 		{
-			return NumberFormatter.QuadToString(in this, format, formatProvider);
+			return NumberFormatter.FloatToString(in this, format, formatProvider);
 		}
 
 		public bool TryFormat(Span<char> destination, out int charsWritten, ReadOnlySpan<char> format, IFormatProvider? provider)
 		{
-			return NumberFormatter.TryFormatQuad(in this, destination, out charsWritten, format, provider);
+			return NumberFormatter.TryFormatFloat(in this, Utf16Char.CastFromCharSpan(destination), out charsWritten, format, provider);
 		}
+
+#if NET8_0_OR_GREATER
+		public bool TryFormat(Span<byte> utf8Destination, out int bytesWritten, ReadOnlySpan<char> format, IFormatProvider? provider)
+		{
+			return NumberFormatter.TryFormatFloat(in this, Utf8Char.CastFromByteSpan(utf8Destination), out bytesWritten, format, provider);
+		} 
+#endif
 
 		public bool TryWriteExponentBigEndian(Span<byte> destination, out int bytesWritten)
 		{
@@ -1692,6 +1760,16 @@ namespace MissingValues
 			MathQ.Sum2(ref hi, ref lo);
 
 			return MathQ.__sin(hi, lo, 1);
+		}
+
+		static Quad IFormattableBinaryFloatingPoint<Quad>.BitsToFloat(UInt128 bits)
+		{
+			return UInt128BitsToQuad(bits);
+		}
+
+		static UInt128 IFormattableBinaryFloatingPoint<Quad>.FloatToBits(Quad value)
+		{
+			return QuadToUInt128Bits(value);
 		}
 	}
 }
