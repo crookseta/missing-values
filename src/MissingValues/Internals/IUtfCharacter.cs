@@ -32,36 +32,14 @@ namespace MissingValues.Internals
 		abstract static Span<TSelf> CastFromCharSpan(Span<char> chars);
 		abstract static ReadOnlySpan<TSelf> CastFromByteSpan(ReadOnlySpan<byte> chars);
 		abstract static Span<TSelf> CastFromByteSpan(Span<byte> chars);
-		virtual static ReadOnlySpan<TSelf> NumberDecimalSeparator(NumberFormatInfo instance)
-		{
-			return TSelf.CastFromCharSpan(instance.NumberDecimalSeparator);
-		}
-		virtual static ReadOnlySpan<TSelf> NumberGroupSeparator(NumberFormatInfo instance)
-		{
-			return TSelf.CastFromCharSpan(instance.NumberGroupSeparator);
-		}
-		virtual static ReadOnlySpan<TSelf> NegativeSign(NumberFormatInfo instance)
-		{
-			return TSelf.CastFromCharSpan(instance.NegativeSign);
-		}
-		virtual static ReadOnlySpan<TSelf> NegativeInfinitySymbol(NumberFormatInfo instance)
-		{
-			return TSelf.CastFromCharSpan(instance.NegativeInfinitySymbol);
-		}
-		virtual static ReadOnlySpan<TSelf> NaNSymbol(NumberFormatInfo instance)
-		{
-			return TSelf.CastFromCharSpan(instance.NaNSymbol);
-		}
-		virtual static ReadOnlySpan<TSelf> PositiveSign(NumberFormatInfo instance)
-		{
-			return TSelf.CastFromCharSpan(instance.PositiveSign);
-		}
-		virtual static ReadOnlySpan<TSelf> PositiveInfinitySymbol(NumberFormatInfo instance)
-		{
-			return TSelf.CastFromCharSpan(instance.PositiveInfinitySymbol);
-		}
+
+		abstract static void Copy(ReadOnlySpan<char> origin, Span<TSelf> destination);
+		abstract static void Copy(ReadOnlySpan<byte> origin, Span<TSelf> destination);
 
 		abstract static bool TryParseInteger<T>(ReadOnlySpan<TSelf> s, out T result) where T : struct, IBinaryInteger<T>;
+
+		abstract static int GetLength(ReadOnlySpan<char> s);
+		abstract static int GetLength(ReadOnlySpan<byte> utf8Text);
 
 		abstract static TSelf ToUpper(TSelf value);
 		abstract static TSelf ToLower(TSelf value);
@@ -114,7 +92,7 @@ namespace MissingValues.Internals
 			_char = @char;
 		}
 
-		public static ReadOnlySpan<Utf16Char> CastFromByteSpan(ReadOnlySpan<byte> chars)
+		static ReadOnlySpan<Utf16Char> IUtfCharacter<Utf16Char>.CastFromByteSpan(ReadOnlySpan<byte> chars)
 		{
 			throw new InvalidCastException();
 		}
@@ -124,7 +102,7 @@ namespace MissingValues.Internals
 			return MemoryMarshal.CreateReadOnlySpan(ref Unsafe.As<char, Utf16Char>(ref MemoryMarshal.GetReference(chars)), chars.Length);
 		}
 
-		public static ReadOnlySpan<byte> CastToByteSpan(ReadOnlySpan<Utf16Char> chars)
+		static ReadOnlySpan<byte> IUtfCharacter<Utf16Char>.CastToByteSpan(ReadOnlySpan<Utf16Char> chars)
 		{
 			throw new InvalidCastException();
 		}
@@ -209,6 +187,31 @@ namespace MissingValues.Internals
 			throw new NotImplementedException();
 		}
 
+		public static int GetLength(ReadOnlySpan<char> s)
+		{
+			return s.Length;
+		}
+
+		public static int GetLength(ReadOnlySpan<byte> utf8Text)
+		{
+			return Encoding.UTF8.GetCharCount(utf8Text);
+		}
+
+		public static void Copy(ReadOnlySpan<char> origin, Span<Utf16Char> destination)
+		{
+			CastFromCharSpan(origin).CopyTo(destination);
+		}
+
+		public static void Copy(ReadOnlySpan<byte> origin, Span<Utf16Char> destination)
+		{
+			Encoding.UTF8.GetChars(origin, CastToCharSpan(destination));
+		}
+
+		public override string? ToString()
+		{
+			return _char.ToString();
+		}
+
 		public static bool operator ==(Utf16Char left, Utf16Char right)
 		{
 			return left._char == right._char;
@@ -280,7 +283,7 @@ namespace MissingValues.Internals
 			return MemoryMarshal.CreateReadOnlySpan(ref Unsafe.As<byte, Utf8Char>(ref MemoryMarshal.GetReference(chars)), chars.Length);
 		}
 
-		public static ReadOnlySpan<Utf8Char> CastFromCharSpan(ReadOnlySpan<char> chars)
+		static ReadOnlySpan<Utf8Char> IUtfCharacter<Utf8Char>.CastFromCharSpan(ReadOnlySpan<char> chars)
 		{
 			throw new InvalidCastException();
 		}
@@ -290,7 +293,7 @@ namespace MissingValues.Internals
 			return MemoryMarshal.CreateReadOnlySpan(ref Unsafe.As<Utf8Char, byte>(ref MemoryMarshal.GetReference(chars)), chars.Length);
 		}
 
-		public static ReadOnlySpan<char> CastToCharSpan(ReadOnlySpan<Utf8Char> chars)
+		static ReadOnlySpan<char> IUtfCharacter<Utf8Char>.CastToCharSpan(ReadOnlySpan<Utf8Char> chars)
 		{
 			throw new InvalidCastException();
 		}
@@ -323,35 +326,6 @@ namespace MissingValues.Internals
 			Utf8.ToUtf16(CastToByteSpan(v2), right, out _, out _);
 
 			return ((ReadOnlySpan<char>)left).Equals(right, comparisonType);
-		}
-
-		public static ReadOnlySpan<Utf8Char> NumberDecimalSeparator(NumberFormatInfo instance)
-		{
-			return MemoryMarshal.Cast<byte, Utf8Char>(Encoding.UTF8.GetBytes(instance.NumberDecimalSeparator));
-		}
-		public static ReadOnlySpan<Utf8Char> NumberGroupSeparator(NumberFormatInfo instance)
-		{
-			return MemoryMarshal.Cast<byte, Utf8Char>(Encoding.UTF8.GetBytes(instance.NumberGroupSeparator));
-		}
-		public static ReadOnlySpan<Utf8Char> NegativeSign(NumberFormatInfo instance)
-		{
-			return MemoryMarshal.Cast<byte, Utf8Char>(Encoding.UTF8.GetBytes(instance.NegativeSign));
-		}
-		public static ReadOnlySpan<Utf8Char> NegativeInfinitySymbol(NumberFormatInfo instance)
-		{
-			return MemoryMarshal.Cast<byte, Utf8Char>(Encoding.UTF8.GetBytes(instance.NegativeInfinitySymbol));
-		}
-		public static ReadOnlySpan<Utf8Char> NaNSymbol(NumberFormatInfo instance)
-		{
-			return MemoryMarshal.Cast<byte, Utf8Char>(Encoding.UTF8.GetBytes(instance.NaNSymbol));
-		}
-		public static ReadOnlySpan<Utf8Char> PositiveSign(NumberFormatInfo instance)
-		{
-			return MemoryMarshal.Cast<byte, Utf8Char>(Encoding.UTF8.GetBytes(instance.PositiveSign));
-		}
-		public static ReadOnlySpan<Utf8Char> PositiveInfinitySymbol(NumberFormatInfo instance)
-		{
-			return MemoryMarshal.Cast<byte, Utf8Char>(Encoding.UTF8.GetBytes(instance.PositiveInfinitySymbol));
 		}
 
 		public static bool IsDigit(Utf8Char value)
@@ -399,7 +373,7 @@ namespace MissingValues.Internals
 			return T.TryParse(CastToByteSpan(s), NumberStyles.Integer, CultureInfo.CurrentCulture, out result);
 		}
 
-		public static Span<char> CastToCharSpan(Span<Utf8Char> chars)
+		static Span<char> IUtfCharacter<Utf8Char>.CastToCharSpan(Span<Utf8Char> chars)
 		{
 			throw new InvalidCastException();
 		}
@@ -409,7 +383,7 @@ namespace MissingValues.Internals
 			return MemoryMarshal.CreateSpan(ref Unsafe.As<Utf8Char, byte>(ref MemoryMarshal.GetReference(chars)), chars.Length);
 		}
 
-		public static Span<Utf8Char> CastFromCharSpan(Span<char> chars)
+		static Span<Utf8Char> IUtfCharacter<Utf8Char>.CastFromCharSpan(Span<char> chars)
 		{
 			throw new InvalidCastException();
 		}
@@ -417,6 +391,31 @@ namespace MissingValues.Internals
 		public static Span<Utf8Char> CastFromByteSpan(Span<byte> chars)
 		{
 			return MemoryMarshal.CreateSpan(ref Unsafe.As<byte, Utf8Char>(ref MemoryMarshal.GetReference(chars)), chars.Length);
+		}
+
+		public static int GetLength(ReadOnlySpan<char> s)
+		{
+			return Encoding.UTF8.GetByteCount(s);
+		}
+
+		public static int GetLength(ReadOnlySpan<byte> utf8Text)
+		{
+			return utf8Text.Length;
+		}
+
+		public static void Copy(ReadOnlySpan<char> origin, Span<Utf8Char> destination)
+		{
+			Encoding.UTF8.GetBytes(origin, CastToByteSpan(destination));
+		}
+
+		public static void Copy(ReadOnlySpan<byte> origin, Span<Utf8Char> destination)
+		{
+			CastFromByteSpan(origin).CopyTo(destination);
+		}
+
+		public override string? ToString()
+		{
+			return ((char)_char).ToString();
 		}
 
 		public static bool operator ==(Utf8Char left, Utf8Char right)

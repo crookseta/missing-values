@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using System.Text.Unicode;
 using System.Threading.Tasks;
 
 using UInt = MissingValues.UInt512;
@@ -134,6 +135,37 @@ namespace MissingValues.Tests.Core
 		public void ToBinFormatStringTest()
 		{
 			MaxValue.ToString("B512", CultureInfo.CurrentCulture).Should().Be($"{MaxValue:B512}");
+		}
+
+		[Fact]
+		public void ToDecFormatUtf8StringTest()
+		{
+			ReadOnlySpan<byte> toString = Encoding.UTF8.GetBytes(MaxValue.ToString()!);
+
+			Span<byte> format = stackalloc byte[toString.Length];
+			bool success = Utf8.TryWrite(format, CultureInfo.CurrentCulture, $"{MaxValue:D}", out _);
+			Assert.Equal(toString, format);
+			success.Should().BeTrue();
+		}
+		[Fact]
+		public void ToHexFormatUtf8StringTest()
+		{
+			ReadOnlySpan<byte> toString = Encoding.UTF8.GetBytes(MaxValue.ToString("X128", CultureInfo.CurrentCulture)!);
+
+			Span<byte> format = stackalloc byte[toString.Length];
+			bool success = Utf8.TryWrite(format, CultureInfo.CurrentCulture, $"{MaxValue:X128}", out _);
+			Assert.Equal(toString, format);
+			success.Should().BeTrue();
+		}
+		[Fact]
+		public void ToBinFormatUtf8StringTest()
+		{
+			ReadOnlySpan<byte> toString = Encoding.UTF8.GetBytes(MaxValue.ToString("B512", CultureInfo.CurrentCulture)!);
+
+			Span<byte> format = stackalloc byte[toString.Length];
+			bool success = Utf8.TryWrite(format, CultureInfo.CurrentCulture, $"{MaxValue:B512}", out _);
+			Assert.Equal(toString, format);
+			success.Should().BeTrue();
 		}
 	}
 }

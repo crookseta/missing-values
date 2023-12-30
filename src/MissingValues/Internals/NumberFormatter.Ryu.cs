@@ -408,29 +408,28 @@ internal static partial class NumberFormatter
 			if (v.Exponent == FD128ExceptionalExponent)
 			{
 				isExceptional = true;
-				ReadOnlySpan<TChar> symbol;
 				if (v.Mantissa != 0)
 				{
-					symbol = TChar.NaNSymbol(info);
-					symbol.CopyTo(destination);
-					return symbol.Length;
+					TChar.Copy(info.NaNSymbol, destination);
+					return destination.Length;
 				}
 				if (v.Sign)
 				{
-					symbol = TChar.NegativeInfinitySymbol(info);
+					TChar.Copy(info.NegativeInfinitySymbol, destination);
+					return destination.Length;
 				}
 				else
 				{
-					symbol = TChar.PositiveInfinitySymbol(info);
+					TChar.Copy(info.PositiveInfinitySymbol, destination);
+					return destination.Length;
 				}
-				symbol.CopyTo(destination);
-				return symbol.Length;
 			}
 
 			isExceptional = false;
 
 			// Step 5: Print the decimal representation.
-			ReadOnlySpan<TChar> negativeSign = TChar.NegativeSign(info);
+			Span<TChar> negativeSign = stackalloc TChar[TChar.GetLength(info.NegativeSign)];
+			TChar.Copy(info.NegativeSign, negativeSign);
 
 			int index = 0;
 			if (v.Sign)
@@ -452,11 +451,9 @@ internal static partial class NumberFormatter
 			// Print decimal point if needed
 			if (olength > 1)
 			{
-				ReadOnlySpan<TChar> numberDecimalSeparator = TChar.NumberDecimalSeparator(info);
+				TChar.Copy(info.NumberDecimalSeparator, destination[(index + 1)..]);
 
-				numberDecimalSeparator.CopyTo(destination[(index + 1)..]);
-
-				index += (int)olength + numberDecimalSeparator.Length;
+				index += (int)olength + TChar.GetLength(info.NumberDecimalSeparator);
 			}
 			else
 			{
@@ -475,9 +472,8 @@ internal static partial class NumberFormatter
 			}
 			else
 			{
-				ReadOnlySpan<TChar> positiveSign = TChar.PositiveSign(info);
-				positiveSign.CopyTo(destination[index..]);
-				index += positiveSign.Length;
+				TChar.Copy(info.PositiveSign, destination[index..]);
+				index += TChar.GetLength(info.PositiveSign);
 			}
 
 			uint elength = (uint)BitHelper.CountDigits((UInt128)exp);

@@ -110,8 +110,16 @@ namespace MissingValues.Internals
 			const int StateNonZero = 0x0008;
 			const int StateDecimal = 0x0010;
 
-			ReadOnlySpan<TChar> decSep = TChar.NumberDecimalSeparator(formatInfo);
-			ReadOnlySpan<TChar> groupSep = TChar.NumberGroupSeparator(formatInfo);
+
+			Span<TChar> decSep = stackalloc TChar[TChar.GetLength(formatInfo.NumberDecimalSeparator)];
+			Span<TChar> groupSep = stackalloc TChar[TChar.GetLength(formatInfo.NumberGroupSeparator)];
+			Span<TChar> positiveSign = stackalloc TChar[TChar.GetLength(formatInfo.PositiveSign)];
+			Span<TChar> negativeSign = stackalloc TChar[TChar.GetLength(formatInfo.NegativeSign)];
+
+			TChar.Copy(formatInfo.NumberDecimalSeparator, decSep);
+			TChar.Copy(formatInfo.NumberGroupSeparator, groupSep);
+			TChar.Copy(formatInfo.PositiveSign, positiveSign);
+			TChar.Copy(formatInfo.NegativeSign, negativeSign);
 
 			State<int> state = 0;
 
@@ -136,7 +144,7 @@ namespace MissingValues.Internals
 
 			if ((styles & NumberStyles.AllowLeadingSign) != 0)
 			{
-				if (s.IndexOf(TChar.PositiveSign(formatInfo)) == 0)
+				if (s.IndexOf(positiveSign) == 0)
 				{
 					info.IsNegative = false;
 					state.Add(StateSign);
@@ -145,7 +153,7 @@ namespace MissingValues.Internals
 					ptr = ref curIndex < totalLength ? ref Unsafe.Add(ref ptr, 1) : ref Unsafe.NullRef<TChar>();
 					ch = curIndex < totalLength ? ptr : TChar.NullCharacter;
 				}
-				else if (s.IndexOf(TChar.NegativeSign(formatInfo)) == 0)
+				else if (s.IndexOf(negativeSign) == 0)
 				{
 					info.IsNegative = true;
 					state.Add(StateSign);
@@ -242,13 +250,13 @@ namespace MissingValues.Internals
 					ptr = ref curIndex < totalLength ? ref Unsafe.Add(ref ptr, 1) : ref Unsafe.NullRef<TChar>();
 					ch = curIndex < totalLength ? ptr : TChar.NullCharacter;
 
-					if (s[curIndex..].IndexOf(TChar.PositiveSign(formatInfo)) == 0)
+					if (s[curIndex..].IndexOf(positiveSign) == 0)
 					{
 						curIndex++;
 						ptr = ref curIndex < totalLength ? ref Unsafe.Add(ref ptr, 1) : ref Unsafe.NullRef<TChar>();
 						ch = curIndex < totalLength ? ptr : TChar.NullCharacter;
 					}
-					else if (s[curIndex..].IndexOf(TChar.NegativeSign(formatInfo)) == 0)
+					else if (s[curIndex..].IndexOf(negativeSign) == 0)
 					{
 						curIndex++;
 						ptr = ref curIndex < totalLength ? ref Unsafe.Add(ref ptr, 1) : ref Unsafe.NullRef<TChar>();
@@ -261,7 +269,7 @@ namespace MissingValues.Internals
 						int exp = 0;
 						do
 						{
-							exp = (exp * 10) + (int)((char)ch - '0');
+							exp = (exp * 10) + ((char)ch - '0');
 							curIndex++;
 							ptr = ref curIndex < totalLength ? ref Unsafe.Add(ref ptr, 1) : ref Unsafe.NullRef<TChar>();
 							ch = curIndex < totalLength ? ptr : TChar.NullCharacter;
@@ -306,7 +314,7 @@ namespace MissingValues.Internals
 					if (!TChar.IsWhiteSpace(ch) || (styles & NumberStyles.AllowTrailingWhite) == 0)
 					{
 						int tempIndex = 0;
-						if ((styles & NumberStyles.AllowTrailingSign) != 0 && (!state.Contains(StateSign)) && ((tempIndex = s[curIndex..].IndexOf(TChar.PositiveSign(formatInfo))) >= 0 || (tempIndex = s[curIndex..].IndexOf(TChar.NegativeSign(formatInfo))) >= 0) && (info.IsNegative = true))
+						if ((styles & NumberStyles.AllowTrailingSign) != 0 && (!state.Contains(StateSign)) && ((tempIndex = s[curIndex..].IndexOf(positiveSign)) >= 0 || (tempIndex = s[curIndex..].IndexOf(negativeSign)) >= 0) && (info.IsNegative = true))
 						{
 							state.Add(StateSign);
 							tempIndex += curIndex;

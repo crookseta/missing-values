@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using System.Text.Unicode;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -123,6 +124,61 @@ namespace MissingValues.Tests.Core
 		{
 			MaxValue.ToString("B256", CultureInfo.CurrentCulture).Should().Be($"{MaxValue:B256}");
 			MinValue.ToString("B256", CultureInfo.CurrentCulture).Should().Be($"{MinValue:B256}");
+		}
+
+		[Fact]
+		public void ToDecFormatUtf8StringTest()
+		{
+			ReadOnlySpan<byte> toString = Encoding.UTF8.GetBytes(MaxValue.ToString()!);
+
+			Span<byte> format = stackalloc byte[toString.Length];
+			bool success = Utf8.TryWrite(format, CultureInfo.CurrentCulture, $"{MaxValue:D}", out _);
+			Assert.Equal(toString, format);
+			success.Should().BeTrue();
+
+
+			toString = Encoding.UTF8.GetBytes(MinValue.ToString()!);
+
+			format = stackalloc byte[toString.Length];
+			success = Utf8.TryWrite(format, CultureInfo.CurrentCulture, $"{MinValue:D}", out _);
+			Assert.Equal(toString, format);
+			success.Should().BeTrue();
+		}
+		[Fact]
+		public void ToHexFormatUtf8StringTest()
+		{
+			ReadOnlySpan<byte> toString = Encoding.UTF8.GetBytes(MaxValue.ToString("X64", CultureInfo.CurrentCulture)!);
+
+			Span<byte> format = stackalloc byte[toString.Length];
+			bool success = Utf8.TryWrite(format, CultureInfo.CurrentCulture, $"{MaxValue:X64}", out _);
+			Assert.Equal(toString, format);
+			success.Should().BeTrue();
+
+
+			toString = Encoding.UTF8.GetBytes(MinValue.ToString("X64", CultureInfo.CurrentCulture)!);
+
+			format = stackalloc byte[toString.Length];
+			success = Utf8.TryWrite(format, CultureInfo.CurrentCulture, $"{MinValue:X64}", out _);
+			Assert.Equal(toString, format);
+			success.Should().BeTrue();
+		}
+		[Fact]
+		public void ToBinFormatUtf8StringTest()
+		{
+			ReadOnlySpan<byte> toString = Encoding.UTF8.GetBytes(MaxValue.ToString("B256", CultureInfo.CurrentCulture)!);
+
+			Span<byte> format = stackalloc byte[toString.Length];
+			bool success = Utf8.TryWrite(format, CultureInfo.CurrentCulture, $"{MaxValue:B256}", out _);
+			Assert.Equal(toString, format);
+			success.Should().BeTrue();
+
+
+			toString = Encoding.UTF8.GetBytes(MinValue.ToString("B256", CultureInfo.CurrentCulture)!);
+
+			format = stackalloc byte[toString.Length];
+			success = Utf8.TryWrite(format, CultureInfo.CurrentCulture, $"{MinValue:B256}", out _);
+			Assert.Equal(toString, format);
+			success.Should().BeTrue();
 		}
 	}
 }

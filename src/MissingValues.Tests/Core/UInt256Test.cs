@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using System.Text.Unicode;
 using System.Threading.Tasks;
 
 using UInt = MissingValues.UInt256;
@@ -114,19 +115,34 @@ namespace MissingValues.Tests.Core
 		}
 
 		[Fact]
-		public void ToDecFormatStringTest()
+		public void ToDecFormatUtf8StringTest()
 		{
-			MaxValue.ToString().Should().Be($"{MaxValue:D}");
+			ReadOnlySpan<byte> toString = Encoding.UTF8.GetBytes(MaxValue.ToString()!);
+
+			Span<byte> format = stackalloc byte[toString.Length];
+			bool success = Utf8.TryWrite(format, CultureInfo.CurrentCulture, $"{MaxValue:D}", out _);
+			Assert.Equal(toString, format);
+			success.Should().BeTrue();
 		}
 		[Fact]
-		public void ToHexFormatStringTest()
+		public void ToHexFormatUtf8StringTest()
 		{
-			MaxValue.ToString("X64", CultureInfo.CurrentCulture).Should().Be($"{MaxValue:X64}");
+			ReadOnlySpan<byte> toString = Encoding.UTF8.GetBytes(MaxValue.ToString("X64", CultureInfo.CurrentCulture)!);
+
+			Span<byte> format = stackalloc byte[toString.Length];
+			bool success = Utf8.TryWrite(format, CultureInfo.CurrentCulture, $"{MaxValue:X64}", out _);
+			Assert.Equal(toString, format);
+			success.Should().BeTrue();
 		}
 		[Fact]
-		public void ToBinFormatStringTest()
+		public void ToBinFormatUtf8StringTest()
 		{
-			MaxValue.ToString("B256", CultureInfo.CurrentCulture).Should().Be($"{MaxValue:B256}");
+			ReadOnlySpan<byte> toString = Encoding.UTF8.GetBytes(MaxValue.ToString("B256", CultureInfo.CurrentCulture)!);
+
+			Span<byte> format = stackalloc byte[toString.Length];
+			bool success = Utf8.TryWrite(format, CultureInfo.CurrentCulture, $"{MaxValue:B256}", out _);
+			Assert.Equal(toString, format);
+			success.Should().BeTrue();
 		}
 	}
 }

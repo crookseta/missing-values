@@ -209,8 +209,8 @@ namespace MissingValues
 			}
 			else
 			{
-				fmt = char.ToLowerInvariant(format[0]);
 				isUpper = char.IsUpper(format[0]);
+				fmt = char.ToLowerInvariant(format[0]);
 			}
 
 			T fmtBase = fmt switch
@@ -250,8 +250,8 @@ namespace MissingValues
 			}
 			else
 			{
-				fmt = char.ToLowerInvariant(format[0]);
 				isUpper = char.IsUpper(format[0]);
+				fmt = char.ToLowerInvariant(format[0]);
 			}
 
 			TNumber fmtBase = fmt switch
@@ -367,8 +367,8 @@ namespace MissingValues
 			}
 			else
 			{
-				fmt = char.ToLowerInvariant(format[0]);
 				isUpper = char.IsUpper(format[0]);
+				fmt = char.ToLowerInvariant(format[0]);
 			}
 
 			TSigned fmtBase = fmt switch
@@ -406,7 +406,7 @@ namespace MissingValues
 
 			if (isNegative && fmtBase == TSigned.Ten)
 			{
-				TChar.NegativeSign(NumberFormatInfo.GetInstance(provider)).CopyTo(output[..1]);
+				TChar.Copy(NumberFormatInfo.GetInstance(provider).NegativeSign, output[..1]);
 			}
 
 			bool success = output.TryCopyTo(destination);
@@ -475,7 +475,7 @@ namespace MissingValues
 			where TChar : unmanaged, IUtfCharacter<TChar>
 		{
 			int maxSignificandPrecision = TFloat.MaxSignificandPrecision;
-			int MaxBufferAlloc = maxSignificandPrecision + 4 + 4 + 4; // 33 significant decimal digits precision, 4 possible special symbols, 4 exponent decimal digits
+			int maxBufferAlloc = maxSignificandPrecision + 4 + 4 + 4; // N significant decimal digits precision, 4 possible special symbols, 4 exponent decimal digits
 
 			int precision;
 
@@ -505,7 +505,7 @@ namespace MissingValues
 
 			NumberFormatInfo info = NumberFormatInfo.GetInstance(provider);
 
-			Span<TChar> buffer = stackalloc TChar[MaxBufferAlloc];
+			Span<TChar> buffer = stackalloc TChar[maxBufferAlloc];
 			Ryu.Format(in value, buffer, out charsWritten, out bool isExceptional, info, precision);
 
 			if (isExceptional || format.Contains("E", StringComparison.OrdinalIgnoreCase))
@@ -530,8 +530,10 @@ namespace MissingValues
 				exponent = 0;
 			}
 
-			ReadOnlySpan<TChar> numberDecimalSeparator = TChar.NumberDecimalSeparator(info);
-			ReadOnlySpan<TChar> negativeSign = TChar.NegativeSign(info);
+			Span<TChar> numberDecimalSeparator = stackalloc TChar[TChar.GetLength(info.NumberDecimalSeparator)];
+			TChar.Copy(info.NumberDecimalSeparator, numberDecimalSeparator);
+			Span<TChar> negativeSign = stackalloc TChar[TChar.GetLength(info.NegativeSign)];
+			TChar.Copy(info.NegativeSign, negativeSign);
 
 			bool isNegativeExponent = exponent < 0;
 			bool isNegative = buffer.IndexOf(negativeSign) == 0;
