@@ -68,7 +68,7 @@ namespace MissingValues
 		static int IFormattableBinaryFloatingPoint<Quad>.ExponentBias => ExponentBias;
 		static int IFormattableBinaryFloatingPoint<Quad>.ExponentBits => 15;
 
-		static int IFormattableBinaryFloatingPoint<Quad>.OverflowDecimalExponent => (16383 + (2 * 113) / 3);
+		static int IFormattableBinaryFloatingPoint<Quad>.OverflowDecimalExponent => (ExponentBias + (2 * 113) / 3);
 
 		static UInt128 IFormattableBinaryFloatingPoint<Quad>.DenormalMantissaMask => TrailingSignificandMask;
 		static UInt128 IFormattableBinaryFloatingPoint<Quad>.NormalMantissaMask => new UInt128(0x0001_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF);
@@ -574,7 +574,7 @@ namespace MissingValues
 
 		public string ToString(string? format, IFormatProvider? formatProvider)
 		{
-			return NumberFormatter.FloatToString(in this, format, formatProvider);
+			return NumberFormatter.FloatToString(in this, format is null ? ReadOnlySpan<char>.Empty : format, formatProvider);
 		}
 
 		public bool TryFormat(Span<char> destination, out int charsWritten, ReadOnlySpan<char> format, IFormatProvider? provider)

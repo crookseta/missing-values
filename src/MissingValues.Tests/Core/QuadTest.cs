@@ -4,6 +4,8 @@ using System.Diagnostics.Contracts;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
+using System.Text.Unicode;
 using System.Threading.Tasks;
 
 namespace MissingValues.Tests.Core
@@ -345,7 +347,65 @@ namespace MissingValues.Tests.Core
 				.Should().Be("-1E+3");
 		}
 
-		
+		[Fact]
+		public void ToGeneralFormatUtf8StringTest()
+		{
+			int bytesWritten;
+			Span<byte> utf8 = stackalloc byte[10];
+
+			Utf8.TryWrite(utf8, $"{NegativeQuarter:G33}", out bytesWritten);
+			Assert.Equal("-0,25"u8, utf8[..bytesWritten]);
+			utf8.Clear();
+
+			Utf8.TryWrite(utf8, $"{Half:G33}", out bytesWritten);
+			Assert.Equal("0,5"u8, utf8[..bytesWritten]);
+			utf8.Clear();
+
+			Utf8.TryWrite(utf8, $"{NegativeHalf:G33}", out bytesWritten);
+			Assert.Equal("-0,5"u8, utf8[..bytesWritten]);
+			utf8.Clear();
+
+			Utf8.TryWrite(utf8, $"{One:G33}", out bytesWritten);
+			Assert.Equal("1"u8, utf8[..bytesWritten]);
+			utf8.Clear();
+
+			Utf8.TryWrite(utf8, $"{Thousand:G33}", out bytesWritten);
+			Assert.Equal("1000"u8, utf8[..bytesWritten]);
+			utf8.Clear();
+
+			Utf8.TryWrite(utf8, $"{NegativeThousand:G33}", out bytesWritten);
+			Assert.Equal("-1000"u8, utf8[..bytesWritten]);
+		}
+
+		[Fact]
+		public void ToScientificFormatUtf8StringTest()
+		{
+			int bytesWritten;
+			Span<byte> utf8 = stackalloc byte[10];
+
+			Utf8.TryWrite(utf8, $"{NegativeQuarter:E33}", out bytesWritten);
+			Assert.Equal("-2,5E-1"u8, utf8[..bytesWritten]);
+			utf8.Clear();
+
+			Utf8.TryWrite(utf8, $"{Half:E33}", out bytesWritten);
+			Assert.Equal("5E-1"u8, utf8[..bytesWritten]);
+			utf8.Clear();
+
+			Utf8.TryWrite(utf8, $"{NegativeHalf:E33}", out bytesWritten);
+			Assert.Equal("-5E-1"u8, utf8[..bytesWritten]);
+			utf8.Clear();
+
+			Utf8.TryWrite(utf8, $"{One:E33}", out bytesWritten);
+			Assert.Equal("1E+0"u8, utf8[..bytesWritten]);
+			utf8.Clear();
+
+			Utf8.TryWrite(utf8, $"{Thousand:E33}", out bytesWritten);
+			Assert.Equal("1E+3"u8, utf8[..bytesWritten]);
+			utf8.Clear();
+
+			Utf8.TryWrite(utf8, $"{NegativeThousand:E33}", out bytesWritten);
+			Assert.Equal("-1E+3"u8, utf8[..bytesWritten]);
+		}
 
 		[Theory]
 		[MemberData(nameof(TryParseTheoryData))]
@@ -355,6 +415,23 @@ namespace MissingValues.Tests.Core
 
 			Quad.TryParse(s, out result).Should().Be(success);
 			result.Should().Be(returnValue);
+		}
+
+		[Fact]
+		public void JsonWriteTest()
+		{
+			JsonSerializer.Serialize(new Quad[] { MaxValue, One, Half, Quarter, Zero })
+				.Should().Be($"[{MaxValue.ToString(null, CultureInfo.InvariantCulture)},1,0.5,0.25,0]");
+		}
+		[Fact]
+		public void JsonReadTest()
+		{
+			string toString = Quarter.ToString(null, CultureInfo.InvariantCulture);
+
+			JsonSerializer.Deserialize<Quad>(toString)
+				.Should().Be(Quarter);
+			JsonSerializer.Deserialize<Quad>(Encoding.UTF8.GetBytes(toString))
+				.Should().Be(Quarter);
 		}
 	}
 }

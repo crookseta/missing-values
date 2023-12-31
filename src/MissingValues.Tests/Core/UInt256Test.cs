@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
 using System.Text.Unicode;
 using System.Threading.Tasks;
 
@@ -143,6 +144,21 @@ namespace MissingValues.Tests.Core
 			bool success = Utf8.TryWrite(format, CultureInfo.CurrentCulture, $"{MaxValue:B256}", out _);
 			Assert.Equal(toString, format);
 			success.Should().BeTrue();
+		}
+
+		[Fact]
+		public void JsonWriteTest()
+		{
+			JsonSerializer.Serialize(new object[] { MaxValue, Zero, One })
+				.Should().Be("[115792089237316195423570985008687907853269984665640564039457584007913129639935,0,1]");
+		}
+		[Fact]
+		public void JsonReadTest()
+		{
+			JsonSerializer.Deserialize<UInt>("115792089237316195423570985008687907853269984665640564039457584007913129639935")
+				.Should().Be(MaxValue);
+			JsonSerializer.Deserialize<UInt>("115792089237316195423570985008687907853269984665640564039457584007913129639935"u8)
+				.Should().Be(MaxValue);
 		}
 	}
 }

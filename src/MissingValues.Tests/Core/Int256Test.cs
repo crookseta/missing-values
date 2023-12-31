@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
 using System.Text.Unicode;
 using System.Threading.Tasks;
 using Xunit;
@@ -179,6 +180,25 @@ namespace MissingValues.Tests.Core
 			success = Utf8.TryWrite(format, CultureInfo.CurrentCulture, $"{MinValue:B256}", out _);
 			Assert.Equal(toString, format);
 			success.Should().BeTrue();
+		}
+
+		[Fact]
+		public void JsonWriteTest()
+		{
+			JsonSerializer.Serialize(new object[] { MaxValue, MinValue, One, NegativeOne })
+				.Should().Be("[57896044618658097711785492504343953926634992332820282019728792003956564819967,-57896044618658097711785492504343953926634992332820282019728792003956564819968,1,-1]");
+		}
+		[Fact]
+		public void JsonReadTest()
+		{
+			JsonSerializer.Deserialize<Int>("57896044618658097711785492504343953926634992332820282019728792003956564819967")
+				.Should().Be(MaxValue);
+			JsonSerializer.Deserialize<Int>("57896044618658097711785492504343953926634992332820282019728792003956564819967"u8)
+				.Should().Be(MaxValue);
+			JsonSerializer.Deserialize<Int>("-57896044618658097711785492504343953926634992332820282019728792003956564819968")
+				.Should().Be(MinValue);
+			JsonSerializer.Deserialize<Int>("-57896044618658097711785492504343953926634992332820282019728792003956564819968"u8)
+				.Should().Be(MinValue);
 		}
 	}
 }

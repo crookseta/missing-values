@@ -9,6 +9,7 @@ using System.Linq;
 using System.Numerics;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace MissingValues
@@ -17,6 +18,8 @@ namespace MissingValues
 	/// Represents a quadruple-precision floating-point number.
 	/// </summary>
 	[StructLayout(LayoutKind.Sequential)]
+	[JsonConverter(typeof(NumberConverter.QuadConverter))]
+	[DebuggerDisplay($"{{{nameof(ToString)}(),nq}}")]
 	public readonly partial struct Quad
 	{
 		internal const int SignShift = 127;

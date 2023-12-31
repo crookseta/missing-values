@@ -7,11 +7,13 @@ using System.Globalization;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Text.Json.Serialization;
 using System.Threading.Tasks;
 
 namespace MissingValues
 {
 	[StructLayout(LayoutKind.Sequential)]
+	[JsonConverter(typeof(NumberConverter.UInt512Converter))]
 	[CLSCompliant(false)]
 	[DebuggerDisplay($"{{{nameof(ToString)}(),nq}}")]
 	public readonly partial struct UInt512
