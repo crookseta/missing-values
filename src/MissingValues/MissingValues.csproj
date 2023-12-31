@@ -27,7 +27,7 @@
 
     <DefineConstants Condition="'$(IsBigEndian)' == 'true'">$(DefineConstants);BIGENDIAN</DefineConstants>
 
-    <Version>1.2.2</Version>
+    <Version>1.2.3</Version>
   </PropertyGroup>
 
   <ItemGroup>

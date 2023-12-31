@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
+using System.Text.Unicode;
 using System.Threading.Tasks;
 
 using UInt = MissingValues.UInt512;
@@ -134,6 +136,52 @@ namespace MissingValues.Tests.Core
 		public void ToBinFormatStringTest()
 		{
 			MaxValue.ToString("B512", CultureInfo.CurrentCulture).Should().Be($"{MaxValue:B512}");
+		}
+
+		[Fact]
+		public void ToDecFormatUtf8StringTest()
+		{
+			ReadOnlySpan<byte> toString = Encoding.UTF8.GetBytes(MaxValue.ToString()!);
+
+			Span<byte> format = stackalloc byte[toString.Length];
+			bool success = Utf8.TryWrite(format, CultureInfo.CurrentCulture, $"{MaxValue:D}", out _);
+			Assert.Equal(toString, format);
+			success.Should().BeTrue();
+		}
+		[Fact]
+		public void ToHexFormatUtf8StringTest()
+		{
+			ReadOnlySpan<byte> toString = Encoding.UTF8.GetBytes(MaxValue.ToString("X128", CultureInfo.CurrentCulture)!);
+
+			Span<byte> format = stackalloc byte[toString.Length];
+			bool success = Utf8.TryWrite(format, CultureInfo.CurrentCulture, $"{MaxValue:X128}", out _);
+			Assert.Equal(toString, format);
+			success.Should().BeTrue();
+		}
+		[Fact]
+		public void ToBinFormatUtf8StringTest()
+		{
+			ReadOnlySpan<byte> toString = Encoding.UTF8.GetBytes(MaxValue.ToString("B512", CultureInfo.CurrentCulture)!);
+
+			Span<byte> format = stackalloc byte[toString.Length];
+			bool success = Utf8.TryWrite(format, CultureInfo.CurrentCulture, $"{MaxValue:B512}", out _);
+			Assert.Equal(toString, format);
+			success.Should().BeTrue();
+		}
+
+		[Fact]
+		public void JsonWriteTest()
+		{
+			JsonSerializer.Serialize(new object[] { MaxValue, Zero, One })
+				.Should().Be("[13407807929942597099574024998205846127479365820592393377723561443721764030073546976801874298166903427690031858186486050853753882811946569946433649006084095,0,1]");
+		}
+		[Fact]
+		public void JsonReadTest()
+		{
+			JsonSerializer.Deserialize<UInt>("13407807929942597099574024998205846127479365820592393377723561443721764030073546976801874298166903427690031858186486050853753882811946569946433649006084095")
+				.Should().Be(MaxValue);
+			JsonSerializer.Deserialize<UInt>("13407807929942597099574024998205846127479365820592393377723561443721764030073546976801874298166903427690031858186486050853753882811946569946433649006084095"u8)
+				.Should().Be(MaxValue);
 		}
 	}
 }

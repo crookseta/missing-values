@@ -218,8 +218,12 @@ namespace MissingValues
 				Thrower.ParsingError<TSigned>(s.ToString(), Thrower.ParsingErrorType.InvalidTrailingWhiteSpace);
 			}
 
+			NumberFormatInfo formatInfo = NumberFormatInfo.GetInstance(formatProvider);
 			bool isNegative;
 			ReadOnlySpan<TChar> raw;
+			Span<TChar> negativeSign = stackalloc TChar[TChar.GetLength(formatInfo.NegativeSign)];
+			TChar.Copy(formatInfo.NegativeSign, negativeSign);
+
 			if (style.HasFlag(NumberStyles.AllowParentheses) && s.IndexOf((TChar)'(') > -1 && s.IndexOf((TChar)')') > 1)
 			{
 				isNegative = true;
@@ -227,7 +231,7 @@ namespace MissingValues
 			}
 			else
 			{
-				isNegative = style.HasFlag(NumberStyles.AllowLeadingSign) && s.IndexOf(TChar.NegativeSign(NumberFormatInfo.CurrentInfo)) == 0;
+				isNegative = style.HasFlag(NumberStyles.AllowLeadingSign) && s.IndexOf(negativeSign) == 0;
 				raw = isNegative ? s[1..] : s;
 			}
 
@@ -328,8 +332,12 @@ namespace MissingValues
 				return false;
 			}
 
+			NumberFormatInfo formatInfo = NumberFormatInfo.GetInstance(formatProvider);
 			bool isNegative;
 			ReadOnlySpan<TChar> raw;
+			Span<TChar> negativeSign = stackalloc TChar[TChar.GetLength(formatInfo.NegativeSign)];
+			TChar.Copy(formatInfo.NegativeSign, negativeSign);
+
 			if (style.HasFlag(NumberStyles.AllowParentheses) && s.IndexOf((TChar)'(') > -1 && s.IndexOf((TChar)')') > 1)
 			{
 				isNegative = true;
@@ -337,7 +345,7 @@ namespace MissingValues
 			}
 			else
 			{
-				isNegative = style.HasFlag(NumberStyles.AllowLeadingSign) && s.IndexOf(TChar.NegativeSign(NumberFormatInfo.CurrentInfo)) == 0;
+				isNegative = style.HasFlag(NumberStyles.AllowLeadingSign) && s.IndexOf(negativeSign) == 0;
 				raw = isNegative ? s[1..] : s;
 			}
 
@@ -418,21 +426,26 @@ namespace MissingValues
 			{
 				ReadOnlySpan<TChar> trim = s.Trim(TChar.WhiteSpaceCharacter);
 
-				ReadOnlySpan<TChar> infinity = TChar.PositiveInfinitySymbol(info);
-
-				if (TChar.Equals(trim, infinity, StringComparison.OrdinalIgnoreCase))
+				Span<TChar> positiveInf = stackalloc TChar[TChar.GetLength(info.PositiveInfinitySymbol)];
+				TChar.Copy(info.PositiveInfinitySymbol, positiveInf);
+				
+				if (TChar.Equals(trim, positiveInf, StringComparison.OrdinalIgnoreCase))
 				{
 					result = TFloat.PositiveInfinity;
 					return true;
 				}
 
-				if (TChar.Equals(trim, TChar.NegativeInfinitySymbol(info), StringComparison.OrdinalIgnoreCase))
+				Span<TChar> negativeInf = stackalloc TChar[TChar.GetLength(info.NegativeInfinitySymbol)];
+				TChar.Copy(info.NegativeInfinitySymbol, negativeInf);
+
+				if (TChar.Equals(trim, negativeInf, StringComparison.OrdinalIgnoreCase))
 				{
 					result = TFloat.NegativeInfinity;
 					return true;
 				}
 
-				ReadOnlySpan<TChar> nan = TChar.NaNSymbol(info);
+				Span<TChar> nan = stackalloc TChar[TChar.GetLength(info.NaNSymbol)];
+				TChar.Copy(info.NaNSymbol, nan);
 
 				if (TChar.Equals(trim, nan, StringComparison.OrdinalIgnoreCase))
 				{
@@ -440,13 +453,14 @@ namespace MissingValues
 					return true;
 				}
 
-				ReadOnlySpan<TChar> positiveSign = TChar.PositiveSign(info);
+				Span<TChar> positiveSign = stackalloc TChar[TChar.GetLength(info.PositiveSign)];
+				TChar.Copy(info.PositiveSign, positiveSign);
 
 				if (TChar.StartsWith(trim, positiveSign, StringComparison.OrdinalIgnoreCase))
 				{
 					trim = trim.Slice(positiveSign.Length);
 
-					if (TChar.Equals(trim, infinity, StringComparison.OrdinalIgnoreCase))
+					if (TChar.Equals(trim, positiveInf, StringComparison.OrdinalIgnoreCase))
 					{
 						result = TFloat.PositiveInfinity;
 						return true;
@@ -460,7 +474,8 @@ namespace MissingValues
 					result = TFloat.Zero;
 					return false;
 				}
-				ReadOnlySpan<TChar> negativeSign = TChar.NegativeSign(info);
+				Span<TChar> negativeSign = stackalloc TChar[TChar.GetLength(info.NegativeSign)];
+				TChar.Copy(info.NegativeSign, negativeSign);
 
 				if (TChar.StartsWith(trim, negativeSign, StringComparison.OrdinalIgnoreCase))
 				{

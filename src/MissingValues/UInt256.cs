@@ -6,10 +6,12 @@ using System.Globalization;
 using System.Linq;
 using System.Numerics;
 using System.Runtime.InteropServices;
+using System.Text.Json.Serialization;
 
 namespace MissingValues
 {
 	[StructLayout(LayoutKind.Sequential)]
+	[JsonConverter(typeof(NumberConverter.UInt256Converter))]
 	[CLSCompliant(false)]
 	[DebuggerDisplay($"{{{nameof(ToString)}(),nq}}")]
 	public readonly partial struct UInt256
