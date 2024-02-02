@@ -64,7 +64,7 @@ namespace MissingValues
 
 		public override string? ToString()
 		{
-			return NumberFormatter.UnsignedNumberToDecimalString(in this);
+			return NumberFormatter.UnsignedIntegerToDecimalString(in this);
 		}
 
 		/// <summary>

@@ -1273,12 +1273,18 @@ namespace MissingValues
 			}
 		}
 
+		/// <summary>Converts a given value from degrees to radians.</summary>
+		/// <param name="degrees">The value to convert to radians.</param>
+		/// <returns>The value of <paramref name="degrees" /> converted to radians.</returns>
 		public static Quad DegreesToRadians(Quad degrees)
 		{
 			// (degrees * Pi) / 180
 			return (degrees * Pi) / new Quad(0x4006_6800_0000_0000, 0x0000_0000_0000_0000);
 		}
-		
+
+		/// <summary>Converts a given value from radians to degrees.</summary>
+		/// <param name="radians">The value to convert to degrees.</param>
+		/// <returns>The value of <paramref name="radians" /> converted to degrees.</returns>
 		public static Quad RadiansToDegrees(Quad radians)
 		{
 			// (degrees * 180) / Pi

@@ -10,7 +10,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MissingValues;
+namespace MissingValues.Internals;
 
 internal static partial class NumberFormatter
 {
@@ -309,7 +309,7 @@ internal static partial class NumberFormatter
 			new(  7184427196661305643u, 14332510582433188173u, 14230167953789677901u,   104649889046128358u )
 		};
 
-		private static Span<ulong> Pow5Errors => new ulong[156]
+		private static ReadOnlySpan<ulong> Pow5Errors => new ulong[156]
 		{
 			0x0000000000000000u, 0x0000000000000000u, 0x0000000000000000u, 0x9555596400000000u,
 			0x65a6569525565555u, 0x4415551445449655u, 0x5105015504144541u, 0x65a69969a6965964u,
@@ -351,7 +351,7 @@ internal static partial class NumberFormatter
 			0x5554655255559545u, 0x9555455441155556u, 0x0000000051515555u, 0x0010005040000550u,
 			0x5044044040000000u, 0x1045040440010500u, 0x0000400000040000u, 0x0000000000000000u
 		};
-		private static Span<ulong> Pow5InvErrors => new ulong[154]
+		private static ReadOnlySpan<ulong> Pow5InvErrors => new ulong[154]
 		{
 			0x1144155514145504u, 0x0000541555401141u, 0x0000000000000000u, 0x0154454000000000u,
 			0x4114105515544440u, 0x0001001111500415u, 0x4041411410011000u, 0x5550114515155014u,
@@ -394,15 +394,15 @@ internal static partial class NumberFormatter
 			0x0040000400105555u, 0x0000000000000001u,
 		};
 
-		public static void Format<TFloat, TChar>(in TFloat value, scoped Span<TChar> destination, out int charsWritten, out bool isExceptional, NumberFormatInfo? info, int? precision = null)
+		public static void Format<TFloat, TChar>(in TFloat value, scoped Span<TChar> destination, out int charsWritten, ReadOnlySpan<char> format, out bool isExceptional, NumberFormatInfo? info, int? precision = null)
 			where TFloat : struct, IFormattableBinaryFloatingPoint<TFloat>
 			where TChar : unmanaged, IUtfCharacter<TChar>
 		{
 			var fd = FloatToFloatingDecimal128(in value);
-			charsWritten = ToCharSpan(in fd, destination, info is null ? NumberFormatInfo.CurrentInfo : info!, out isExceptional);
+			charsWritten = ToCharSpan(in fd, destination, format, info is null ? NumberFormatInfo.CurrentInfo : info!, out isExceptional);
 		}
 
-		public static int ToCharSpan<TChar>(in FloatingDecimal128 v, Span<TChar> destination, NumberFormatInfo info, out bool isExceptional)
+		private static int ToCharSpan<TChar>(in FloatingDecimal128 v, Span<TChar> destination, ReadOnlySpan<char> format, NumberFormatInfo info, out bool isExceptional)
 			where TChar : unmanaged, IUtfCharacter<TChar>
 		{
 			if (v.Exponent == FD128ExceptionalExponent)
@@ -451,9 +451,26 @@ internal static partial class NumberFormatter
 			// Print decimal point if needed
 			if (olength > 1)
 			{
-				TChar.Copy(info.NumberDecimalSeparator, destination[(index + 1)..]);
+				int sepLength;
+				switch (format.IsEmpty ? '\0' : format[0])
+				{
+					case 'p':
+					case 'P':
+						sepLength = TChar.GetLength(info.PercentDecimalSeparator);
+						TChar.Copy(info.PercentDecimalSeparator, destination[(index + 1)..]);
+						break;
+					case 'c':
+					case 'C':
+						sepLength = TChar.GetLength(info.CurrencyDecimalSeparator);
+						TChar.Copy(info.CurrencyDecimalSeparator, destination[(index + 1)..]);
+						break;
+					default:
+						sepLength = TChar.GetLength(info.NumberDecimalSeparator);
+						TChar.Copy(info.NumberDecimalSeparator, destination[(index + 1)..]);
+						break;
+				}
 
-				index += (int)olength + TChar.GetLength(info.NumberDecimalSeparator);
+				index += (int)olength + sepLength;
 			}
 			else
 			{

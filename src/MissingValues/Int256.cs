@@ -67,7 +67,7 @@ namespace MissingValues
 
 		public override string ToString()
 		{
-			return NumberFormatter.SignedNumberToDecimalString<Int256, UInt256>(in this);
+			return NumberFormatter.SignedIntegerToDecimalString<Int256, UInt256>(in this);
 		}
 
 		/// <summary>
