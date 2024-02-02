@@ -303,9 +303,9 @@ namespace MissingValues
 			if (IsNegative(value))
 			{
 				value = -value;
-				return -(Quad)(UInt128)(value);
+				return -(Quad)(UInt256)(value);
 			}
-			return (Quad)(UInt128)(value);
+			return (Quad)(UInt256)(value);
 		}
 		public static explicit operator double(Int256 value)
 		{
