@@ -393,6 +393,11 @@ namespace MissingValues
 				return lower + upper;
 			}
 		}
+		public static explicit operator LongDouble(UInt256 value)
+		{
+			// TODO: implement casting
+			throw new NotImplementedException();
+		}
 		public static explicit operator double(UInt256 value)
 		{
 			const double TwoPow204 = 25711008708143844408671393477458601640355247900524685364822016.0d;

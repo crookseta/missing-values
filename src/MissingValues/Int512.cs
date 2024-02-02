@@ -327,6 +327,11 @@ namespace MissingValues
 			}
 			return (Quad)(UInt512)(value);
 		}
+		public static explicit operator LongDouble(Int512 value)
+		{
+			// TODO: implement casting
+			throw new NotImplementedException();
+		}
 		public static explicit operator double(Int512 value)
 		{
 			if (IsNegative(value))

@@ -909,6 +909,11 @@ namespace MissingValues
 		{
 			return (decimal)(double)value;
 		}
+		public static explicit operator LongDouble(Quad value)
+		{
+			// TODO: implement casting
+			throw new NotImplementedException();
+		}
 		public static explicit operator double(Quad value)
 		{
 			UInt128 quadInt = QuadToUInt128Bits(value);
