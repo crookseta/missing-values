@@ -1091,7 +1091,7 @@ namespace MissingValues.Tests.Core
 				.Should().Be(Int256MinValue)
 				.And.BeRankedEquallyTo(Int256MinValue);
 
-			Assert.Throws<FormatException>(() => NumberBaseHelper<Int>.Parse("115792089237316195423570985008687907853269984665640564039457584007913129639936", System.Globalization.NumberStyles.Integer, CultureInfo.CurrentCulture));
+			Assert.Throws<OverflowException>(() => NumberBaseHelper<Int>.Parse("115792089237316195423570985008687907853269984665640564039457584007913129639936", System.Globalization.NumberStyles.Integer, CultureInfo.CurrentCulture));
 		}
 
 		[Fact]
@@ -1135,7 +1135,7 @@ namespace MissingValues.Tests.Core
 				.Should().Be(Int256MinValue)
 				.And.BeRankedEquallyTo(Int256MinValue);
 
-			Assert.Throws<FormatException>(() => NumberBaseHelper<Int>.Parse("115792089237316195423570985008687907853269984665640564039457584007913129639936"u8, System.Globalization.NumberStyles.Integer, CultureInfo.CurrentCulture));
+			Assert.Throws<OverflowException>(() => NumberBaseHelper<Int>.Parse("115792089237316195423570985008687907853269984665640564039457584007913129639936"u8, System.Globalization.NumberStyles.Integer, CultureInfo.CurrentCulture));
 		}
 
 		[Fact]

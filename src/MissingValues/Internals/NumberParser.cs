@@ -6,23 +6,59 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Numerics;
+using System.Text;
 
 namespace MissingValues
 {
 	internal static class NumberParser
 	{
-		#region IFormattableNumber
-		public static T? ParseDecStringToUnsigned<T, TChar>(ReadOnlySpan<TChar> s)
+		internal readonly struct ParsingStatus
+		{
+			internal const int Success = 0;
+			internal const int Failed = 1;
+			internal const int Overflow = 2;
+			internal const int Underflow = 3;
+
+			private readonly int _status;
+
+            private ParsingStatus(int status)
+            {
+                _status = status;
+            }
+
+			internal void Throw<T>(ReadOnlySpan<byte> utf8Input)
+				where T : IParsable<T>, IMinMaxValue<T>
+			{
+				Throw<T>(new string(Encoding.UTF8.GetChars(utf8Input.ToArray())));
+			}
+			internal void Throw<T>(string input)
+				where T : IParsable<T>, IMinMaxValue<T>
+			{
+				throw _status switch
+				{
+					Overflow => new OverflowException($"Could not parse '{input}' as {typeof(T)}.\nThe input is bigger than {T.MaxValue}"),
+					Underflow => new OverflowException($"Could not parse '{input}' as {typeof(T)}.\nThe input is smaller than {T.MinValue}"),
+					_ => new FormatException($"Could not parse '{input}' as {typeof(T)}.\n"),
+				};
+			}
+
+			public static implicit operator ParsingStatus(int value) => new(value);
+			public static implicit operator bool(ParsingStatus self) => self._status == Success;
+        }
+
+		#region Integer
+		public static ParsingStatus ParseDecStringToUnsigned<T, TChar>(ReadOnlySpan<TChar> s, out T output)
 			where T : struct, IFormattableInteger<T>, IMinMaxValue<T>, IUnsignedNumber<T>
 			where TChar : unmanaged, IUtfCharacter<TChar>
 		{
 			if (s.Length > T.MaxDecimalDigits && ((char)s[0]) > T.LastDecimalDigitOfMaxValue)
 			{
-				return null;
+				output = default;
+				return ParsingStatus.Overflow;
 			}
 
 			T acumulator = T.One;
-			T output = T.GetDecimalValue((char)s[^1]);
+			output = T.GetDecimalValue((char)s[^1]);
 
 			for (int i = 2; i <= s.Length; i++)
 			{
@@ -30,24 +66,26 @@ namespace MissingValues
 				var addon = T.GetDecimalValue((char)s[^i]) * acumulator;
 				if ((T.MaxValue - output) < addon)
 				{
-					return null;
+					output = default;
+					return ParsingStatus.Overflow;
 				}
 				output += addon;
 			}
 
-			return output;
+			return ParsingStatus.Success;
 		}
-		public static T? ParseBinStringToUnsigned<T, TChar>(ReadOnlySpan<TChar> s)
+		public static ParsingStatus ParseBinStringToUnsigned<T, TChar>(ReadOnlySpan<TChar> s, out T output)
 			where T : struct, IFormattableInteger<T>, IMinMaxValue<T>, IUnsignedNumber<T>
 			where TChar : unmanaged, IUtfCharacter<TChar>
 		{
-			if (s.Length > T.MaxBinaryDigits)
+			if (s.Length > T.MaxBinaryDigits || s.IndexOfAnyExcept((TChar)'0', (TChar)'1') > -1)
 			{
-				return null;
+				output = default;
+				return ParsingStatus.Overflow;
 			}
 
 			T acumulator = T.One;
-			T output = T.GetDecimalValue((char)s[^1]);
+			output = T.GetDecimalValue((char)s[^1]);
 
 			for (int i = 2; i <= s.Length; i++)
 			{
@@ -55,19 +93,20 @@ namespace MissingValues
 				output += T.GetDecimalValue((char)s[^i]) * acumulator;
 			}
 
-			return output;
+			return ParsingStatus.Success;
 		}
-		public static T? ParseHexStringToUnsigned<T, TChar>(ReadOnlySpan<TChar> s)
+		public static ParsingStatus ParseHexStringToUnsigned<T, TChar>(ReadOnlySpan<TChar> s, out T output)
 			where T : struct, IFormattableInteger<T>, IMinMaxValue<T>, IUnsignedNumber<T>
 			where TChar : unmanaged, IUtfCharacter<TChar>
 		{
 			if (s.Length > T.MaxHexDigits)
 			{
-				return null;
+				output = default;
+				return ParsingStatus.Overflow;
 			}
 
 			T acumulator = T.One;
-			T output = T.GetHexValue((char)s[^1]);
+			output = T.GetHexValue((char)s[^1]);
 
 			for (int i = 2; i <= s.Length; i++)
 			{
@@ -75,74 +114,10 @@ namespace MissingValues
 				output += T.GetHexValue((char)s[^i]) * acumulator;
 			}
 
-			return output;
+			return ParsingStatus.Success;
 		}
 
-		public static T ParseToUnsigned<T, TChar>(ReadOnlySpan<TChar> s, NumberStyles style, IFormatProvider? formatProvider)
-			where T : struct, IFormattableInteger<T>, IMinMaxValue<T>, IUnsignedNumber<T>
-			where TChar : unmanaged, IUtfCharacter<TChar>
-		{
-			if (style.HasFlag(NumberStyles.AllowLeadingWhite))
-			{
-				s = s.TrimStart(TChar.WhiteSpaceCharacter);
-			}
-			else if (TChar.IsWhiteSpace(s[0]))
-			{
-				Thrower.ParsingError<T>(s.ToString(), Thrower.ParsingErrorType.InvalidLeadingWhiteSpace);
-			}
-			if (style.HasFlag(NumberStyles.AllowTrailingWhite))
-			{
-				s = s.TrimEnd(TChar.WhiteSpaceCharacter);
-			}
-			else if (TChar.IsWhiteSpace(s[^1]))
-			{
-				Thrower.ParsingError<T>(s.ToString(), Thrower.ParsingErrorType.InvalidTrailingWhiteSpace);
-			}
-
-			if (ContainsInvalidCharacter(s, style))
-			{
-				Thrower.ParsingError<T>(s.ToString(), Thrower.ParsingErrorType.InvalidCharacter);
-			}
-
-			T acumulator = T.One;
-			T? result;
-
-			if (style.HasFlag(NumberStyles.AllowHexSpecifier))
-			{
-				result = ParseHexStringToUnsigned<T, TChar>(s);
-
-				if (result is null)
-				{
-					Thrower.ParsingError<T>(s.ToString(), Thrower.ParsingErrorType.StringTooBig);
-				}
-
-				return (T)result;
-			}
-#if NET8_0_OR_GREATER
-			else if (style.HasFlag(NumberStyles.AllowBinarySpecifier))
-			{
-				result = ParseBinStringToUnsigned<T, TChar>(s);
-
-				if (result is null)
-				{
-					Thrower.ParsingError<T>(s.ToString(), Thrower.ParsingErrorType.StringTooBig);
-				}
-
-				return (T)result;
-			}
-#endif
-
-			result = ParseDecStringToUnsigned<T, TChar>(s);
-
-			if (result is null)
-			{
-				Thrower.ParsingError<T>(s.ToString(), Thrower.ParsingErrorType.StringTooBig);
-			}
-
-			return (T)result;
-		}
-
-		public static bool TryParseToUnsigned<T, TChar>(ReadOnlySpan<TChar> s, NumberStyles style, IFormatProvider? formatProvider, out T output)
+		public static ParsingStatus TryParseToUnsigned<T, TChar>(ReadOnlySpan<TChar> s, NumberStyles style, IFormatProvider? formatProvider, out T output)
 			where T : struct, IFormattableInteger<T>, IMinMaxValue<T>, IUnsignedNumber<T>
 			where TChar : unmanaged, IUtfCharacter<TChar>
 		{
@@ -153,7 +128,7 @@ namespace MissingValues
 			else if (TChar.IsWhiteSpace(s[0]))
 			{
 				output = default;
-				return false;
+				return ParsingStatus.Failed;
 			}
 			if (style.HasFlag(NumberStyles.AllowTrailingWhite))
 			{
@@ -162,153 +137,41 @@ namespace MissingValues
 			else if (TChar.IsWhiteSpace(s[^1]))
 			{
 				output = default;
-				return false;
+				return ParsingStatus.Failed;
+			}
+			if (s[0] == (TChar)'-')
+			{
+				output = default;
+				return ParsingStatus.Underflow;
 			}
 
 			if (ContainsInvalidCharacter(s, style))
 			{
 				output = default;
-				return false;
+				return ParsingStatus.Failed;
 			}
-			T? result;
+
+			ParsingStatus status = ParsingStatus.Success;
 
 			if (style.HasFlag(NumberStyles.AllowHexSpecifier))
 			{
-				result = ParseHexStringToUnsigned<T, TChar>(s);
+				status = ParseHexStringToUnsigned(s, out output);
 			}
 #if NET8_0_OR_GREATER
 			else if (style.HasFlag(NumberStyles.AllowBinarySpecifier))
 			{
-				result = ParseBinStringToUnsigned<T, TChar>(s);
+				status = ParseBinStringToUnsigned(s, out output);
 			}
 #endif
 			else
 			{
-				result = ParseDecStringToUnsigned<T, TChar>(s);
+				status = ParseDecStringToUnsigned(s, out output);
 			}
 
-			if (result is null)
-			{
-				output = default;
-				return false;
-			}
-			output = (T)result;
-			return true;
+			return status;
 		}
 
-		public static TSigned ParseToSigned<TSigned, TUnsigned, TChar>(ReadOnlySpan<TChar> s, NumberStyles style, IFormatProvider? formatProvider)
-			where TSigned : struct, IFormattableSignedInteger<TSigned, TUnsigned>, IMinMaxValue<TSigned>
-			where TUnsigned : struct, IFormattableUnsignedInteger<TUnsigned, TSigned>, IMinMaxValue<TUnsigned>
-			where TChar : unmanaged, IUtfCharacter<TChar>
-		{
-			if (style.HasFlag(NumberStyles.AllowLeadingWhite))
-			{
-				s = s.TrimStart(TChar.WhiteSpaceCharacter);
-			}
-			else if (TChar.IsWhiteSpace(s[0]))
-			{
-				Thrower.ParsingError<TSigned>(s.ToString(), Thrower.ParsingErrorType.InvalidLeadingWhiteSpace);
-			}
-			if (style.HasFlag(NumberStyles.AllowTrailingWhite))
-			{
-				s = s.TrimEnd(TChar.WhiteSpaceCharacter);
-			}
-			else if (TChar.IsWhiteSpace(s[^1]))
-			{
-				Thrower.ParsingError<TSigned>(s.ToString(), Thrower.ParsingErrorType.InvalidTrailingWhiteSpace);
-			}
-
-			NumberFormatInfo formatInfo = NumberFormatInfo.GetInstance(formatProvider);
-			bool isNegative;
-			ReadOnlySpan<TChar> raw;
-			Span<TChar> negativeSign = stackalloc TChar[TChar.GetLength(formatInfo.NegativeSign)];
-			TChar.Copy(formatInfo.NegativeSign, negativeSign);
-
-			if (style.HasFlag(NumberStyles.AllowParentheses) && s.IndexOf((TChar)'(') > -1 && s.IndexOf((TChar)')') > 1)
-			{
-				isNegative = true;
-				raw = s[1..^1];
-			}
-			else
-			{
-				isNegative = style.HasFlag(NumberStyles.AllowLeadingSign) && s.IndexOf(negativeSign) == 0;
-				raw = isNegative ? s[1..] : s;
-			}
-
-			if (ContainsInvalidCharacter(raw, style))
-			{
-				Thrower.ParsingError<TSigned>(s.ToString(), Thrower.ParsingErrorType.InvalidCharacter);
-			}
-
-			TUnsigned result, acumulator;
-
-			if (style.HasFlag(NumberStyles.AllowHexSpecifier))
-			{
-				if (raw.Length > TUnsigned.MaxHexDigits)
-				{
-					Thrower.ParsingError<TSigned>(s.ToString(), Thrower.ParsingErrorType.StringTooBig);
-				}
-
-				acumulator = TUnsigned.One;
-				result = TUnsigned.GetHexValue((char)raw[^1]);
-
-				for (int i = 2; i <= raw.Length; i++)
-				{
-					acumulator = unchecked(acumulator * TUnsigned.Sixteen);
-					result += TUnsigned.GetHexValue((char)raw[^i]) * acumulator;
-				}
-			}
-#if NET8_0_OR_GREATER
-			else if (style.HasFlag(NumberStyles.AllowBinarySpecifier))
-			{
-				if (raw.Length > TUnsigned.MaxBinaryDigits)
-				{
-					Thrower.ParsingError<TSigned>(s.ToString(), Thrower.ParsingErrorType.StringTooBig);
-				}
-
-				acumulator = TUnsigned.One;
-				result = TUnsigned.GetDecimalValue((char)raw[^1]);
-
-				for (int i = 2; i <= raw.Length; i++)
-				{
-					acumulator = unchecked(acumulator * TUnsigned.Two);
-					result += TUnsigned.GetDecimalValue((char)raw[^i]) * acumulator;
-				}
-			}
-#endif
-			else
-			{
-				if (s.Length > TUnsigned.MaxDecimalDigits && (char)raw[0] > TUnsigned.LastDecimalDigitOfMaxValue)
-				{
-					Thrower.ParsingError<TSigned>(s.ToString(), Thrower.ParsingErrorType.StringTooBig);
-				}
-
-				acumulator = TUnsigned.One;
-				result = TUnsigned.GetDecimalValue((char)raw[^1]);
-
-				for (int i = 2; i <= raw.Length; i++)
-				{
-					acumulator = unchecked(acumulator * TUnsigned.Ten);
-					var addon = TUnsigned.GetDecimalValue((char)raw[^i]) * acumulator;
-					if ((TUnsigned.MaxValue - result) < addon)
-					{
-						Thrower.ParsingError<TSigned>(raw.ToString(), Thrower.ParsingErrorType.ValueTooBig);
-					}
-					result += addon;
-				}
-			}
-
-			TSigned output = result.ToSigned();
-
-			if (isNegative)
-			{
-				output = -output;
-			}
-
-			return output;
-		}
-
-		public static bool TryParseToSigned<TSigned, TUnsigned, TChar>(ReadOnlySpan<TChar> s, NumberStyles style, IFormatProvider? formatProvider, out TSigned output)
+		public static ParsingStatus TryParseToSigned<TSigned, TUnsigned, TChar>(ReadOnlySpan<TChar> s, NumberStyles style, IFormatProvider? formatProvider, out TSigned output)
 			where TSigned : struct, IFormattableSignedInteger<TSigned, TUnsigned>, IMinMaxValue<TSigned>
 			where TUnsigned : struct, IFormattableUnsignedInteger<TUnsigned, TSigned>, IMinMaxValue<TUnsigned>
 			where TChar : unmanaged, IUtfCharacter<TChar>
@@ -320,7 +183,7 @@ namespace MissingValues
 			else if (TChar.IsWhiteSpace(s[0]))
 			{
 				output = default;
-				return false;
+				return ParsingStatus.Failed;
 			}
 			if (style.HasFlag(NumberStyles.AllowTrailingWhite))
 			{
@@ -329,7 +192,7 @@ namespace MissingValues
 			else if (TChar.IsWhiteSpace(s[^1]))
 			{
 				output = default;
-				return false;
+				return ParsingStatus.Failed;
 			}
 
 			NumberFormatInfo formatInfo = NumberFormatInfo.GetInstance(formatProvider);
@@ -352,38 +215,35 @@ namespace MissingValues
 			if (ContainsInvalidCharacter(raw, style))
 			{
 				output = default;
-				return false;
+				return ParsingStatus.Failed;
 			}
 
-			TUnsigned? result;
+			ParsingStatus status;
+			TUnsigned result;
 
 			if (style.HasFlag(NumberStyles.AllowHexSpecifier))
 			{
-				result = ParseHexStringToUnsigned<TUnsigned, TChar>(raw);
+				status = ParseHexStringToUnsigned(raw, out result);
 			}
 #if NET8_0_OR_GREATER
 			else if (style.HasFlag(NumberStyles.AllowBinarySpecifier))
 			{
-				result = ParseBinStringToUnsigned<TUnsigned, TChar>(raw);
+				status = ParseBinStringToUnsigned(raw, out result);
 			}
 #endif
 			else
 			{
-				result = ParseDecStringToUnsigned<TUnsigned, TChar>(raw);
+				status = ParseDecStringToUnsigned(raw, out result);
 			}
-			if (result is null)
-			{
-				output = default;
-				return false;
-			}
-			output = result.Value.ToSigned();
+
+			output = result.ToSigned();
 
 			if (isNegative)
 			{
 				output = -output;
 			}
 
-			return true;
+			return status;
 		}
 
 		private static bool ContainsInvalidCharacter<TChar>(ReadOnlySpan<TChar> s, NumberStyles style)

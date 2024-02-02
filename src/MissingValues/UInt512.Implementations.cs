@@ -305,32 +305,62 @@ namespace MissingValues
 
 		public static UInt512 Parse(ReadOnlySpan<char> s, NumberStyles style, IFormatProvider? provider)
 		{
-			return NumberParser.ParseToUnsigned<UInt512, Utf16Char>(Utf16Char.CastFromCharSpan(s), style, provider);
+			var status = NumberParser.TryParseToUnsigned(Utf16Char.CastFromCharSpan(s), style, provider, out UInt512 output);
+			if (!status)
+			{
+				status.Throw<UInt512>(s.ToString());
+			}
+			return output;
 		}
 
 		public static UInt512 Parse(string s, NumberStyles style, IFormatProvider? provider)
 		{
-			return NumberParser.ParseToUnsigned<UInt512, Utf16Char>(Utf16Char.CastFromCharSpan(s), style, provider);
+			var status = NumberParser.TryParseToUnsigned(Utf16Char.CastFromCharSpan(s), style, provider, out UInt512 output);
+			if (!status)
+			{
+				status.Throw<UInt512>(s.ToString());
+			}
+			return output;
 		}
 
 		public static UInt512 Parse(ReadOnlySpan<char> s, IFormatProvider? provider)
 		{
-			return NumberParser.ParseToUnsigned<UInt512, Utf16Char>(Utf16Char.CastFromCharSpan(s), NumberStyles.Integer, provider);
+			var status = NumberParser.TryParseToUnsigned(Utf16Char.CastFromCharSpan(s), NumberStyles.Integer, provider, out UInt512 output);
+			if (!status)
+			{
+				status.Throw<UInt512>(s.ToString());
+			}
+			return output;
 		}
 
 		public static UInt512 Parse(string s, IFormatProvider? provider)
 		{
-			return NumberParser.ParseToUnsigned<UInt512, Utf16Char>(Utf16Char.CastFromCharSpan(s), NumberStyles.Integer, provider);
+			var status = NumberParser.TryParseToUnsigned(Utf16Char.CastFromCharSpan(s), NumberStyles.Integer, provider, out UInt512 output);
+			if (!status)
+			{
+				status.Throw<UInt512>(s.ToString());
+			}
+			return output;
 		}
 
 #if NET8_0_OR_GREATER
 		public static UInt512 Parse(ReadOnlySpan<byte> utf8Text, NumberStyles style, IFormatProvider? provider)
 		{
-			return NumberParser.ParseToUnsigned<UInt512, Utf8Char>(Utf8Char.CastFromByteSpan(utf8Text), style, provider);
+			var status = NumberParser.TryParseToUnsigned(Utf8Char.CastFromByteSpan(utf8Text), style, provider, out UInt512 output);
+			if (!status)
+			{
+				status.Throw<UInt512>(utf8Text);
+			}
+			return output;
 		}
 		public static UInt512 Parse(ReadOnlySpan<byte> utf8Text, IFormatProvider? provider)
 		{
-			return NumberParser.ParseToUnsigned<UInt512, Utf8Char>(Utf8Char.CastFromByteSpan(utf8Text), NumberStyles.Integer, provider);
+			var status = NumberParser.TryParseToUnsigned(Utf8Char.CastFromByteSpan(utf8Text), NumberStyles.Integer, provider, out UInt512 output);
+			if (!status)
+			{
+				status.Throw<UInt512>(utf8Text);
+			}
+			return output;
 		}
 #endif
 
@@ -538,7 +568,7 @@ namespace MissingValues
 			return true;
 		}
 
-		static UInt512 IFormattableInteger<UInt512>.GetDecimalValue(char value)
+		static UInt512 IFormattableNumber<UInt512>.GetDecimalValue(char value)
 		{
 			if (!char.IsDigit(value))
 			{
@@ -774,13 +804,13 @@ namespace MissingValues
 
 		public bool TryFormat(Span<char> destination, out int charsWritten, [StringSyntax(StringSyntaxAttribute.NumericFormat)] ReadOnlySpan<char> format, IFormatProvider? provider)
 		{
-			return NumberFormatter.TryFormatUnsignedNumber(in this, Utf16Char.CastFromCharSpan(destination), out charsWritten, format, provider);
+			return NumberFormatter.TryFormatUnsignedInteger(in this, Utf16Char.CastFromCharSpan(destination), out charsWritten, format, provider);
 		}
 
 #if NET8_0_OR_GREATER
 		public bool TryFormat(Span<byte> utf8Destination, out int bytesWritten, [StringSyntax(StringSyntaxAttribute.NumericFormat)] ReadOnlySpan<char> format, IFormatProvider? provider)
 		{
-			return NumberFormatter.TryFormatUnsignedNumber(in this, Utf8Char.CastFromByteSpan(utf8Destination), out bytesWritten, format, provider);
+			return NumberFormatter.TryFormatUnsignedInteger(in this, Utf8Char.CastFromByteSpan(utf8Destination), out bytesWritten, format, provider);
 		}
 #endif
 
