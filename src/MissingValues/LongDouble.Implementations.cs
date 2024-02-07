@@ -1,6 +1,7 @@
 ﻿using MissingValues.Internals;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
@@ -486,37 +487,65 @@ namespace MissingValues
 
 		public int CompareTo(object? obj)
 		{
-			throw new NotImplementedException();
+			if (obj is not LongDouble other)
+			{
+				return (obj is null) ? 1 : throw new ArgumentException($"Object must be {typeof(LongDouble)}", nameof(obj));
+			}
+			return CompareTo(other);
 		}
 
 		public int CompareTo(LongDouble other)
 		{
-			throw new NotImplementedException();
+			if (this < other)
+			{
+				return -1;
+			}
+
+			if (this > other)
+			{
+				return 1;
+			}
+
+			if (this == other)
+			{
+				return 0;
+			}
+
+			if (IsNaN(this))
+			{
+				return IsNaN(other) ? 0 : -1;
+			}
+
+			Debug.Assert(IsNaN(other));
+			return 1;
 		}
 
 		public bool Equals(LongDouble other)
 		{
-			throw new NotImplementedException();
+			return _upper == other._upper
+				|| _lower == other._lower
+				|| AreZero(this, other)
+				|| (IsNaN(this) && IsNaN(other));
 		}
 
 		public int GetExponentByteCount()
 		{
-			throw new NotImplementedException();
+			return sizeof(ushort);
 		}
 
 		public int GetExponentShortestBitLength()
 		{
-			throw new NotImplementedException();
+			return 15;
 		}
 
 		public int GetSignificandBitLength()
 		{
-			throw new NotImplementedException();
+			return 64;
 		}
 
 		public int GetSignificandByteCount()
 		{
-			throw new NotImplementedException();
+			return sizeof(ulong);
 		}
 
 		public string ToString(string? format, IFormatProvider? formatProvider)
@@ -616,32 +645,60 @@ namespace MissingValues
 
 		public static bool operator ==(LongDouble left, LongDouble right)
 		{
-			throw new NotImplementedException();
+			if (IsNaN(left) || IsNaN(right))
+			{
+				return false;
+			}
+
+			return (left._lower == right._lower)
+				&& ((left._upper == right._upper) || (left._lower == 0 && ((left._upper | right._upper) & 0x7FFF) == 0));
 		}
 
 		public static bool operator !=(LongDouble left, LongDouble right)
 		{
-			throw new NotImplementedException();
+			return !(left == right);
 		}
 
 		public static bool operator <(LongDouble left, LongDouble right)
 		{
-			throw new NotImplementedException();
+			if (IsNaN(left) || IsNaN(right))
+			{
+				return false;
+			}
+
+			var signA = IsNegative(left);
+			var signB = IsNegative(right);
+
+			return (signA != signB)
+				? signA && ((uint)((left._upper | right._upper) & 0x7FFF) | left._lower | right._lower) != 0
+				: ((left._upper != right._upper) && (left._lower != right._lower))
+					|| (signA ^ LessThan(left._upper, left._lower, right._upper, right._lower));
 		}
 
 		public static bool operator >(LongDouble left, LongDouble right)
 		{
-			throw new NotImplementedException();
+			return right < left;
 		}
 
 		public static bool operator <=(LongDouble left, LongDouble right)
 		{
-			throw new NotImplementedException();
+			if (IsNaN(left) || IsNaN(right))
+			{
+				return false;
+			}
+
+			var signA = IsNegative(left);
+			var signB = IsNegative(right);
+
+			return (signA != signB)
+				? signA || ((uint)((left._upper | right._upper) & 0x7FFF) | left._lower | right._lower) == 0
+				: ((left._upper == right._upper) && (left._lower == right._lower))
+					|| (signA ^ LessThan(left._upper, left._lower, right._upper, right._lower));
 		}
 
 		public static bool operator >=(LongDouble left, LongDouble right)
 		{
-			throw new NotImplementedException();
+			return right <= left;
 		}
 	}
 }

@@ -16,6 +16,9 @@ namespace MissingValues
 	[StructLayout(LayoutKind.Sequential, Pack = 2)]
 	public readonly partial struct LongDouble
 	{
+		internal static LongDouble SignMask => new LongDouble(0b1000_0000_0000_0000, 0);
+		internal const ulong SignShift = 79;
+
 		internal const ushort ShiftedBiasedExponentMask = 0x7FFF;
 
 
@@ -286,5 +289,19 @@ namespace MissingValues
 			throw new NotImplementedException();
 		}
 		#endregion
+
+		internal static bool LessThan(ushort a64, ulong a0, ushort b64, ulong b0)
+		{
+			return (a64 < b64) || ((a64 == b64) && (a0 < b0));
+		}
+		internal static bool LessThanOrEqual(ushort a64, ulong a0, ushort b64, ulong b0)
+		{
+			return (a64 < b64) || ((a64 == b64) && (a0 <= b0));
+		}
+		private static bool AreZero(LongDouble left, LongDouble right)
+		{
+			var temp = ((left | right) & ~SignMask);
+			return (temp._upper | temp._lower) == 0;
+		}
 	}
 }
