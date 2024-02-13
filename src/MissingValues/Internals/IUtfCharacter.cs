@@ -22,6 +22,7 @@ namespace MissingValues.Internals
 		abstract static TSelf NullCharacter { get; }
 		abstract static TSelf WhiteSpaceCharacter { get; }
 		abstract static ReadOnlySpan<TSelf> Digits { get; }
+		abstract static ReadOnlySpan<byte> TwoDigitsAsBytes { get; }
 
 		abstract static ReadOnlySpan<char> CastToCharSpan(ReadOnlySpan<TSelf> chars);
 		abstract static Span<char> CastToCharSpan(Span<TSelf> chars);
@@ -86,6 +87,18 @@ namespace MissingValues.Internals
 		};
 
 		public static Utf16Char WhiteSpaceCharacter => (Utf16Char)' ';
+
+		public static ReadOnlySpan<byte> TwoDigitsAsBytes =>
+			MemoryMarshal.AsBytes<char>("00010203040506070809" +
+										"10111213141516171819" +
+										"20212223242526272829" +
+										"30313233343536373839" +
+										"40414243444546474849" +
+										"50515253545556575859" +
+										"60616263646566676869" +
+										"70717273747576777879" +
+										"80818283848586878889" +
+										"90919293949596979899");
 
 		private Utf16Char(char @char)
 		{
@@ -172,7 +185,7 @@ namespace MissingValues.Internals
 			return MemoryMarshal.CreateSpan(ref Unsafe.As<Utf16Char, char>(ref MemoryMarshal.GetReference(chars)), chars.Length);
 		}
 
-		public static Span<byte> CastToByteSpan(Span<Utf16Char> chars)
+		static Span<byte> IUtfCharacter<Utf16Char>.CastToByteSpan(Span<Utf16Char> chars)
 		{
 			throw new NotImplementedException();
 		}
@@ -182,7 +195,7 @@ namespace MissingValues.Internals
 			return MemoryMarshal.CreateSpan(ref Unsafe.As<char, Utf16Char>(ref MemoryMarshal.GetReference(chars)), chars.Length);
 		}
 
-		public static Span<Utf16Char> CastFromByteSpan(Span<byte> chars)
+		static Span<Utf16Char> IUtfCharacter<Utf16Char>.CastFromByteSpan(Span<byte> chars)
 		{
 			throw new NotImplementedException();
 		}
@@ -269,8 +282,20 @@ namespace MissingValues.Internals
 			(byte)'E',
 			(byte)'F',
 		];
-		public static ReadOnlySpan<Utf8Char> Digits => CastFromByteSpan(DigitsUtf8);
-		
+		public static ReadOnlySpan<Utf8Char> Digits => CastFromByteSpan("0123456789ABCDEF"u8);
+
+		public static ReadOnlySpan<byte> TwoDigitsAsBytes => 
+										"00010203040506070809"u8 +
+										"10111213141516171819"u8 +
+										"20212223242526272829"u8 +
+										"30313233343536373839"u8 +
+										"40414243444546474849"u8 +
+										"50515253545556575859"u8 +
+										"60616263646566676869"u8 +
+										"70717273747576777879"u8 +
+										"80818283848586878889"u8 +
+										"90919293949596979899"u8;
+
 		private readonly byte _char;
 
 		private Utf8Char(byte @char)
