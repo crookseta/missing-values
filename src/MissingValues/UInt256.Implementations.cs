@@ -861,6 +861,36 @@ namespace MissingValues
 			return (Int256)this;
 		}
 
+		internal static int CountDigits(in UInt256 value)
+		{
+			if (value._upper == 0)
+			{
+				return NumberFormatter.CountDigits(value.Lower);
+			}
+
+			// We have more than 1e38, so we have at least 39 digits
+			int digits = 39;
+
+			if (value._upper > 0x2)
+			{
+				var lower = value / new UInt256(0x0000_0000_0000_0000, 0x0000_0000_0000_0002, 0xF050_FE93_8943_ACC4, 0x5F65_5680_0000_0000);
+
+				digits += NumberFormatter.CountDigits(lower._lower);
+			}
+			else if ((value._upper == 0x2) && (value._lower >= new UInt128(0xF050_FE93_8943_ACC4, 0x5F65_5680_0000_0000)))
+			{
+				// We're greater than 1e39, but definitely less than 1e40
+				// so we have exactly 40 digits
+				digits++;
+			}
+
+			return digits;
+		}
+		static int IFormattableUnsignedInteger<UInt256, Int256>.CountDigits(in UInt256 value)
+		{
+			return CountDigits(in value);
+		}
+
 		public static UInt256 operator +(UInt256 value)
 		{
 			return value;

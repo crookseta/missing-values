@@ -590,7 +590,7 @@ namespace MissingValues
 			throw new FormatException();
 		}
 
-		public string ToString(string? format, IFormatProvider? formatProvider)
+		public string ToString([StringSyntax(StringSyntaxAttribute.NumericFormat)] string? format, IFormatProvider? formatProvider)
 		{
 			return NumberFormatter.FormatUnsignedNumber(in this, format, NumberStyles.Integer, formatProvider);
 		}
@@ -911,6 +911,32 @@ namespace MissingValues
 		Int512 IFormattableUnsignedInteger<UInt512, Int512>.ToSigned()
 		{
 			return (Int512)this;
+		}
+
+		static int IFormattableUnsignedInteger<UInt512, Int512>.CountDigits(in UInt512 value)
+		{
+			if (value._upper == UInt256.Zero)
+			{
+				return UInt256.CountDigits(in value._lower);
+			}
+			// We have more than 1e77, so we have atleast 78 digits
+			int digits = 78;
+
+			if (value._upper > 0x8)
+			{
+				// value / 1e78
+				var lower = (value / new UInt512(0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0008, 0xA2DB_F142_DFCC_7AB6, 0xE356_9326_C784_3372, 0xA9F4_D250_5E3A_4000, 0x0000_0000_0000_0000));
+				digits += UInt256.CountDigits(in lower._lower);
+			}
+			else if ((value._upper == 0x59) && (value._lower >= new UInt256(0x5C97_6C9C_BDFC_CB24, 0xE161_BF83_CB2A_027A, 0xA390_3723_AE46_8000, 0x0000_0000_0000_0000)))
+			{
+				// We are greater than 1e78, but less than 1e79
+				// so we have exactly 79 digits
+
+				digits++;
+			}
+
+			return digits;
 		}
 
 		public static UInt512 operator +(UInt512 value)

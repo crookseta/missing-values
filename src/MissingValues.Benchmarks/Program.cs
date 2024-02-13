@@ -9,6 +9,7 @@ using System.Runtime.Intrinsics.X86;
 using System.Runtime.CompilerServices;
 using System.Runtime.Intrinsics;
 using System.Windows.Markup;
+using MissingValues.Internals;
 
 //BenchmarkRunner.Run(
 //	new Type[]
@@ -26,9 +27,8 @@ using System.Windows.Markup;
 //	}
 //);
 
-//BenchmarkRunner.Run<QuadBenchmarks.MathOperators>();
+BenchmarkRunner.Run<IntegerBenchmarks>();
+//var s = NumberFormatter.FormatUnsignedNumber<UInt512, Int512>(new UInt512(0x0, 0x0, 0x0, 0x0, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF), "d", NumberStyles.Integer, CultureInfo.CurrentCulture);
 
-UInt128 uInt = new UInt128(0xFFFFFFFFFFFFFFFF, 0x7FFFFFFFFFFFFFFF);
-
-Console.WriteLine(uInt.GetUpperBits());
+//Console.WriteLine(s);
 Console.ReadLine();

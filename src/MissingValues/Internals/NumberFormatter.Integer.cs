@@ -1,8 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Numerics;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -116,10 +119,207 @@ internal interface IFormattableUnsignedInteger<TUnsigned, TSigned> : IFormattabl
 	/// </summary>
 	/// <returns>The signed representation of the unsigned integer.</returns>
 	TSigned ToSigned();
+	/// <summary>
+	/// 
+	/// </summary>
+	/// <param name="value"></param>
+	/// <returns></returns>
+	static abstract int CountDigits(in TUnsigned value);
 }
 
 internal static partial class NumberFormatter
 {
+	internal static int CountDigits(UInt128 value)
+	{
+		ulong upper = ((ulong)(value >> 64));
+
+		// 1e19 is    8AC7_2304_89E8_0000
+		// 1e20 is  5_6BC7_5E2D_6310_0000
+		// 1e21 is 36_35C9_ADC5_DEA0_0000
+
+		if (upper == 0)
+		{
+			// We have less than 64-bits, so just return the lower count
+			return CountDigits((ulong)value);
+		}
+
+		// We have more than 1e19, so we have at least 20 digits
+		int digits = 20;
+
+		if (upper > 5)
+		{
+			// ((2^128) - 1) / 1e20 < 34_02_823_669_209_384_635 which
+			// is 18.5318 digits, meaning the result definitely fits
+			// into 64-bits and we only need to add the lower digit count
+
+			value /= new UInt128(0x5, 0x6BC7_5E2D_6310_0000); // value /= 1e20
+
+			digits += CountDigits((ulong)value);
+		}
+		else if ((upper == 5) && ((ulong)value >= 0x6BC75E2D63100000))
+		{
+			// We're greater than 1e20, but definitely less than 1e21
+			// so we have exactly 21 digits
+
+			digits++;
+			Debug.Assert(digits == 21);
+		}
+
+		return digits;
+	}
+	internal static int CountDigits(ulong value)
+	{
+		ReadOnlySpan<byte> log2ToPow10 = stackalloc byte[]
+		{
+			1,  1,  1,  2,  2,  2,  3,  3,  3,  4,  4,  4,  4,  5,  5,  5,
+			6,  6,  6,  7,  7,  7,  7,  8,  8,  8,  9,  9,  9,  10, 10, 10,
+			10, 11, 11, 11, 12, 12, 12, 13, 13, 13, 13, 14, 14, 14, 15, 15,
+			15, 16, 16, 16, 16, 17, 17, 17, 18, 18, 18, 19, 19, 19, 19, 20
+		};
+
+		int index = log2ToPow10[BitOperations.Log2(value)];
+
+		ReadOnlySpan<ulong> powersOf10 = stackalloc ulong[]
+		{
+			0, // unused entry to avoid needing to subtract
+            0,
+			10,
+			100,
+			1000,
+			10000,
+			100000,
+			1000000,
+			10000000,
+			100000000,
+			1000000000,
+			10000000000,
+			100000000000,
+			1000000000000,
+			10000000000000,
+			100000000000000,
+			1000000000000000,
+			10000000000000000,
+			100000000000000000,
+			1000000000000000000,
+			10000000000000000000,
+		};
+
+		ulong powerOf10 = powersOf10[index];
+
+		// Return the number of digits based on the power of 10, shifted by 1
+		// if it falls below the threshold.
+		bool lessThan = value < powerOf10;
+		return (index - Unsafe.As<bool, byte>(ref lessThan));
+	}
+	internal static int CountHexDigits<T>(in T value)
+		where T : struct, IFormattableInteger<T>
+	{
+		return (T.Log2(value) >> 2).ToInt32() + 1;
+	}
+	internal static int CountBinDigits<T>(in T value)
+		where T : struct, IFormattableInteger<T>
+	{
+		return T.MaxBinaryDigits - T.LeadingZeroCount(value).ToInt32();
+	}
+
+	public static unsafe void UnsignedIntegerToDecChars<TUnsigned, TSigned, TChar>(TUnsigned value, Span<TChar> destination, int digits)
+		where TUnsigned : struct, IFormattableUnsignedInteger<TUnsigned, TSigned>
+		where TSigned : struct, IFormattableSignedInteger<TSigned, TUnsigned>
+		where TChar : unmanaged, IUtfCharacter<TChar>
+	{
+		fixed(TChar* ptr = &MemoryMarshal.GetReference(destination))
+		{
+			TChar* bufferEnd = ptr + int.Min(digits, destination.Length);
+			if (value >= TUnsigned.Ten)
+			{
+				TUnsigned remainder;
+				while (value >= TUnsigned.TenPow2)
+				{
+					bufferEnd -= 2;
+					digits -= 2;
+					(value, remainder) = TUnsigned.DivRem(value, TUnsigned.TenPow2);
+					WriteTwoDigits(in remainder, bufferEnd);
+				}
+				if (value >= TUnsigned.Ten)
+				{
+					bufferEnd -= 2;
+					WriteTwoDigits(in value, bufferEnd);
+					return;
+				}
+			}
+
+			*(--bufferEnd) = (TChar)(char)(value.ToChar() + '0');
+		}
+
+		static void WriteTwoDigits(in TUnsigned value, TChar* ptr)
+		{
+			Unsafe.CopyBlockUnaligned(
+				ref *(byte*)ptr,
+				ref Unsafe.Add(ref MemoryMarshal.GetReference(TChar.TwoDigitsAsBytes), sizeof(TChar) * 2 * value.ToInt32()),
+				(uint)sizeof(TChar) * 2
+				);
+		}
+	}
+	public static unsafe void UnsignedIntegerToHexChars<TUnsigned, TSigned, TChar>(in TUnsigned value, char isUpper, Span<TChar> destination, int digits)
+		where TUnsigned : struct, IFormattableUnsignedInteger<TUnsigned, TSigned>
+		where TSigned : struct, IFormattableSignedInteger<TSigned, TUnsigned>
+		where TChar : unmanaged, IUtfCharacter<TChar>
+	{
+		destination[..digits].Fill((TChar)'0');
+		int hexBase = (isUpper - ('X' - 'A' + 10));
+		var value64 = MemoryMarshal.CreateReadOnlySpan(ref Unsafe.As<TUnsigned, ulong>(ref Unsafe.AsRef(in value)), sizeof(TUnsigned) /  sizeof(ulong));
+
+		fixed (TChar* ptr = &MemoryMarshal.GetReference(destination))
+		{
+			TChar* bufferEnd = ptr + digits;
+			const int MaxDigitsPerChunk = 16;
+			int digitsLeft = digits;
+
+			for (int i = 0; i < value64.Length && digits > 0; i++)
+			{
+				ulong v = value64[i];
+
+				while ((digits - digitsLeft) < MaxDigitsPerChunk || v != 0)
+				{
+					byte digit = (byte)(v & 0xF);
+					*(--bufferEnd) = (TChar)(char)(digit + (digit < 10 ? (byte)'0' : hexBase));
+					digitsLeft--;
+					v >>= 4;
+				}
+
+				digits -= MaxDigitsPerChunk;
+			}
+		}
+	}
+	public static unsafe void UnsignedIntegerToBinChars<TUnsigned, TSigned, TChar>(in TUnsigned value, Span<TChar> destination, int digits)
+		where TUnsigned : struct, IFormattableUnsignedInteger<TUnsigned, TSigned>
+		where TSigned : struct, IFormattableSignedInteger<TSigned, TUnsigned>
+		where TChar : unmanaged, IUtfCharacter<TChar>
+	{
+		var value64 = MemoryMarshal.CreateReadOnlySpan(ref Unsafe.As<TUnsigned, ulong>(ref Unsafe.AsRef(in value)), sizeof(TUnsigned) /  sizeof(ulong));
+
+		fixed (TChar* ptr = &MemoryMarshal.GetReference(destination))
+		{
+			TChar* bufferEnd = ptr + digits;
+			const int MaxDigitsPerChunk = 64;
+			int digitsLeft = digits;
+
+			for (int i = 0; i < value64.Length && digits > 0; i++)
+			{
+				ulong v = value64[i];
+				while ((digits - digitsLeft) < MaxDigitsPerChunk || v != 0)
+				{
+					*(--bufferEnd) = (TChar)(char)('0' + (v & 0x1));
+					digitsLeft--;
+					v >>= 1;
+				}
+
+				digits -= MaxDigitsPerChunk;
+			}
+		}
+	}
+	
+
 	public static string UnsignedIntegerToString<T>(in T value, T numberBase)
 			where T : struct, IFormattableInteger<T>, IUnsignedNumber<T>
 	{
@@ -293,8 +493,8 @@ internal static partial class NumberFormatter
 			}
 		});
 	}
-	public static string FormatUnsignedNumber<T>(in T value, string? format, NumberStyles style, IFormatProvider? formatProvider)
-		where T : struct, IFormattableInteger<T>, IUnsignedNumber<T>
+	public static string FormatUnsignedNumber<TUnsigned>(in TUnsigned value, string? format, NumberStyles style, IFormatProvider? formatProvider)
+		where TUnsigned : struct, IFormattableInteger<TUnsigned>, IUnsignedNumber<TUnsigned>
 	{
 		int precision = 0;
 		if (format is not null && format.Length != 1 && !int.TryParse(format[1..], out precision))
@@ -315,11 +515,11 @@ internal static partial class NumberFormatter
 			fmt = char.ToLowerInvariant(format[0]);
 		}
 
-		T fmtBase = fmt switch
+		TUnsigned fmtBase = fmt switch
 		{
-			'b' => T.Two,
-			'x' => T.Sixteen,
-			_ => T.Ten,
+			'b' => TUnsigned.Two,
+			'x' => TUnsigned.Sixteen,
+			_ => TUnsigned.Ten,
 		};
 
 		if (fmt != 'd')
@@ -333,6 +533,50 @@ internal static partial class NumberFormatter
 		}
 
 		return UnsignedIntegerToString(in value, fmtBase, precision);
+	}
+	public static string FormatUnsignedNumber<TUnsigned, TSigned>(in TUnsigned value, string? format, NumberStyles style, IFormatProvider? formatProvider)
+		where TUnsigned : struct, IFormattableUnsignedInteger<TUnsigned, TSigned>
+		where TSigned : struct, IFormattableSignedInteger<TSigned, TUnsigned>
+	{
+		int precision = 0;
+		if (!string.IsNullOrWhiteSpace(format) && format.Length != 1 && !int.TryParse(format[1..], out precision))
+		{
+			Thrower.InvalidFormat(format.ToString());
+		}
+
+		char fmt;
+		if (string.IsNullOrWhiteSpace(format))
+		{
+			fmt = 'd';
+		}
+		else
+		{
+			fmt = format[0];
+		}
+
+		switch (fmt)
+		{
+			case 'b':
+			case 'B':
+				precision = int.Max(precision, CountBinDigits(in value));
+				return string.Create(precision, value, (destination, number) =>
+				{
+					UnsignedIntegerToBinChars<TUnsigned, TSigned, Utf16Char>(in number, Utf16Char.CastFromCharSpan(destination), destination.Length);
+				});
+			case 'x':
+			case 'X':
+				precision = int.Max(precision, CountHexDigits(in value));
+				return string.Create(precision, (value, fmt), (destination, number) =>
+				{
+					UnsignedIntegerToHexChars<TUnsigned, TSigned, Utf16Char>(in number.value, number.fmt, Utf16Char.CastFromCharSpan(destination), destination.Length);
+				});
+			default:
+				precision = int.Max(precision, TUnsigned.CountDigits(in value));
+				return string.Create(precision, value, (destination, number) =>
+				{
+					UnsignedIntegerToDecChars<TUnsigned, TSigned, Utf16Char>(number, Utf16Char.CastFromCharSpan(destination), destination.Length);
+				});
+		}
 	}
 	public static bool TryFormatUnsignedInteger<TNumber, TChar>(in TNumber value, Span<TChar> destination, out int charsWritten, ReadOnlySpan<char> format, IFormatProvider? provider)
 		where TNumber : struct, IFormattableInteger<TNumber>, IUnsignedNumber<TNumber>
@@ -356,6 +600,22 @@ internal static partial class NumberFormatter
 			fmt = char.ToLowerInvariant(format[0]);
 		}
 
+		scoped Span<TChar> output;
+
+		switch (fmt)
+		{
+			case 'b':
+			case 'B':
+				precision = CountBinDigits(in value);
+				break;
+			case 'x':
+			case 'X':
+				precision = CountHexDigits(in value);
+				break;
+			default:
+				break;
+		}
+
 		TNumber fmtBase = fmt switch
 		{
 			'b' => TNumber.Two,
@@ -372,7 +632,7 @@ internal static partial class NumberFormatter
 			precision = BitHelper.CountDigits(value, fmtBase);
 		}
 
-		Span<TChar> output = stackalloc TChar[precision];
+		output = stackalloc TChar[precision];
 		UnsignedIntegerToCharSpan(value, in fmtBase, precision, output);
 
 		if (isUpper)
@@ -387,6 +647,61 @@ internal static partial class NumberFormatter
 
 		charsWritten = success ? precision : 0;
 		return success;
+	}
+	public static bool TryFormatUnsignedInteger<TUnsigned, TSigned, TChar>(in TUnsigned value, Span<TChar> destination, out int charsWritten, ReadOnlySpan<char> format, IFormatProvider? provider)
+		where TUnsigned : struct, IFormattableUnsignedInteger<TUnsigned, TSigned>
+		where TSigned : struct, IFormattableSignedInteger<TSigned, TUnsigned>
+		where TChar : unmanaged, IUtfCharacter<TChar>
+	{
+		int precision = 0;
+		if (format.Length > 1 && !int.TryParse(format[1..], out precision))
+		{
+			Thrower.InvalidFormat(format.ToString());
+		}
+
+		char fmt;
+		if (format.Length < 1)
+		{
+			fmt = 'd';
+		}
+		else
+		{
+			fmt = format[0];
+		}
+
+		switch (fmt)
+		{
+			case 'b':
+			case 'B':
+				charsWritten = int.Max(precision, CountBinDigits(in value));
+				if (destination.Length < precision)
+				{
+					charsWritten = 0;
+					return false;
+				}
+				UnsignedIntegerToBinChars<TUnsigned, TSigned, TChar>(in value, destination, charsWritten);
+				break;
+			case 'x':
+			case 'X':
+				charsWritten = int.Max(precision, CountHexDigits(in value));
+				if (destination.Length < precision)
+				{
+					charsWritten = 0;
+					return false;
+				}
+				UnsignedIntegerToHexChars<TUnsigned, TSigned, TChar>(in value, fmt, destination, charsWritten);
+				break;
+			default:
+				charsWritten = int.Max(precision, TUnsigned.CountDigits(in value));
+				if (destination.Length < precision)
+				{
+					charsWritten = 0;
+					return false;
+				}
+				UnsignedIntegerToDecChars<TUnsigned, TSigned, TChar>(value, destination, charsWritten);
+				break;
+		}
+		return true;
 	}
 
 	public static string SignedIntegerToDecimalString<TSigned, TUnsigned>(in TSigned value)
