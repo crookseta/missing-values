@@ -27,8 +27,23 @@ using MissingValues.Internals;
 //	}
 //);
 
-BenchmarkRunner.Run<IntegerBenchmarks>();
-//var s = NumberFormatter.FormatUnsignedNumber<UInt512, Int512>(new UInt512(0x0, 0x0, 0x0, 0x0, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF), "d", NumberStyles.Integer, CultureInfo.CurrentCulture);
+//BenchmarkRunner.Run<IntegerBenchmarks>();
 
-//Console.WriteLine(s);
+while (true)
+{
+	var s = Console.ReadLine();
+	if (s is not null)
+	{
+		Console.WriteLine((LongDouble)Half.Parse(s));
+		Console.WriteLine((LongDouble)float.Parse(s));
+		Console.WriteLine((LongDouble)double.Parse(s));
+		Console.WriteLine((LongDouble)Quad.Parse(s));
+	}
+	else 
+	{ 
+		Console.WriteLine("err."); 
+	}
+}
+
+Console.WriteLine();
 Console.ReadLine();

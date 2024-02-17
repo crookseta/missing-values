@@ -67,7 +67,7 @@ namespace MissingValues
 
 		public override string ToString()
 		{
-			return NumberFormatter.SignedIntegerToDecimalString<Int256, UInt256>(in this);
+			return ToString("d", CultureInfo.CurrentCulture);
 		}
 
 		/// <summary>

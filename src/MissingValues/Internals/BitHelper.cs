@@ -457,6 +457,11 @@ namespace MissingValues
 			return ((ushort)(1 - shiftDist), sig << shiftDist);
 		}
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		internal static (ushort Exp, ulong Sig) NormalizeSubnormalExtF80Sig(ulong sig)
+		{
+			throw new NotImplementedException();
+		}
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		internal static (ushort Exp, UInt128 Sig) NormalizeSubnormalF128Sig(UInt128 sig)
 		{
 			int shiftDist;
@@ -471,6 +476,12 @@ namespace MissingValues
 		internal static ulong PackToQuadUI64(bool sign, int exp, ulong sig64) => ((Convert.ToUInt64(sign) << 63) + ((ulong)(exp) << 48) + (sig64));
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		internal static UInt128 PackToQuad(bool sign, int exp, UInt128 sig) => ((new UInt128(sign ? 1UL << 63 : 0, 0)) + ((((UInt128)exp) << Quad.BiasedExponentShift) & Quad.BiasedExponentMask) + (sig));
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		internal static ulong PackToDouble (bool sign, short exp, ulong sig) => ((ulong)((sign ? 1UL : 0UL) << 63) + ((ulong)(exp) << 52) + (sig));
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		internal static uint PackToSingle(bool sign, short exp, uint sig) => ((uint)((sign ? 1 : 0) << 31) + ((uint)(exp) << 23) + (sig));
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		internal static ushort PackToHalf(bool sign, byte exp, ushort sig) => (ushort)(((ushort)(sign ? 1 : 0) << 15) + ((ushort)(exp) << 7) + (sig));
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		internal static UInt128 ShortShiftRightJamExtra(UInt128 a, ulong extra, int dist, out ulong ext)
 		{
@@ -492,6 +503,23 @@ namespace MissingValues
 		internal static ulong ShiftRightJam(ulong l, int dist) => dist < 63 ? (l >> dist) | (l << (-dist & 63) != 0 ? 1UL : 0UL) : (l != 0 ? 1UL : 0UL);
 		internal static UInt128 ShiftRightJam(UInt128 l, int dist) => dist < 127 ? (l >> dist) | (l << (-dist & 127) != 0 ? 1UL : 0UL) : (l != 0 ? 1UL : 0UL);
 		internal static UInt256 ShiftRightJam(UInt256 l, int dist) => dist < 255 ? (l >> dist) | (l << (-dist & 255) != 0 ? 1UL : 0UL) : (l != 0 ? 1UL : 0UL);
+		private static ulong ShiftRightJamExtra(ulong a, ulong extra, int dist, out ulong ext)
+		{
+			ulong value;
+
+			if (dist < 64)
+			{
+				value = a >> dist;
+				ext = a << (-dist & 63);
+			}
+			else
+			{
+				value = 0;
+				ext = (dist == 64) ? a : (a != 0 ? 1UL : 0UL);
+			}
+			ext |= extra != 0 ? 1UL : 0UL;
+			return value;
+		}
 		private static UInt128 ShiftRightJamExtra(UInt128 a, ulong extra, int dist, out ulong ext)
 		{
 			ushort u8NegDist;
@@ -630,6 +658,123 @@ namespace MissingValues
 			return (ulong)((sign ? 1UL << 63 : 0) + (((ulong)exp) << 52) + (sig));
 		}
 
+		internal static LongDouble RoundPackToLongDouble(bool sign, int exp, ulong sig, ulong sigExtra, byte roundingPrecision)
+		{
+			ulong roundIncrement, roundMask, roundBits;
+			bool isTiny;
+
+			switch (roundingPrecision)
+			{
+				case 32:
+					roundIncrement = 0x0400;
+					roundMask = 0x07FF;
+					break;
+				case 64:
+					roundIncrement = 0x0000_0080_0000_0000;
+					roundMask = 0x0000_00FF_FFFF_FFFF;
+					break;
+				case 80:
+				default:
+					goto precision80;
+			}
+			sig |= (sigExtra != 0 ? 1UL : 0UL);
+			roundBits = sig & roundMask;
+
+			if (0x7FFD <= (uint)(exp - 1))
+			{
+				if (exp <= 0)
+				{
+					isTiny =
+						exp < 0
+						|| (sig <= (ulong)(sig + roundIncrement));
+					sig = ShiftRightJam(sig, 1 - exp);
+					roundBits = sig & roundMask;
+					sig += roundIncrement;
+					exp = ((sig & 0x8000000000000000) != 0) ? 1 : 0;
+					roundIncrement = roundMask + 1;
+					if (roundBits << 1 == roundIncrement)
+					{
+						roundMask |= roundIncrement;
+					}
+					sig &= ~roundMask;
+					goto packReturn;
+				}
+				if (0x7FFE < exp
+					|| ((exp == 0x7FFE) && ((sig + roundIncrement) < sig)))
+				{
+					exp = 0x7FFF;
+					sig = 0x8000000000000000;
+					goto packReturn;
+				}
+			}
+
+			sig = (ulong)(sig + roundIncrement);
+			if (sig < roundIncrement)
+			{
+				++exp;
+				sig = 0x8000000000000000;
+			}
+			roundIncrement = roundMask + 1;
+			if (roundBits << 1 == roundIncrement)
+			{
+				roundMask |= roundIncrement;
+			}
+			sig &= ~roundMask;
+			goto packReturn;
+		precision80:
+			var doIncrement = 0x8000000000000000 <= sigExtra;
+
+			if (0x7FFD <= (uint)(exp - 1))
+			{
+				if (exp <= 0)
+				{
+					isTiny =
+						(exp < 0)
+						|| !doIncrement
+						|| (sig < 0xFFFFFFFFFFFFFFFF);
+					sig = ShiftRightJamExtra(sig, sigExtra, 1 - exp,out sigExtra);
+					exp = 0;
+
+					doIncrement = 0x8000000000000000 <= sigExtra;
+
+					if (doIncrement)
+					{
+						++sig;
+						sig &= ~((!((sigExtra & 0x7FFFFFFFFFFFFFFF) != 0) & true) ? 1UL : 0);
+						exp = ((sig & 0x8000000000000000) != 0 ? 1 : 0);
+					}
+
+					goto packReturn;
+				}
+				if ((0x7FFE < exp)
+					|| ((exp == 0x7FFE) && (sig == 0xFFFFFFFFFFFFFFFF))
+					&& doIncrement) 
+				{
+					roundMask = 0;
+					exp = 0x7FFF;
+					sig = 0x8000000000000000;
+					goto packReturn;
+				}
+			}
+
+			if (doIncrement)
+			{
+				++sig;
+				if (sig == 0)
+				{
+					++exp;
+					sig = 0x8000000000000000;
+				}
+				else
+				{
+					sig &= ~((((sigExtra & 0x7FFFFFFFFFFFFFFF) == 0) & true) ? 1UL : 0UL);
+				}
+			}
+
+		packReturn:
+			return new LongDouble(sign, (ushort)exp, sig);
+		}
+		
 		internal static UInt128 RoundPackToQuad(bool sign, int exp, UInt128 sig, ulong sigExtra)
 		{
 			bool doIncrement = 0x8000_0000_0000_0000 <= sigExtra;

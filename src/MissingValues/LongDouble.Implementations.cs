@@ -17,73 +17,73 @@ namespace MissingValues
 		IFormattableBinaryFloatingPoint<LongDouble>,
 		IMinMaxValue<LongDouble>
 	{
-		public static LongDouble Epsilon => throw new NotImplementedException();
+		public static LongDouble Epsilon => new LongDouble(0x0000, 0x0000_0000_0000_0001);
 
-		public static LongDouble NaN => throw new NotImplementedException();
+		public static LongDouble NaN => new LongDouble(0x7FFF, 0xC000_0000_0000_0000);
 
-		public static LongDouble NegativeInfinity => throw new NotImplementedException();
+		public static LongDouble NegativeInfinity => new LongDouble(0xFFFF, 0x8000_0000_0000_0000);
 
-		public static LongDouble NegativeZero => throw new NotImplementedException();
+		public static LongDouble NegativeZero => new LongDouble(0x8000, 0x0000_0000_0000_0000);
 
-		public static LongDouble PositiveInfinity => throw new NotImplementedException();
+		public static LongDouble PositiveInfinity => new LongDouble(0x7FFF, 0x8000_0000_0000_0000);
 
-		public static LongDouble NegativeOne => throw new NotImplementedException();
+		public static LongDouble NegativeOne => new LongDouble(0xBFFF, 0x8000_0000_0000_0000);
 
-		public static LongDouble E => throw new NotImplementedException();
+		public static LongDouble E => new LongDouble(0x4000, 0xADF8_5458_A2BB_4A9B);
 
-		public static LongDouble Pi => throw new NotImplementedException();
+		public static LongDouble Pi => new LongDouble(0x4000, 0xC90F_DAA2_2168_C235);
 
-		public static LongDouble Tau => throw new NotImplementedException();
+		public static LongDouble Tau => new LongDouble(0x4001, 0xC90F_DAA2_2168_C235);
 
-		public static LongDouble One => throw new NotImplementedException();
+		public static LongDouble One => new LongDouble(0x3FFF, 0x8000_0000_0000_0000);
 
 		public static int Radix => 2;
 
-		public static LongDouble Zero => throw new NotImplementedException();
+		public static LongDouble Zero => default;
 
-		public static LongDouble AdditiveIdentity => throw new NotImplementedException();
+		static LongDouble IAdditiveIdentity<LongDouble, LongDouble>.AdditiveIdentity => Zero;
 
-		public static LongDouble MultiplicativeIdentity => throw new NotImplementedException();
+		static LongDouble IMultiplicativeIdentity<LongDouble, LongDouble>.MultiplicativeIdentity => One;
 
-		public static LongDouble MaxValue => throw new NotImplementedException();
+		public static LongDouble MaxValue => new LongDouble(0x7FFE, 0xFFFF_FFFF_FFFF_FFFF);
 
-		public static LongDouble MinValue => throw new NotImplementedException();
+		public static LongDouble MinValue => new LongDouble(0xFFFE, 0xFFFF_FFFF_FFFF_FFFF);
 
 		static bool IFormattableBinaryFloatingPoint<LongDouble>.ExplicitLeadingBit => true;
 
-		static int IFormattableBinaryFloatingPoint<LongDouble>.NormalMantissaBits => throw new NotImplementedException();
+		static int IFormattableBinaryFloatingPoint<LongDouble>.NormalMantissaBits => 64;
 
-		static int IFormattableBinaryFloatingPoint<LongDouble>.DenormalMantissaBits => throw new NotImplementedException();
+		static int IFormattableBinaryFloatingPoint<LongDouble>.DenormalMantissaBits => 64;
 
-		static int IFormattableBinaryFloatingPoint<LongDouble>.MinimumDecimalExponent => throw new NotImplementedException();
+		static int IFormattableBinaryFloatingPoint<LongDouble>.MinimumDecimalExponent => -4951;
 
-		static int IFormattableBinaryFloatingPoint<LongDouble>.MaximumDecimalExponent => throw new NotImplementedException();
+		static int IFormattableBinaryFloatingPoint<LongDouble>.MaximumDecimalExponent => 4932;
 
-		static int IFormattableBinaryFloatingPoint<LongDouble>.MinBiasedExponent => throw new NotImplementedException();
+		static int IFormattableBinaryFloatingPoint<LongDouble>.MinBiasedExponent => 0x0000;
 
-		static int IFormattableBinaryFloatingPoint<LongDouble>.MaxBiasedExponent => throw new NotImplementedException();
+		static int IFormattableBinaryFloatingPoint<LongDouble>.MaxBiasedExponent => 0x7FFF;
 
-		static int IFormattableBinaryFloatingPoint<LongDouble>.MaxSignificandPrecision => throw new NotImplementedException();
+		static int IFormattableBinaryFloatingPoint<LongDouble>.MaxSignificandPrecision => 18;
 
-		static int IFormattableBinaryFloatingPoint<LongDouble>.ExponentBits => throw new NotImplementedException();
+		static int IFormattableBinaryFloatingPoint<LongDouble>.ExponentBits => 15;
 
-		static int IFormattableBinaryFloatingPoint<LongDouble>.ExponentBias => throw new NotImplementedException();
+		static int IFormattableBinaryFloatingPoint<LongDouble>.ExponentBias => 16383;
 
-		static int IFormattableBinaryFloatingPoint<LongDouble>.OverflowDecimalExponent => throw new NotImplementedException();
+		static int IFormattableBinaryFloatingPoint<LongDouble>.OverflowDecimalExponent => (16383 + (2 * 113) / 3);
 
-		static UInt128 IFormattableBinaryFloatingPoint<LongDouble>.DenormalMantissaMask => throw new NotImplementedException();
+		static UInt128 IFormattableBinaryFloatingPoint<LongDouble>.DenormalMantissaMask => 0xFFFF_FFFF_FFFF_FFFF;
 
-		static UInt128 IFormattableBinaryFloatingPoint<LongDouble>.NormalMantissaMask => throw new NotImplementedException();
+		static UInt128 IFormattableBinaryFloatingPoint<LongDouble>.NormalMantissaMask => 0xFFFF_FFFF_FFFF_FFFF;
 
-		static UInt128 IFormattableBinaryFloatingPoint<LongDouble>.TrailingSignificandMask => throw new NotImplementedException();
+		static UInt128 IFormattableBinaryFloatingPoint<LongDouble>.TrailingSignificandMask => 0xFFFF_FFFF_FFFF_FFFF;
 
-		static UInt128 IFormattableBinaryFloatingPoint<LongDouble>.PositiveZeroBits => throw new NotImplementedException();
+		static UInt128 IFormattableBinaryFloatingPoint<LongDouble>.PositiveZeroBits => default;
 
-		static UInt128 IFormattableBinaryFloatingPoint<LongDouble>.PositiveInfinityBits => throw new NotImplementedException();
+		static UInt128 IFormattableBinaryFloatingPoint<LongDouble>.PositiveInfinityBits => new UInt128(0x7FFF, 0x0);
 
-		static UInt128 IFormattableBinaryFloatingPoint<LongDouble>.NegativeInfinityBits => throw new NotImplementedException();
+		static UInt128 IFormattableBinaryFloatingPoint<LongDouble>.NegativeInfinityBits => new UInt128(0xFFFF, 0x0);
 
-		static ReadOnlySpan<LongDouble> IFormattableFloatingPoint<LongDouble>.PowersOfTen => throw new NotImplementedException();
+		static ReadOnlySpan<LongDouble> IFormattableFloatingPoint<LongDouble>.PowersOfTen => ReadOnlySpan<LongDouble>.Empty;
 
 		public static LongDouble Abs(LongDouble value)
 		{
@@ -212,17 +212,17 @@ namespace MissingValues
 
 		static bool INumberBase<LongDouble>.IsCanonical(LongDouble value)
 		{
-			throw new NotImplementedException();
+			return true;
 		}
 
 		static bool INumberBase<LongDouble>.IsComplexNumber(LongDouble value)
 		{
-			throw new NotImplementedException();
+			return false;
 		}
 
 		public static bool IsEvenInteger(LongDouble value)
 		{
-			throw new NotImplementedException();
+			return IsInteger(value) && (Abs(value % Two) == Zero);
 		}
 
 		public static bool IsFinite(LongDouble value)
@@ -252,7 +252,7 @@ namespace MissingValues
 
 		public static bool IsNegative(LongDouble value)
 		{
-			throw new NotImplementedException();
+			return value.Sign;
 		}
 
 		public static bool IsNegativeInfinity(LongDouble value)
@@ -272,7 +272,7 @@ namespace MissingValues
 
 		public static bool IsPositive(LongDouble value)
 		{
-			throw new NotImplementedException();
+			return !value.Sign;
 		}
 
 		public static bool IsPositiveInfinity(LongDouble value)
@@ -298,6 +298,11 @@ namespace MissingValues
 		static bool INumberBase<LongDouble>.IsZero(LongDouble value)
 		{
 			throw new NotImplementedException();
+		}
+
+		public static LongDouble Lerp(LongDouble value1, LongDouble value2, LongDouble amount)
+		{
+			return (value1 * (One - amount)) + (value2 * amount);
 		}
 
 		public static LongDouble Log(LongDouble x)
@@ -342,23 +347,59 @@ namespace MissingValues
 
 		public static LongDouble Parse(ReadOnlySpan<char> s, NumberStyles style, IFormatProvider? provider)
 		{
-			throw new NotImplementedException();
+			if (!TryParse(s, style, provider, out LongDouble result))
+			{
+				Thrower.ParsingError<LongDouble>(s.ToString());
+			}
+			return result;
 		}
 
 		public static LongDouble Parse(string s, NumberStyles style, IFormatProvider? provider)
 		{
-			throw new NotImplementedException();
+			if (!TryParse(s, style, provider, out LongDouble result))
+			{
+				Thrower.ParsingError<LongDouble>(s);
+			}
+			return result;
 		}
 
 		public static LongDouble Parse(ReadOnlySpan<char> s, IFormatProvider? provider)
 		{
-			throw new NotImplementedException();
+			if (!TryParse(s, NumberStyles.Float, provider, out LongDouble result))
+			{
+				Thrower.ParsingError<LongDouble>(s.ToString());
+			}
+			return result;
 		}
 
 		public static LongDouble Parse(string s, IFormatProvider? provider)
 		{
-			throw new NotImplementedException();
+			if (!TryParse(s, NumberStyles.Float, provider, out LongDouble result))
+			{
+				Thrower.ParsingError<LongDouble>(s);
+			}
+			return result;
 		}
+
+#if NET8_0_OR_GREATER
+		public static LongDouble Parse(ReadOnlySpan<byte> utf8Text, NumberStyles style, IFormatProvider? provider)
+		{
+			if (!TryParse(utf8Text, style, provider, out LongDouble result))
+			{
+				Thrower.ParsingError<Quad>(utf8Text.ToString());
+			}
+			return result;
+		}
+
+		public static LongDouble Parse(ReadOnlySpan<byte> utf8Text, IFormatProvider? provider)
+		{
+			if (!TryParse(utf8Text, NumberStyles.Float, provider, out LongDouble result))
+			{
+				Thrower.ParsingError<LongDouble>(utf8Text.ToString());
+			}
+			return result;
+		}
+#endif
 
 		public static LongDouble Pow(LongDouble x, LongDouble y)
 		{
@@ -427,32 +468,44 @@ namespace MissingValues
 
 		public static bool TryParse(ReadOnlySpan<char> s, NumberStyles style, IFormatProvider? provider, [MaybeNullWhen(false)] out LongDouble result)
 		{
-			throw new NotImplementedException();
+			return NumberParser.TryParseFloat(Utf16Char.CastFromCharSpan(s), style, provider, out result);
 		}
 
 		public static bool TryParse([NotNullWhen(true)] string? s, NumberStyles style, IFormatProvider? provider, [MaybeNullWhen(false)] out LongDouble result)
 		{
-			throw new NotImplementedException();
+			return NumberParser.TryParseFloat(Utf16Char.CastFromCharSpan(s), style, provider, out result);
 		}
 
 		public static bool TryParse(ReadOnlySpan<char> s, IFormatProvider? provider, [MaybeNullWhen(false)] out LongDouble result)
 		{
-			throw new NotImplementedException();
+			return NumberParser.TryParseFloat(Utf16Char.CastFromCharSpan(s), NumberStyles.Float, provider, out result);
 		}
 
 		public static bool TryParse([NotNullWhen(true)] string? s, IFormatProvider? provider, [MaybeNullWhen(false)] out LongDouble result)
 		{
-			throw new NotImplementedException();
+			return NumberParser.TryParseFloat(Utf16Char.CastFromCharSpan(s), NumberStyles.Float, provider, out result);
 		}
+
+#if NET8_0_OR_GREATER
+		public static bool TryParse(ReadOnlySpan<byte> utf8Text, NumberStyles style, IFormatProvider? provider, [MaybeNullWhen(false)] out LongDouble result)
+		{
+			return NumberParser.TryParseFloat(Utf8Char.CastFromByteSpan(utf8Text), style, provider, out result);
+		}
+		public static bool TryParse(ReadOnlySpan<byte> utf8Text, IFormatProvider? provider, [MaybeNullWhen(false)] out LongDouble result)
+		{
+			return NumberParser.TryParseFloat(Utf8Char.CastFromByteSpan(utf8Text), NumberStyles.Float, provider, out result);
+		}
+#endif
 
 		static LongDouble IFormattableBinaryFloatingPoint<LongDouble>.BitsToFloat(UInt128 bits)
 		{
-			throw new NotImplementedException();
+			BitHelper.GetUpperAndLowerBits(bits, out ulong upper, out ulong lower);
+			return new LongDouble((ushort)upper, lower);
 		}
 
 		static UInt128 IFormattableBinaryFloatingPoint<LongDouble>.FloatToBits(LongDouble value)
 		{
-			throw new NotImplementedException();
+			return new UInt128(value._upper, value._lower);
 		}
 
 		static bool INumberBase<LongDouble>.TryConvertFromChecked<TOther>(TOther value, out LongDouble result)
@@ -550,7 +603,7 @@ namespace MissingValues
 
 		public string ToString(string? format, IFormatProvider? formatProvider)
 		{
-			throw new NotImplementedException();
+			return NumberFormatter.FloatToString(in this, format, formatProvider);
 		}
 
 		public bool TryFormat(Span<char> destination, out int charsWritten, ReadOnlySpan<char> format, IFormatProvider? provider)

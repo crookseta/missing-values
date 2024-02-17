@@ -538,7 +538,7 @@ namespace MissingValues.Internals
 			// Then, in both cases, we subtract an additional one from the exponent, to
 			// account for the fact that we've generated an extra bit of precision, for
 			// use in rounding.
-			int finalExponent = (integerBitsOfPrecision > 0) ? (int)(integerBitsOfPrecision) - 2 : -(int)(fractionalExponent) - 1;
+			int finalExponent = ((integerBitsOfPrecision > 0) ? (int)(integerBitsOfPrecision) - 2 : -(int)(fractionalExponent) - 1) + (TFloat.ExplicitLeadingBit ? 1 : 0);
 
 			return AssembleFloatingPointBits<TFloat>(completeMantissa, finalExponent, hasZeroTail);
 		}
@@ -607,7 +607,7 @@ namespace MissingValues.Internals
 			// normalized mantissa:
 			uint initialMantissaBits = BigNumber.CountSignificantBits(initialMantissa);
 			int normalMantissaShift = normalMantissaBits - (int)(initialMantissaBits);
-			int normalExponent = initialExponent - normalMantissaShift;
+			int normalExponent = initialExponent - (normalMantissaShift + (TFloat.ExplicitLeadingBit ? 1 : 0));
 
 			UInt128 mantissa = initialMantissa;
 			int exponent = normalExponent;

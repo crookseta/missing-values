@@ -613,7 +613,7 @@ internal static partial class NumberFormatter
 			}
 			else
 			{
-				uint q = Log10Pow5(-e2) - (-2 > 1 ? 1 : 0);
+				uint q = Log10Pow5(-e2) - (-e2 > 1 ? 1U : 0U);
 				e10 = (int)(q + e2);
 				int i = (int)(-e2 - q);
 				int k = (int)(Pow5Bits(i) - Float128Pow5BitCount);
@@ -835,7 +835,7 @@ internal static partial class NumberFormatter
 			}
 			else
 			{
-				r0 = corr + ((p1 >> shift - 128) | (p2 << (256 - shift)));
+				r0 = corr + ((p1 >> (shift - 128)) | (p2 << (256 - shift)));
 				r1 = (p2 >> (shift - 128)) + (r0 < corr ? UInt128.One : UInt128.Zero);
 			}
 

@@ -592,7 +592,7 @@ namespace MissingValues
 
 		public string ToString([StringSyntax(StringSyntaxAttribute.NumericFormat)] string? format, IFormatProvider? formatProvider)
 		{
-			return NumberFormatter.FormatUnsignedNumber(in this, format, NumberStyles.Integer, formatProvider);
+			return NumberFormatter.FormatUnsignedInteger<UInt512, Int512>(in this, format, NumberStyles.Integer, formatProvider);
 		}
 
 		static bool INumberBase<UInt512>.TryConvertFromChecked<TOther>(TOther value, out UInt512 result) => TryConvertFromChecked(value, out result);
@@ -804,7 +804,7 @@ namespace MissingValues
 
 		public bool TryFormat(Span<char> destination, out int charsWritten, [StringSyntax(StringSyntaxAttribute.NumericFormat)] ReadOnlySpan<char> format, IFormatProvider? provider)
 		{
-			return NumberFormatter.TryFormatUnsignedInteger(in this, Utf16Char.CastFromCharSpan(destination), out charsWritten, format, provider);
+			return NumberFormatter.TryFormatUnsignedInteger<UInt512, Int512, Utf16Char>(in this, Utf16Char.CastFromCharSpan(destination), out charsWritten, format, provider);
 		}
 
 #if NET8_0_OR_GREATER

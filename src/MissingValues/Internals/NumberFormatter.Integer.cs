@@ -386,64 +386,6 @@ internal static partial class NumberFormatter
 			}
 		});
 	}
-	public static void UnsignedIntegerToCharSpan<T>(T value, in T numberBase, Span<char> destination)
-		where T : struct, IFormattableInteger<T>, IUnsignedNumber<T>
-	{
-		ReadOnlySpan<char> numbers = stackalloc char[]
-		{
-			'0',
-			'1',
-			'2',
-			'3',
-			'4',
-			'5',
-			'6',
-			'7',
-			'8',
-			'9',
-			'A',
-			'B',
-			'C',
-			'D',
-			'E',
-			'F'
-		};
-
-		for (int i = destination.Length - 1; i >= 0; i--)
-		{
-			(value, var rem) = T.DivRem(value, numberBase);
-			destination[i] = numbers[rem.ToInt32()];
-		}
-	}
-	public static void UnsignedIntegerToCharSpan<T>(T value, in T numberBase, int digits, Span<char> destination)
-		where T : struct, IFormattableInteger<T>, IUnsignedNumber<T>
-	{
-		ReadOnlySpan<char> numbers = stackalloc char[]
-		{
-				'0',
-				'1',
-				'2',
-				'3',
-				'4',
-				'5',
-				'6',
-				'7',
-				'8',
-				'9',
-				'A',
-				'B',
-				'C',
-				'D',
-				'E',
-				'F'
-			};
-
-		for (int i = digits - 1; i >= 0; i--)
-		{
-			(value, var rem) = T.DivRem(value, numberBase);
-			destination[i] = numbers[rem.ToInt32()];
-		}
-	}
 	public static void UnsignedIntegerToCharSpan<TNumber, TChar>(TNumber value, in TNumber numberBase, int digits, Span<TChar> destination)
 		where TNumber : struct, IFormattableInteger<TNumber>, IUnsignedNumber<TNumber>
 		where TChar : unmanaged, IUtfCharacter<TChar>
@@ -534,7 +476,7 @@ internal static partial class NumberFormatter
 
 		return UnsignedIntegerToString(in value, fmtBase, precision);
 	}
-	public static string FormatUnsignedNumber<TUnsigned, TSigned>(in TUnsigned value, string? format, NumberStyles style, IFormatProvider? formatProvider)
+	public static string FormatUnsignedInteger<TUnsigned, TSigned>(in TUnsigned value, string? format, NumberStyles style, IFormatProvider? formatProvider)
 		where TUnsigned : struct, IFormattableUnsignedInteger<TUnsigned, TSigned>
 		where TSigned : struct, IFormattableSignedInteger<TSigned, TUnsigned>
 	{
@@ -726,38 +668,16 @@ internal static partial class NumberFormatter
 		where TSigned : struct, IFormattableSignedInteger<TSigned, TUnsigned>, IMinMaxValue<TSigned>
 		where TUnsigned : struct, IFormattableUnsignedInteger<TUnsigned, TSigned>
 	{
-		int precision = 0;
-		if (format is not null && format.Length != 1 && !int.TryParse(format[1..], out precision))
-		{
-			Thrower.InvalidFormat(format);
-		}
-
-		char fmt;
-		bool isUpper = false;
-
-		if (format is null)
-		{
-			fmt = 'd';
+        if (TSigned.IsNegative(value))
+        {
+			return NumberFormatInfo.GetInstance(formatProvider).NegativeSign + FormatUnsignedInteger<TUnsigned, TSigned>(
+			  value == TSigned.MinValue ? TUnsigned.One + TSigned.MaxValue.ToUnsigned() : TSigned.Abs(value).ToUnsigned(),
+			  format, style, formatProvider);
 		}
 		else
 		{
-			isUpper = char.IsUpper(format[0]);
-			fmt = char.ToLowerInvariant(format[0]);
+			return FormatUnsignedInteger<TUnsigned, TSigned>(value.ToUnsigned(), format, style, formatProvider);
 		}
-
-		string output = fmt switch
-		{
-			'b' => UnsignedIntegerToString(value.ToUnsigned(), TUnsigned.Two, precision),
-			'x' => UnsignedIntegerToString(value.ToUnsigned(), TUnsigned.Sixteen, precision),
-			_ => SignedIntegerToDecimalString<TSigned, TUnsigned>(in value),
-		};
-
-		if (isUpper)
-		{
-			output = output.ToUpper();
-		}
-
-		return output;
 	}
 
 	public static bool TryFormatSignedInteger<TSigned, TUnsigned, TChar>(in TSigned value, Span<TChar> destination, out int charsWritten, ReadOnlySpan<char> format, IFormatProvider? provider)
@@ -765,66 +685,18 @@ internal static partial class NumberFormatter
 		where TUnsigned : struct, IFormattableUnsignedInteger<TUnsigned, TSigned>
 		where TChar : unmanaged, IUtfCharacter<TChar>
 	{
-		int precision = 0;
-		if (format.Length > 1 && !int.TryParse(format[1..], out precision))
-		{
-			Thrower.InvalidFormat(format.ToString());
-		}
 
-		bool isUpper = false;
-		char fmt;
-		if (format.Length < 1)
+		if (TSigned.IsNegative(value))
 		{
-			fmt = 'd';
+			TChar.Copy(NumberFormatInfo.GetInstance(provider).NegativeSign, destination);
+
+			return TryFormatUnsignedInteger<TUnsigned, TSigned, TChar>(
+			  value == TSigned.MinValue ? TUnsigned.One + TSigned.MaxValue.ToUnsigned() : TSigned.Abs(value).ToUnsigned(),
+			  destination[NumberFormatInfo.GetInstance(provider).NegativeSign.Length..], out charsWritten, format, provider);
 		}
 		else
 		{
-			isUpper = char.IsUpper(format[0]);
-			fmt = char.ToLowerInvariant(format[0]);
+			return TryFormatUnsignedInteger<TUnsigned, TSigned, TChar>(value.ToUnsigned(), destination, out charsWritten, format, provider);
 		}
-
-		TSigned fmtBase = fmt switch
-		{
-			'b' => TSigned.Two,
-			'x' => TSigned.Sixteen,
-			_ => TSigned.Ten,
-		};
-
-
-		precision = int.Max(precision, BitHelper.CountDigits(value, fmtBase));
-		bool isNegative = TSigned.IsNegative(value);
-		var v = value;
-
-		if (fmtBase != TSigned.Ten)
-		{
-			isUpper = char.IsUpper(format[0]);
-		}
-		else if (isNegative)
-		{
-			++precision;
-			v = value == TSigned.MinValue ? (TSigned.MaxValue + TSigned.One) : TSigned.Abs(value);
-		}
-
-		Span<TChar> output = stackalloc TChar[precision];
-		UnsignedIntegerToCharSpan(v.ToUnsigned(), fmtBase.ToUnsigned(), precision, output);
-
-		if (isUpper)
-		{
-			for (int i = 0; i < output.Length; i++)
-			{
-				output[i] = TChar.ToUpper(output[i]);
-			}
-		}
-
-		if (isNegative && fmtBase == TSigned.Ten)
-		{
-			TChar.Copy(NumberFormatInfo.GetInstance(provider).NegativeSign, output[..1]);
-		}
-
-		bool success = output.TryCopyTo(destination);
-
-
-		charsWritten = success ? precision : 0;
-		return success;
 	}
 }

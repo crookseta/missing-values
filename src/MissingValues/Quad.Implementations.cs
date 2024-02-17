@@ -384,13 +384,13 @@ namespace MissingValues
 		}
 
 #if NET8_0_OR_GREATER
-		public static bool TryParse(ReadOnlySpan<byte> s, NumberStyles style, IFormatProvider? provider, [MaybeNullWhen(false)] out Quad result)
+		public static bool TryParse(ReadOnlySpan<byte> utf8Text, NumberStyles style, IFormatProvider? provider, [MaybeNullWhen(false)] out Quad result)
 		{
-			return NumberParser.TryParseFloat(Utf8Char.CastFromByteSpan(s), style, provider, out result);
+			return NumberParser.TryParseFloat(Utf8Char.CastFromByteSpan(utf8Text), style, provider, out result);
 		}
-		public static bool TryParse(ReadOnlySpan<byte> s, IFormatProvider? provider, [MaybeNullWhen(false)] out Quad result)
+		public static bool TryParse(ReadOnlySpan<byte> utf8Text, IFormatProvider? provider, [MaybeNullWhen(false)] out Quad result)
 		{
-			return NumberParser.TryParseFloat(Utf8Char.CastFromByteSpan(s), NumberStyles.Float, provider, out result);
+			return NumberParser.TryParseFloat(Utf8Char.CastFromByteSpan(utf8Text), NumberStyles.Float, provider, out result);
 		}
 #endif
 

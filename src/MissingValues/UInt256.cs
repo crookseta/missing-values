@@ -141,7 +141,7 @@ namespace MissingValues
 
 		public override string ToString()
 		{
-			return NumberFormatter.UnsignedIntegerToString(in this, new UInt256(UInt128.Zero, 10));
+			return ToString("d", CultureInfo.CurrentCulture);
 		}
 
 		public override bool Equals(object? obj)

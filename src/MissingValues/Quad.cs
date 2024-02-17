@@ -911,8 +911,33 @@ namespace MissingValues
 		}
 		public static explicit operator LongDouble(Quad value)
 		{
-			// TODO: implement casting
-			throw new NotImplementedException();
+			var sign = Quad.IsNegative(value);
+			var exp = value.BiasedExponent;
+			var frac = value.TrailingSignificand;
+
+			if (exp == 0x7FFF)
+			{
+				if (frac != UInt128.Zero)
+				{
+					return LongDouble.NaN;
+				}
+				else
+				{
+					return new LongDouble(sign, 0x7FFF, 0x8000_0000_0000_0000);
+				}
+			}
+
+			if (exp == 0)
+			{
+				if (frac == UInt128.Zero)
+				{
+					return new LongDouble(sign, 0, 0);
+				}
+				(exp, frac) = BitHelper.NormalizeSubnormalF128Sig(frac);
+			}
+
+			var sig128 = (frac | SignificandSignMask) << 15;
+			return BitHelper.RoundPackToLongDouble(sign, exp, (ulong)(sig128 >> 64), (ulong)sig128, 80);
 		}
 		public static explicit operator double(Quad value)
 		{
