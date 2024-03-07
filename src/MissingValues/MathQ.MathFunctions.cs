@@ -200,6 +200,7 @@ namespace MissingValues
 		/// </returns>
 		public static Quad Acos(Quad x)
 		{
+			// source: fdlibm/e_acosl.c
 			Quad y;
 
 			if (x == Quad.Zero)
@@ -239,6 +240,7 @@ namespace MissingValues
 		/// <returns>An angle, θ, measured in radians, such that 0 ≤ θ ≤ ∞.</returns>
 		public static Quad Acosh(Quad x)
 		{
+			// source: fdlibm/e_acoshl.c
 			Quad t;
 			var exponent = x.BiasedExponent;
 

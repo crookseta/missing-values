@@ -232,22 +232,24 @@ namespace MissingValues
 
 		static bool INumberBase<LongDouble>.IsImaginaryNumber(LongDouble value)
 		{
-			throw new NotImplementedException();
+			return false;
 		}
 
 		public static bool IsInfinity(LongDouble value)
 		{
-			throw new NotImplementedException();
+			return value == PositiveInfinity || value == NegativeInfinity;
 		}
 
 		public static bool IsInteger(LongDouble value)
 		{
-			throw new NotImplementedException();
+			return IsFinite(value) && (value == Truncate(value));
 		}
 
 		public static bool IsNaN(LongDouble value)
 		{
-			throw new NotImplementedException();
+			var inf = PositiveInfinity;
+			var strip = StripSign(value);
+			return LessThan(inf._upper, inf._lower, strip._upper, strip._lower);
 		}
 
 		public static bool IsNegative(LongDouble value)
@@ -257,7 +259,7 @@ namespace MissingValues
 
 		public static bool IsNegativeInfinity(LongDouble value)
 		{
-			throw new NotImplementedException();
+			return value == NegativeInfinity;
 		}
 
 		public static bool IsNormal(LongDouble value)
@@ -277,7 +279,7 @@ namespace MissingValues
 
 		public static bool IsPositiveInfinity(LongDouble value)
 		{
-			throw new NotImplementedException();
+			return value == PositiveInfinity;
 		}
 
 		public static bool IsPow2(LongDouble value)
@@ -287,7 +289,7 @@ namespace MissingValues
 
 		public static bool IsRealNumber(LongDouble value)
 		{
-			throw new NotImplementedException();
+			return !IsNaN(value);
 		}
 
 		public static bool IsSubnormal(LongDouble value)
@@ -604,6 +606,11 @@ namespace MissingValues
 		public string ToString(string? format, IFormatProvider? formatProvider)
 		{
 			return NumberFormatter.FloatToString(in this, format, formatProvider);
+		}
+
+		public static LongDouble Truncate(LongDouble x)
+		{
+			throw new NotImplementedException();
 		}
 
 		public bool TryFormat(Span<char> destination, out int charsWritten, ReadOnlySpan<char> format, IFormatProvider? provider)

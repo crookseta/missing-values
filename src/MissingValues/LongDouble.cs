@@ -514,5 +514,9 @@ namespace MissingValues
 			var temp = ((left | right) & ~SignMask);
 			return (temp._upper | temp._lower) == 0;
 		}
+		private static LongDouble StripSign(LongDouble value)
+		{
+			return new LongDouble((ushort)(value._upper & ~0x8000), value._lower & 0xFFFF_FFFF_FFFF_FFFF);
+		}
 	}
 }
