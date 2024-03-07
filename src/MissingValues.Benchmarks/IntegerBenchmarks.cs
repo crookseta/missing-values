@@ -41,7 +41,7 @@ namespace MissingValues.Benchmarks
 		[Benchmark]
 		public string Integers_ToString()
 		{
-			return NumberFormatter.FormatUnsignedNumber<UInt512, Int512>(in Number, Format, NumberStyles.Integer, CultureInfo.CurrentCulture);
+			return NumberFormatter.FormatUnsignedInteger<UInt512, Int512>(in Number, Format, CultureInfo.CurrentCulture);
 		}
 	}
 }

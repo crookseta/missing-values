@@ -151,7 +151,7 @@ namespace MissingValues
 				return ParsingStatus.Failed;
 			}
 
-			ParsingStatus status = ParsingStatus.Success;
+			ParsingStatus status;
 
 			if (style.HasFlag(NumberStyles.AllowHexSpecifier))
 			{

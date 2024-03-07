@@ -8,6 +8,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace MissingValues.Internals;
 
@@ -110,7 +111,7 @@ internal interface IFormattableUnsignedInteger<TUnsigned, TSigned> : IFormattabl
 	where TSigned : IFormattableInteger<TSigned>
 {
 	/// <summary>
-	/// Gets the absolute representation of the maximum representable value of <typeparamref name="TSigned"/>.
+	/// Gets the absolute representation of the maximum representable value of <typeparamref name="TSigned"/>(Abs(TSigned.MinValue)).
 	/// </summary>
 	abstract static TUnsigned SignedMaxMagnitude { get; }
 
@@ -534,7 +535,7 @@ internal static partial class NumberFormatter
 
 		return UnsignedIntegerToString(in value, fmtBase, precision);
 	}
-	public static string FormatUnsignedNumber<TUnsigned, TSigned>(in TUnsigned value, string? format, NumberStyles style, IFormatProvider? formatProvider)
+	public static string FormatUnsignedInteger<TUnsigned, TSigned>(in TUnsigned value, string? format, IFormatProvider? formatProvider)
 		where TUnsigned : struct, IFormattableUnsignedInteger<TUnsigned, TSigned>
 		where TSigned : struct, IFormattableSignedInteger<TSigned, TUnsigned>
 	{
@@ -674,7 +675,7 @@ internal static partial class NumberFormatter
 			case 'b':
 			case 'B':
 				charsWritten = int.Max(precision, CountBinDigits(in value));
-				if (destination.Length < precision)
+				if (destination.Length < charsWritten)
 				{
 					charsWritten = 0;
 					return false;
@@ -684,7 +685,7 @@ internal static partial class NumberFormatter
 			case 'x':
 			case 'X':
 				charsWritten = int.Max(precision, CountHexDigits(in value));
-				if (destination.Length < precision)
+				if (destination.Length < charsWritten)
 				{
 					charsWritten = 0;
 					return false;
@@ -693,7 +694,7 @@ internal static partial class NumberFormatter
 				break;
 			default:
 				charsWritten = int.Max(precision, TUnsigned.CountDigits(in value));
-				if (destination.Length < precision)
+				if (destination.Length < charsWritten)
 				{
 					charsWritten = 0;
 					return false;
@@ -733,31 +734,48 @@ internal static partial class NumberFormatter
 		}
 
 		char fmt;
-		bool isUpper = false;
 
-		if (format is null)
+		fmt = string.IsNullOrWhiteSpace(format) ? 'd' : format[0];
+		TUnsigned absValue;
+
+		switch (fmt)
 		{
-			fmt = 'd';
+			case 'b':
+			case 'B':
+				absValue = value.ToUnsigned();
+				precision = int.Max(precision, CountBinDigits(in absValue));
+				return string.Create(precision, absValue, (destination, number) =>
+				{
+					UnsignedIntegerToBinChars<TUnsigned, TSigned, Utf16Char>(in number, Utf16Char.CastFromCharSpan(destination), destination.Length);
+				});
+			case 'x':
+			case 'X':
+				absValue = value.ToUnsigned();
+				precision = int.Max(precision, CountHexDigits(in absValue));
+				return string.Create(precision, (absValue, fmt), (destination, number) =>
+				{
+					UnsignedIntegerToHexChars<TUnsigned, TSigned, Utf16Char>(in number.absValue, number.fmt, Utf16Char.CastFromCharSpan(destination), destination.Length);
+				});
+			case 'd':
+			case 'D':
+			default:
+				if (TSigned.IsNegative(value))
+				{
+					var negativeSign = NumberFormatInfo.GetInstance(formatProvider).NegativeSign;
+					absValue = value == TSigned.MinValue ? TUnsigned.SignedMaxMagnitude : TSigned.Abs(value).ToUnsigned();
+					precision = int.Max(precision, TUnsigned.CountDigits(in absValue));
+					return negativeSign + string.Create(precision, absValue, (destination, number) =>
+					{
+						UnsignedIntegerToDecChars<TUnsigned, TSigned, Utf16Char>(number, Utf16Char.CastFromCharSpan(destination), destination.Length);
+					});
+				}
+				absValue = value.ToUnsigned();
+				precision = int.Max(precision, TUnsigned.CountDigits(in absValue));
+				return string.Create(precision, absValue, (destination, number) =>
+				{
+					UnsignedIntegerToDecChars<TUnsigned, TSigned, Utf16Char>(number, Utf16Char.CastFromCharSpan(destination), destination.Length);
+				});
 		}
-		else
-		{
-			isUpper = char.IsUpper(format[0]);
-			fmt = char.ToLowerInvariant(format[0]);
-		}
-
-		string output = fmt switch
-		{
-			'b' => UnsignedIntegerToString(value.ToUnsigned(), TUnsigned.Two, precision),
-			'x' => UnsignedIntegerToString(value.ToUnsigned(), TUnsigned.Sixteen, precision),
-			_ => SignedIntegerToDecimalString<TSigned, TUnsigned>(in value),
-		};
-
-		if (isUpper)
-		{
-			output = output.ToUpper();
-		}
-
-		return output;
 	}
 
 	public static bool TryFormatSignedInteger<TSigned, TUnsigned, TChar>(in TSigned value, Span<TChar> destination, out int charsWritten, ReadOnlySpan<char> format, IFormatProvider? provider)
@@ -771,60 +789,64 @@ internal static partial class NumberFormatter
 			Thrower.InvalidFormat(format.ToString());
 		}
 
-		bool isUpper = false;
 		char fmt;
-		if (format.Length < 1)
+		NumberFormatInfo info = NumberFormatInfo.GetInstance(provider);
+
+		fmt = format.IsWhiteSpace() || format.IsEmpty ? 'd' : format[0];
+		TUnsigned absValue;
+
+		switch (fmt)
 		{
-			fmt = 'd';
+			case 'b':
+			case 'B':
+				absValue = value.ToUnsigned();
+				charsWritten = int.Max(precision, CountBinDigits(in absValue));
+				if (destination.Length < charsWritten)
+				{
+					charsWritten = 0;
+					return false;
+				}
+				UnsignedIntegerToBinChars<TUnsigned, TSigned, TChar>(in absValue, destination, charsWritten);
+				break;
+			case 'x':
+			case 'X':
+				absValue = value.ToUnsigned();
+				charsWritten = int.Max(precision, CountHexDigits(in absValue));
+				if (destination.Length < charsWritten)
+				{
+					charsWritten = 0;
+					return false;
+				}
+				UnsignedIntegerToHexChars<TUnsigned, TSigned, TChar>(in absValue, fmt, destination, charsWritten);
+				break;
+			case 'd':
+			case 'D':
+			default:
+				if (TSigned.IsNegative(value))
+				{
+					Span<TChar> negativeSign = stackalloc TChar[TChar.GetLength(info.NegativeSign)];
+					TChar.Copy(info.NegativeSign, negativeSign);
+					absValue = value == TSigned.MinValue ? TUnsigned.SignedMaxMagnitude : TSigned.Abs(value).ToUnsigned();
+					charsWritten = int.Max(precision, TUnsigned.CountDigits(in absValue)) + negativeSign.Length;
+					if (destination.Length < charsWritten || !negativeSign.TryCopyTo(destination))
+					{
+						charsWritten = 0;
+						return false;
+					}
+					UnsignedIntegerToDecChars<TUnsigned, TSigned, TChar>(absValue, destination[negativeSign.Length..], charsWritten - negativeSign.Length);
+					break;
+				}
+				absValue = value.ToUnsigned();
+				charsWritten = int.Max(precision, TUnsigned.CountDigits(in absValue));
+				if (destination.Length < charsWritten)
+				{
+					charsWritten = 0;
+					return false;
+				}
+				UnsignedIntegerToDecChars<TUnsigned, TSigned, TChar>(absValue, destination, charsWritten);
+				break;
 		}
-		else
-		{
-			isUpper = char.IsUpper(format[0]);
-			fmt = char.ToLowerInvariant(format[0]);
-		}
 
-		TSigned fmtBase = fmt switch
-		{
-			'b' => TSigned.Two,
-			'x' => TSigned.Sixteen,
-			_ => TSigned.Ten,
-		};
-
-
-		precision = int.Max(precision, BitHelper.CountDigits(value, fmtBase));
-		bool isNegative = TSigned.IsNegative(value);
-		var v = value;
-
-		if (fmtBase != TSigned.Ten)
-		{
-			isUpper = char.IsUpper(format[0]);
-		}
-		else if (isNegative)
-		{
-			++precision;
-			v = value == TSigned.MinValue ? (TSigned.MaxValue + TSigned.One) : TSigned.Abs(value);
-		}
-
-		Span<TChar> output = stackalloc TChar[precision];
-		UnsignedIntegerToCharSpan(v.ToUnsigned(), fmtBase.ToUnsigned(), precision, output);
-
-		if (isUpper)
-		{
-			for (int i = 0; i < output.Length; i++)
-			{
-				output[i] = TChar.ToUpper(output[i]);
-			}
-		}
-
-		if (isNegative && fmtBase == TSigned.Ten)
-		{
-			TChar.Copy(NumberFormatInfo.GetInstance(provider).NegativeSign, output[..1]);
-		}
-
-		bool success = output.TryCopyTo(destination);
-
-
-		charsWritten = success ? precision : 0;
-		return success;
+		return true;
 	}
 }
