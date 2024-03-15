@@ -271,7 +271,12 @@ namespace MissingValues
 		}
 		#endregion
 		#region Float
-		const int FloatBufferLength = 11563 + 1 + 1;
+		/*
+		 * Max buffer length for floating point numbers:
+		 * Quad: 11563
+		 * Octo: 183466
+		 */
+		const int FloatBufferLength = 11563 + 1 + 1; // Max buffer length + 1 for rounding 
 
 		public static unsafe bool TryParseFloat<TFloat, TChar>(ReadOnlySpan<TChar> s, NumberStyles styles, IFormatProvider? provider, [MaybeNullWhen(false)] out TFloat result)
 			where TFloat : struct, IFormattableBinaryFloatingPoint<TFloat>

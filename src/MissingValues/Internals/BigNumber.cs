@@ -18,6 +18,7 @@ internal unsafe ref partial struct BigNumber
 	// * Single:   23 +   126 =   149
 	// * Double:   52 +  1022 =  1074
 	// * Quad:    112 + 16382 = 16494
+	// * Octo:    236 + 262142 = 262378
 	private const int BitsForLongestBinaryMantissa = 16494;
 
 	// The longest digit sequence requires: ceil(log2(pow(10, max significant digits + 1 rounding digit)))
@@ -25,13 +26,14 @@ internal unsafe ref partial struct BigNumber
 	// * Single:  ceil(log2(pow(10,   112 + 1))) =   376
 	// * Double:  ceil(log2(pow(10,   767 + 1))) =  2552
 	// * Quad:    ceil(log2(pow(10, 11563 + 1))) = 38415
+	// * Octo:    ceil(log2(pow(10, 183466 + 1))) = 609465
 	private const int BitsForLongestDigitSequence = 38415;
 
 	// We require BitsPerBlock additional bits for shift space used during the pre-division preparation
 	private const int MaxBits = BitsForLongestBinaryMantissa + BitsForLongestDigitSequence + BitsPerBlock;
 
 	private const int BitsPerBlock = sizeof(long) * 8;
-	private const int MaxBlockCount = (MaxBits + (BitsPerBlock - 1)) / BitsPerBlock; // 1717
+	private const int MaxBlockCount = (MaxBits + (BitsPerBlock - 1)) / BitsPerBlock; // 859
 	private const int MaxUInt64Pow10 = 19;
 	private long _length;
 	private fixed ulong _blocks[MaxBlockCount];

@@ -86,6 +86,10 @@ namespace MissingValues.Tests.Core
 		[Fact]
 		public void ToDecStringTest()
 		{
+			Zero.ToString("D", CultureInfo.CurrentCulture)
+				.Should().Be("0");
+			One.ToString("D", CultureInfo.CurrentCulture)
+				.Should().Be("1");
 			MaxValue.ToString("D", CultureInfo.CurrentCulture)
 				.Should().Be("57896044618658097711785492504343953926634992332820282019728792003956564819967");
 			MinValue.ToString("D", CultureInfo.CurrentCulture)
@@ -94,6 +98,10 @@ namespace MissingValues.Tests.Core
 		[Fact]
 		public void ToHexStringTest()
 		{
+			Zero.ToString("X64", CultureInfo.CurrentCulture)
+				.Should().Be("0000000000000000000000000000000000000000000000000000000000000000");
+			MaxValue.ToString("x64", CultureInfo.CurrentCulture)
+				.Should().Be("7fffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff");
 			MaxValue.ToString("X64", CultureInfo.CurrentCulture)
 				.Should().Be("7FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF");
 			MinValue.ToString("X64", CultureInfo.CurrentCulture)
@@ -102,6 +110,8 @@ namespace MissingValues.Tests.Core
 		[Fact]
 		public void ToBinStringTest()
 		{
+			Zero.ToString("B256", CultureInfo.CurrentCulture)
+				.Should().Be("0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000");
 			MaxValue.ToString("B256", CultureInfo.CurrentCulture)
 				.Should().Be("0111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111");
 			MinValue.ToString("B256", CultureInfo.CurrentCulture)
