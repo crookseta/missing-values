@@ -172,7 +172,7 @@ internal unsafe ref partial struct BigNumber
 
 	public static uint CountSignificantBits(UInt256 value)
 	{
-		return 128 - (uint)UInt256.LeadingZeroCount(value);
+		return 256 - (uint)UInt256.LeadingZeroCount(value);
 	}
 
 	public static uint CountSignificantBits(ref BigNumber value)

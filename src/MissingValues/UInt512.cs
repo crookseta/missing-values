@@ -64,7 +64,7 @@ namespace MissingValues
 
 		public override string? ToString()
 		{
-			return NumberFormatter.UnsignedIntegerToDecimalString(in this);
+			return ToString("D", CultureInfo.CurrentCulture);
 		}
 
 		/// <summary>

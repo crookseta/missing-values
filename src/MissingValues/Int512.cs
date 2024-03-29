@@ -67,7 +67,7 @@ namespace MissingValues
 
 		public override string? ToString()
 		{
-			return NumberFormatter.SignedIntegerToDecimalString<Int512, UInt512>(in this);
+			return ToString("D", CultureInfo.CurrentCulture);
 		}
 
 		/// <summary>
