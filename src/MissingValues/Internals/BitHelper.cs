@@ -221,6 +221,13 @@ namespace MissingValues
 			return 1;
 		}
 
+		internal static int CountDigits<TUnsigned, TSigned>(in TUnsigned num)
+			where TUnsigned : IFormattableUnsignedInteger<TUnsigned, TSigned>
+			where TSigned : IFormattableInteger<TSigned>
+		{
+			return TUnsigned.CountDigits(in num);
+		}
+
 		internal static int CountDigits<T>(T num, T numberBase)
 			where T : struct, IFormattableInteger<T>
 		{
@@ -673,7 +680,68 @@ namespace MissingValues
 		uiZ:
 			return new UInt128(uiZ64, uiZ0);
 		}
-		internal static UInt128 NormalizeRoundPack(bool sign, int exp, UInt128 sig)
+		internal static double CreateDouble(bool sign, ushort exp, ulong sig)
+		{
+			return BitConverter.UInt64BitsToDouble(((sign ? 1UL : 0UL) << 63) + ((ulong)exp << 52) + sig);
+		}
+		internal static float CreateSingle(bool sign, byte exp, uint sig)
+		{
+			return BitConverter.UInt32BitsToSingle(((sign ? 1U : 0U) << 31) + ((uint)exp << 23) + sig);
+		}
+		internal static Half CreateHalf(bool sign, ushort exp, ushort sig)
+		{
+			return BitConverter.UInt16BitsToHalf(((ushort)(((sign ? 1 : 0) << 15) + (exp << 10) + sig)));
+		}
+		internal static Octo CreateOctoNaN(bool sign, UInt256 significand)
+		{
+			UInt256 signInt = (sign ? UInt256.One : UInt256.Zero) << 255;
+			UInt256 sigInt = significand >> 12;
+
+			return Octo.UInt256BitsToOcto(
+				   signInt 
+				   | (new UInt256(0x7FFF_F000_0000_0000, 0x0, 0x0, 0x0) | new UInt256(0x0800_0000_0000, 0x0, 0x0, 0x0)) 
+				   | sigInt
+				   );
+		}
+		internal static Quad CreateQuadNaN(bool sign, UInt128 significand)
+		{
+			UInt128 signInt = (sign ? UInt128.One : UInt128.Zero) << 127;
+			UInt128 sigInt = significand >> 12;
+
+			return Quad.UInt128BitsToQuad(
+				   signInt 
+				   | (new UInt128(0x7FFF_0000_0000_0000, 0x0) | new UInt128(0x0000_8000_0000_0000, 0x0)) 
+				   | sigInt
+				   );
+		}
+		internal static double CreateDoubleNaN(bool sign, ulong significand)
+		{
+			const ulong NaNBits = 0x7FF0_0000_0000_0000 | 0x80000_00000000; // Most significant significand bit
+
+			ulong signInt = (sign ? 1UL : 0UL) << 63;
+			ulong sigInt = significand >> 12;
+
+			return BitConverter.UInt64BitsToDouble(signInt | NaNBits | sigInt);
+		}
+		internal static float CreateSingleNaN(bool sign, ulong significand)
+		{
+			const uint NaNBits = 0x7F80_0000 | 0x400000; // Most significant significand bit
+
+			uint signInt = (sign ? 1U : 0U) << 31;
+			uint sigInt = (uint)(significand >> 41);
+
+			return BitConverter.UInt32BitsToSingle(signInt | NaNBits | sigInt);
+		}
+		internal static Half CreateHalfNaN(bool sign, ulong significand)
+		{
+			const uint NaNBits = 0x7C00 | 0x200; // Most significant significand bit
+
+			uint signInt = (sign ? 1U : 0U) << 15;
+			uint sigInt = (uint)(significand >> 54);
+
+			return BitConverter.UInt16BitsToHalf((ushort)(signInt | NaNBits | sigInt));
+		}
+		internal static UInt128 NormalizeRoundPackQuad(bool sign, int exp, UInt128 sig)
 		{
 			ulong sigExtra;
 
@@ -957,7 +1025,7 @@ namespace MissingValues
 			sigZ = sigA - sigB;
 
 		normRoundPack:
-			return NormalizeRoundPack(signZ, expZ - 5, sigZ);
+			return NormalizeRoundPackQuad(signZ, expZ - 5, sigZ);
 
 		uiZ:
 			return uiZ;
