@@ -42,6 +42,12 @@ namespace MissingValues.Internals
 		abstract static int GetLength(ReadOnlySpan<char> s);
 		abstract static int GetLength(ReadOnlySpan<byte> utf8Text);
 
+		abstract static ReadOnlySpan<TSelf> GetPositiveCurrencyFormat(int index);
+		abstract static ReadOnlySpan<TSelf> GetNegativeCurrencyFormat(int index);
+		abstract static ReadOnlySpan<TSelf> GetPositivePercentFormat(int index);
+		abstract static ReadOnlySpan<TSelf> GetNegativePercentFormat(int index);
+		abstract static ReadOnlySpan<TSelf> GetNegativeNumberFormat(int index);
+
 		abstract static TSelf ToUpper(TSelf value);
 		abstract static TSelf ToLower(TSelf value);
 		abstract static bool IsWhiteSpace(TSelf value);
@@ -99,6 +105,39 @@ namespace MissingValues.Internals
 										"70717273747576777879" +
 										"80818283848586878889" +
 										"90919293949596979899");
+
+		private static ReadOnlySpan<string> _posCurrencyFormats => new string[]
+		{
+			"$#", "#$", "$ #", "# $"
+		};
+
+		private static ReadOnlySpan<string> _negCurrencyFormats => new string[]
+		{
+			"($#)", "-$#", "$-#", "$#-",
+			"(#$)", "-#$", "#-$", "#$-",
+			"-# $", "-$ #", "# $-", "$ #-",
+			"$ -#", "#- $", "($ #)", "(# $)",
+			"$- #"
+		};
+
+		private static ReadOnlySpan<string> _posPercentFormats => new string[]
+		{
+			"# %", "#%", "%#", "% #"
+		};
+
+		private static ReadOnlySpan<string> _negPercentFormats => new string[]
+		{
+			"-# %", "-#%", "-%#",
+			"%-#", "%#-",
+			"#-%", "#%-",
+			"-% #", "# %-", "% #-",
+			"% -#", "#- %"
+		};
+
+		private static ReadOnlySpan<string> _negNumberFormats => new string[]
+		{
+			"(#)", "-#", "- #", "#-", "# -",
+		};
 
 		private Utf16Char(char @char)
 		{
@@ -225,6 +264,31 @@ namespace MissingValues.Internals
 			return _char.ToString();
 		}
 
+		public static ReadOnlySpan<Utf16Char> GetPositiveCurrencyFormat(int index)
+		{
+			return CastFromCharSpan(_posCurrencyFormats[index]);
+		}
+
+		public static ReadOnlySpan<Utf16Char> GetNegativeCurrencyFormat(int index)
+		{
+			return CastFromCharSpan(_negCurrencyFormats[index]);
+		}
+
+		public static ReadOnlySpan<Utf16Char> GetPositivePercentFormat(int index)
+		{
+			return CastFromCharSpan(_posPercentFormats[index]);
+		}
+
+		public static ReadOnlySpan<Utf16Char> GetNegativePercentFormat(int index)
+		{
+			return CastFromCharSpan(_negPercentFormats[index]);
+		}
+
+		public static ReadOnlySpan<Utf16Char> GetNegativeNumberFormat(int index)
+		{
+			return CastFromCharSpan(_negNumberFormats[index]);
+		}
+
 		public static bool operator ==(Utf16Char left, Utf16Char right)
 		{
 			return left._char == right._char;
@@ -295,6 +359,35 @@ namespace MissingValues.Internals
 										"70717273747576777879"u8 +
 										"80818283848586878889"u8 +
 										"90919293949596979899"u8;
+
+		private static ReadOnlySpan<byte[]> _posCurrencyFormats => new byte[][]
+		{
+			"$#"u8.ToArray(), "#$"u8.ToArray(), "$ #"u8.ToArray(), "# $"u8.ToArray()
+		};
+		private static ReadOnlySpan<byte[]> _negCurrencyFormats => new byte[][]
+		{
+			"($#)"u8.ToArray(), "-$#"u8.ToArray(), "$-#"u8.ToArray(), "$#-"u8.ToArray(),
+			"(#$)"u8.ToArray(), "-#$"u8.ToArray(), "#-$"u8.ToArray(), "#$-"u8.ToArray(),
+			"-# $"u8.ToArray(), "-$ #"u8.ToArray(), "# $-"u8.ToArray(), "$ #-"u8.ToArray(),
+			"$ -#"u8.ToArray(), "#- $"u8.ToArray(), "($ #)"u8.ToArray(), "(# $)"u8.ToArray(),
+			"$- #"u8.ToArray()
+		};
+		private static ReadOnlySpan<byte[]> _posPercentFormats => new byte[][]
+		{
+			"# %"u8.ToArray(), "#%"u8.ToArray(), "%#"u8.ToArray(), "% #"u8.ToArray()
+		};
+		private static ReadOnlySpan<byte[]> _negPercentFormats => new byte[][]
+		{
+			"-# %"u8.ToArray(), "-#%"u8.ToArray(), "-%#"u8.ToArray(),
+			"%-#"u8.ToArray(), "%#-"u8.ToArray(),
+			"#-%"u8.ToArray(), "#%-"u8.ToArray(),
+			"-% #"u8.ToArray(), "# %-"u8.ToArray(), "% #-"u8.ToArray(),
+			"% -#"u8.ToArray(), "#- %"u8.ToArray()
+		};
+		private static ReadOnlySpan<byte[]> _negNumberFormats => new byte[][]
+		{
+			"(#)"u8.ToArray(), "-#"u8.ToArray(), "- #"u8.ToArray(), "#-"u8.ToArray(), "# -"u8.ToArray(),
+		};
 
 		private readonly byte _char;
 
@@ -443,6 +536,31 @@ namespace MissingValues.Internals
 			return ((char)_char).ToString();
 		}
 
+		public static ReadOnlySpan<Utf8Char> GetPositiveCurrencyFormat(int index)
+		{
+			return CastFromByteSpan(_posCurrencyFormats[index]);
+		}
+
+		public static ReadOnlySpan<Utf8Char> GetNegativeCurrencyFormat(int index)
+		{
+			return CastFromByteSpan(_negCurrencyFormats[index]);
+		}
+
+		public static ReadOnlySpan<Utf8Char> GetPositivePercentFormat(int index)
+		{
+			return CastFromByteSpan(_posPercentFormats[index]);
+		}
+
+		public static ReadOnlySpan<Utf8Char> GetNegativePercentFormat(int index)
+		{
+			return CastFromByteSpan(_negPercentFormats[index]);
+		}
+
+		public static ReadOnlySpan<Utf8Char> GetNegativeNumberFormat(int index)
+		{
+			return CastFromByteSpan(_negNumberFormats[index]);
+		}
+
 		public static bool operator ==(Utf8Char left, Utf8Char right)
 		{
 			return left._char == right._char;
@@ -472,6 +590,8 @@ namespace MissingValues.Internals
 		{
 			return value._char;
 		}
+
+
 	}
 #endif
 }
