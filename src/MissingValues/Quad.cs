@@ -21,7 +21,7 @@ namespace MissingValues
 	[JsonConverter(typeof(NumberConverter.QuadConverter))]
 	[DebuggerDisplay($"{{{nameof(ToString)}(),nq}}")]
 	public readonly partial struct Quad
-	{
+	{ // Add documentation on missing members.
 		internal const int SignShift = 127;
 		internal static UInt128 SignMask => new UInt128(0x8000_0000_0000_0000, 0x0000_0000_0000_0000);
 		internal static UInt128 InvertedSignMask => new UInt128(0x7FFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF);
@@ -108,6 +108,12 @@ namespace MissingValues
 			_upper = upper;
 			_lower = lower;
 		}
+		/// <summary>
+		/// Initializes a new instance of the <see cref="Quad" /> struct.
+		/// </summary>
+		/// <param name="sign">A <see cref="bool"/> indicating the sign of the number. <see langword="true"/> represents a negative number, and <see langword="false"/> represents a positive number.</param>
+		/// <param name="exp">An <see cref="ushort"/> representing the exponent part of the floating-point number.</param>
+		/// <param name="sig">An <see cref="UInt128"/> representing the significand part of the floating-point number.</param>
 		[CLSCompliant(false)]
 		public Quad(bool sign, ushort exp, UInt128 sig)
 		{
@@ -116,11 +122,13 @@ namespace MissingValues
 			_upper = unchecked((ulong)(value >> 64));
 		}
 
+		/// <inheritdoc/>
 		public override bool Equals([NotNullWhen(true)] object? obj)
 		{
 			return (obj is Quad other) && Equals(other);
 		}
 
+		/// <inheritdoc/>
 		public override int GetHashCode()
 		{
 			if (IsNaNOrZero(this))
@@ -131,15 +139,27 @@ namespace MissingValues
 			return HashCode.Combine(_lower, _upper);
 		}
 
+		/// <inheritdoc/>
 		public override string? ToString()
 		{
-			return NumberFormatter.FloatToString(in this, "G33", NumberFormatInfo.CurrentInfo);
+			return ToString("G33", NumberFormatInfo.CurrentInfo);
 		}
 
+		/// <summary>
+		/// Parses a span of characters into a value.
+		/// </summary>
+		/// <param name="s">The span of characters to parse.</param>
+		/// <returns>The result of parsing <paramref name="s"/>.</returns>
 		public static Quad Parse(ReadOnlySpan<char> s)
 		{
 			return Parse(s, CultureInfo.CurrentCulture);
 		}
+		/// <summary>
+		/// tries to parse a span of characters into a value.
+		/// </summary>
+		/// <param name="s">The span of characters to parse.</param>
+		/// <param name="result">When this method returns, contains the result of successfully parsing <paramref name="s"/>, or an undefined value on failure.</param>
+		/// <returns><see langword="true"/> if <paramref name="s"/> was successfully parsed; otherwise, <see langword="false"/>.</returns>
 		public static bool TryParse(ReadOnlySpan<char> s, out Quad result)
 		{
 			return TryParse(s, CultureInfo.CurrentCulture, out result);
@@ -909,6 +929,33 @@ namespace MissingValues
 		{
 			return (decimal)(double)value;
 		}
+		public static explicit operator Octo(Quad value)
+		{
+			bool sign = IsNegative(value);
+			int exp = value.BiasedExponent;
+			UInt128 sig = value.TrailingSignificand;
+
+            if (exp == MaxBiasedExponent)
+            {
+				if (sig != UInt128.Zero)
+				{
+					return BitHelper.CreateOctoNaN(sign, (UInt256)sig << Octo.MantissaDigits);
+				}
+				return sign ? Octo.NegativeInfinity : Octo.PositiveInfinity;
+            }
+
+			if (exp == 0)
+			{
+				if (sig == UInt128.Zero)
+				{
+					return Octo.UInt256BitsToOcto(sign ? Octo.SignMask : UInt256.Zero);
+				}
+				(exp, sig) = BitHelper.NormalizeSubnormalF128Sig(sig);
+				exp -= 1;
+			}
+
+			return new Octo(sign, (uint)(exp + 0x3_C000), (UInt256)sig << 124);
+        }
 		public static explicit operator double(Quad value)
 		{
 			UInt128 quadInt = QuadToUInt128Bits(value);
@@ -920,7 +967,7 @@ namespace MissingValues
 			{
 				if (sig != 0) // NaN
 				{
-					return CreateDoubleNaN(sign, (ulong)(sig >> 48)); // Shift the significand bits to the x end
+					return BitHelper.CreateDoubleNaN(sign, (ulong)(sig >> 48)); // Shift the significand bits to the x end
 				}
 				return sign ? double.NegativeInfinity : double.PositiveInfinity;
 			}
@@ -930,7 +977,7 @@ namespace MissingValues
 
 			if (((uint)exp | sigQuad) == 0)
 			{
-				return CreateDouble(sign, 0, 0);
+				return BitHelper.CreateDouble(sign, 0, 0);
 			}
 
 			exp -= 0x3C01;
@@ -950,7 +997,7 @@ namespace MissingValues
 			{
 				if (sig != 0) // NaN
 				{
-					return CreateSingleNaN(sign, (ulong)(sig >> 48)); // Shift the significand bits to the x end
+					return BitHelper.CreateSingleNaN(sign, (ulong)(sig >> 48)); // Shift the significand bits to the x end
 				}
 				return sign ? float.NegativeInfinity : float.PositiveInfinity;
 			}
@@ -959,7 +1006,7 @@ namespace MissingValues
 
 			if (((uint)exp | sigQuad) == 0)
 			{
-				return CreateSingle(sign, 0, 0);
+				return BitHelper.CreateSingle(sign, 0, 0);
 			}
 
 			exp -= 0x3F81;
@@ -979,7 +1026,7 @@ namespace MissingValues
 			{
 				if (sig != 0) // NaN
 				{
-					return CreateHalfNaN(sign, (ulong)(sig >> 48)); // Shift the significand bits to the x end
+					return BitHelper.CreateHalfNaN(sign, (ulong)(sig >> 48)); // Shift the significand bits to the x end
 				}
 				return sign ? Half.NegativeInfinity : Half.PositiveInfinity;
 			}
@@ -988,7 +1035,7 @@ namespace MissingValues
 
 			if (((uint)exp | sigHalf) == 0)
 			{
-				return CreateHalf(sign, 0, 0);
+				return BitHelper.CreateHalf(sign, 0, 0);
 			}
 
 			exp -= 0x3FF1;

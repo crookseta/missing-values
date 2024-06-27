@@ -1450,7 +1450,7 @@ namespace MissingValues
 				signRem = !signRem;
 				rem = -rem;
 			}
-			UInt128 resultBits = BitHelper.NormalizeRoundPack(signRem, expB - 1, rem);
+			UInt128 resultBits = BitHelper.NormalizeRoundPackQuad(signRem, expB - 1, rem);
 			return Quad.UInt128BitsToQuad(resultBits);
 		}
 		/// <summary>

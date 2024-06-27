@@ -11,9 +11,10 @@ namespace MissingValues
 {
 	public partial struct Quad :
 		IBinaryFloatingPointIeee754<Quad>,
+		IBinaryFloatingPointInfo<Quad, UInt128>,
 		IFormattableBinaryFloatingPoint<Quad>,
 		IMinMaxValue<Quad>
-	{
+	{ // Inherit documentation.
 		public static Quad Epsilon => Quad.UInt128BitsToQuad(EpsilonBits);
 
 		public static Quad NaN => Quad.UInt128BitsToQuad(NegativeQNaNBits);
@@ -80,6 +81,40 @@ namespace MissingValues
 
 		static UInt128 IFormattableBinaryFloatingPoint<Quad>.NegativeInfinityBits => NegativeInfinityBits;
 
+		static bool IBinaryFloatingPointInfo<Quad, UInt128>.ExplicitLeadingBit => false;
+
+		static int IBinaryFloatingPointInfo<Quad, UInt128>.NormalMantissaBits => BiasedExponentShift + 1;
+
+		static int IBinaryFloatingPointInfo<Quad, UInt128>.DenormalMantissaBits => BiasedExponentShift;
+
+		static int IBinaryFloatingPointInfo<Quad, UInt128>.MinimumDecimalExponent => -4966;
+
+		static int IBinaryFloatingPointInfo<Quad, UInt128>.MaximumDecimalExponent => 4932;
+
+		static int IBinaryFloatingPointInfo<Quad, UInt128>.MinBiasedExponent => MinBiasedExponent;
+
+		static int IBinaryFloatingPointInfo<Quad, UInt128>.MaxBiasedExponent => MaxBiasedExponent;
+
+		static int IBinaryFloatingPointInfo<Quad, UInt128>.MaxSignificandPrecision => 33;
+
+		static int IBinaryFloatingPointInfo<Quad, UInt128>.ExponentBits => 15;
+
+		static int IBinaryFloatingPointInfo<Quad, UInt128>.ExponentBias => ExponentBias;
+
+		static int IBinaryFloatingPointInfo<Quad, UInt128>.OverflowDecimalExponent => (ExponentBias + (2 * 113) / 3);
+
+		static UInt128 IBinaryFloatingPointInfo<Quad, UInt128>.DenormalMantissaMask => TrailingSignificandMask;
+
+		static UInt128 IBinaryFloatingPointInfo<Quad, UInt128>.NormalMantissaMask => new UInt128(0x0001_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF);
+
+		static UInt128 IBinaryFloatingPointInfo<Quad, UInt128>.TrailingSignificandMask => TrailingSignificandMask;
+
+		static UInt128 IBinaryFloatingPointInfo<Quad, UInt128>.PositiveZeroBits => PositiveZeroBits;
+
+		static UInt128 IBinaryFloatingPointInfo<Quad, UInt128>.PositiveInfinityBits => PositiveInfinityBits;
+
+		static UInt128 IBinaryFloatingPointInfo<Quad, UInt128>.NegativeInfinityBits => NegativeInfinityBits;
+
 		public static Quad Abs(Quad value) => MathQ.Abs(value);
 
 		public static Quad Ceiling(Quad x) => MathQ.Ceiling(x);
@@ -92,8 +127,11 @@ namespace MissingValues
 			where TOther : INumberBase<TOther>
 		{
 			Quad result;
-
-			if (!TryConvertFrom(value, out result) && !TOther.TryConvertToChecked<Quad>(value, out result))
+			if (value is Quad v)
+			{
+				result = v;
+			}
+			else if (!TryConvertFrom(value, out result) && !TOther.TryConvertToChecked<Quad>(value, out result))
 			{
 				Thrower.NotSupported<Quad, TOther>();
 			}
@@ -106,7 +144,11 @@ namespace MissingValues
 		{
 			Quad result;
 
-			if (!TryConvertFrom(value, out result) && !TOther.TryConvertToSaturating<Quad>(value, out result))
+			if (value is Quad v)
+			{
+				result = v;
+			}
+			else if (!TryConvertFrom(value, out result) && !TOther.TryConvertToSaturating<Quad>(value, out result))
 			{
 				Thrower.NotSupported<Quad, TOther>();
 			}
@@ -119,7 +161,11 @@ namespace MissingValues
 		{
 			Quad result;
 
-			if (!TryConvertFrom(value, out result) && !TOther.TryConvertToTruncating<Quad>(value, out result))
+			if (value is Quad v)
+			{
+				result = v;
+			}
+			else if (!TryConvertFrom(value, out result) && !TOther.TryConvertToTruncating<Quad>(value, out result))
 			{
 				Thrower.NotSupported<Quad, TOther>();
 			}
@@ -329,7 +375,6 @@ namespace MissingValues
 			return result;
 		}
 
-#if NET8_0_OR_GREATER
 		public static Quad Parse(ReadOnlySpan<byte> utf8Text, NumberStyles style, IFormatProvider? provider)
 		{
 			if (!TryParse(utf8Text, style, provider, out Quad result))
@@ -347,7 +392,6 @@ namespace MissingValues
 			}
 			return result;
 		}
-#endif
 
 		public static Quad Round(Quad x) => MathQ.Round(x);
 
@@ -552,9 +596,9 @@ namespace MissingValues
 				|| (IsNaN(this) && IsNaN(other));
 		}
 
-		public int GetExponentByteCount() => sizeof(short);
+		int IFloatingPoint<Quad>.GetExponentByteCount() => sizeof(short);
 
-		public int GetExponentShortestBitLength()
+		int IFloatingPoint<Quad>.GetExponentShortestBitLength()
 		{
 			short exponent = Exponent;
 
@@ -568,28 +612,28 @@ namespace MissingValues
 			}
 		}
 
-		public int GetSignificandBitLength() => 113;
+		int IFloatingPoint<Quad>.GetSignificandBitLength() => 113;
 
-		public int GetSignificandByteCount() => 16;
+		int IFloatingPoint<Quad>.GetSignificandByteCount() => 16;
 
 		public string ToString(string? format, IFormatProvider? formatProvider)
 		{
-			return NumberFormatter.FloatToString(in this, format is null ? ReadOnlySpan<char>.Empty : format, formatProvider);
+			return NumberFormatter.FloatToString<Quad, UInt128>(in this, format is null ? ReadOnlySpan<char>.Empty : format, formatProvider);
 		}
 
 		public bool TryFormat(Span<char> destination, out int charsWritten, ReadOnlySpan<char> format, IFormatProvider? provider)
 		{
-			return NumberFormatter.TryFormatFloat(in this, Utf16Char.CastFromCharSpan(destination), out charsWritten, format, provider);
+			return NumberFormatter.TryFormatFloat<Quad, UInt128, Utf16Char>(in this, Utf16Char.CastFromCharSpan(destination), out charsWritten, format, provider);
 		}
 
 #if NET8_0_OR_GREATER
 		public bool TryFormat(Span<byte> utf8Destination, out int bytesWritten, ReadOnlySpan<char> format, IFormatProvider? provider)
 		{
-			return NumberFormatter.TryFormatFloat(in this, Utf8Char.CastFromByteSpan(utf8Destination), out bytesWritten, format, provider);
+			return NumberFormatter.TryFormatFloat<Quad, UInt128, Utf8Char>(in this, Utf8Char.CastFromByteSpan(utf8Destination), out bytesWritten, format, provider);
 		} 
 #endif
 
-		public bool TryWriteExponentBigEndian(Span<byte> destination, out int bytesWritten)
+		bool IFloatingPoint<Quad>.TryWriteExponentBigEndian(Span<byte> destination, out int bytesWritten)
 		{
 			if (destination.Length >= sizeof(short))
 			{
@@ -612,7 +656,7 @@ namespace MissingValues
 			}
 		}
 
-		public bool TryWriteExponentLittleEndian(Span<byte> destination, out int bytesWritten)
+		bool IFloatingPoint<Quad>.TryWriteExponentLittleEndian(Span<byte> destination, out int bytesWritten)
 		{
 			if (destination.Length >= sizeof(short))
 			{
@@ -635,7 +679,7 @@ namespace MissingValues
 			}
 		}
 
-		public bool TryWriteSignificandBigEndian(Span<byte> destination, out int bytesWritten)
+		bool IFloatingPoint<Quad>.TryWriteSignificandBigEndian(Span<byte> destination, out int bytesWritten)
 		{
 			if (destination.Length >= Unsafe.SizeOf<UInt128>())
 			{
@@ -658,7 +702,7 @@ namespace MissingValues
 			}
 		}
 
-		public bool TryWriteSignificandLittleEndian(Span<byte> destination, out int bytesWritten)
+		bool IFloatingPoint<Quad>.TryWriteSignificandLittleEndian(Span<byte> destination, out int bytesWritten)
 		{
 			if (destination.Length >= Unsafe.SizeOf<UInt128>())
 			{
@@ -1774,6 +1818,16 @@ namespace MissingValues
 		}
 
 		static UInt128 IFormattableBinaryFloatingPoint<Quad>.FloatToBits(Quad value)
+		{
+			return QuadToUInt128Bits(value);
+		}
+
+		static Quad IBinaryFloatingPointInfo<Quad, UInt128>.BitsToFloat(UInt128 bits)
+		{
+			return UInt128BitsToQuad(bits);
+		}
+
+		static UInt128 IBinaryFloatingPointInfo<Quad, UInt128>.FloatToBits(Quad value)
 		{
 			return QuadToUInt128Bits(value);
 		}

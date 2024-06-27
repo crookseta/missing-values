@@ -10,7 +10,7 @@ using System.Text.Json.Serialization;
 
 namespace MissingValues
 {
-	[StructLayout(LayoutKind.Sequential)]
+	[StructLayout(LayoutKind.Explicit, Size = Size)]
 	[JsonConverter(typeof(NumberConverter.UInt256Converter))]
 	[CLSCompliant(false)]
 	[DebuggerDisplay($"{{{nameof(ToString)}(),nq}}")]
@@ -19,12 +19,30 @@ namespace MissingValues
 		internal const int Size = 32;
 
 #if BIGENDIAN
-		private readonly UInt128 _upper;
-		private readonly UInt128 _lower;
+		private const int LowerOffset = 16;
+		private const int UpperOffset = 0;
+
+		private const int B0Offset = 24;
+		private const int B1Offset = 16;
+		private const int B2Offset = 8;
+		private const int B3Offset = 0;
 #else
-		private readonly UInt128 _lower;
-		private readonly UInt128 _upper;
+		private const int LowerOffset = 0;
+		private const int UpperOffset = 16;
+
+		private const int B0Offset = 0;
+		private const int B1Offset = 8;
+		private const int B2Offset = 16;
+		private const int B3Offset = 24;
 #endif
+
+		[FieldOffset(LowerOffset)] private readonly UInt128 _lower;
+		[FieldOffset(UpperOffset)] private readonly UInt128 _upper;
+
+		[FieldOffset(B0Offset)] private readonly ulong _l2;
+		[FieldOffset(B1Offset)] private readonly ulong _l1;
+		[FieldOffset(B2Offset)] private readonly ulong _u2;
+		[FieldOffset(B3Offset)] private readonly ulong _u1;
 
 		internal UInt128 Upper => _upper;
 		internal UInt128 Lower => _lower;
@@ -32,8 +50,10 @@ namespace MissingValues
 
 		public UInt256(ulong u1, ulong u2, ulong l1, ulong l2)
 		{
-			_upper = new(u1, u2);
-			_lower = new(l1, l2);
+			_u1 = u1;
+			_u2 = u2;
+			_l1 = l1;
+			_l2 = l2;
 		}
 		/// <summary>
 		/// Initializes a new instance of the <see cref="UInt256" /> struct.
@@ -41,7 +61,9 @@ namespace MissingValues
 		/// <param name="lower">The lower 128-bits of the 256-bit value.</param>
 		public UInt256(UInt128 lower)
 		{
-			_upper = UInt128.Zero;
+			_u1 = 0;
+			_u2 = 0;
+
 			_lower = lower;
 		}
 		/// <summary>
@@ -119,112 +141,112 @@ namespace MissingValues
 		}
 
 		#region From UInt256
-		public static explicit operator char(UInt256 value) => (char)value._lower;
+		public static explicit operator char(UInt256 value) => (char)value._l2;
 		public static explicit operator checked char(UInt256 value)
 		{
-			if (value._upper != 0)
+			if (value._u1 != 0 || value._u2 != 0 || value._l1 != 0)
 			{
 				Thrower.IntegerOverflow();
 			}
-			return checked((char)value._lower);
+			return checked((char)value._l2);
 		}
 		// Unsigned
-		public static explicit operator byte(UInt256 value) => (byte)value._lower;
+		public static explicit operator byte(UInt256 value) => (byte)value._l2;
 		public static explicit operator checked byte(UInt256 value)
 		{
-			if (value._upper != 0)
+			if (value._u1 != 0 || value._u2 != 0 || value._l1 != 0)
 			{
 				Thrower.IntegerOverflow();
 			}
-			return checked((byte)value._lower);
+			return checked((byte)value._l2);
 		}
-		public static explicit operator ushort(UInt256 value) => (ushort)value._lower;
+		public static explicit operator ushort(UInt256 value) => (ushort)value._l2;
 		public static explicit operator checked ushort(UInt256 value)
 		{
-			if (value._upper != 0)
+			if (value._u1 != 0 || value._u2 != 0 || value._l1 != 0)
 			{
 				Thrower.IntegerOverflow();
 			}
-			return checked((ushort)value._lower);
+			return checked((ushort)value._l2);
 		}
-		public static explicit operator uint(UInt256 value) => (uint)value._lower;
+		public static explicit operator uint(UInt256 value) => (uint)value._l2;
 		public static explicit operator checked uint(UInt256 value)
 		{
-			if (value._upper != 0)
+			if (value._u1 != 0 || value._u2 != 0 || value._l1 != 0)
 			{
 				Thrower.IntegerOverflow();
 			}
-			return checked((uint)value._lower);
+			return checked((uint)value._l2);
 		}
-		public static explicit operator ulong(UInt256 value) => (ulong)value._lower;
+		public static explicit operator ulong(UInt256 value) => value._l2;
 		public static explicit operator checked ulong(UInt256 value)
 		{
-			if (value._upper != 0)
+			if (value._u1 != 0 || value._u2 != 0 || value._l1 != 0)
 			{
 				Thrower.IntegerOverflow();
 			}
-			return checked((ulong)value._lower);
+			return checked(value._l2);
 		}
 		public static explicit operator UInt128(UInt256 value) => value._lower;
 		public static explicit operator checked UInt128(UInt256 value)
 		{
-			if (value._upper != 0)
+			if (value._u1 != 0 || value._u2 != 0)
 			{
 				Thrower.IntegerOverflow();
 			}
 			return value._lower;
 		}
 		public static implicit operator UInt512(UInt256 value) => new(value);
-		public static explicit operator nuint(UInt256 value) => (nuint)value._lower;
+		public static explicit operator nuint(UInt256 value) => (nuint)value._l2;
 		public static explicit operator checked nuint(UInt256 value)
 		{
-			if (value._upper != 0)
+			if (value._u1 != 0 || value._u2 != 0 || value._l1 != 0)
 			{
 				Thrower.IntegerOverflow();
 			}
-			return (nuint)value._lower;
+			return (nuint)value._l2;
 		}
 		//Signed
-		public static explicit operator sbyte(UInt256 value) => (sbyte)value._lower;
+		public static explicit operator sbyte(UInt256 value) => (sbyte)value._l2;
 		public static explicit operator checked sbyte(UInt256 value)
 		{
-			if (value._upper != 0)
+			if (value._u1 != 0 || value._u2 != 0 || value._l1 != 0)
 			{
 				Thrower.IntegerOverflow();
 			}
-			return checked((sbyte)value._lower);
+			return checked((sbyte)value._l2);
 		}
-		public static explicit operator short(UInt256 value) => (short)value._lower;
+		public static explicit operator short(UInt256 value) => (short)value._l2;
 		public static explicit operator checked short(UInt256 value)
 		{
-			if (value._upper != 0)
+			if (value._u1 != 0 || value._u2 != 0 || value._l1 != 0)
 			{
 				Thrower.IntegerOverflow();
 			}
-			return checked((short)value._lower);
+			return checked((short)value._l2);
 		}
-		public static explicit operator int(UInt256 value) => (int)value._lower;
+		public static explicit operator int(UInt256 value) => (int)value._l2;
 		public static explicit operator checked int(UInt256 value)
 		{
-			if (value._upper != 0)
+			if (value._u1 != 0 || value._u2 != 0 || value._l1 != 0)
 			{
 				Thrower.IntegerOverflow();
 			}
-			return checked((int)value._lower);
+			return checked((int)value._l2);
 		}
-		public static explicit operator long(UInt256 value) => (long)value._lower;
+		public static explicit operator long(UInt256 value) => (long)value._l2;
 		public static explicit operator checked long(UInt256 value)
 		{
-			if (value._upper != 0)
+			if (value._u1 != 0 || value._u2 != 0 || value._l1 != 0)
 			{
 				Thrower.IntegerOverflow();
 			}
-			return checked((long)value._lower);
+			return checked((long)value._l2);
 		}
 		public static explicit operator Int128(UInt256 value) => (Int128)value._lower;
 		public static explicit operator checked Int128(UInt256 value)
 		{
-			if (value._upper != 0)
+			if (value._u1 != 0 || value._u2 != 0)
 			{
 				Thrower.IntegerOverflow();
 			}
@@ -248,14 +270,14 @@ namespace MissingValues
 			}
 			return new(value);
 		}
-		public static explicit operator nint(UInt256 value) => (nint)value._lower;
+		public static explicit operator nint(UInt256 value) => (nint)value._l2;
 		public static explicit operator checked nint(UInt256 value)
 		{
-			if (value._upper != 0)
+			if (value._u1 != 0 || value._u2 != 0 || value._l1 != 0)
 			{
 				Thrower.IntegerOverflow();
 			}
-			return (nint)value._lower;
+			return (nint)value._l2;
 		}
 		// Floating
 		public static explicit operator decimal(UInt256 value)
@@ -273,7 +295,7 @@ namespace MissingValues
 		{
 			if (value._upper == 0)
 			{
-				return (Quad)value._lower;
+				return value._l1 != 0 ? (Quad)value._lower : (Quad)value._l2;
 			}
 			else if ((value._upper >> 32) == UInt128.Zero) // value < (2^224)
 			{
@@ -319,7 +341,7 @@ namespace MissingValues
 
 			if (value._upper == 0)
 			{
-				return (double)value._lower;
+				return value._l1 != 0 ? (double)value._lower : (double)value._l2;
 			}
 
 
@@ -333,7 +355,7 @@ namespace MissingValues
 		#endregion
 
 		#region To UInt256
-		public static implicit operator UInt256(char value) => new UInt256(UInt128.Zero, value);
+		public static implicit operator UInt256(char value) => new UInt256(0, 0, 0, value);
 		// Floating
 		public static explicit operator UInt256(Half value) => (UInt256)(double)value;
 		public static explicit operator checked UInt256(Half value) => checked((UInt256)(double)value);
@@ -375,12 +397,12 @@ namespace MissingValues
 		public static explicit operator UInt256(decimal value) => (UInt256)(double)value;
 		public static explicit operator checked UInt256(decimal value) => checked((UInt256)(double)value);
 		// Unsigned
-		public static implicit operator UInt256(byte value) => new UInt256(0, value);
-		public static implicit operator UInt256(ushort value) => new UInt256(0, value);
-		public static implicit operator UInt256(uint value) => new UInt256(0, value);
-		public static implicit operator UInt256(ulong value) => new UInt256(0, value);
+		public static implicit operator UInt256(byte value) => new UInt256(0, 0, 0, value);
+		public static implicit operator UInt256(ushort value) => new UInt256(0, 0, 0, value);
+		public static implicit operator UInt256(uint value) => new UInt256(0, 0, 0, value);
+		public static implicit operator UInt256(ulong value) => new UInt256(0, 0, 0, value);
 		public static implicit operator UInt256(UInt128 value) => new UInt256(0, value);
-		public static implicit operator UInt256(nuint value) => new UInt256(0, value);
+		public static implicit operator UInt256(nuint value) => new UInt256(0, 0, 0, value);
 		// Signed
 		public static explicit operator UInt256(sbyte value)
 		{

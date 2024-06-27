@@ -145,6 +145,57 @@ namespace MissingValues
 			return -absValue;
 		}
 
+		public static Int512 CreateChecked<TOther>(TOther value)
+			where TOther : INumberBase<TOther>
+		{
+			Int512 result;
+
+			if (value is Int512 v)
+			{
+				result = v;
+			}
+			else if (!Int512.TryConvertFromChecked(value, out result) && !TOther.TryConvertToChecked<Int512>(value, out result))
+			{
+				Thrower.NotSupported<Int512, TOther>();
+			}
+
+			return result;
+		}
+		
+		public static Int512 CreateSaturating<TOther>(TOther value)
+			where TOther : INumberBase<TOther>
+		{
+			Int512 result;
+
+			if (value is Int512 v)
+			{
+				result = v;
+			}
+			else if (!Int512.TryConvertFromSaturating(value, out result) && !TOther.TryConvertToSaturating<Int512>(value, out result))
+			{
+				Thrower.NotSupported<Int512, TOther>();
+			}
+
+			return result;
+		}
+		
+		public static Int512 CreateTruncating<TOther>(TOther value)
+			where TOther : INumberBase<TOther>
+		{
+			Int512 result;
+
+			if (value is Int512 v)
+			{
+				result = v;
+			}
+			else if (!Int512.TryConvertFromTruncating(value, out result) && !TOther.TryConvertToTruncating<Int512>(value, out result))
+			{
+				Thrower.NotSupported<Int512, TOther>();
+			}
+
+			return result;
+		}
+
 		public static (Int512 Quotient, Int512 Remainder) DivRem(Int512 left, Int512 right)
 		{
 			Int512 quotient = left / right;

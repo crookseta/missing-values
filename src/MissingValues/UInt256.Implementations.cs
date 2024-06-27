@@ -935,7 +935,6 @@ namespace MissingValues
 		}
 		public static UInt256 operator checked -(UInt256 left, UInt256 right)
 		{
-			
 			// For unsigned subtract, we can detect overflow by checking `(x - y) > x`
 			// This gives us the borrow to subtract from upper to compute the correct result
 
