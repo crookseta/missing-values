@@ -19,7 +19,7 @@ internal unsafe ref partial struct BigNumber
 	// * Double:   52 +  1022 =  1074
 	// * Quad:    112 + 16382 = 16494
 	// * Octo:    236 + 262142 = 262378
-	private const int BitsForLongestBinaryMantissa = 16494;
+	private const int BitsForLongestBinaryMantissa = 262378;
 
 	// The longest digit sequence requires: ceil(log2(pow(10, max significant digits + 1 rounding digit)))
 	// * Half:    ceil(log2(pow(10,    21 + 1))) =    74
@@ -27,13 +27,13 @@ internal unsafe ref partial struct BigNumber
 	// * Double:  ceil(log2(pow(10,   767 + 1))) =  2552
 	// * Quad:    ceil(log2(pow(10, 11563 + 1))) = 38415
 	// * Octo:    ceil(log2(pow(10, 183466 + 1))) = 609465
-	private const int BitsForLongestDigitSequence = 38415;
+	private const int BitsForLongestDigitSequence = 609465;
 
 	// We require BitsPerBlock additional bits for shift space used during the pre-division preparation
 	private const int MaxBits = BitsForLongestBinaryMantissa + BitsForLongestDigitSequence + BitsPerBlock;
 
 	private const int BitsPerBlock = sizeof(long) * 8;
-	private const int MaxBlockCount = (MaxBits + (BitsPerBlock - 1)) / BitsPerBlock; // 859
+	private const int MaxBlockCount = (MaxBits + (BitsPerBlock - 1)) / BitsPerBlock; // 13624
 	private const int MaxUInt64Pow10 = 19;
 	private long _length;
 	private fixed ulong _blocks[MaxBlockCount];
@@ -173,6 +173,12 @@ internal unsafe ref partial struct BigNumber
 	public static uint CountSignificantBits(UInt256 value)
 	{
 		return 256 - (uint)UInt256.LeadingZeroCount(value);
+	}
+
+	public static uint CountSignificantBits<T>(T value)
+		where T : unmanaged, IBinaryInteger<T>, IUnsignedNumber<T>
+	{
+		return (uint)(sizeof(T) * 8) - uint.CreateChecked(T.LeadingZeroCount(value));
 	}
 
 	public static uint CountSignificantBits(ref BigNumber value)
@@ -865,6 +871,45 @@ internal unsafe ref partial struct BigNumber
 		}
 	}
 
+	public static void SetUInt256(out BigNumber result, UInt256 value)
+	{
+		if (value <= ulong.MaxValue)
+		{
+			SetUInt64(out result, (ulong)(value));
+		}
+		else if (value <= UInt128.MaxValue)
+		{
+			SetUInt128(out result, (UInt128)(value));
+		}
+		else
+		{
+			result._blocks[0] = (ulong)(value.Lower);
+			result._blocks[1] = (ulong)(value.Lower >> 64);
+			result._blocks[2] = (ulong)(value.Upper);
+			result._blocks[3] = (ulong)(value.Upper >> 64);
+
+			result._length = 4;
+		}
+	}
+
+	public static void SetValue<T>(out BigNumber result, T value)
+		where T : unmanaged, IBinaryInteger<T>, IUnsignedNumber<T>
+	{
+		Debug.Assert(typeof(T) == typeof(ulong) || typeof(T) == typeof(UInt128) || typeof(T) == typeof(UInt256));
+		if (typeof(T) == typeof(UInt256))
+		{
+			SetUInt256(out result, UInt256.CreateChecked(value));
+		}
+		else if (typeof(T) == typeof(UInt128))
+		{
+			SetUInt128(out result, UInt128.CreateChecked(value));
+		}
+		else
+		{
+			SetUInt64(out result, ulong.CreateChecked(value));
+		}
+	}
+
 	public static void SetValue(out BigNumber result, scoped ref BigNumber value)
 	{
 		int rhsLength = (int)value._length;
@@ -1010,6 +1055,27 @@ internal unsafe ref partial struct BigNumber
 		}
 
 		return UInt256.Zero;
+	}
+
+	public T ToUInt<T>() where T : unmanaged, IBinaryInteger<T>, IUnsignedNumber<T>
+	{
+		Debug.Assert(typeof(T) == typeof(uint) || typeof(T) == typeof(ulong) || typeof(T) == typeof(UInt128) || typeof(T) == typeof(UInt256));
+		if (typeof(T) == typeof(UInt256))
+		{
+			return T.CreateChecked(ToUInt256());
+		}
+		else if (typeof(T) == typeof(UInt128))
+		{
+			return T.CreateChecked(ToUInt128());
+		}
+		else if (typeof(T) == typeof(ulong))
+		{
+			return T.CreateChecked(ToUInt64());
+		}
+		else
+		{
+			return T.CreateChecked(ToUInt32());
+		}
 	}
 
 	public override string ToString()

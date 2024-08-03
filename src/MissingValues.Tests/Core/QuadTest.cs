@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MissingValues.Internals;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Globalization;
@@ -409,12 +410,10 @@ namespace MissingValues.Tests.Core
 
 		[Theory]
 		[MemberData(nameof(TryParseTheoryData))]
-		public void BasicTryParseTest(string s, bool success, Quad returnValue)
+		public void BasicTryParseTest(string s, bool success, Quad expected)
 		{
-			Quad result;
-
-			Quad.TryParse(s, out result).Should().Be(success);
-			result.Should().Be(returnValue);
+			Quad.TryParse(s, out Quad actual).Should().Be(success);
+			actual.Should().Be(expected);
 		}
 
 		[Fact]

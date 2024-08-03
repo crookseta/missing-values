@@ -12,6 +12,69 @@ namespace MissingValues
 {
 	internal static class NumberParser
 	{
+		internal interface IIntegerRadixConverter<TInteger>
+			where TInteger : struct, IFormattableInteger<TInteger>
+		{
+			static abstract NumberStyles AllowedStyles { get; }
+			static abstract bool IsValidChar<TChar>(TChar ch) where TChar : unmanaged, IUtfCharacter<TChar>;
+			static abstract TInteger FromChar<TChar>(TChar ch) where TChar : unmanaged, IUtfCharacter<TChar>;
+			static abstract uint MaxDigitValue { get; }
+			static abstract int MaxDigitCount { get; }
+			static abstract TInteger ShiftLeftForNextDigit(in TInteger value);
+		}
+		private readonly struct HexConverter<TInteger> : IIntegerRadixConverter<TInteger>
+			where TInteger : struct, IFormattableInteger<TInteger>
+		{
+			public static NumberStyles AllowedStyles => NumberStyles.HexNumber;
+
+			public static uint MaxDigitValue => 0xF;
+
+			public static int MaxDigitCount => TInteger.MaxHexDigits;
+
+			public static TInteger FromChar<TChar>(TChar ch)
+				where TChar : unmanaged, IUtfCharacter<TChar>
+			{
+				return TInteger.GetHexValue((char)ch);
+			}
+
+			public static bool IsValidChar<TChar>(TChar ch)
+				where TChar : unmanaged, IUtfCharacter<TChar>
+			{
+				return char.IsAsciiHexDigit((char)ch);
+			}
+
+			public static TInteger ShiftLeftForNextDigit(in TInteger value)
+			{
+				return value << 4;
+			}
+		}
+		private readonly struct BinConverter<TInteger> : IIntegerRadixConverter<TInteger>
+			where TInteger : struct, IFormattableInteger<TInteger>
+		{
+			public static NumberStyles AllowedStyles => NumberStyles.BinaryNumber;
+
+			public static uint MaxDigitValue => 0b1;
+
+			public static int MaxDigitCount => TInteger.MaxBinaryDigits;
+
+			public static TInteger FromChar<TChar>(TChar ch)
+				where TChar : unmanaged, IUtfCharacter<TChar>
+			{
+				return TInteger.GetDecimalValue((char)ch);
+			}
+
+			public static bool IsValidChar<TChar>(TChar ch)
+				where TChar : unmanaged, IUtfCharacter<TChar>
+			{
+				return ch == (TChar)'1' || ch == (TChar)'0';
+			}
+
+			public static TInteger ShiftLeftForNextDigit(in TInteger value)
+			{
+				return value << 1;
+			}
+		}
+
 		internal readonly struct ParsingStatus
 		{
 			internal const int Success = 0;
@@ -74,44 +137,24 @@ namespace MissingValues
 
 			return ParsingStatus.Success;
 		}
-		public static ParsingStatus ParseBinStringToUnsigned<T, TChar>(ReadOnlySpan<TChar> s, out T output)
-			where T : struct, IFormattableInteger<T>, IMinMaxValue<T>, IUnsignedNumber<T>
+		public static ParsingStatus ParseStringToUnsigned<TInteger, TChar, TConverter>(ReadOnlySpan<TChar> s, out TInteger output)
+			where TInteger : struct, IFormattableInteger<TInteger>, IMinMaxValue<TInteger>, IUnsignedNumber<TInteger>
 			where TChar : unmanaged, IUtfCharacter<TChar>
+			where TConverter : struct, IIntegerRadixConverter<TInteger>
 		{
-			if (s.Length > T.MaxBinaryDigits || s.IndexOfAnyExcept((TChar)'0', (TChar)'1') > -1)
+			if (s.Length > TConverter.MaxDigitCount)
 			{
 				output = default;
 				return ParsingStatus.Overflow;
 			}
 
-			T acumulator = T.One;
-			output = T.GetDecimalValue((char)s[^1]);
+			TInteger acumulator = TInteger.One;
+			output = TConverter.FromChar(s[^1]);
 
 			for (int i = 2; i <= s.Length; i++)
 			{
-				acumulator = unchecked(acumulator * T.Two);
-				output += T.GetDecimalValue((char)s[^i]) * acumulator;
-			}
-
-			return ParsingStatus.Success;
-		}
-		public static ParsingStatus ParseHexStringToUnsigned<T, TChar>(ReadOnlySpan<TChar> s, out T output)
-			where T : struct, IFormattableInteger<T>, IMinMaxValue<T>, IUnsignedNumber<T>
-			where TChar : unmanaged, IUtfCharacter<TChar>
-		{
-			if (s.Length > T.MaxHexDigits)
-			{
-				output = default;
-				return ParsingStatus.Overflow;
-			}
-
-			T acumulator = T.One;
-			output = T.GetHexValue((char)s[^1]);
-
-			for (int i = 2; i <= s.Length; i++)
-			{
-				acumulator = unchecked(acumulator * T.Sixteen);
-				output += T.GetHexValue((char)s[^i]) * acumulator;
+				acumulator = TConverter.ShiftLeftForNextDigit(in acumulator);
+				output += TConverter.FromChar(s[^i]) * acumulator;
 			}
 
 			return ParsingStatus.Success;
@@ -155,14 +198,12 @@ namespace MissingValues
 
 			if (style.HasFlag(NumberStyles.AllowHexSpecifier))
 			{
-				status = ParseHexStringToUnsigned(s, out output);
+				status = ParseStringToUnsigned<T, TChar, HexConverter<T>>(s, out output);
 			}
-#if NET8_0_OR_GREATER
 			else if (style.HasFlag(NumberStyles.AllowBinarySpecifier))
 			{
-				status = ParseBinStringToUnsigned(s, out output);
+				status = ParseStringToUnsigned<T, TChar, BinConverter<T>>(s, out output);
 			}
-#endif
 			else
 			{
 				status = ParseDecStringToUnsigned(s, out output);
@@ -223,14 +264,12 @@ namespace MissingValues
 
 			if (style.HasFlag(NumberStyles.AllowHexSpecifier))
 			{
-				status = ParseHexStringToUnsigned(raw, out result);
+				status = ParseStringToUnsigned<TUnsigned, TChar, HexConverter<TUnsigned>>(raw, out result);
 			}
-#if NET8_0_OR_GREATER
 			else if (style.HasFlag(NumberStyles.AllowBinarySpecifier))
 			{
-				status = ParseBinStringToUnsigned(raw, out result);
+				status = ParseStringToUnsigned<TUnsigned, TChar, BinConverter<TUnsigned>>(raw, out result);
 			}
-#endif
 			else
 			{
 				status = ParseDecStringToUnsigned(raw, out result);
@@ -276,7 +315,7 @@ namespace MissingValues
 		 * Quad: 11563
 		 * Octo: 183466
 		 */
-		const int FloatBufferLength = 11563 + 1 + 1; // Max buffer length + 1 for rounding 
+		const int FloatBufferLength = 183466 + 1 + 1; // Max buffer length + 1 for rounding 
 
 		public static unsafe bool TryParseFloat<TFloat, TChar>(ReadOnlySpan<TChar> s, NumberStyles styles, IFormatProvider? provider, [MaybeNullWhen(false)] out TFloat result)
 			where TFloat : struct, IFormattableBinaryFloatingPoint<TFloat>
@@ -362,6 +401,94 @@ namespace MissingValues
 			}
 
 			result = FloatInfo.ConvertToFloat<TFloat>(ref number);
+			ArrayPool<byte>.Shared.Return(buffer);
+			return true;
+		}
+		public static unsafe bool TryParseFloat<TFloat, TBits, TChar>(ReadOnlySpan<TChar> s, NumberStyles styles, IFormatProvider? provider, [MaybeNullWhen(false)] out TFloat result)
+			where TFloat : struct, IBinaryFloatingPointInfo<TFloat, TBits>
+			where TBits : unmanaged, IBinaryInteger<TBits>, IUnsignedNumber<TBits>
+			where TChar : unmanaged, IUtfCharacter<TChar>
+		{
+			byte[] buffer = ArrayPool<byte>.Shared.Rent(FloatBufferLength);
+			FloatInfo number = new FloatInfo(buffer);
+			NumberFormatInfo info = NumberFormatInfo.GetInstance(provider);
+
+
+			if (!FloatInfo.TryParse(s, ref number, info, styles))
+			{
+				ReadOnlySpan<TChar> trim = s.Trim(TChar.WhiteSpaceCharacter);
+
+				Span<TChar> positiveInf = stackalloc TChar[TChar.GetLength(info.PositiveInfinitySymbol)];
+				TChar.Copy(info.PositiveInfinitySymbol, positiveInf);
+				
+				if (TChar.Equals(trim, positiveInf, StringComparison.OrdinalIgnoreCase))
+				{
+					result = TFloat.PositiveInfinity;
+					return true;
+				}
+
+				Span<TChar> negativeInf = stackalloc TChar[TChar.GetLength(info.NegativeInfinitySymbol)];
+				TChar.Copy(info.NegativeInfinitySymbol, negativeInf);
+
+				if (TChar.Equals(trim, negativeInf, StringComparison.OrdinalIgnoreCase))
+				{
+					result = TFloat.NegativeInfinity;
+					return true;
+				}
+
+				Span<TChar> nan = stackalloc TChar[TChar.GetLength(info.NaNSymbol)];
+				TChar.Copy(info.NaNSymbol, nan);
+
+				if (TChar.Equals(trim, nan, StringComparison.OrdinalIgnoreCase))
+				{
+					result = TFloat.NaN;
+					return true;
+				}
+
+				Span<TChar> positiveSign = stackalloc TChar[TChar.GetLength(info.PositiveSign)];
+				TChar.Copy(info.PositiveSign, positiveSign);
+
+				if (TChar.StartsWith(trim, positiveSign, StringComparison.OrdinalIgnoreCase))
+				{
+					trim = trim.Slice(positiveSign.Length);
+
+					if (TChar.Equals(trim, positiveInf, StringComparison.OrdinalIgnoreCase))
+					{
+						result = TFloat.PositiveInfinity;
+						return true;
+					}
+					else if (TChar.Equals(trim, nan, StringComparison.OrdinalIgnoreCase))
+					{
+						result = TFloat.NaN;
+						return true;
+					}
+
+					result = TFloat.Zero;
+					return false;
+				}
+				Span<TChar> negativeSign = stackalloc TChar[TChar.GetLength(info.NegativeSign)];
+				TChar.Copy(info.NegativeSign, negativeSign);
+
+				if (TChar.StartsWith(trim, negativeSign, StringComparison.OrdinalIgnoreCase))
+				{
+					if (TChar.Equals(trim[negativeSign.Length..], nan, StringComparison.OrdinalIgnoreCase))
+					{
+						result = TFloat.NaN;
+						return true;
+					}
+
+					if (TChar.StartsWith(trim, negativeSign, StringComparison.OrdinalIgnoreCase))
+					{
+						result = TFloat.NaN;
+						return true;
+					}
+				}
+
+				result = TFloat.Zero;
+				return false; // We really failed
+			}
+
+			result = FloatInfo.ConvertToFloat<TFloat, TBits>(ref number);
 			ArrayPool<byte>.Shared.Return(buffer);
 			return true;
 		}

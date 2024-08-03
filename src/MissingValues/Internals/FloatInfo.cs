@@ -96,6 +96,28 @@ namespace MissingValues.Internals
 
 			return number.IsNegative ? -result : result;
 		}
+		public static TFloat ConvertToFloat<TFloat, TBits>(ref FloatInfo number)
+			where TFloat : struct, IBinaryFloatingPointInfo<TFloat, TBits>
+			where TBits : unmanaged, IBinaryInteger<TBits>, IUnsignedNumber<TBits>
+		{
+			TFloat result;
+
+			if ((number.DigitsCount == 0) || (number.Scale < TFloat.MinimumDecimalExponent))
+			{
+				result = TFloat.Zero;
+			}
+			else if (number.Scale > TFloat.MaximumDecimalExponent)
+			{
+				result = TFloat.PositiveInfinity;
+			}
+			else
+			{
+				TBits bits = GetFloatBits<TFloat, TBits>(ref number);
+				result = TFloat.BitsToFloat(bits);
+			}
+
+			return number.IsNegative ? -result : result;
+		}
 
 		public static unsafe bool TryParse<TChar>(ReadOnlySpan<TChar> s, ref FloatInfo info, NumberFormatInfo formatInfo, NumberStyles styles = NumberStyles.Float)
 			where TChar : unmanaged, IUtfCharacter<TChar>
@@ -542,6 +564,197 @@ namespace MissingValues.Internals
 
 			return AssembleFloatingPointBits<TFloat>(completeMantissa, finalExponent, hasZeroTail);
 		}
+		private static TBits GetFloatBits<TFloat, TBits>(ref FloatInfo number)
+			where TFloat : struct, IBinaryFloatingPointInfo<TFloat, TBits>
+			where TBits : unmanaged, IBinaryInteger<TBits>, IUnsignedNumber<TBits>
+		{
+			int normalMantissaBits = TFloat.NormalMantissaBits;
+			int overflowDecimalExponent = TFloat.OverflowDecimalExponent;
+
+			uint totalDigits = (uint)(number.DigitsCount);
+			uint positiveExponent = (uint)(Math.Max(0, number.Scale));
+
+			uint integerDigitsPresent = Math.Min(positiveExponent, totalDigits);
+			uint fractionalDigitsPresent = totalDigits - integerDigitsPresent;
+
+			// To generate an N bit mantissa we require N + 1 bits of precision.  The
+			// extra bit is used to correctly round the mantissa (if there are fewer bits
+			// than this available, then that's totally okay; in that case we use what we
+			// have and we don't need to round).
+			uint requiredBitsOfPrecision = (uint)(normalMantissaBits + 1);
+
+			uint integerDigitsMissing = positiveExponent - integerDigitsPresent;
+
+			const uint IntegerFirstIndex = 0;
+			uint integerLastIndex = integerDigitsPresent;
+
+			uint fractionalFirstIndex = integerLastIndex;
+			uint fractionalLastIndex = totalDigits;
+
+			// First, we accumulate the integer part of the mantissa into a BigNumber:
+			AccumulateDecimalDigitsIntoBigNumber(ref number, IntegerFirstIndex, integerLastIndex, out BigNumber integerValue);
+
+			if (integerDigitsMissing > 0)
+			{
+				if (integerDigitsMissing > overflowDecimalExponent)
+				{
+					return TFloat.PositiveInfinityBits;
+				}
+
+				integerValue.MultiplyPow10(integerDigitsMissing);
+			}
+
+			// At this point, the integerValue contains the value of the integer part
+			// of the mantissa.  If either [1] this number has more than the required
+			// number of bits of precision or [2] the mantissa has no fractional part,
+			// then we can assemble the result immediately:
+			uint integerBitsOfPrecision = BigNumber.CountSignificantBits(ref integerValue);
+
+			if ((integerBitsOfPrecision >= requiredBitsOfPrecision) || (fractionalDigitsPresent == 0))
+			{
+				return ConvertBigIntegerToFloatingPointBits<TFloat, TBits>(
+					ref integerValue,
+					integerBitsOfPrecision,
+					fractionalDigitsPresent != 0
+				);
+			}
+
+			// Otherwise, we did not get enough bits of precision from the integer part,
+			// and the mantissa has a fractional part.  We parse the fractional part of
+			// the mantissa to obtain more bits of precision.  To do this, we convert
+			// the fractional part into an actual fraction N/M, where the numerator N is
+			// computed from the digits of the fractional part, and the denominator M is
+			// computed as the power of 10 such that N/M is equal to the value of the
+			// fractional part of the mantissa.
+
+			uint fractionalDenominatorExponent = fractionalDigitsPresent;
+
+			if (number.Scale < 0)
+			{
+				fractionalDenominatorExponent += (uint)(-number.Scale);
+			}
+
+			if ((integerBitsOfPrecision == 0) && (fractionalDenominatorExponent - (int)(totalDigits)) > overflowDecimalExponent)
+			{
+				// If there were any digits in the integer part, it is impossible to
+				// underflow (because the exponent cannot possibly be small enough),
+				// so if we underflow here it is a true underflow and we return zero.
+				return TFloat.PositiveZeroBits;
+			}
+
+			AccumulateDecimalDigitsIntoBigNumber(ref number, fractionalFirstIndex, fractionalLastIndex, out BigNumber fractionalNumerator);
+
+			if (fractionalNumerator.IsZero())
+			{
+				return ConvertBigIntegerToFloatingPointBits<TFloat, TBits>(
+					ref integerValue,
+					integerBitsOfPrecision,
+					fractionalDigitsPresent != 0
+				);
+			}
+
+			BigNumber.Pow10(fractionalDenominatorExponent, out BigNumber fractionalDenominator);
+
+			// Because we are using only the fractional part of the mantissa here, the
+			// numerator is guaranteed to be smaller than the denominator.  We normalize
+			// the fraction such that the most significant bit of the numerator is in
+			// the same position as the most significant bit in the denominator.  This
+			// ensures that when we later shift the numerator N bits to the left, we
+			// will produce N bits of precision.
+			uint fractionalNumeratorBits = BigNumber.CountSignificantBits(ref fractionalNumerator);
+			uint fractionalDenominatorBits = BigNumber.CountSignificantBits(ref fractionalDenominator);
+
+			uint fractionalShift = 0;
+
+			if (fractionalDenominatorBits > fractionalNumeratorBits)
+			{
+				fractionalShift = fractionalDenominatorBits - fractionalNumeratorBits;
+			}
+
+			if (fractionalShift > 0)
+			{
+				fractionalNumerator.ShiftLeft(fractionalShift);
+			}
+
+			uint requiredFractionalBitsOfPrecision = requiredBitsOfPrecision - integerBitsOfPrecision;
+			uint remainingBitsOfPrecisionRequired = requiredFractionalBitsOfPrecision;
+
+			if (integerBitsOfPrecision > 0)
+			{
+				// If the fractional part of the mantissa provides no bits of precision
+				// and cannot affect rounding, we can just take whatever bits we got from
+				// the integer part of the mantissa.  This is the case for numbers like
+				// 5.0000000000000000000001, where the significant digits of the fractional
+				// part start so far to the right that they do not affect the floating
+				// point representation.
+				//
+				// If the fractional shift is exactly equal to the number of bits of
+				// precision that we require, then no fractional bits will be part of the
+				// result, but the result may affect rounding.  This is e.g. the case for
+				// large, odd integers with a fractional part greater than or equal to .5.
+				// Thus, we need to do the division to correctly round the result.
+				if (fractionalShift > remainingBitsOfPrecisionRequired)
+				{
+					return ConvertBigIntegerToFloatingPointBits<TFloat, TBits>(
+						ref integerValue,
+						integerBitsOfPrecision,
+						fractionalDigitsPresent != 0
+					);
+				}
+
+				remainingBitsOfPrecisionRequired -= fractionalShift;
+			}
+
+			// If there was no integer part of the mantissa, we will need to compute the
+			// exponent from the fractional part.  The fractional exponent is the power
+			// of two by which we must multiply the fractional part to move it into the
+			// range [1.0, 2.0).  This will either be the same as the shift we computed
+			// earlier, or one greater than that shift:
+			uint fractionalExponent = fractionalShift;
+
+			if (BigNumber.Compare(ref fractionalNumerator, ref fractionalDenominator) < 0)
+			{
+				fractionalExponent++;
+			}
+
+			fractionalNumerator.ShiftLeft(remainingBitsOfPrecisionRequired);
+
+
+			BigNumber.DivRem(ref fractionalNumerator, ref fractionalDenominator, out BigNumber bigFractionalMantissa, out BigNumber fractionalRemainder);
+
+
+			TBits fractionalMantissa = bigFractionalMantissa.ToUInt<TBits>();
+			bool hasZeroTail = !number.HasNonZeroTail && fractionalRemainder.IsZero();
+
+			// We may have produced more bits of precision than were required.  Check,
+			// and remove any "extra" bits:
+			uint fractionalMantissaBits = BigNumber.CountSignificantBits(fractionalMantissa);
+			if (fractionalMantissaBits > requiredFractionalBitsOfPrecision)
+			{
+				int shift = (int)(fractionalMantissaBits - requiredFractionalBitsOfPrecision);
+				hasZeroTail = hasZeroTail && (fractionalMantissa & ((TBits.One << shift) - TBits.One)) == TBits.Zero;
+				fractionalMantissa >>= shift;
+			}
+
+
+			// Compose the mantissa from the integer and fractional parts:
+			TBits integerMantissa = integerValue.ToUInt<TBits>();
+			TBits completeMantissa = (integerMantissa << (int)(requiredFractionalBitsOfPrecision)) + fractionalMantissa;
+
+			// Compute the final exponent:
+			// * If the mantissa had an integer part, then the exponent is one less than
+			//   the number of bits we obtained from the integer part.  (It's one less
+			//   because we are converting to the form 1.11111, with one 1 to the left
+			//   of the decimal point.)
+			// * If the mantissa had no integer part, then the exponent is the fractional
+			//   exponent that we computed.
+			// Then, in both cases, we subtract an additional one from the exponent, to
+			// account for the fact that we've generated an extra bit of precision, for
+			// use in rounding.
+			int finalExponent = (integerBitsOfPrecision > 0) ? (int)(integerBitsOfPrecision) - 2 : -(int)(fractionalExponent) - 1;
+
+			return AssembleFloatingPointBits<TFloat, TBits>(completeMantissa, finalExponent, hasZeroTail);
+		}
 
 		private static UInt128 ConvertBigIntegerToFloatingPointBits<TFloat>(ref BigNumber value, uint integerBitsOfPrecision, bool hasNonZeroFractionalPart)
 			where TFloat : struct, IFormattableBinaryFloatingPoint<TFloat>
@@ -595,6 +808,103 @@ namespace MissingValues.Internals
 			}
 
 			return AssembleFloatingPointBits<TFloat>(mantissa, exponent, hasZeroTail);
+		}
+		private unsafe static TBits ConvertBigIntegerToFloatingPointBits<TFloat, TBits>(ref BigNumber value, uint integerBitsOfPrecision, bool hasNonZeroFractionalPart)
+			where TFloat : struct, IBinaryFloatingPointInfo<TFloat, TBits>
+			where TBits : unmanaged, IBinaryInteger<TBits>, IUnsignedNumber<TBits>
+		{
+			int baseExponent = TFloat.DenormalMantissaBits;
+			int size = sizeof(TBits) * 8;
+
+			// When we have N-bits or less of precision, we can just get the mantissa directly
+			if (integerBitsOfPrecision <= size)
+			{
+				return AssembleFloatingPointBits<TFloat, TBits>(value.ToUInt<TBits>(), baseExponent, !hasNonZeroFractionalPart);
+			}
+
+			(uint topBlockIndex, uint topBlockBits) = Math.DivRem(integerBitsOfPrecision, 64);
+			uint secondTopBlockIndex = topBlockIndex - 1;
+			uint middleBlockIndex = secondTopBlockIndex - 1;
+			uint bottomBlockIndex = middleBlockIndex - 1;
+
+			TBits mantissa;
+			int exponent;
+			bool hasZeroTail = !hasNonZeroFractionalPart;
+
+			// When the top N-bits perfectly span two blocks, we can get those blocks directly
+			if (topBlockBits == 0)
+			{
+				exponent = baseExponent + ((int)(bottomBlockIndex) * 64);
+
+				var secondTopBlock = value.GetBlock(secondTopBlockIndex);
+				var middleBlock = value.GetBlock(middleBlockIndex);
+				if (typeof(TBits) == typeof(UInt128))
+				{
+					if (secondTopBlock == 0 && middleBlock == 0)
+					{
+						mantissa = TBits.CreateChecked(new UInt128(value.GetBlock(bottomBlockIndex), value.GetBlock(bottomBlockIndex - 1)));
+						goto END;
+					}
+				}
+				else
+				{
+					mantissa = TBits.CreateChecked(new UInt256(secondTopBlock, middleBlock, value.GetBlock(bottomBlockIndex), value.GetBlock(bottomBlockIndex - 1)));
+					goto END;
+				}
+			}
+			if(typeof(TBits) == typeof(UInt128))
+			{
+				// Otherwise, we need to read three blocks and combine them into a 128-bit mantissa
+			
+				exponent = baseExponent + ((int)(middleBlockIndex) * 64);
+				int bottomBlockShift = (int)(topBlockBits);
+				int topBlockShift = size - bottomBlockShift;
+				int middleBlockShift = topBlockShift - 64;
+
+				exponent += (int)(topBlockBits);
+
+				ulong bottomBlock = value.GetBlock(middleBlockIndex);
+				ulong bottomBits = bottomBlock >> bottomBlockShift;
+
+				TBits middleBits = TBits.CreateChecked(value.GetBlock(secondTopBlockIndex)) << middleBlockShift;
+				TBits topBits = TBits.CreateChecked(value.GetBlock(topBlockIndex)) << topBlockShift;
+
+				mantissa = topBits + middleBits + TBits.CreateChecked(bottomBits);
+
+				ulong unusedBottomBlockBitsMask = (1UL << (int)(topBlockBits)) - 1;
+				hasZeroTail &= (bottomBlock & unusedBottomBlockBitsMask) == 0;
+			}
+			else // typeof(TBits) == typeof(UInt256)
+			{
+				// Otherwise, we need to read five blocks and combine them into a 128-bit mantissa
+				exponent = baseExponent + ((int)(bottomBlockIndex) * 64);
+
+				int bottomBlockShift = (int)(topBlockBits);
+				int topBlockShift = 256 - bottomBlockShift;
+				int secondTopBlockShift = topBlockShift - 64;
+				int middleBlockShift = secondTopBlockShift - 64;
+
+				exponent += (int)(topBlockBits);
+
+				ulong bottomBlock = value.GetBlock(bottomBlockIndex);
+				ulong bottomBits = bottomBlock >> bottomBlockShift;
+
+				TBits middleBits = TBits.CreateChecked(value.GetBlock(middleBlockIndex)) << middleBlockShift;
+				TBits secondTopBits = TBits.CreateChecked(value.GetBlock(secondTopBlockIndex)) << secondTopBlockShift;
+				TBits topBits = TBits.CreateChecked(value.GetBlock(topBlockIndex)) << topBlockShift;
+
+				mantissa = topBits + secondTopBits + middleBits + TBits.CreateChecked(bottomBits);
+
+				ulong unusedBottomBlockBitsMask = (1u << (int)(topBlockBits)) - 1;
+				hasZeroTail &= (bottomBlock & unusedBottomBlockBitsMask) == 0;
+			}
+		END:
+			for (uint i = 0; i != bottomBlockIndex; i++)
+			{
+				hasZeroTail &= (value.GetBlock(i) == 0);
+			}
+
+			return AssembleFloatingPointBits<TFloat, TBits>(mantissa, exponent, hasZeroTail);
 		}
 
 		private static UInt128 AssembleFloatingPointBits<TFloat>(UInt128 initialMantissa, int initialExponent, bool hasZeroTail)
@@ -711,6 +1021,121 @@ namespace MissingValues.Internals
 
 			return shiftedExponent | mantissa;
 		}
+		private static TBits AssembleFloatingPointBits<TFloat, TBits>(TBits initialMantissa, int initialExponent, bool hasZeroTail)
+			where TFloat : struct, IBinaryFloatingPointInfo<TFloat, TBits>
+			where TBits : unmanaged, IBinaryInteger<TBits>, IUnsignedNumber<TBits>
+		{
+			int denormalMantissaBits = TFloat.DenormalMantissaBits;
+			int normalMantissaBits = TFloat.NormalMantissaBits;
+			// number of bits by which we must adjust the mantissa to shift it into the
+			// correct position, and compute the resulting base two exponent for the
+			// normalized mantissa:
+			uint initialMantissaBits = BigNumber.CountSignificantBits(initialMantissa);
+			int normalMantissaShift = normalMantissaBits - (int)(initialMantissaBits);
+			int normalExponent = initialExponent - normalMantissaShift;
+
+			TBits mantissa = initialMantissa;
+			int exponent = normalExponent;
+
+			if (normalExponent > TFloat.MaxBiasedExponent)
+			{
+				// The exponent is too large to be represented by the floating point
+				// type; report the overflow condition:
+				return TFloat.PositiveInfinityBits;
+			}
+			else if (normalExponent < (1 - TFloat.MaxBiasedExponent))
+			{
+				// The exponent is too small to be represented by the floating point
+				// type as a normal value, but it may be representable as a denormal
+				// value.  Compute the number of bits by which we need to shift the
+				// mantissa in order to form a denormal number.  (The subtraction of
+				// an extra 1 is to account for the hidden bit of the mantissa that
+				// is not available for use when representing a denormal.)
+				int denormalMantissaShift = normalMantissaShift + normalExponent + TFloat.MaxBiasedExponent - 1;
+
+				// Denormal values have an exponent of zero, so the debiased exponent is
+				// the negation of the exponent bias:
+				exponent = -TFloat.MaxBiasedExponent;
+
+				if (denormalMantissaShift < 0)
+				{
+					// Use two steps for right shifts:  for a shift of N bits, we first
+					// shift by N-1 bits, then shift the last bit and use its value to
+					// round the mantissa.
+					mantissa = RightShiftWithRounding(mantissa, -denormalMantissaShift, hasZeroTail);
+
+					// If the mantissa is now zero, we have underflowed:
+					if (mantissa == TBits.Zero)
+					{
+						return TFloat.PositiveZeroBits;
+					}
+
+					// When we round the mantissa, the result may be so large that the
+					// number becomes a normal value.  For example, consider the single
+					// precision case where the mantissa is 0x01ffffff and a right shift
+					// of 2 is required to shift the value into position. We perform the
+					// shift in two steps:  we shift by one bit, then we shift again and
+					// round using the dropped bit.  The initial shift yields 0x00ffffff.
+					// The rounding shift then yields 0x007fffff and because the least
+					// significant bit was 1, we add 1 to this number to round it.  The
+					// final result is 0x00800000.
+					//
+					// 0x00800000 is 24 bits, which is more than the 23 bits available
+					// in the mantissa.  Thus, we have rounded our denormal number into
+					// a normal number.
+					//
+					// We detect this case here and re-adjust the mantissa and exponent
+					// appropriately, to form a normal number:
+					if (mantissa > TFloat.DenormalMantissaMask)
+					{
+						// We add one to the denormalMantissaShift to account for the
+						// hidden mantissa bit (we subtracted one to account for this bit
+						// when we computed the denormalMantissaShift above).
+						exponent = initialExponent - (denormalMantissaShift + 1) - normalMantissaShift;
+					}
+				}
+				else
+				{
+					mantissa <<= denormalMantissaShift;
+				}
+			}
+			else
+			{
+				if (normalMantissaShift < 0)
+				{
+					// Use two steps for right shifts:  for a shift of N bits, we first
+					// shift by N-1 bits, then shift the last bit and use its value to
+					// round the mantissa.
+					mantissa = RightShiftWithRounding(mantissa, -normalMantissaShift, hasZeroTail);
+
+					// When we round the mantissa, it may produce a result that is too
+					// large.  In this case, we divide the mantissa by two and increment
+					// the exponent (this does not change the value).
+					if (mantissa > TFloat.NormalMantissaMask)
+					{
+						mantissa >>= 1;
+						exponent++;
+
+						// The increment of the exponent may have generated a value too
+						// large to be represented.  In this case, report the overflow:
+						if (exponent > TFloat.MaxBiasedExponent)
+						{
+							return TFloat.PositiveInfinityBits;
+						}
+					}
+				}
+				else if (normalMantissaShift > 0)
+				{
+					mantissa <<= normalMantissaShift;
+				}
+			}
+
+			mantissa &= TFloat.TrailingSignificandMask;
+
+			TBits shiftedExponent = (TBits.CreateChecked(exponent + TFloat.ExponentBias)) << denormalMantissaBits;
+
+			return shiftedExponent | mantissa;
+		}
 
 		private static UInt128 RightShiftWithRounding(UInt128 value, int shift, bool hasZeroTail)
 		{
@@ -730,6 +1155,28 @@ namespace MissingValues.Internals
 			bool hasTailBits = !hasZeroTail || (value & extraBitsMask) != 0;
 
 			return (value >> shift) + (ShouldRoundUp(lsbBit, roundBit, hasTailBits) ? 1UL : 0);
+		}
+		private unsafe static T RightShiftWithRounding<T>(T value, int shift, bool hasZeroTail)
+			where T : unmanaged, IBinaryInteger<T>, IUnsignedNumber<T>
+		{
+			// If we'd need to shift further than it is possible to shift, the answer
+			// is always zero:
+			if (shift >= (sizeof(T) * 8))
+			{
+				return T.Zero;
+			}
+
+			T one = T.One;
+			T extraBitsMask = (one << (shift - 1)) - one;
+			T roundBitMask = (one << (shift - 1));
+			T lsbBitMask = one << shift;
+
+			T zero = T.Zero;
+			bool lsbBit = (value & lsbBitMask) != zero;
+			bool roundBit = (value & roundBitMask) != zero;
+			bool hasTailBits = !hasZeroTail || (value & extraBitsMask) != zero;
+
+			return (value >> shift) + (ShouldRoundUp(lsbBit, roundBit, hasTailBits) ? one : zero);
 		}
 
 		private static bool ShouldRoundUp(bool lsbBit, bool roundBit, bool hasTailBits)
