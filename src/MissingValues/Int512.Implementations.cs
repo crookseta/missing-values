@@ -14,7 +14,7 @@ using System.Threading.Tasks;
 namespace MissingValues
 {
 	public partial struct Int512 :
-		IBinaryInteger<Int512>,
+		IBigInteger<Int512>,
 		IMinMaxValue<Int512>,
 		ISignedNumber<Int512>,
 		IFormattableSignedInteger<Int512, UInt512>
@@ -227,7 +227,7 @@ namespace MissingValues
 
 		static bool INumberBase<Int512>.IsComplexNumber(Int512 value) => false;
 
-		public static bool IsEvenInteger(Int512 value) => (value._lower & 1) == UInt256.Zero;
+		public static bool IsEvenInteger(Int512 value) => (value.Lower & 1) == UInt256.Zero;
 
 		static bool INumberBase<Int512>.IsFinite(Int512 value) => true;
 
@@ -239,15 +239,15 @@ namespace MissingValues
 
 		static bool INumberBase<Int512>.IsNaN(Int512 value) => false;
 
-		public static bool IsNegative(Int512 value) => (Int256)value._upper < Int256.Zero;
+		public static bool IsNegative(Int512 value) => (Int256)value.Upper < Int256.Zero;
 
 		static bool INumberBase<Int512>.IsNegativeInfinity(Int512 value) => false;
 
 		static bool INumberBase<Int512>.IsNormal(Int512 value) => value != Zero;
 
-		public static bool IsOddInteger(Int512 value) => (value._lower & 1) != 0;
+		public static bool IsOddInteger(Int512 value) => (value.Lower & 1) != 0;
 
-		public static bool IsPositive(Int512 value) => (Int256)value._upper >= Int256.Zero;
+		public static bool IsPositive(Int512 value) => (Int256)value.Upper >= Int256.Zero;
 
 		static bool INumberBase<Int512>.IsPositiveInfinity(Int512 value) => false;
 
@@ -261,11 +261,11 @@ namespace MissingValues
 
 		public static Int512 LeadingZeroCount(Int512 value)
 		{
-			if (value._upper == 0)
+			if (value.Upper == 0)
 			{
-				return (Int512)(256 + UInt256.LeadingZeroCount(value._lower));
+				return (Int512)(256 + UInt256.LeadingZeroCount(value.Lower));
 			}
-			return (Int512)UInt256.LeadingZeroCount(value._upper);
+			return (Int512)UInt256.LeadingZeroCount(value.Upper);
 		}
 
 		public static Int512 Log2(Int512 value)
@@ -275,11 +275,11 @@ namespace MissingValues
 				Thrower.NeedsNonNegative<Int512>();
 			}
 
-			if (value._upper == 0)
+			if (value.Upper == 0)
 			{
-				return (Int512)UInt256.Log2(value._lower);
+				return (Int512)UInt256.Log2(value.Lower);
 			}
-			return (Int512)(256 + UInt256.Log2(value._upper));
+			return (Int512)(256 + UInt256.Log2(value.Upper));
 		}
 
 		public static Int512 Max(Int512 x, Int512 y) => (x >= y) ? x : y;
@@ -436,7 +436,7 @@ namespace MissingValues
 
 		public static Int512 PopCount(Int512 value)
 		{
-			return (Int512)(UInt256.PopCount(value._lower) + UInt256.PopCount(value._upper));
+			return (Int512)(UInt256.PopCount(value.Lower) + UInt256.PopCount(value.Upper));
 		}
 
 		public static Int512 RotateLeft(Int512 value, int rotateAmount)
@@ -456,11 +456,11 @@ namespace MissingValues
 
 		public static Int512 TrailingZeroCount(Int512 value)
 		{
-			if (value._lower == 0)
+			if (value.Lower == 0)
 			{
-				return (Int512)(256 + UInt256.TrailingZeroCount(value._upper));
+				return (Int512)(256 + UInt256.TrailingZeroCount(value.Upper));
 			}
-			return (Int512)UInt256.TrailingZeroCount(value._lower);
+			return (Int512)UInt256.TrailingZeroCount(value.Lower);
 		}
 
 		public bool TryFormat(Span<char> destination, out int charsWritten, ReadOnlySpan<char> format, IFormatProvider? provider)
@@ -968,8 +968,8 @@ namespace MissingValues
 
 		private void WriteBigEndianUnsafe(Span<byte> destination)
 		{
-			UInt256 lower = _lower;
-			UInt256 upper = _upper;
+			UInt256 lower = Lower;
+			UInt256 upper = Upper;
 
 			if (BitConverter.IsLittleEndian)
 			{
@@ -1011,8 +1011,8 @@ namespace MissingValues
 		{
 			Debug.Assert(destination.Length >= Size);
 
-			UInt256 lower = _lower;
-			UInt256 upper = _upper;
+			UInt256 lower = Lower;
+			UInt256 upper = Upper;
 
 			if (!BitConverter.IsLittleEndian)
 			{
@@ -1041,57 +1041,94 @@ namespace MissingValues
 			return (UInt512)this;
 		}
 
-		public static Int512 operator +(Int512 value)
+		public static Int512 operator +(in Int512 value)
 		{
 			return value;
 		}
 
-		public static Int512 operator +(Int512 left, Int512 right)
+		public static Int512 operator +(in Int512 left, in Int512 right)
 		{
 			// For unsigned addition, we can detect overflow by checking `(x + y) < x`
 			// This gives us the carry to add to upper to compute the correct result
 
-			UInt256 lower = left._lower + right._lower;
-			UInt256 carry = (lower < left._lower) ? 1UL : 0UL;
+			ulong part0 = left._p0 + right._p0;
+			ulong carry = (part0 < left._p0) ? 1UL : 0UL;
 
-			UInt256 upper = left._upper + right._upper + carry;
-			return new Int512(upper, lower);
+			ulong part1 = left._p1 + right._p1 + carry;
+			carry = (part1 < left._p1 || (carry == 1 && part1 == left._p1)) ? 1UL : 0UL;
+
+			ulong part2 = left._p2 + right._p2 + carry;
+			carry = (part2 < left._p2 || (carry == 1 && part2 == left._p2)) ? 1UL : 0UL;
+
+			ulong part3 = left._p3 + right._p3 + carry;
+			carry = (part3 < left._p3 || (carry == 1 && part3 == left._p3)) ? 1UL : 0UL;
+			
+			ulong part4 = left._p4 + right._p4 + carry;
+			carry = (part4 < left._p4 || (carry == 1 && part4 == left._p4)) ? 1UL : 0UL;
+			
+			ulong part5 = left._p5 + right._p5 + carry;
+			carry = (part5 < left._p5 || (carry == 1 && part5 == left._p5)) ? 1UL : 0UL;
+			
+			ulong part6 = left._p6 + right._p6 + carry;
+			carry = (part6 < left._p6 || (carry == 1 && part6 == left._p6)) ? 1UL : 0UL;
+			
+			ulong part7 = left._p7 + right._p7 + carry;
+			return new Int512(part7, part6, part5, part4, part3, part2, part1, part0);
 		}
-		public static Int512 operator checked +(Int512 left, Int512 right)
+		public static Int512 operator checked +(in Int512 left, in Int512 right)
 		{
 			Int512 result = left + right;
 
-			ulong sign = (ulong)(left._upper >> 255);
+			ulong sign = (ulong)(left._p7 >> 63);
 
-			if (sign == (ulong)(right._upper >> 255) &&
-				sign != (ulong)(result._upper >> 255))
+			if (sign == (ulong)(right._p7 >> 63) &&
+				sign != (ulong)(result._p7 >> 63))
 			{
 				Thrower.ArithmethicOverflow(Thrower.ArithmethicOperation.Addition);
 			}
 			return result;
 		}
 
-		public static Int512 operator -(Int512 value)
+		public static Int512 operator -(in Int512 value)
 		{
 			return Zero - value;
 		}
-		public static Int512 operator checked -(Int512 value)
+		public static Int512 operator checked -(in Int512 value)
 		{
 			return checked(Zero - value);
 		}
 
-		public static Int512 operator -(Int512 left, Int512 right)
+		public static Int512 operator -(in Int512 left, in Int512 right)
 		{
 			// For unsigned subtract, we can detect overflow by checking `(x - y) > x`
 			// This gives us the borrow to subtract from upper to compute the correct result
 
-			UInt256 lower = left._lower - right._lower;
-			UInt256 borrow = (lower > left._lower) ? UInt256.One : UInt256.Zero;
+			ulong part0 = left._p0 - right._p0;
+			ulong borrow = (part0 > left._p0) ? 1UL : 0UL;
 
-			UInt256 upper = left._upper - right._upper - borrow;
-			return new Int512(upper, lower);
+			ulong part1 = left._p1 - right._p1 - borrow;
+			borrow = (part1 > left._p1 || (borrow == 1UL && part1 == left._p1)) ? 1UL : 0UL;
+
+			ulong part2 = left._p2 - right._p2 - borrow;
+			borrow = (part2 > left._p2 || (borrow == 1UL && part2 == left._p2)) ? 1UL : 0UL;
+
+			ulong part3 = left._p3 - right._p3 - borrow;
+			borrow = (part3 > left._p3 || (borrow == 1UL && part3 == left._p3)) ? 1UL : 0UL;
+
+			ulong part4 = left._p4 - right._p4 - borrow;
+			borrow = (part4 > left._p4 || (borrow == 1UL && part4 == left._p4)) ? 1UL : 0UL;
+
+			ulong part5 = left._p5 - right._p5 - borrow;
+			borrow = (part5 > left._p5 || (borrow == 1UL && part5 == left._p5)) ? 1UL : 0UL;
+
+			ulong part6 = left._p6 - right._p6 - borrow;
+			borrow = (part6 > left._p6 || (borrow == 1UL && part6 == left._p6)) ? 1UL : 0UL;
+
+			ulong part7 = left._p7 - right._p7 - borrow;
+
+			return new Int512(part7, part6, part5, part4, part3, part2, part1, part0);
 		}
-		public static Int512 operator checked -(Int512 left, Int512 right)
+		public static Int512 operator checked -(in Int512 left, in Int512 right)
 		{
 			// For signed subtraction, we can detect overflow by checking if the sign of
 			// both inputs are different and then if that differs from the sign of the
@@ -1099,43 +1136,43 @@ namespace MissingValues
 
 			Int512 result = left - right;
 
-			uint sign = (uint)(left._upper >> 255);
+			uint sign = (uint)(left.Upper >> 255);
 
-			if (sign != (uint)(right._upper >> 255) && sign != (uint)(result._upper >> 255))
+			if (sign != (uint)(right.Upper >> 255) && sign != (uint)(result.Upper >> 255))
 			{
 				Thrower.ArithmethicOverflow(Thrower.ArithmethicOperation.Subtraction);
 			}
 			return result;
 		}
 
-		public static Int512 operator ~(Int512 value)
+		public static Int512 operator ~(in Int512 value)
 		{
-			return new Int512(~value._upper, ~value._lower);
+			return new Int512(~value.Upper, ~value.Lower);
 		}
 
-		public static Int512 operator ++(Int512 value)
+		public static Int512 operator ++(in Int512 value)
 		{
 			return value + One;
 		}
-		public static Int512 operator checked ++(Int512 value)
+		public static Int512 operator checked ++(in Int512 value)
 		{
 			return checked(value + One);
 		}
 
-		public static Int512 operator --(Int512 value)
+		public static Int512 operator --(in Int512 value)
 		{
 			return value - One;
 		}
-		public static Int512 operator checked --(Int512 value)
+		public static Int512 operator checked --(in Int512 value)
 		{
 			return checked(value - One);
 		}
 
-		public static Int512 operator *(Int512 left, Int512 right)
+		public static Int512 operator *(in Int512 left, in Int512 right)
 		{
 			return (Int512)((UInt512)left * (UInt512)right);
 		}
-		public static Int512 operator checked *(Int512 left, Int512 right)
+		public static Int512 operator checked *(in Int512 left, in Int512 right)
 		{
 			Int512 upper = BigMul(left, right, out Int512 lower);
 
@@ -1160,9 +1197,9 @@ namespace MissingValues
 			return lower;
 		}
 
-		public static Int512 operator /(Int512 left, Int512 right)
+		public static Int512 operator /(in Int512 left, in Int512 right)
 		{
-			if ((right == NegativeOne) && (left._upper == _upperMin) && (left._lower == _lowerMin))
+			if ((right == NegativeOne) && (left.Upper == _upperMin) && (left.Lower == _lowerMin))
 			{
 				Thrower.ArithmethicOverflow(Thrower.ArithmethicOperation.Division);
 			}
@@ -1170,23 +1207,25 @@ namespace MissingValues
 			// We simplify the logic here by just doing unsigned division on the
 			// two's complement representation and then taking the correct sign.
 
-			UInt256 sign = (left._upper ^ right._upper) & (UInt256.One << 255);
+			UInt256 sign = (left.Upper ^ right.Upper) & (UInt256.One << 255);
+
+			Int512 a = left, b = right;
 
 			if (IsNegative(left))
 			{
-				left = ~left + One;
+				a = ~left + One;
 			}
 
 			if (IsNegative(right))
 			{
-				right = ~right + One;
+				b = ~right + One;
 			}
 
-			UInt512 result = (UInt512)(left) / (UInt512)(right);
+			UInt512 result = (UInt512)(a) / (UInt512)(b);
 
 			if (sign != 0)
 			{
-				result = ~result + 1U;
+				result = ~result + UInt512.One;
 			}
 
 			return new Int512(
@@ -1195,57 +1234,167 @@ namespace MissingValues
 			);
 		}
 
-		public static Int512 operator %(Int512 left, Int512 right)
+		public static Int512 operator %(in Int512 left, in Int512 right)
 		{
 			Int512 quotient = left / right;
 			return left - (quotient * right);
 		}
 
-		public static Int512 operator &(Int512 left, Int512 right)
+		public static Int512 operator &(in Int512 left, in Int512 right)
 		{
-			return new Int512(left._upper & right._upper, left._lower & right._lower);
+			return new Int512(left.Upper & right.Upper, left.Lower & right.Lower);
 		}
 
-		public static Int512 operator |(Int512 left, Int512 right)
+		public static Int512 operator |(in Int512 left, in Int512 right)
 		{
-			return new Int512(left._upper | right._upper, left._lower | right._lower);
+			return new Int512(left.Upper | right.Upper, left.Lower | right.Lower);
 		}
 
-		public static Int512 operator ^(Int512 left, Int512 right)
+		public static Int512 operator ^(in Int512 left, in Int512 right)
 		{
-			return new Int512(left._upper ^ right._upper, left._lower ^ right._lower);
+			return new Int512(left.Upper ^ right.Upper, left.Lower ^ right.Lower);
 		}
 
-		public static Int512 operator <<(Int512 value, int shiftAmount)
+		public static Int512 operator <<(in Int512 value, int shiftAmount)
 		{
-			shiftAmount &= 0x1FF;
+			// C# automatically masks the shift amount for UInt64 to be 0x3F. So we
+			// need to specially handle things if the shift amount exceeds 0x3F.
 
-			if ((shiftAmount & 0x100) != 0)
-			{
-				// In the case it is set, we know the entire lower bits must be zero
-				// and so the upper bits are just the lower shifted by the remaining
-				// masked amount
+			shiftAmount &= 0x1FF; // mask the shift amount to be within [0, 255]
 
-				UInt256 upper = value._lower << shiftAmount;
-				return new Int512(upper, UInt256.Zero);
-			}
-			else if (shiftAmount != 0)
-			{
-				// Otherwise we need to shift both upper and lower halves by the masked
-				// amount and then or that with whatever bits were shifted "out" of lower
-
-				UInt256 lower = value._lower << shiftAmount;
-				UInt256 upper = (value._upper << shiftAmount) | (value._lower >> (256 - shiftAmount));
-
-				return new Int512(upper, lower);
-			}
-			else
+			if (shiftAmount == 0)
 			{
 				return value;
 			}
+
+			if (shiftAmount < 64)
+			{
+				ulong part7 = (value._p7 << shiftAmount) | (value._p6 >> (64 - shiftAmount));
+				ulong part6 = (value._p6 << shiftAmount) | (value._p5 >> (64 - shiftAmount));
+				ulong part5 = (value._p5 << shiftAmount) | (value._p4 >> (64 - shiftAmount));
+				ulong part4 = (value._p4 << shiftAmount) | (value._p3 >> (64 - shiftAmount));
+				ulong part3 = (value._p3 << shiftAmount) | (value._p2 >> (64 - shiftAmount));
+				ulong part2 = (value._p2 << shiftAmount) | (value._p1 >> (64 - shiftAmount));
+				ulong part1 = (value._p1 << shiftAmount) | (value._p0 >> (64 - shiftAmount));
+				ulong part0 = value._p0 << shiftAmount;
+
+				return new Int512(part7, part6, part5, part4, part3, part2, part1, part0);
+			}
+			else if (shiftAmount < 128)
+			{
+				shiftAmount -= 64;
+
+				if (shiftAmount == 0)
+				{
+					return new Int512(value._p6, value._p5, value._p4, value._p3, value._p2, value._p1, value._p0, 0);
+				}
+
+				ulong part6 = (value._p6 << shiftAmount) | (value._p5 >> (64 - shiftAmount));
+				ulong part5 = (value._p5 << shiftAmount) | (value._p4 >> (64 - shiftAmount));
+				ulong part4 = (value._p4 << shiftAmount) | (value._p3 >> (64 - shiftAmount));
+				ulong part3 = (value._p3 << shiftAmount) | (value._p2 >> (64 - shiftAmount));
+				ulong part2 = (value._p2 << shiftAmount) | (value._p1 >> (64 - shiftAmount));
+				ulong part1 = (value._p1 << shiftAmount) | (value._p0 >> (64 - shiftAmount));
+				ulong part0 = value._p0 << shiftAmount;
+
+				return new Int512(part6, part5, part4, part3, part2, part1, part0, 0);
+			}
+			else if (shiftAmount < 192)
+			{
+				shiftAmount -= 128;
+
+				if (shiftAmount == 0)
+				{
+					return new Int512(value._p5, value._p4, value._p3, value._p2, value._p1, value._p0, 0, 0);
+				}
+
+				ulong part5 = (value._p5 << shiftAmount) | (value._p4 >> (64 - shiftAmount));
+				ulong part4 = (value._p4 << shiftAmount) | (value._p3 >> (64 - shiftAmount));
+				ulong part3 = (value._p3 << shiftAmount) | (value._p2 >> (64 - shiftAmount));
+				ulong part2 = (value._p2 << shiftAmount) | (value._p1 >> (64 - shiftAmount));
+				ulong part1 = (value._p1 << shiftAmount) | (value._p0 >> (64 - shiftAmount));
+				ulong part0 = value._p0 << shiftAmount;
+
+				return new Int512(part5, part4, part3, part2, part1, part0, 0, 0);
+			}
+			else if (shiftAmount < 256)
+			{
+				shiftAmount -= 192;
+
+				if (shiftAmount == 0)
+				{
+					return new Int512(value._p4, value._p3, value._p2, value._p1, value._p0, 0, 0, 0);
+				}
+
+				ulong part4 = (value._p4 << shiftAmount) | (value._p3 >> (64 - shiftAmount));
+				ulong part3 = (value._p3 << shiftAmount) | (value._p2 >> (64 - shiftAmount));
+				ulong part2 = (value._p2 << shiftAmount) | (value._p1 >> (64 - shiftAmount));
+				ulong part1 = (value._p1 << shiftAmount) | (value._p0 >> (64 - shiftAmount));
+				ulong part0 = value._p0 << shiftAmount;
+
+				return new Int512(part4, part3, part2, part1, part0, 0, 0, 0);
+			}
+			else if (shiftAmount < 320)
+			{
+				shiftAmount -= 256;
+
+				if (shiftAmount == 0)
+				{
+					return new Int512(value._p3, value._p2, value._p1, value._p0, 0, 0, 0, 0);
+				}
+
+				ulong part3 = (value._p3 << shiftAmount) | (value._p2 >> (64 - shiftAmount));
+				ulong part2 = (value._p2 << shiftAmount) | (value._p1 >> (64 - shiftAmount));
+				ulong part1 = (value._p1 << shiftAmount) | (value._p0 >> (64 - shiftAmount));
+				ulong part0 = value._p0 << shiftAmount;
+
+				return new Int512(part3, part2, part1, part0, 0, 0, 0, 0);
+			}
+			else if (shiftAmount < 384)
+			{
+				shiftAmount -= 320;
+
+				if (shiftAmount == 0)
+				{
+					return new Int512(value._p2, value._p1, value._p0, 0, 0, 0, 0, 0);
+				}
+
+				ulong part2 = (value._p2 << shiftAmount) | (value._p1 >> (64 - shiftAmount));
+				ulong part1 = (value._p1 << shiftAmount) | (value._p0 >> (64 - shiftAmount));
+				ulong part0 = value._p0 << shiftAmount;
+
+				return new Int512(part2, part1, part0, 0, 0, 0, 0, 0);
+			}
+			else if (shiftAmount < 448)
+			{
+				shiftAmount -= 384;
+
+				if (shiftAmount == 0)
+				{
+					return new Int512(value._p1, value._p0, 0, 0, 0, 0, 0, 0);
+				}
+
+				ulong part1 = (value._p1 << shiftAmount) | (value._p0 >> (64 - shiftAmount));
+				ulong part0 = value._p0 << shiftAmount;
+
+				return new Int512(part1, part0, 0, 0, 0, 0, 0, 0);
+			}
+			else // shiftAmount < 512
+			{
+				shiftAmount -= 448;
+
+				if (shiftAmount == 0)
+				{
+					return new Int512(value._p0, 0, 0, 0, 0, 0, 0, 0);
+				}
+
+				ulong part0 = value._p0 << shiftAmount;
+
+				return new Int512(part0, 0, 0, 0, 0, 0, 0, 0);
+			}
 		}
 
-		public static Int512 operator >>(Int512 value, int shiftAmount)
+		public static Int512 operator >>(in Int512 value, int shiftAmount)
 		{
 			shiftAmount &= 0x1FF;
 
@@ -1255,8 +1404,8 @@ namespace MissingValues
 				// and so the lower bits are just the upper shifted by the remaining
 				// masked amount
 
-				UInt256 lower = (UInt256)((Int256)value._upper >> shiftAmount);
-				UInt256 upper = (UInt256)((Int256)value._upper >> 255);
+				UInt256 lower = (UInt256)((Int256)value.Upper >> shiftAmount);
+				UInt256 upper = (UInt256)((Int256)value.Upper >> 255);
 
 				return new Int512(upper, lower);
 			}
@@ -1265,8 +1414,8 @@ namespace MissingValues
 				// Otherwise we need to shift both upper and lower halves by the masked
 				// amount and then or that with whatever bits were shifted "out" of upper
 
-				UInt256 lower = (value._lower >> shiftAmount) | (value._upper << (256 - shiftAmount));
-				UInt256 upper = (UInt256)((Int256)value._upper >> shiftAmount);
+				UInt256 lower = (value.Lower >> shiftAmount) | (value.Upper << (256 - shiftAmount));
+				UInt256 upper = (UInt256)((Int256)value.Upper >> shiftAmount);
 
 				return new Int512(upper, lower);
 			}
@@ -1276,22 +1425,22 @@ namespace MissingValues
 			}
 		}
 
-		public static bool operator ==(Int512 left, Int512 right)
+		public static bool operator ==(in Int512 left, in Int512 right)
 		{
-			return (left._lower == right._lower) && (left._upper == right._upper);
+			return (left.Lower == right.Lower) && (left.Upper == right.Upper);
 		}
 
-		public static bool operator !=(Int512 left, Int512 right)
+		public static bool operator !=(in Int512 left, in Int512 right)
 		{
-			return (left._lower != right._lower) || (left._upper != right._upper);
+			return (left.Lower != right.Lower) || (left.Upper != right.Upper);
 		}
 
-		public static bool operator <(Int512 left, Int512 right)
+		public static bool operator <(in Int512 left, in Int512 right)
 		{
 			if (IsNegative(left) == IsNegative(right))
 			{
-				return (left._upper < right._upper)
-					|| ((left._upper == right._upper) && (left._lower < right._lower));
+				return (left.Upper < right.Upper)
+					|| ((left.Upper == right.Upper) && (left.Lower < right.Lower));
 			}
 			else
 			{
@@ -1299,12 +1448,12 @@ namespace MissingValues
 			}
 		}
 
-		public static bool operator >(Int512 left, Int512 right)
+		public static bool operator >(in Int512 left, in Int512 right)
 		{
 			if (IsNegative(left) == IsNegative(right))
 			{
-				return (left._upper > right._upper)
-					|| ((left._upper == right._upper) && (left._lower > right._lower));
+				return (left.Upper > right.Upper)
+					|| ((left.Upper == right.Upper) && (left.Lower > right.Lower));
 			}
 			else
 			{
@@ -1312,12 +1461,12 @@ namespace MissingValues
 			}
 		}
 
-		public static bool operator <=(Int512 left, Int512 right)
+		public static bool operator <=(in Int512 left, in Int512 right)
 		{
 			if (IsNegative(left) == IsNegative(right))
 			{
-				return (left._upper < right._upper)
-					|| ((left._upper == right._upper) && (left._lower <= right._lower));
+				return (left.Upper < right.Upper)
+					|| ((left.Upper == right.Upper) && (left.Lower <= right.Lower));
 			}
 			else
 			{
@@ -1325,12 +1474,12 @@ namespace MissingValues
 			}
 		}
 
-		public static bool operator >=(Int512 left, Int512 right)
+		public static bool operator >=(in Int512 left, in Int512 right)
 		{
 			if (IsNegative(left) == IsNegative(right))
 			{
-				return (left._upper > right._upper)
-					|| ((left._upper == right._upper) && (left._lower >= right._lower));
+				return (left.Upper > right.Upper)
+					|| ((left.Upper == right.Upper) && (left.Lower >= right.Lower));
 			}
 			else
 			{
@@ -1338,32 +1487,137 @@ namespace MissingValues
 			}
 		}
 
-		public static Int512 operator >>>(Int512 value, int shiftAmount)
+		public static Int512 operator >>>(in Int512 value, int shiftAmount)
 		{
-			shiftAmount &= 0x1FF;
+			// C# automatically masks the shift amount for UInt64 to be 0x3F. So we
+			// need to specially handle things if the shift amount exceeds 0x3F.
 
-			if ((shiftAmount & 0x100) != 0)
-			{
-				// In the case it is set, we know the entire upper bits must be zero
-				// and so the lower bits are just the upper shifted by the remaining
-				// masked amount
+			shiftAmount &= 0x1FF; // mask the shift amount to be within [0, 511]
 
-				UInt256 lower = value._upper >> shiftAmount;
-				return new Int512(0, lower);
-			}
-			else if (shiftAmount != 0)
-			{
-				// Otherwise we need to shift both upper and lower halves by the masked
-				// amount and then or that with whatever bits were shifted "out" of upper
-
-				UInt256 lower = (value._lower >> shiftAmount) | (value._upper << (256 - shiftAmount));
-				UInt256 upper = value._upper >> shiftAmount;
-
-				return new Int512(upper, lower);
-			}
-			else
+			if (shiftAmount == 0)
 			{
 				return value;
+			}
+
+			if (shiftAmount < 64)
+			{
+				ulong part0 = (value._p0 >> shiftAmount) | (value._p1 << (64 - shiftAmount));
+				ulong part1 = (value._p1 >> shiftAmount) | (value._p2 << (64 - shiftAmount));
+				ulong part2 = (value._p2 >> shiftAmount) | (value._p3 << (64 - shiftAmount));
+				ulong part3 = (value._p3 >> shiftAmount) | (value._p4 << (64 - shiftAmount));
+				ulong part4 = (value._p4 >> shiftAmount) | (value._p5 << (64 - shiftAmount));
+				ulong part5 = (value._p5 >> shiftAmount) | (value._p6 << (64 - shiftAmount));
+				ulong part6 = (value._p6 >> shiftAmount) | (value._p7 << (64 - shiftAmount));
+				ulong part7 = value._p7 >> shiftAmount;
+
+				return new Int512(part7, part6, part5, part4, part3, part2, part1, part0);
+			}
+			else if (shiftAmount < 128)
+			{
+				shiftAmount -= 64;
+
+				if (shiftAmount == 0)
+				{
+					return new Int512(0, value._p7, value._p6, value._p5, value._p4, value._p3, value._p2, value._p1);
+				}
+
+				ulong part0 = (value._p1 >> shiftAmount) | (value._p2 << (64 - shiftAmount));
+				ulong part1 = (value._p2 >> shiftAmount) | (value._p3 << (64 - shiftAmount));
+				ulong part2 = (value._p3 >> shiftAmount) | (value._p4 << (64 - shiftAmount));
+				ulong part3 = (value._p4 >> shiftAmount) | (value._p5 << (64 - shiftAmount));
+				ulong part4 = (value._p5 >> shiftAmount) | (value._p6 << (64 - shiftAmount));
+				ulong part5 = (value._p6 >> shiftAmount) | (value._p7 << (64 - shiftAmount));
+				ulong part6 = value._p7 >> shiftAmount;
+
+				return new Int512(0, part6, part5, part4, part3, part2, part1, part0);
+			}
+			else if (shiftAmount < 192)
+			{
+				shiftAmount -= 128;
+
+				if (shiftAmount == 0)
+				{
+					return new Int512(0, 0, value._p7, value._p6, value._p5, value._p4, value._p3, value._p2);
+				}
+
+				ulong part0 = (value._p2 >> shiftAmount) | (value._p3 << (64 - shiftAmount));
+				ulong part1 = (value._p3 >> shiftAmount) | (value._p4 << (64 - shiftAmount));
+				ulong part2 = (value._p4 >> shiftAmount) | (value._p5 << (64 - shiftAmount));
+				ulong part3 = (value._p5 >> shiftAmount) | (value._p6 << (64 - shiftAmount));
+				ulong part4 = (value._p6 >> shiftAmount) | (value._p7 << (64 - shiftAmount));
+				ulong part5 = value._p7 >> shiftAmount;
+
+				return new Int512(0, 0, part5, part4, part3, part2, part1, part0);
+			}
+			else if (shiftAmount < 256)
+			{
+				shiftAmount -= 192;
+
+				if (shiftAmount == 0)
+				{
+					return new Int512(0, 0, 0, value._p7, value._p6, value._p5, value._p4, value._p3);
+				}
+
+				ulong part0 = (value._p3 >> shiftAmount) | (value._p4 << (64 - shiftAmount));
+				ulong part1 = (value._p4 >> shiftAmount) | (value._p5 << (64 - shiftAmount));
+				ulong part2 = (value._p5 >> shiftAmount) | (value._p6 << (64 - shiftAmount));
+				ulong part3 = (value._p6 >> shiftAmount) | (value._p7 << (64 - shiftAmount));
+				ulong part4 = value._p7 >> shiftAmount;
+
+				return new Int512(0, 0, 0, part4, part3, part2, part1, part0);
+			}
+			else if (shiftAmount < 320)
+			{
+				shiftAmount -= 256;
+
+				if (shiftAmount == 0)
+				{
+					return new Int512(0, 0, 0, 0, value._p7, value._p6, value._p5, value._p4);
+				}
+
+				ulong part0 = (value._p4 >> shiftAmount) | (value._p5 << (64 - shiftAmount));
+				ulong part1 = (value._p5 >> shiftAmount) | (value._p6 << (64 - shiftAmount));
+				ulong part2 = (value._p6 >> shiftAmount) | (value._p7 << (64 - shiftAmount));
+				ulong part3 = value._p7 >> shiftAmount;
+
+				return new Int512(0, 0, 0, 0, part3, part2, part1, part0);
+			}
+			else if (shiftAmount < 384)
+			{
+				shiftAmount -= 320;
+
+				if (shiftAmount == 0)
+				{
+					return new Int512(0, 0, 0, 0, 0, value._p7, value._p6, value._p5);
+				}
+
+				ulong part0 = (value._p5 >> shiftAmount) | (value._p6 << (64 - shiftAmount));
+				ulong part1 = (value._p6 >> shiftAmount) | (value._p7 << (64 - shiftAmount));
+				ulong part2 = value._p7 >> shiftAmount;
+
+				return new Int512(0, 0, 0, 0, 0, part2, part1, part0);
+			}
+			else if (shiftAmount < 448)
+			{
+				shiftAmount -= 384;
+
+				if (shiftAmount == 0)
+				{
+					return new Int512(0, 0, 0, 0, 0, 0, value._p7, value._p6);
+				}
+
+				ulong part0 = (value._p6 >> shiftAmount) | (value._p7 << (64 - shiftAmount));
+				ulong part1 = value._p7 >> shiftAmount;
+
+				return new Int512(0, 0, 0, 0, 0, 0, part1, part0);
+			}
+			else // shiftAmount < 512
+			{
+				shiftAmount -= 448;
+
+				ulong part0 = value._p7 >> shiftAmount;
+
+				return new Int512(0, 0, 0, 0, 0, 0, 0, part0);
 			}
 		}
 	}

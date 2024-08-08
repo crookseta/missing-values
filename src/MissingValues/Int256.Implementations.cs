@@ -18,7 +18,7 @@ using System.Text.Unicode;
 namespace MissingValues
 {
 	public partial struct Int256 :
-		IBinaryInteger<Int256>,
+		IBigInteger<Int256>,
 		IMinMaxValue<Int256>,
 		ISignedNumber<Int256>,
 		IFormattableSignedInteger<Int256, UInt256>
@@ -97,7 +97,7 @@ namespace MissingValues
 
 		static bool INumberBase<Int256>.IsComplexNumber(Int256 value) => false;
 
-		public static bool IsEvenInteger(Int256 value) => (value._lower & 1) == UInt128.Zero;
+		public static bool IsEvenInteger(Int256 value) => (value.Lower & 1) == UInt128.Zero;
 
 		static bool INumberBase<Int256>.IsFinite(Int256 value) => true;
 
@@ -109,15 +109,15 @@ namespace MissingValues
 
 		static bool INumberBase<Int256>.IsNaN(Int256 value) => false;
 
-		public static bool IsNegative(Int256 value) => (Int128)value._upper < Int128.Zero;
+		public static bool IsNegative(Int256 value) => (Int128)value.Upper < Int128.Zero;
 
 		static bool INumberBase<Int256>.IsNegativeInfinity(Int256 value) => false;
 
 		static bool INumberBase<Int256>.IsNormal(Int256 value) => value != Zero;
 
-		public static bool IsOddInteger(Int256 value) => (value._lower & 1) != 0;
+		public static bool IsOddInteger(Int256 value) => (value.Lower & 1) != 0;
 
-		public static bool IsPositive(Int256 value) => (Int128)value._upper >= Int128.Zero;
+		public static bool IsPositive(Int256 value) => (Int128)value.Upper >= Int128.Zero;
 
 		static bool INumberBase<Int256>.IsPositiveInfinity(Int256 value) => false;
 
@@ -170,11 +170,11 @@ namespace MissingValues
 
 		public static Int256 LeadingZeroCount(Int256 value)
 		{
-			if (value._upper == 0)
+			if (value.Upper == 0)
 			{
-				return (Int256)(128 + UInt128.LeadingZeroCount(value._lower));
+				return (Int256)(128 + UInt128.LeadingZeroCount(value.Lower));
 			}
-			return (Int256)UInt128.LeadingZeroCount(value._upper);
+			return (Int256)UInt128.LeadingZeroCount(value.Upper);
 		}
 
 		public static Int256 Log2(Int256 value)
@@ -184,11 +184,11 @@ namespace MissingValues
 				Thrower.NeedsNonNegative<Int256>();
 			}
 
-			if (value._upper == 0)
+			if (value.Upper == 0)
 			{
-				return (Int256)UInt128.Log2(value._lower);
+				return (Int256)UInt128.Log2(value.Lower);
 			}
-			return (Int256)(128 + UInt128.Log2(value._upper));
+			return (Int256)(128 + UInt128.Log2(value.Upper));
 		}
 
 		public static Int256 MaxMagnitude(Int256 x, Int256 y)
@@ -362,7 +362,7 @@ namespace MissingValues
 
 		public static Int256 PopCount(Int256 value)
 		{
-			return (Int256)(UInt128.PopCount(value._lower) + UInt128.PopCount(value._upper));
+			return (Int256)(UInt128.PopCount(value.Lower) + UInt128.PopCount(value.Upper));
 		}
 
 		public static Int256 RotateLeft(Int256 value, int rotateAmount)
@@ -377,11 +377,11 @@ namespace MissingValues
 
 		public static Int256 TrailingZeroCount(Int256 value)
 		{
-			if (value._lower == 0)
+			if (value.Lower == 0)
 			{
-				return (Int256)(128 + UInt128.TrailingZeroCount(value._upper));
+				return (Int256)(128 + UInt128.TrailingZeroCount(value.Upper));
 			}
-			return (Int256)UInt128.TrailingZeroCount(value._lower);
+			return (Int256)UInt128.TrailingZeroCount(value.Lower);
 		}
 
 		public static bool TryParse(ReadOnlySpan<char> s, NumberStyles style, IFormatProvider? provider, [MaybeNullWhen(false)] out Int256 result)
@@ -999,8 +999,8 @@ namespace MissingValues
 
 		private void WriteBigEndianUnsafe(Span<byte> destination)
 		{
-			UInt128 lower = _lower;
-			UInt128 upper = _upper;
+			UInt128 lower = Lower;
+			UInt128 upper = Upper;
 
 			if (BitConverter.IsLittleEndian)
 			{
@@ -1017,8 +1017,8 @@ namespace MissingValues
 		{
 			Debug.Assert(destination.Length >= Size);
 
-			UInt128 lower = _lower;
-			UInt128 upper = _upper;
+			UInt128 lower = Lower;
+			UInt128 upper = Upper;
 
 			if (!BitConverter.IsLittleEndian)
 			{
@@ -1069,23 +1069,30 @@ namespace MissingValues
 			throw new FormatException();
 		}
 
-		public static Int256 operator +(Int256 value)
+		public static Int256 operator +(in Int256 value)
 		{
 			return value;
 		}
 
-		public static Int256 operator +(Int256 left, Int256 right)
+		public static Int256 operator +(in Int256 left, in Int256 right)
 		{
 			// For unsigned addition, we can detect overflow by checking `(x + y) < x`
 			// This gives us the carry to add to upper to compute the correct result
 
-			UInt128 lower = left._lower + right._lower;
-			UInt128 carry = (lower < left._lower) ? 1UL : 0UL;
+			ulong part0 = left._p0 + right._p0;
+			ulong carry = (part0 < left._p0) ? 1UL : 0UL;
 
-			UInt128 upper = left._upper + right._upper + carry;
-			return new Int256(upper, lower);
+			ulong part1 = left._p1 + right._p1 + carry;
+			carry = (part1 < left._p1 || (carry == 1 && part1 == left._p1)) ? 1UL : 0UL;
+
+			ulong part2 = left._p2 + right._p2 + carry;
+			carry = (part2 < left._p2 || (carry == 1 && part2 == left._p2)) ? 1UL : 0UL;
+
+			ulong part3 = left._p3 + right._p3 + carry;
+
+			return new Int256(part3, part2, part1, part0);
 		}
-		public static Int256 operator checked +(Int256 left, Int256 right)
+		public static Int256 operator checked +(in Int256 left, in Int256 right)
 		{
 			// For signed addition, we can detect overflow by checking if the sign of
 			// both inputs are the same and then if that differs from the sign of the
@@ -1093,37 +1100,44 @@ namespace MissingValues
 
 			Int256 result = left + right;
 
-			ulong sign = (ulong)(left._upper >> 127);
+			uint sign = (uint)(left._p3 >> 63);
 
-			if (sign == (ulong)(right._upper >> 127) && 
-				sign != (ulong)(result._upper >> 127))
+			if (sign == (uint)(right._p3 >> 63) && 
+				sign != (uint)(result._p3 >> 63))
 			{
 				Thrower.ArithmethicOverflow(Thrower.ArithmethicOperation.Addition);
 			}
 			return result;
 		}
 
-		public static Int256 operator -(Int256 value)
+		public static Int256 operator -(in Int256 value)
 		{
 			return Zero - value;
 		}
-		public static Int256 operator checked -(Int256 value)
+		public static Int256 operator checked -(in Int256 value)
 		{
 			return checked(Zero - value);
 		}
 
-		public static Int256 operator -(Int256 left, Int256 right)
+		public static Int256 operator -(in Int256 left, in Int256 right)
 		{
 			// For unsigned subtract, we can detect overflow by checking `(x - y) > x`
 			// This gives us the borrow to subtract from upper to compute the correct result
 
-			UInt128 lower = left._lower - right._lower;
-			UInt128 borrow = (lower > left._lower) ? UInt128.One : UInt128.Zero;
+			ulong part0 = left._p0 - right._p0;
+			ulong borrow = (part0 > left._p0) ? 1UL : 0UL;
 
-			UInt128 upper = left._upper - right._upper - borrow;
-			return new Int256(upper, lower);
+			ulong part1 = left._p1 - right._p1 - borrow;
+			borrow = (part1 > left._p1 || (borrow == 1UL && part1 == left._p1)) ? 1UL : 0UL;
+
+			ulong part2 = left._p2 - right._p2 - borrow;
+			borrow = (part2 > left._p2 || (borrow == 1UL && part2 == left._p2)) ? 1UL : 0UL;
+
+			ulong part3 = left._p3 - right._p3 - borrow;
+
+			return new Int256(part3, part2, part1, part0);
 		}
-		public static Int256 operator checked -(Int256 left, Int256 right)
+		public static Int256 operator checked -(in Int256 left, in Int256 right)
 		{
 			// For signed subtraction, we can detect overflow by checking if the sign of
 			// both inputs are different and then if that differs from the sign of the
@@ -1131,16 +1145,16 @@ namespace MissingValues
 
 			Int256 result = left - right;
 
-			uint sign = (uint)(left._upper >> 127);
+			uint sign = (uint)(left._p3 >> 63);
 
-			if (sign != (uint)(right._upper >> 127) && sign != (uint)(result._upper >> 127))
+			if (sign != (uint)(right._p3 >> 63) && sign != (uint)(result._p3 >> 63))
 			{
 				Thrower.ArithmethicOverflow(Thrower.ArithmethicOperation.Subtraction);
 			}
 			return result;
 		}
 
-		public static Int256 operator ~(Int256 value)
+		public static Int256 operator ~(in Int256 value)
 		{
 			if (Vector256.IsHardwareAccelerated)
 			{
@@ -1149,33 +1163,33 @@ namespace MissingValues
 			}
 			else
 			{
-				return new(~value._upper, ~value._lower);
+				return new(~value.Upper, ~value.Lower);
 			}
 		}
 
-		public static Int256 operator ++(Int256 value)
+		public static Int256 operator ++(in Int256 value)
 		{
 			return value + One;
 		}
-		public static Int256 operator checked ++(Int256 value)
+		public static Int256 operator checked ++(in Int256 value)
 		{
 			return checked(value + One);
 		}
 
-		public static Int256 operator --(Int256 value)
+		public static Int256 operator --(in Int256 value)
 		{
 			return value - One;
 		}
-		public static Int256 operator checked --(Int256 value)
+		public static Int256 operator checked --(in Int256 value)
 		{
 			return checked(value - One);
 		}
 
-		public static Int256 operator *(Int256 left, Int256 right)
+		public static Int256 operator *(in Int256 left, in Int256 right)
 		{
 			return (Int256)((UInt256)(left) * (UInt256)(right));
 		}
-		public static Int256 operator checked *(Int256 left, Int256 right)
+		public static Int256 operator checked *(in Int256 left, in Int256 right)
 		{
 			Int256 upper = BigMul(left, right, out Int256 lower);
 
@@ -1200,9 +1214,9 @@ namespace MissingValues
 			return lower;
 		}
 
-		public static Int256 operator /(Int256 left, Int256 right)
+		public static Int256 operator /(in Int256 left, in Int256 right)
 		{
-			if ((right == NegativeOne) && (left._upper == _upperMin) && (left._lower == _lowerMin))
+			if ((right == NegativeOne) && (left.Upper == _upperMin) && (left.Lower == _lowerMin))
 			{
 				Thrower.ArithmethicOverflow(Thrower.ArithmethicOperation.Division);
 			}
@@ -1210,19 +1224,21 @@ namespace MissingValues
 			// We simplify the logic here by just doing unsigned division on the
 			// two's complement representation and then taking the correct sign.
 
-			UInt128 sign = (left._upper ^ right._upper) & (UInt128.One << 127);
+			UInt128 sign = (left.Upper ^ right.Upper) & (UInt128.One << 127);
+
+			Int256 a = left, b = right;
 
 			if (IsNegative(left))
 			{
-				left = ~left + One;
+				a = ~left + One;
 			}
 
 			if (IsNegative(right))
 			{
-				right = ~right + One;
+				b = ~right + One;
 			}
 
-			UInt256 result = (UInt256)(left) / (UInt256)(right);
+			UInt256 result = (UInt256)(a) / (UInt256)(b);
 
 			if (sign != 0)
 			{
@@ -1235,13 +1251,13 @@ namespace MissingValues
 			);
 		}
 
-		public static Int256 operator %(Int256 left, Int256 right)
+		public static Int256 operator %(in Int256 left, in Int256 right)
 		{
 			Int256 quotient = left / right;
 			return left - (quotient * right);
 		}
 
-		public static Int256 operator &(Int256 left, Int256 right)
+		public static Int256 operator &(in Int256 left, in Int256 right)
 		{
 			if (Vector256.IsHardwareAccelerated)
 			{
@@ -1258,11 +1274,11 @@ namespace MissingValues
 			}
 			else
 			{
-				return new(left._upper & right._upper, left._lower & right._lower);
+				return new(left.Upper & right.Upper, left.Lower & right.Lower);
 			}
 		}
 
-		public static Int256 operator |(Int256 left, Int256 right)
+		public static Int256 operator |(in Int256 left, in Int256 right)
 		{
 			if (Vector256.IsHardwareAccelerated)
 			{
@@ -1279,11 +1295,11 @@ namespace MissingValues
 			}
 			else
 			{
-				return new(left._upper | right._upper, left._lower | right._lower);
+				return new(left.Upper | right.Upper, left.Lower | right.Lower);
 			}
 		}
 
-		public static Int256 operator ^(Int256 left, Int256 right)
+		public static Int256 operator ^(in Int256 left, in Int256 right)
 		{
 			if (Vector256.IsHardwareAccelerated)
 			{
@@ -1300,40 +1316,76 @@ namespace MissingValues
 			}
 			else
 			{
-				return new(left._upper ^ right._upper, left._lower ^ right._lower);
+				return new(left.Upper ^ right.Upper, left.Lower ^ right.Lower);
 			}
 		}
 
-		public static Int256 operator <<(Int256 value, int shiftAmount)
+		public static Int256 operator <<(in Int256 value, int shiftAmount)
 		{
-			shiftAmount &= 0xFF;
+			// C# automatically masks the shift amount for UInt64 to be 0x3F. So we
+			// need to specially handle things if the shift amount exceeds 0x3F.
 
-			if ((shiftAmount & 0x80) != 0)
-			{
-				// In the case it is set, we know the entire lower bits must be zero
-				// and so the upper bits are just the lower shifted by the remaining
-				// masked amount
+			shiftAmount &= 0xFF; // mask the shift amount to be within [0, 255]
 
-				UInt128 upper = value._lower << shiftAmount;
-				return new Int256(upper, 0);
-			}
-			else if (shiftAmount != 0)
-			{
-				// Otherwise we need to shift both upper and lower halves by the masked
-				// amount and then or that with whatever bits were shifted "out" of lower
-
-				UInt128 lower = value._lower << shiftAmount;
-				UInt128 upper = (value._upper << shiftAmount) | (value._lower >> (128 - shiftAmount));
-
-				return new Int256(upper, lower);
-			}
-			else
+			if (shiftAmount == 0)
 			{
 				return value;
 			}
+
+			if (shiftAmount < 64)
+			{
+				ulong part3 = (value._p3 << shiftAmount) | (value._p2 >> (64 - shiftAmount));
+				ulong part2 = (value._p2 << shiftAmount) | (value._p1 >> (64 - shiftAmount));
+				ulong part1 = (value._p1 << shiftAmount) | (value._p0 >> (64 - shiftAmount));
+				ulong part0 = value._p0 << shiftAmount;
+
+				return new Int256(part3, part2, part1, part0);
+			}
+			else if (shiftAmount < 128)
+			{
+				shiftAmount -= 64;
+
+				if (shiftAmount == 0)
+				{
+					return new Int256(value._p2, value._p1, value._p0, 0);
+				}
+
+				ulong part2 = (value._p2 << shiftAmount) | (value._p1 >> (64 - shiftAmount));
+				ulong part1 = (value._p1 << shiftAmount) | (value._p0 >> (64 - shiftAmount));
+				ulong part0 = value._p0 << shiftAmount;
+
+				return new Int256(part2, part1, part0, 0);
+			}
+			else if (shiftAmount < 192)
+			{
+				shiftAmount -= 128;
+
+				if (shiftAmount == 0)
+				{
+					return new Int256(value._p1, value._p0, 0, 0);
+				}
+
+				ulong part1 = (value._p1 << shiftAmount) | (value._p0 >> (64 - shiftAmount));
+				ulong part0 = value._p0 << shiftAmount;
+
+				return new Int256(part1, part0, 0, 0);
+			}
+			else // shiftAmount < 256
+			{
+				shiftAmount -= 192;
+
+				if (shiftAmount == 0)
+				{
+					return new Int256(value._p0, 0, 0, 0);
+				}
+
+				ulong part0 = value._p0 << shiftAmount;
+
+				return new Int256(part0, 0, 0, 0);
+			}
 		}
 
-		public static Int256 operator >>(Int256 value, int shiftAmount)
+		public static Int256 operator >>(in Int256 value, int shiftAmount)
 		{
 			// need to specially handle things if the 15th bit is set.
 
@@ -1345,8 +1397,8 @@ namespace MissingValues
 				// and so the lower bits are just the upper shifted by the remaining
 				// masked amount
 
-				UInt128 lower = (UInt128)((Int128)value._upper >> shiftAmount);
-				UInt128 upper = (UInt128)((Int128)value._upper >> 127);
+				UInt128 lower = (UInt128)((Int128)value.Upper >> shiftAmount);
+				UInt128 upper = (UInt128)((Int128)value.Upper >> 127);
 
 				return new Int256(upper, lower);
 			}
@@ -1355,8 +1407,8 @@ namespace MissingValues
 				// Otherwise we need to shift both upper and lower halves by the masked
 				// amount and then or that with whatever bits were shifted "out" of upper
 
-				UInt128 lower = (value._lower >> shiftAmount) | (value._upper << (128 - shiftAmount));
-				UInt128 upper = (UInt128)((Int128)value._upper >> shiftAmount);
+				UInt128 lower = (value.Lower >> shiftAmount) | (value.Upper << (128 - shiftAmount));
+				UInt128 upper = (UInt128)((Int128)value.Upper >> shiftAmount);
 
 				return new Int256(upper, lower);
 			}
@@ -1366,38 +1418,67 @@ namespace MissingValues
 			}
 		}
 
-		public static Int256 operator >>>(Int256 value, int shiftAmount)
+		public static Int256 operator >>>(in Int256 value, int shiftAmount)
 		{
-			// We need to specially handle things if the 15th bit is set.
+			// C# automatically masks the shift amount for UInt64 to be 0x3F. So we
+			// need to specially handle things if the shift amount exceeds 0x3F.
 
-			shiftAmount &= 0xFF;
+			shiftAmount &= 0xFF; // mask the shift amount to be within [0, 255]
 
-			if ((shiftAmount & 0x80) != 0)
-			{
-				// In the case it is set, we know the entire upper bits must be zero
-				// and so the lower bits are just the upper shifted by the remaining
-				// masked amount
-
-				UInt128 lower = value._upper >> shiftAmount;
-				return new Int256(0, lower);
-			}
-			else if (shiftAmount != 0)
-			{
-				// Otherwise we need to shift both upper and lower halves by the masked
-				// amount and then or that with whatever bits were shifted "out" of upper
-
-				UInt128 lower = (value._lower >> shiftAmount) | (value._upper << (128 - shiftAmount));
-				UInt128 upper = value._upper >> shiftAmount;
-
-				return new Int256(upper, lower);
-			}
-			else
+			if (shiftAmount == 0)
 			{
 				return value;
 			}
+
+			if (shiftAmount < 64)
+			{
+				ulong part0 = (value._p0 >> shiftAmount) | (value._p1 << (64 - shiftAmount));
+				ulong part1 = (value._p1 >> shiftAmount) | (value._p2 << (64 - shiftAmount));
+				ulong part2 = (value._p2 >> shiftAmount) | (value._p3 << (64 - shiftAmount));
+				ulong part3 = value._p3 >> shiftAmount;
+
+				return new Int256(part3, part2, part1, part0);
+			}
+			else if (shiftAmount < 128)
+			{
+				shiftAmount -= 64;
+
+				if (shiftAmount == 0)
+				{
+					return new Int256(0, value._p3, value._p2, value._p1);
+				}
+
+				ulong part0 = (value._p1 >> shiftAmount) | (value._p2 << (64 - shiftAmount));
+				ulong part1 = (value._p2 >> shiftAmount) | (value._p3 << (64 - shiftAmount));
+				ulong part2 = value._p3 >> shiftAmount;
+
+				return new Int256(0, part2, part1, part0);
+			}
+			else if (shiftAmount < 192)
+			{
+				shiftAmount -= 128;
+
+				if (shiftAmount == 0)
+				{
+					return new Int256(0, 0, value._p3, value._p2);
+				}
+
+				ulong part0 = (value._p2 >> shiftAmount) | (value._p3 << (64 - shiftAmount));
+				ulong part1 = value._p3 >> shiftAmount;
+
+				return new Int256(0, 0, part1, part0);
+			}
+			else // shiftAmount < 256
+			{
+				shiftAmount -= 192;
+
+				ulong part0 = value._p3 >> shiftAmount;
+
+				return new Int256(0, 0, 0, part0);
+			}
 		}
 
-		public static bool operator ==(Int256 left, Int256 right)
+		public static bool operator ==(in Int256 left, in Int256 right)
 		{
 			if (Vector256.IsHardwareAccelerated)
 			{
@@ -1415,11 +1496,11 @@ namespace MissingValues
 			}
 			else
 			{
-				return (left._upper == right._upper) && (left._lower == right._lower);
+				return (left.Upper == right.Upper) && (left.Lower == right.Lower);
 			}
 		}
 
-		public static bool operator !=(Int256 left, Int256 right)
+		public static bool operator !=(in Int256 left, in Int256 right)
 		{
 			if (Vector256.IsHardwareAccelerated)
 			{
@@ -1437,16 +1518,16 @@ namespace MissingValues
 			}
 			else
 			{
-				return (left._upper != right._upper) || (left._lower != right._lower);
+				return (left.Upper != right.Upper) || (left.Lower != right.Lower);
 			}
 		}
 
-		public static bool operator <(Int256 left, Int256 right)
+		public static bool operator <(in Int256 left, in Int256 right)
 		{
 			if (IsNegative(left) == IsNegative(right))
 			{
-				return (left._upper < right._upper)
-					|| ((left._upper == right._upper) && (left._lower < right._lower));
+				return (left.Upper < right.Upper)
+					|| ((left.Upper == right.Upper) && (left.Lower < right.Lower));
 			}
 			else
 			{
@@ -1454,12 +1535,12 @@ namespace MissingValues
 			}
 		}
 
-		public static bool operator >(Int256 left, Int256 right)
+		public static bool operator >(in Int256 left, in Int256 right)
 		{
 			if (IsNegative(left) == IsNegative(right))
 			{
-				return (left._upper > right._upper)
-					|| ((left._upper == right._upper) && (left._lower > right._lower));
+				return (left.Upper > right.Upper)
+					|| ((left.Upper == right.Upper) && (left.Lower > right.Lower));
 			}
 			else
 			{
@@ -1467,12 +1548,12 @@ namespace MissingValues
 			}
 		}
 
-		public static bool operator <=(Int256 left, Int256 right)
+		public static bool operator <=(in Int256 left, in Int256 right)
 		{
 			if (IsNegative(left) == IsNegative(right))
 			{
-				return (left._upper < right._upper)
-					|| ((left._upper == right._upper) && (left._lower <= right._lower));
+				return (left.Upper < right.Upper)
+					|| ((left.Upper == right.Upper) && (left.Lower <= right.Lower));
 			}
 			else
 			{
@@ -1480,12 +1561,12 @@ namespace MissingValues
 			}
 		}
 
-		public static bool operator >=(Int256 left, Int256 right)
+		public static bool operator >=(in Int256 left, in Int256 right)
 		{
 			if (IsNegative(left) == IsNegative(right))
 			{
-				return (left._upper > right._upper)
-					|| ((left._upper == right._upper) && (left._lower >= right._lower));
+				return (left.Upper > right.Upper)
+					|| ((left.Upper == right.Upper) && (left.Lower >= right.Lower));
 			}
 			else
 			{

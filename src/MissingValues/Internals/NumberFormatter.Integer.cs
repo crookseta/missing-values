@@ -7,7 +7,7 @@ using System.Runtime.InteropServices;
 
 namespace MissingValues.Internals;
 
-internal interface IFormattableInteger<TSelf> : IFormattableNumber<TSelf>, IBinaryInteger<TSelf>
+internal interface IFormattableInteger<TSelf> : IFormattableNumber<TSelf>, IBigInteger<TSelf>
 		where TSelf : IFormattableInteger<TSelf>?
 {
 	/// <summary>
@@ -266,11 +266,12 @@ internal static partial class NumberFormatter
 			if (value >= TUnsigned.Ten)
 			{
 				TUnsigned remainder;
-				while (value >= TUnsigned.TenPow2)
+				TUnsigned tenPow2 = TUnsigned.TenPow2;
+				while (value >= tenPow2)
 				{
 					bufferEnd -= 2;
 					digits -= 2;
-					(value, remainder) = TUnsigned.DivRem(value, TUnsigned.TenPow2);
+					(value, remainder) = TUnsigned.DivRem(value, tenPow2);
 					WriteTwoDigits(in remainder, bufferEnd);
 				}
 				if (value >= TUnsigned.Ten)

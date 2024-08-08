@@ -145,6 +145,14 @@ namespace MissingValues.Tests.Core
 			Assert.Equal(
 				  HalfMaxValue,
 				  MathOperatorsHelper.DivisionOperation<UInt, UInt, UInt>(MaxValue, Two));
+			Assert.Equal(
+				  new(0x028F_5C28_F5C2_8F5C, 0x28F5_C28F_5C28_F5C2, 0x8F5C_28F5_C28F_5C28, 0xF5C2_8F5C_28F5_C28F,
+				  0x5C28_F5C2_8F5C_28F5, 0xC28F_5C28_F5C2_8F5C, 0x28F5_C28F_5C28_F5C2, 0x8F5C_28F5_C28F_5C28),
+				  MaxValue / 100);
+			Assert.Equal(
+				  new(0x0006_8DB8_BAC7_10CB, 0x295E_9E1B_089A_0275, 0x2546_0AA6_4C2F_837B, 0x4A23_39C0_EBED_FA43,
+				  0xFE5C_91D1_4E3B_CD35, 0xA858_793D_D97F_62B6, 0xAE7D_566C_F41F_212D, 0x7731_8FC5_0481_6F00),
+				  (MaxValue / 100) / 100);
 			Assert.Equal(One, MathOperatorsHelper.DivisionOperation<UInt, UInt, UInt>(MaxValue, MaxValue));
 
 			Assert.Throws<DivideByZeroException>(() => MathOperatorsHelper.DivisionOperation<UInt, UInt, UInt>(One, Zero));
@@ -216,6 +224,41 @@ namespace MissingValues.Tests.Core
 				.Should().Be(Two);
 			ShiftOperatorsHelper<UInt, int, UInt>.LeftShiftOperation(MaxValue, 1)
 				.Should().Be(MaxValueMinusOne);
+
+			UInt actual = new(
+				0x028F_5C28_F5C2_8F5C, 0x28F5_C28F_5C28_F5C2, 0x8F5C_28F5_C28F_5C28, 0xF5C2_8F5C_28F5_C28F, 
+				0x5C28_F5C2_8F5C_28F5, 0xC28F_5C28_F5C2_8F5C, 0x28F5_C28F_5C28_F5C2, 0x8F5C_28F5_C28F_5C28);
+
+			ShiftOperatorsHelper<UInt, int, UInt>.LeftShiftOperation(actual, 0)
+				.Should().Be(actual);
+			ShiftOperatorsHelper<UInt, int, UInt>.LeftShiftOperation(actual, 64)
+				.Should().Be(new(
+					0x28F5_C28F_5C28_F5C2, 0x8F5C_28F5_C28F_5C28, 0xF5C2_8F5C_28F5_C28F, 0x5C28_F5C2_8F5C_28F5, 
+				0xC28F_5C28_F5C2_8F5C, 0x28F5_C28F_5C28_F5C2, 0x8F5C_28F5_C28F_5C28, 0));
+			ShiftOperatorsHelper<UInt, int, UInt>.LeftShiftOperation(actual, 64 * 2)
+				.Should().Be(new(
+					0x8F5C_28F5_C28F_5C28, 0xF5C2_8F5C_28F5_C28F, 0x5C28_F5C2_8F5C_28F5, 0xC28F_5C28_F5C2_8F5C,
+				 0x28F5_C28F_5C28_F5C2, 0x8F5C_28F5_C28F_5C28, 0, 0));
+			ShiftOperatorsHelper<UInt, int, UInt>.LeftShiftOperation(actual, 64 * 3)
+				.Should().Be(new(
+					0xF5C2_8F5C_28F5_C28F, 0x5C28_F5C2_8F5C_28F5, 0xC28F_5C28_F5C2_8F5C, 0x28F5_C28F_5C28_F5C2,
+				  0x8F5C_28F5_C28F_5C28, 0, 0, 0));
+			ShiftOperatorsHelper<UInt, int, UInt>.LeftShiftOperation(actual, 64 * 4)
+				.Should().Be(new(
+					0x5C28_F5C2_8F5C_28F5, 0xC28F_5C28_F5C2_8F5C, 0x28F5_C28F_5C28_F5C2, 0x8F5C_28F5_C28F_5C28,
+				  0, 0, 0, 0 ));
+			ShiftOperatorsHelper<UInt, int, UInt>.LeftShiftOperation(actual, 64 * 5)
+				.Should().Be(new(
+					0xC28F_5C28_F5C2_8F5C, 0x28F5_C28F_5C28_F5C2, 0x8F5C_28F5_C28F_5C28, 0,
+				  0, 0, 0, 0));
+			ShiftOperatorsHelper<UInt, int, UInt>.LeftShiftOperation(actual, 64 * 6)
+				.Should().Be(new(
+					0x28F5_C28F_5C28_F5C2, 0x8F5C_28F5_C28F_5C28, 0, 0,
+				  0, 0, 0, 0));
+			ShiftOperatorsHelper<UInt, int, UInt>.LeftShiftOperation(actual, 64 * 7)
+				.Should().Be(new(
+					0x8F5C_28F5_C28F_5C28, 0, 0, 0,
+				  0, 0, 0, 0));
 		}
 		[Fact]
 		public static void op_RightShiftTest()
@@ -226,6 +269,41 @@ namespace MissingValues.Tests.Core
 				.Should().Be(Zero);
 			ShiftOperatorsHelper<UInt, int, UInt>.RightShiftOperation(MaxValue, 1)
 				.Should().Be(HalfMaxValue);
+
+			UInt actual = new(
+				0x028F_5C28_F5C2_8F5C, 0x28F5_C28F_5C28_F5C2, 0x8F5C_28F5_C28F_5C28, 0xF5C2_8F5C_28F5_C28F,
+				0x5C28_F5C2_8F5C_28F5, 0xC28F_5C28_F5C2_8F5C, 0x28F5_C28F_5C28_F5C2, 0x8F5C_28F5_C28F_5C28);
+
+			ShiftOperatorsHelper<UInt, int, UInt>.RightShiftOperation(actual, 64 * 0)
+				.Should().Be(actual);
+			ShiftOperatorsHelper<UInt, int, UInt>.RightShiftOperation(actual, 64 * 1)
+				.Should().Be(new(
+					0, 0x028F_5C28_F5C2_8F5C, 0x28F5_C28F_5C28_F5C2, 0x8F5C_28F5_C28F_5C28,
+					0xF5C2_8F5C_28F5_C28F, 0x5C28_F5C2_8F5C_28F5, 0xC28F_5C28_F5C2_8F5C, 0x28F5_C28F_5C28_F5C2));
+			ShiftOperatorsHelper<UInt, int, UInt>.RightShiftOperation(actual, 64 * 2)
+				.Should().Be(new(
+					0, 0, 0x028F_5C28_F5C2_8F5C, 0x28F5_C28F_5C28_F5C2, 
+					0x8F5C_28F5_C28F_5C28, 0xF5C2_8F5C_28F5_C28F, 0x5C28_F5C2_8F5C_28F5, 0xC28F_5C28_F5C2_8F5C));
+			ShiftOperatorsHelper<UInt, int, UInt>.RightShiftOperation(actual, 64 * 3)
+				.Should().Be(new(
+					0, 0, 0, 0x028F_5C28_F5C2_8F5C, 
+					0x28F5_C28F_5C28_F5C2, 0x8F5C_28F5_C28F_5C28, 0xF5C2_8F5C_28F5_C28F, 0x5C28_F5C2_8F5C_28F5));
+			ShiftOperatorsHelper<UInt, int, UInt>.RightShiftOperation(actual, 64 * 4)
+				.Should().Be(new(
+					0, 0, 0, 0, 
+					0x028F_5C28_F5C2_8F5C, 0x28F5_C28F_5C28_F5C2, 0x8F5C_28F5_C28F_5C28, 0xF5C2_8F5C_28F5_C28F));
+			ShiftOperatorsHelper<UInt, int, UInt>.RightShiftOperation(actual, 64 * 5)
+				.Should().Be(new(
+					0, 0, 0, 0, 
+					0, 0x028F_5C28_F5C2_8F5C, 0x28F5_C28F_5C28_F5C2, 0x8F5C_28F5_C28F_5C28));
+			ShiftOperatorsHelper<UInt, int, UInt>.RightShiftOperation(actual, 64 * 6)
+				.Should().Be(new(
+					0, 0, 0, 0, 
+					0, 0, 0x028F_5C28_F5C2_8F5C, 0x28F5_C28F_5C28_F5C2));
+			ShiftOperatorsHelper<UInt, int, UInt>.RightShiftOperation(actual, 64 * 7)
+				.Should().Be(new(
+					0, 0, 0, 0, 
+					0, 0, 0, 0x028F_5C28_F5C2_8F5C));
 		}
 		[Fact]
 		public static void op_UnsignedRightShiftTest()
@@ -236,6 +314,41 @@ namespace MissingValues.Tests.Core
 				.Should().Be(Zero);
 			ShiftOperatorsHelper<UInt, int, UInt>.UnsignedRightShiftOperation(MaxValue, 1)
 				.Should().Be(HalfMaxValue);
+
+			UInt actual = new(
+				0x028F_5C28_F5C2_8F5C, 0x28F5_C28F_5C28_F5C2, 0x8F5C_28F5_C28F_5C28, 0xF5C2_8F5C_28F5_C28F,
+				0x5C28_F5C2_8F5C_28F5, 0xC28F_5C28_F5C2_8F5C, 0x28F5_C28F_5C28_F5C2, 0x8F5C_28F5_C28F_5C28);
+
+			ShiftOperatorsHelper<UInt, int, UInt>.UnsignedRightShiftOperation(actual, 64 * 0)
+				.Should().Be(actual);
+			ShiftOperatorsHelper<UInt, int, UInt>.UnsignedRightShiftOperation(actual, 64 * 1)
+				.Should().Be(new(
+					0, 0x028F_5C28_F5C2_8F5C, 0x28F5_C28F_5C28_F5C2, 0x8F5C_28F5_C28F_5C28,
+					0xF5C2_8F5C_28F5_C28F, 0x5C28_F5C2_8F5C_28F5, 0xC28F_5C28_F5C2_8F5C, 0x28F5_C28F_5C28_F5C2));
+			ShiftOperatorsHelper<UInt, int, UInt>.UnsignedRightShiftOperation(actual, 64 * 2)
+				.Should().Be(new(
+					0, 0, 0x028F_5C28_F5C2_8F5C, 0x28F5_C28F_5C28_F5C2,
+					0x8F5C_28F5_C28F_5C28, 0xF5C2_8F5C_28F5_C28F, 0x5C28_F5C2_8F5C_28F5, 0xC28F_5C28_F5C2_8F5C));
+			ShiftOperatorsHelper<UInt, int, UInt>.UnsignedRightShiftOperation(actual, 64 * 3)
+				.Should().Be(new(
+					0, 0, 0, 0x028F_5C28_F5C2_8F5C,
+					0x28F5_C28F_5C28_F5C2, 0x8F5C_28F5_C28F_5C28, 0xF5C2_8F5C_28F5_C28F, 0x5C28_F5C2_8F5C_28F5));
+			ShiftOperatorsHelper<UInt, int, UInt>.UnsignedRightShiftOperation(actual, 64 * 4)
+				.Should().Be(new(
+					0, 0, 0, 0,
+					0x028F_5C28_F5C2_8F5C, 0x28F5_C28F_5C28_F5C2, 0x8F5C_28F5_C28F_5C28, 0xF5C2_8F5C_28F5_C28F));
+			ShiftOperatorsHelper<UInt, int, UInt>.UnsignedRightShiftOperation(actual, 64 * 5)
+				.Should().Be(new(
+					0, 0, 0, 0,
+					0, 0x028F_5C28_F5C2_8F5C, 0x28F5_C28F_5C28_F5C2, 0x8F5C_28F5_C28F_5C28));
+			ShiftOperatorsHelper<UInt, int, UInt>.UnsignedRightShiftOperation(actual, 64 * 6)
+				.Should().Be(new(
+					0, 0, 0, 0,
+					0, 0, 0x028F_5C28_F5C2_8F5C, 0x28F5_C28F_5C28_F5C2));
+			ShiftOperatorsHelper<UInt, int, UInt>.UnsignedRightShiftOperation(actual, 64 * 7)
+				.Should().Be(new(
+					0, 0, 0, 0,
+					0, 0, 0, 0x028F_5C28_F5C2_8F5C));
 		}
 
 		[Fact]

@@ -168,6 +168,24 @@ namespace MissingValues
 			return new Int512(ReverseEndianness(value.Lower), ReverseEndianness(value.Upper));
 		}
 
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static UInt128 BigMul(ulong a, ulong b)
+		{
+			ulong high = Math.BigMul(a, b, out ulong low);
+			return new UInt128(high, low);
+		}
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static UInt256 BigMul(UInt128 a, UInt128 b)
+		{
+			UInt128 high = BigMul(a, b, out var low);
+			return new UInt256(high, low);
+		}
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		public static UInt512 BigMul(UInt256 a, UInt256 b)
+		{
+			UInt256 high = UInt256.BigMul(a, b, out var low);
+			return new UInt512(high, low);
+		}
 		/// <summary>
 		/// Produces the full product of two unsigned 128-bit numbers.
 		/// </summary>
@@ -183,19 +201,19 @@ namespace MissingValues
 			// Basically, it's an optimized version of FOIL method applied to
 			// low and high dwords of each operand
 
-			UInt128 al = a.GetLowerBits();
-			UInt128 ah = a.GetUpperBits();
+			ulong al = a.GetLowerBits();
+			ulong ah = a.GetUpperBits();
 
-			UInt128 bl = b.GetLowerBits();
-			UInt128 bh = b.GetUpperBits();
+			ulong bl = b.GetLowerBits();
+			ulong bh = b.GetUpperBits();
 
-			UInt128 mull = al * bl;
-			UInt128 t = ah * bl + mull.GetUpperBits();
-			UInt128 tl = al * bh + t.GetLowerBits();
+			UInt128 mull = BigMul(al, bl);
+			UInt128 t = BigMul(ah, bl) + mull.GetUpperBits();
+			UInt128 tl = BigMul(al, bh) + t.GetLowerBits();
 
 			lower = new UInt128(tl.GetLowerBits(), mull.GetLowerBits());
 
-			return ah * bh + t.GetUpperBits() + tl.GetUpperBits();
+			return BigMul(ah, bh) + t.GetUpperBits() + tl.GetUpperBits();
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]

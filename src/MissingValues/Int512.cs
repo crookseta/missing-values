@@ -20,39 +20,70 @@ namespace MissingValues
 		internal const int Size = 64;
 
 #if BIGENDIAN
-		private readonly UInt256 _upper;
-		private readonly UInt256 _lower;
+		private readonly ulong _p7;
+		private readonly ulong _p6;
+		private readonly ulong _p5;
+		private readonly ulong _p4;
+		private readonly ulong _p3;
+		private readonly ulong _p2;
+		private readonly ulong _p1;
+		private readonly ulong _p0;
 #else
-		private readonly UInt256 _lower;
-		private readonly UInt256 _upper;
+		private readonly ulong _p0;
+		private readonly ulong _p1;
+		private readonly ulong _p2;
+		private readonly ulong _p3;
+		private readonly ulong _p4;
+		private readonly ulong _p5;
+		private readonly ulong _p6;
+		private readonly ulong _p7;
 #endif
 
-		internal UInt256 Upper => _upper;
-		internal UInt256 Lower => _lower;
+		internal UInt256 Lower => new UInt256(_p3, _p2, _p1, _p0);
+		internal UInt256 Upper => new UInt256(_p7, _p6, _p5, _p4);
 
-		[CLSCompliant(false)]
-		public Int512(UInt256 lower)
+		internal Int512(ulong lower)
 		{
-			_upper = UInt256.Zero;
-			_lower = lower;
+			_p0 = lower;
+			_p1 = 0;
+			_p2 = 0;
+			_p3 = 0;
+			_p4 = 0;
+			_p5 = 0;
+			_p6 = 0;
+			_p7 = 0;
 		}
-		[CLSCompliant(false)]
+		public Int512(UInt256 lower) : this(UInt256.Zero, lower)
+		{
+		}
 		public Int512(UInt256 upper, UInt256 lower)
 		{
-			_upper = upper;
-			_lower = lower;
+			lower.GetLowerParts(out _p1, out _p0);
+			lower.GetUpperParts(out _p3, out _p2);
+			upper.GetLowerParts(out _p5, out _p4);
+			upper.GetUpperParts(out _p7, out _p6);
 		}
-		[CLSCompliant(false)]
 		public Int512(UInt128 uu, UInt128 ul, UInt128 lu, UInt128 ll)
 		{
-			_upper = new UInt256(uu, ul);
-			_lower = new UInt256(lu, ll);
+			_p0 = (ulong)ll;
+			_p1 = (ulong)(ll >>> 64);
+			_p2 = (ulong)lu;
+			_p3 = (ulong)(lu >>> 64);
+			_p4 = (ulong)ul;
+			_p5 = (ulong)(ul >>> 64);
+			_p6 = (ulong)uu;
+			_p7 = (ulong)(uu >>> 64);
 		}
-		[CLSCompliant(false)]
 		public Int512(ulong uuu, ulong uul, ulong ulu, ulong ull, ulong luu, ulong lul, ulong llu, ulong lll)
 		{
-			_upper = new UInt256(new UInt128(uuu, uul), new UInt128(ulu, ull));
-			_lower = new UInt256(new UInt128(luu, lul), new UInt128(llu, lll));
+			_p0 = lll;
+			_p1 = llu;
+			_p2 = lul;
+			_p3 = luu;
+			_p4 = ull;
+			_p5 = ulu;
+			_p6 = uul;
+			_p7 = uuu;
 		}
 
 		public override bool Equals([NotNullWhen(true)] object? obj)
@@ -62,7 +93,7 @@ namespace MissingValues
 
 		public override int GetHashCode()
 		{
-			return HashCode.Combine(_upper, _lower);
+			return HashCode.Combine(Upper, Lower);
 		}
 
 		public override string? ToString()
@@ -75,7 +106,7 @@ namespace MissingValues
 		/// </summary>
 		/// <param name="left">First number to multiply.</param>
 		/// <param name="right">Second number to multiply.</param>
-		/// <param name="lower">The low 512-bit of the product of the specified numbers.</param>
+		/// <param name="low">The low 512-bit of the product of the specified numbers.</param>
 		/// <returns>The high 512-bit of the product of the specified numbers.</returns>
 		public static Int512 BigMul(Int512 left, Int512 right, out Int512 low)
 		{
@@ -105,208 +136,208 @@ namespace MissingValues
 		}
 
 		#region From Int512
-		public static explicit operator char(Int512 value) => (char)value._lower;
+		public static explicit operator char(Int512 value) => (char)value._p0;
 		public static explicit operator checked char(Int512 value)
 		{
-			if (value._upper == UInt256.Zero)
+			if (value.Upper == UInt256.Zero)
 			{
 				throw new OverflowException();
 			}
-			return checked((char)value._lower);
+			return checked((char)value._p0);
 		}
 		// Unsigned
-		public static explicit operator byte(Int512 value) => (byte)value._lower;
+		public static explicit operator byte(Int512 value) => (byte)value._p0;
 		public static explicit operator checked byte(Int512 value)
 		{
-			if (value._upper != UInt256.Zero)
+			if (value.Upper != UInt256.Zero)
 			{
 				Thrower.IntegerOverflow();
 			}
-			return checked((byte)value._lower);
+			return checked((byte)value._p0);
 		}
 		[CLSCompliant(false)]
-		public static explicit operator ushort(Int512 value) => (ushort)value._lower;
+		public static explicit operator ushort(Int512 value) => (ushort)value._p0;
 		[CLSCompliant(false)]
 		public static explicit operator checked ushort(Int512 value)
 		{
-			if (value._upper != UInt256.Zero)
+			if (value.Upper != UInt256.Zero)
 			{
 				Thrower.IntegerOverflow();
 			}
-			return checked((ushort)value._lower);
+			return checked((ushort)value._p0);
 		}
 		[CLSCompliant(false)]
-		public static explicit operator uint(Int512 value) => (uint)value._lower;
+		public static explicit operator uint(Int512 value) => (uint)value._p0;
 		[CLSCompliant(false)]
 		public static explicit operator checked uint(Int512 value)
 		{
-			if (value._upper != UInt256.Zero)
+			if (value.Upper != UInt256.Zero)
 			{
 				Thrower.IntegerOverflow();
 			}
-			return checked((uint)value._lower);
+			return checked((uint)value._p0);
 		}
 		[CLSCompliant(false)]
-		public static explicit operator ulong(Int512 value) => (ulong)value._lower;
+		public static explicit operator ulong(Int512 value) => (ulong)value._p0;
 		[CLSCompliant(false)]
 		public static explicit operator checked ulong(Int512 value)
 		{
-			if (value._upper != UInt256.Zero)
+			if (value.Upper != UInt256.Zero)
 			{
 				Thrower.IntegerOverflow();
 			}
-			return checked((ulong)value._lower);
+			return checked((ulong)value._p0);
 		}
 		[CLSCompliant(false)]
-		public static explicit operator UInt128(Int512 value) => (UInt128)value._lower;
+		public static explicit operator UInt128(Int512 value) => (UInt128)value.Lower;
 		[CLSCompliant(false)]
 		public static explicit operator checked UInt128(Int512 value)
 		{
-			if (value._upper != UInt256.Zero)
+			if (value.Upper != UInt256.Zero)
 			{
 				Thrower.IntegerOverflow();
 			}
-			return checked((UInt128)value._lower);
+			return checked((UInt128)value.Lower);
 		}
 		[CLSCompliant(false)]
-		public static explicit operator UInt256(Int512 value) => value._lower;
+		public static explicit operator UInt256(Int512 value) => value.Lower;
 		[CLSCompliant(false)]
 		public static explicit operator checked UInt256(Int512 value)
 		{
-			if (value._upper != UInt256.Zero)
+			if (value.Upper != UInt256.Zero)
 			{
 				Thrower.IntegerOverflow();
 			}
-			return value._lower;
+			return value.Lower;
 		}
 		[CLSCompliant(false)]
-		public static explicit operator UInt512(Int512 value) => new(value._upper, value._lower);
+		public static explicit operator UInt512(Int512 value) => new(value._p7, value._p6, value._p5, value._p4, value._p3, value._p2, value._p1, value._p0);
 		[CLSCompliant(false)]
 		public static explicit operator checked UInt512(Int512 value)
 		{
-			if ((Int256)value._upper < 0)
+			if ((Int256)value.Upper < 0)
 			{
 				Thrower.IntegerOverflow();
 			}
-			return new(value._upper, value._lower);
+			return new(value._p7, value._p6, value._p5, value._p4, value._p3, value._p2, value._p1, value._p0);
 		}
 		[CLSCompliant(false)]
-		public static explicit operator nuint(Int512 value) => (nuint)value._lower;
+		public static explicit operator nuint(Int512 value) => (nuint)value._p0;
 		[CLSCompliant(false)]
 		public static explicit operator checked nuint(Int512 value)
 		{
-			if (value._upper != UInt256.Zero)
+			if (value.Upper != UInt256.Zero)
 			{
 				Thrower.IntegerOverflow();
 			}
-			return checked((nuint)value._lower);
+			return checked((nuint)value.Lower);
 		}
 		// Signed
 		[CLSCompliant(false)]
-		public static explicit operator sbyte(Int512 value) => (sbyte)value._lower;
+		public static explicit operator sbyte(Int512 value) => (sbyte)value._p0;
 		[CLSCompliant(false)]
 		public static explicit operator checked sbyte(Int512 value)
 		{
-			if (~value._upper == 0)
+			if (~value.Upper == 0)
 			{
-				Int256 lower = (Int256)value._lower;
+				Int256 lower = (Int256)value.Lower;
 				return checked((sbyte)lower);
 			}
 
-			if (value._upper != 0)
+			if (value.Upper != 0)
 			{
 				Thrower.IntegerOverflow();
 			}
-			return checked((sbyte)value._lower);
+			return checked((sbyte)value.Lower);
 		}
-		public static explicit operator short(Int512 value) => (short)value._lower;
+		public static explicit operator short(Int512 value) => (short)value._p0;
 		public static explicit operator checked short(Int512 value)
 		{
-			if (~value._upper == 0)
+			if (~value.Upper == 0)
 			{
-				Int256 lower = (Int256)value._lower;
+				Int256 lower = (Int256)value.Lower;
 				return checked((short)lower);
 			}
 
-			if (value._upper != 0)
+			if (value.Upper != 0)
 			{
 				Thrower.IntegerOverflow();
 			}
-			return checked((short)value._lower);
+			return checked((short)value.Lower);
 		}
-		public static explicit operator int(Int512 value) => (int)value._lower;
+		public static explicit operator int(Int512 value) => (int)value._p0;
 		public static explicit operator checked int(Int512 value)
 		{
-			if (~value._upper == 0)
+			if (~value.Upper == 0)
 			{
-				Int256 lower = (Int256)value._lower;
+				Int256 lower = (Int256)value.Lower;
 				return checked((int)lower);
 			}
 
-			if (value._upper != 0)
+			if (value.Upper != 0)
 			{
 				Thrower.IntegerOverflow();
 			}
-			return checked((int)value._lower);
+			return checked((int)value.Lower);
 		}
-		public static explicit operator long(Int512 value) => (long)value._lower;
+		public static explicit operator long(Int512 value) => (long)value._p0;
 		public static explicit operator checked long(Int512 value)
 		{
-			if (~value._upper == 0)
+			if (~value.Upper == 0)
 			{
-				Int256 lower = (Int256)value._lower;
+				Int256 lower = (Int256)value.Lower;
 				return checked((long)lower);
 			}
 
-			if (value._upper != 0)
+			if (value.Upper != 0)
 			{
 				Thrower.IntegerOverflow();
 			}
-			return checked((long)value._lower);
+			return checked((long)value.Lower);
 		}
-		public static explicit operator Int128(Int512 value) => (Int128)value._lower;
+		public static explicit operator Int128(Int512 value) => (Int128)value.Lower;
 		public static explicit operator checked Int128(Int512 value)
 		{
-			if (~value._upper == 0)
+			if (~value.Upper == 0)
 			{
-				Int256 lower = (Int256)value._lower;
+				Int256 lower = (Int256)value.Lower;
 				return checked((Int128)lower);
 			}
 
-			if (value._upper != 0)
+			if (value.Upper != 0)
 			{
 				Thrower.IntegerOverflow();
 			}
-			return checked((Int128)value._lower);
+			return checked((Int128)value.Lower);
 		}
-		public static explicit operator Int256(Int512 value) => (Int256)value._lower;
+		public static explicit operator Int256(Int512 value) => (Int256)value.Lower;
 		public static explicit operator checked Int256(Int512 value)
 		{
-			if (~value._upper == 0)
+			if (~value.Upper == 0)
 			{
-				return (Int256)value._lower;
+				return (Int256)value.Lower;
 			}
 
-			if (value._upper != 0)
+			if (value.Upper != 0)
 			{
 				Thrower.IntegerOverflow();
 			}
-			return checked((Int256)value._lower);
+			return checked((Int256)value.Lower);
 		}
-		public static explicit operator nint(Int512 value) => (int)value._lower;
+		public static explicit operator nint(Int512 value) => (nint)value._p0;
 		public static explicit operator checked nint(Int512 value)
 		{
-			if (~value._upper == 0)
+			if (~value.Upper == 0)
 			{
-				Int256 lower = (Int256)value._lower;
+				Int256 lower = (Int256)value.Lower;
 				return checked((nint)lower);
 			}
 
-			if (value._upper != 0)
+			if (value.Upper != 0)
 			{
 				Thrower.IntegerOverflow();
 			}
-			return checked((nint)value._lower);
+			return checked((nint)value.Lower);
 		}
 		// Floating
 		public static explicit operator decimal(Int512 value)

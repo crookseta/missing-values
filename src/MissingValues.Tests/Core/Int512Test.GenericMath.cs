@@ -583,7 +583,7 @@ namespace MissingValues.Tests.Core
 			Assert.True(BinaryNumberHelper<Int>.IsPow2(new(0x100)));
 			Assert.True(BinaryNumberHelper<Int>.IsPow2(new(0x1_0000)));
 			Assert.True(BinaryNumberHelper<Int>.IsPow2(new(0x1_0000_0000)));
-			Assert.True(BinaryNumberHelper<Int>.IsPow2(new(new(0x1, 0x0000_0000_0000_0000))));
+			Assert.True(BinaryNumberHelper<Int>.IsPow2(new(0, new(0x1, 0x0000_0000_0000_0000))));
 			Assert.True(BinaryNumberHelper<Int>.IsPow2(new(0x1, new(0x0000_0000_0000_0000, 0x0000_0000_0000_0000))));
 		}
 		[Fact]

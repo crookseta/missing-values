@@ -59,9 +59,11 @@ namespace MissingValues.Internals
 		abstract static bool StartsWith(ReadOnlySpan<TSelf> v1, ReadOnlySpan<TSelf> v2, StringComparison comparisonType);
 		abstract static bool Equals(ReadOnlySpan<TSelf> v1, ReadOnlySpan<TSelf> v2, StringComparison comparisonType);
 
-		abstract static explicit operator TSelf(char value);  
+		abstract static explicit operator TSelf(uint value);
+		abstract static explicit operator TSelf(char value);
 		abstract static explicit operator TSelf(byte value);
 
+		abstract static explicit operator uint(TSelf value);
 		abstract static explicit operator char(TSelf value);
 		abstract static explicit operator byte(TSelf value);
 	}
@@ -299,28 +301,19 @@ namespace MissingValues.Internals
 			return left._char != right._char;
 		}
 
-		public static explicit operator Utf16Char(char value)
-		{
-			return new(value);
-		}
+		public static explicit operator Utf16Char(uint value) => new((char)value);
 
-		public static explicit operator Utf16Char(byte value)
-		{
-			return new((char)value);
-		}
+		public static explicit operator Utf16Char(char value) => new(value);
 
-		public static explicit operator char(Utf16Char value)
-		{
-			return value._char;
-		}
+		public static explicit operator Utf16Char(byte value) => new((char)value);
 
-		public static explicit operator byte(Utf16Char value)
-		{
-			return (byte)value._char;
-		}
+		public static explicit operator uint(Utf16Char value) => value._char;
+
+		public static explicit operator char(Utf16Char value) => value._char;
+
+		public static explicit operator byte(Utf16Char value) => (byte)value._char;
 	}
 
-#if NET8_0_OR_GREATER
 	internal readonly struct Utf8Char : IUtfCharacter<Utf8Char>
 	{
 		public static Utf8Char NullCharacter => (Utf8Char)(byte)'\0';
@@ -571,27 +564,16 @@ namespace MissingValues.Internals
 			return left._char != right._char;
 		}
 
-		public static explicit operator Utf8Char(char value)
-		{
-			return new((byte)value);
-		}
+		public static explicit operator Utf8Char(uint value) => new((byte)value);
 
-		public static explicit operator Utf8Char(byte value)
-		{
-			return new(value);
-		}
+		public static explicit operator Utf8Char(char value) => new((byte)value);
 
-		public static explicit operator char(Utf8Char value)
-		{
-			return (char)value._char;
-		}
+		public static explicit operator Utf8Char(byte value) => new(value);
 
-		public static explicit operator byte(Utf8Char value)
-		{
-			return value._char;
-		}
+		public static explicit operator uint(Utf8Char value) => value._char;
 
+		public static explicit operator char(Utf8Char value) => (char)value._char;
 
+		public static explicit operator byte(Utf8Char value) => value._char;
 	}
-#endif
 }
