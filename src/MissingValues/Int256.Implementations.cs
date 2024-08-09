@@ -97,7 +97,7 @@ namespace MissingValues
 
 		static bool INumberBase<Int256>.IsComplexNumber(Int256 value) => false;
 
-		public static bool IsEvenInteger(Int256 value) => (value.Lower & 1) == UInt128.Zero;
+		public static bool IsEvenInteger(Int256 value) => (value._p0 & 1) == 0;
 
 		static bool INumberBase<Int256>.IsFinite(Int256 value) => true;
 
@@ -109,19 +109,19 @@ namespace MissingValues
 
 		static bool INumberBase<Int256>.IsNaN(Int256 value) => false;
 
-		public static bool IsNegative(Int256 value) => (Int128)value.Upper < Int128.Zero;
+		public static bool IsNegative(Int256 value) => (long)value._p3 < 0;
 
 		static bool INumberBase<Int256>.IsNegativeInfinity(Int256 value) => false;
 
 		static bool INumberBase<Int256>.IsNormal(Int256 value) => value != Zero;
 
-		public static bool IsOddInteger(Int256 value) => (value.Lower & 1) != 0;
+		public static bool IsOddInteger(Int256 value) => (value._p0 & 1) != 0;
 
-		public static bool IsPositive(Int256 value) => (Int128)value.Upper >= Int128.Zero;
+		public static bool IsPositive(Int256 value) => (long)value._p3 >= 0;
 
 		static bool INumberBase<Int256>.IsPositiveInfinity(Int256 value) => false;
 
-		public static bool IsPow2(Int256 value) => (PopCount(value) == One) && IsPositive(value);
+		public static bool IsPow2(Int256 value) => (PopCount(in value) == 1) && IsPositive(value);
 
 		static bool INumberBase<Int256>.IsRealNumber(Int256 value) => true;
 
@@ -337,7 +337,6 @@ namespace MissingValues
 			return output;
 		}
 
-#if NET8_0_OR_GREATER
 		public static Int256 Parse(ReadOnlySpan<byte> utf8Text, NumberStyles style, IFormatProvider? provider)
 		{
 			var status = NumberParser.TryParseToSigned<Int256, UInt256, Utf8Char>(Utf8Char.CastFromByteSpan(utf8Text), style, provider, out Int256 output);
@@ -358,11 +357,13 @@ namespace MissingValues
 			}
 			return output;
 		}
-#endif
+
+		private static int PopCount(in Int256 value) => 
+			BitOperations.PopCount(value._p0) + BitOperations.PopCount(value._p1) + BitOperations.PopCount(value._p2) + BitOperations.PopCount(value._p3);
 
 		public static Int256 PopCount(Int256 value)
 		{
-			return (Int256)(UInt128.PopCount(value.Lower) + UInt128.PopCount(value.Upper));
+			return (Int256)(BitOperations.PopCount(value._p0) + BitOperations.PopCount(value._p1) + BitOperations.PopCount(value._p2) + BitOperations.PopCount(value._p3));
 		}
 
 		public static Int256 RotateLeft(Int256 value, int rotateAmount)
@@ -428,7 +429,6 @@ namespace MissingValues
 			return NumberParser.TryParseToSigned<Int256, UInt256, Utf16Char>(Utf16Char.CastFromCharSpan(s), NumberStyles.Integer, provider, out result);
 		}
 
-#if NET8_0_OR_GREATER
 		public static bool TryParse(ReadOnlySpan<byte> utf8Text, NumberStyles style, IFormatProvider? provider, [MaybeNullWhen(false)] out Int256 result)
 		{
 			if (utf8Text.Length == 0 || !utf8Text.ContainsAnyExcept((byte)' '))
@@ -449,7 +449,6 @@ namespace MissingValues
 
 			return NumberParser.TryParseToSigned<Int256, UInt256, Utf8Char>(Utf8Char.CastFromByteSpan(utf8Text), NumberStyles.Integer, provider, out result);
 		}
-#endif
 
 		public static bool TryReadBigEndian(ReadOnlySpan<byte> source, bool isUnsigned, out Int256 value)
 		{
@@ -941,13 +940,10 @@ namespace MissingValues
 		{
 			return NumberFormatter.TryFormatSignedInteger<Int256, UInt256, Utf16Char>(in this, Utf16Char.CastFromCharSpan(destination), out charsWritten, format, provider);
 		}
-
-#if NET8_0_OR_GREATER
 		public bool TryFormat(Span<byte> utf8Destination, out int bytesWritten, ReadOnlySpan<char> format, IFormatProvider? provider)
 		{
 			return NumberFormatter.TryFormatSignedInteger<Int256, UInt256, Utf8Char>(in this, Utf8Char.CastFromByteSpan(utf8Destination), out bytesWritten, format, provider);
-		} 
-#endif
+		}
 
 		bool IBinaryInteger<Int256>.TryWriteBigEndian(Span<byte> destination, out int bytesWritten)
 		{
@@ -1163,7 +1159,7 @@ namespace MissingValues
 			}
 			else
 			{
-				return new(~value.Upper, ~value.Lower);
+				return new(~value._p3, ~value._p2, ~value._p1, ~value._p0);
 			}
 		}
 
@@ -1274,7 +1270,7 @@ namespace MissingValues
 			}
 			else
 			{
-				return new(left.Upper & right.Upper, left.Lower & right.Lower);
+				return new(left._p3 & right._p3, left._p2 & right._p2, left._p1 & right._p1, left._p0 & right._p0);
 			}
 		}
 
@@ -1295,7 +1291,7 @@ namespace MissingValues
 			}
 			else
 			{
-				return new(left.Upper | right.Upper, left.Lower | right.Lower);
+				return new(left._p3 | right._p3, left._p2 | right._p2, left._p1 | right._p1, left._p0 | right._p0);
 			}
 		}
 
@@ -1316,7 +1312,7 @@ namespace MissingValues
 			}
 			else
 			{
-				return new(left.Upper ^ right.Upper, left.Lower ^ right.Lower);
+				return new(left._p3 ^ right._p3, left._p2 ^ right._p2, left._p1 ^ right._p1, left._p0 ^ right._p0);
 			}
 		}
 
@@ -1391,30 +1387,59 @@ namespace MissingValues
 
 			shiftAmount &= 0xFF;
 
-			if ((shiftAmount & 0x80) != 0)
-			{
-				// In the case it is set, we know the entire upper bits must be the sign
-				// and so the lower bits are just the upper shifted by the remaining
-				// masked amount
-
-				UInt128 lower = (UInt128)((Int128)value.Upper >> shiftAmount);
-				UInt128 upper = (UInt128)((Int128)value.Upper >> 127);
-
-				return new Int256(upper, lower);
-			}
-			else if (shiftAmount != 0)
-			{
-				// Otherwise we need to shift both upper and lower halves by the masked
-				// amount and then or that with whatever bits were shifted "out" of upper
-
-				UInt128 lower = (value.Lower >> shiftAmount) | (value.Upper << (128 - shiftAmount));
-				UInt128 upper = (UInt128)((Int128)value.Upper >> shiftAmount);
-
-				return new Int256(upper, lower);
-			}
-			else
+			if (shiftAmount == 0)
 			{
 				return value;
+			}
+
+			if (shiftAmount < 64)
+			{
+				ulong part0 = (value._p0 >> shiftAmount) | (value._p1 << (64 - shiftAmount));
+				ulong part1 = (value._p1 >> shiftAmount) | (value._p2 << (64 - shiftAmount));
+				ulong part2 = (value._p2 >> shiftAmount) | (value._p3 << (64 - shiftAmount));
+				ulong part3 = (ulong)((long)value._p3 >> shiftAmount);
+
+				return new Int256(part3, part2, part1, part0);
+			}
+
+			ulong preservedSign = (ulong)((long)value._p3 >> 63);
+
+			if (shiftAmount < 128)
+			{
+				shiftAmount -= 64;
+
+				if (shiftAmount == 0)
+				{
+					return new Int256(preservedSign, value._p3, value._p2, value._p1);
+				}
+
+				ulong part0 = (value._p1 >> shiftAmount) | (value._p2 << (64 - shiftAmount));
+				ulong part1 = (value._p2 >> shiftAmount) | (value._p3 << (64 - shiftAmount));
+				ulong part2 = (ulong)((long)value._p3 >> shiftAmount);
+
+				return new Int256(preservedSign, part2, part1, part0);
+			}
+			else if (shiftAmount < 192)
+			{
+				shiftAmount -= 128;
+
+				if (shiftAmount == 0)
+				{
+					return new Int256(preservedSign, preservedSign, value._p3, value._p2);
+				}
+
+				ulong part0 = (value._p2 >> shiftAmount) | (value._p3 << (64 - shiftAmount));
+				ulong part1 = (ulong)((long)value._p3 >> shiftAmount);
+
+				return new Int256(preservedSign, preservedSign, part1, part0);
+			}
+			else // shiftAmount < 256
+			{
+				shiftAmount -= 192;
+
+				ulong part0 = (ulong)((long)value._p3 >> shiftAmount);
+
+				return new Int256(preservedSign, preservedSign, preservedSign, part0);
 			}
 		}
 
@@ -1496,7 +1521,7 @@ namespace MissingValues
 			}
 			else
 			{
-				return (left.Upper == right.Upper) && (left.Lower == right.Lower);
+				return (left._p3 == right._p3) && (left._p2 == right._p2) && (left._p1 == right._p1) && (left._p0 == right._p0);
 			}
 		}
 
@@ -1518,60 +1543,48 @@ namespace MissingValues
 			}
 			else
 			{
-				return (left.Upper != right.Upper) || (left.Lower != right.Lower);
+				return (left._p3 != right._p3) || (left._p2 != right._p2) || (left._p1 != right._p1) || (left._p0 != right._p0);
 			}
 		}
 
 		public static bool operator <(in Int256 left, in Int256 right)
 		{
-			if (IsNegative(left) == IsNegative(right))
-			{
-				return (left.Upper < right.Upper)
-					|| ((left.Upper == right.Upper) && (left.Lower < right.Lower));
-			}
-			else
-			{
-				return IsNegative(left);
-			}
+			// Successively compare each part.
+			// If left and right have different signs: Signed comparison of _p3 gives result since it is stored as two's complement
+			// If signs are equal and left._p3 < right._p3: left < right for negative and positive values,
+			//                                                    since _p3 is upper 64 bits in two's complement.
+			// If signs are equal and left._p3 > right._p3: left > right for negative and positive values,
+			//                                                    since _p3 is upper 64 bits in two's complement.
+			// If left._p3 == right._p3: unsigned comparison of lower bits gives the result for both negative and positive values since
+			//                                 lower values are lower 64 bits in two's complement.
+			return ((long)left._p3 < (long)right._p3)
+				|| (left._p3 == right._p3 && ((left._p2 < right._p2)
+				|| (left._p2 == right._p2 && ((left._p1 < right._p1)
+				|| (left._p1 == right._p1 && (left._p0 < right._p0))))));
 		}
 
 		public static bool operator >(in Int256 left, in Int256 right)
 		{
-			if (IsNegative(left) == IsNegative(right))
-			{
-				return (left.Upper > right.Upper)
-					|| ((left.Upper == right.Upper) && (left.Lower > right.Lower));
-			}
-			else
-			{
-				return IsNegative(right);
-			}
+			return ((long)left._p3 > (long)right._p3)
+				|| (left._p3 == right._p3 && ((left._p2 > right._p2)
+				|| (left._p2 == right._p2 && ((left._p1 > right._p1)
+				|| (left._p1 == right._p1 && (left._p0 > right._p0))))));
 		}
 
 		public static bool operator <=(in Int256 left, in Int256 right)
 		{
-			if (IsNegative(left) == IsNegative(right))
-			{
-				return (left.Upper < right.Upper)
-					|| ((left.Upper == right.Upper) && (left.Lower <= right.Lower));
-			}
-			else
-			{
-				return IsNegative(left);
-			}
+			return ((long)left._p3 < (long)right._p3)
+				|| (left._p3 == right._p3 && ((left._p2 < right._p2)
+				|| (left._p2 == right._p2 && ((left._p1 < right._p1)
+				|| (left._p1 == right._p1 && (left._p0 <= right._p0))))));
 		}
 
 		public static bool operator >=(in Int256 left, in Int256 right)
 		{
-			if (IsNegative(left) == IsNegative(right))
-			{
-				return (left.Upper > right.Upper)
-					|| ((left.Upper == right.Upper) && (left.Lower >= right.Lower));
-			}
-			else
-			{
-				return IsNegative(right);
-			}
+			return ((long)left._p3 > (long)right._p3)
+				|| (left._p3 == right._p3 && ((left._p2 > right._p2)
+				|| (left._p2 == right._p2 && ((left._p1 > right._p1)
+				|| (left._p1 == right._p1 && (left._p0 >= right._p0))))));
 		}
 	}
 }

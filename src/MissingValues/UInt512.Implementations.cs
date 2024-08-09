@@ -189,7 +189,7 @@ namespace MissingValues
 
 		public static bool IsEvenInteger(UInt512 value)
 		{
-			return (value._p0 & UInt256.One) == UInt256.Zero;
+			return (value._p0 & 1) == 0;
 		}
 
 		static bool INumberBase<UInt512>.IsFinite(UInt512 value)
@@ -249,7 +249,7 @@ namespace MissingValues
 
 		public static bool IsPow2(UInt512 value)
 		{
-			return PopCount(value) == 1;
+			return PopCount(in value) == 1;
 		}
 
 		static bool INumberBase<UInt512>.IsRealNumber(UInt512 value)
@@ -342,7 +342,6 @@ namespace MissingValues
 			return output;
 		}
 
-#if NET8_0_OR_GREATER
 		public static UInt512 Parse(ReadOnlySpan<byte> utf8Text, NumberStyles style, IFormatProvider? provider)
 		{
 			var status = NumberParser.TryParseToUnsigned(Utf8Char.CastFromByteSpan(utf8Text), style, provider, out UInt512 output);
@@ -361,11 +360,15 @@ namespace MissingValues
 			}
 			return output;
 		}
-#endif
+
+		private static int PopCount(in UInt512 value) =>
+			BitOperations.PopCount(value._p0) + BitOperations.PopCount(value._p1) + BitOperations.PopCount(value._p2) + BitOperations.PopCount(value._p3)
+			+ BitOperations.PopCount(value._p4) + BitOperations.PopCount(value._p5) + BitOperations.PopCount(value._p6) + BitOperations.PopCount(value._p7);
 
 		public static UInt512 PopCount(UInt512 value)
 		{
-			return UInt256.PopCount(value.Lower) + UInt256.PopCount(value.Upper);
+			return (UInt512)(BitOperations.PopCount(value._p0) + BitOperations.PopCount(value._p1) + BitOperations.PopCount(value._p2) + BitOperations.PopCount(value._p3)
+			+ BitOperations.PopCount(value._p4) + BitOperations.PopCount(value._p5) + BitOperations.PopCount(value._p6) + BitOperations.PopCount(value._p7));
 		}
 
 		public static UInt512 RotateLeft(UInt512 value, int rotateAmount)
@@ -431,7 +434,6 @@ namespace MissingValues
 			return NumberParser.TryParseToUnsigned(Utf16Char.CastFromCharSpan(s), NumberStyles.Integer, provider, out result);
 		}
 
-#if NET8_0_OR_GREATER
 		public static bool TryParse(ReadOnlySpan<byte> utf8Text, NumberStyles style, IFormatProvider? provider, [MaybeNullWhen(false)] out UInt512 result)
 		{
 			if (utf8Text.Length == 0 || !utf8Text.ContainsAnyExcept((byte)' '))
@@ -452,7 +454,6 @@ namespace MissingValues
 
 			return NumberParser.TryParseToUnsigned(Utf8Char.CastFromByteSpan(utf8Text), NumberStyles.Integer, provider, out result);
 		}
-#endif
 
 		public static bool TryReadBigEndian(ReadOnlySpan<byte> source, bool isUnsigned, out UInt512 value)
 		{
@@ -806,12 +807,10 @@ namespace MissingValues
 			return NumberFormatter.TryFormatUnsignedInteger<UInt512, Int512, Utf16Char>(in this, Utf16Char.CastFromCharSpan(destination), out charsWritten, format, provider);
 		}
 
-#if NET8_0_OR_GREATER
 		public bool TryFormat(Span<byte> utf8Destination, out int bytesWritten, [StringSyntax(StringSyntaxAttribute.NumericFormat)] ReadOnlySpan<char> format, IFormatProvider? provider)
 		{
 			return NumberFormatter.TryFormatUnsignedInteger<UInt512, Int512, Utf8Char>(in this, Utf8Char.CastFromByteSpan(utf8Destination), out bytesWritten, format, provider);
 		}
-#endif
 
 		bool IBinaryInteger<UInt512>.TryWriteBigEndian(Span<byte> destination, out int bytesWritten)
 		{
@@ -1077,7 +1076,7 @@ namespace MissingValues
 
 		public static UInt512 operator ~(in UInt512 value)
 		{
-			return new(~value.Upper, ~value.Lower);
+			return new(~value._p7, ~value._p6, ~value._p5, ~value._p4, ~value._p3, ~value._p2, ~value._p1, ~value._p0);
 		}
 
 		public static UInt512 operator ++(in UInt512 value)
@@ -1175,34 +1174,34 @@ namespace MissingValues
 
 			unsafe static UInt512 DivideSlow(UInt512 quotient, UInt512 divisor)
 			{
-				const int UlongCount = 64 / sizeof(ulong);
+				const int UlongCount = Size / sizeof(ulong);
 
 				ulong* pLeft = stackalloc ulong[UlongCount];
 
-				Unsafe.WriteUnaligned(ref *(byte*)(pLeft + 0), (ulong)(quotient._p0));
-				Unsafe.WriteUnaligned(ref *(byte*)(pLeft + 1), (ulong)(quotient._p1));
-				Unsafe.WriteUnaligned(ref *(byte*)(pLeft + 2), (ulong)(quotient._p2));
-				Unsafe.WriteUnaligned(ref *(byte*)(pLeft + 3), (ulong)(quotient._p3));
+				Unsafe.WriteUnaligned(ref *(byte*)(pLeft + 0), (quotient._p0));
+				Unsafe.WriteUnaligned(ref *(byte*)(pLeft + 1), (quotient._p1));
+				Unsafe.WriteUnaligned(ref *(byte*)(pLeft + 2), (quotient._p2));
+				Unsafe.WriteUnaligned(ref *(byte*)(pLeft + 3), (quotient._p3));
 
-				Unsafe.WriteUnaligned(ref *(byte*)(pLeft + 4), (ulong)(quotient._p4));
-				Unsafe.WriteUnaligned(ref *(byte*)(pLeft + 5), (ulong)(quotient._p5));
-				Unsafe.WriteUnaligned(ref *(byte*)(pLeft + 6), (ulong)(quotient._p6));
-				Unsafe.WriteUnaligned(ref *(byte*)(pLeft + 7), (ulong)(quotient._p7));
+				Unsafe.WriteUnaligned(ref *(byte*)(pLeft + 4), (quotient._p4));
+				Unsafe.WriteUnaligned(ref *(byte*)(pLeft + 5), (quotient._p5));
+				Unsafe.WriteUnaligned(ref *(byte*)(pLeft + 6), (quotient._p6));
+				Unsafe.WriteUnaligned(ref *(byte*)(pLeft + 7), (quotient._p7));
 
 				Span<ulong> left = new Span<ulong>(pLeft, (UlongCount) - (BitHelper.LeadingZeroCount(quotient) / 64));
 
 
 				ulong* pRight = stackalloc ulong[UlongCount];
 
-				Unsafe.WriteUnaligned(ref *(byte*)(pRight + 0), (ulong)(divisor._p0));
-				Unsafe.WriteUnaligned(ref *(byte*)(pRight + 1), (ulong)(divisor._p1));
-				Unsafe.WriteUnaligned(ref *(byte*)(pRight + 2), (ulong)(divisor._p2));
-				Unsafe.WriteUnaligned(ref *(byte*)(pRight + 3), (ulong)(divisor._p3));
+				Unsafe.WriteUnaligned(ref *(byte*)(pRight + 0), (divisor._p0));
+				Unsafe.WriteUnaligned(ref *(byte*)(pRight + 1), (divisor._p1));
+				Unsafe.WriteUnaligned(ref *(byte*)(pRight + 2), (divisor._p2));
+				Unsafe.WriteUnaligned(ref *(byte*)(pRight + 3), (divisor._p3));
 
-				Unsafe.WriteUnaligned(ref *(byte*)(pRight + 4), (ulong)(divisor._p4));
-				Unsafe.WriteUnaligned(ref *(byte*)(pRight + 5), (ulong)(divisor._p5));
-				Unsafe.WriteUnaligned(ref *(byte*)(pRight + 6), (ulong)(divisor._p6));
-				Unsafe.WriteUnaligned(ref *(byte*)(pRight + 7), (ulong)(divisor._p7));
+				Unsafe.WriteUnaligned(ref *(byte*)(pRight + 4), (divisor._p4));
+				Unsafe.WriteUnaligned(ref *(byte*)(pRight + 5), (divisor._p5));
+				Unsafe.WriteUnaligned(ref *(byte*)(pRight + 6), (divisor._p6));
+				Unsafe.WriteUnaligned(ref *(byte*)(pRight + 7), (divisor._p7));
 
 				Span<ulong> right = new Span<ulong>(pRight, (UlongCount) - (BitHelper.LeadingZeroCount(divisor) / 64));
 
@@ -1319,8 +1318,6 @@ namespace MissingValues
 
 				return (ulong)(carry);
 			}
-
-			throw new NotImplementedException();
 		}
 
 		public static UInt512 operator %(in UInt512 left, in UInt512 right)
@@ -1331,17 +1328,17 @@ namespace MissingValues
 
 		public static UInt512 operator &(in UInt512 left, in UInt512 right)
 		{
-			return new(left.Upper & right.Upper, left.Lower & right.Lower);
+			return new(left._p7 & right._p7, left._p6 & right._p6, left._p5 & right._p5, left._p4 & right._p4, left._p3 & right._p3, left._p2 & right._p2, left._p1 & right._p1, left._p0 & right._p0);
 		}
 
 		public static UInt512 operator |(in UInt512 left, in UInt512 right)
 		{
-			return new(left.Upper | right.Upper, left.Lower | right.Lower);
+			return new(left._p7 | right._p7, left._p6 | right._p6, left._p5 | right._p5, left._p4 | right._p4, left._p3 | right._p3, left._p2 | right._p2, left._p1 | right._p1, left._p0 | right._p0);
 		}
 
 		public static UInt512 operator ^(in UInt512 left, in UInt512 right)
 		{
-			return new(left.Upper ^ right.Upper, left.Lower ^ right.Lower);
+			return new(left._p7 ^ right._p7, left._p6 ^ right._p6, left._p5 ^ right._p5, left._p4 ^ right._p4, left._p3 ^ right._p3, left._p2 ^ right._p2, left._p1 ^ right._p1, left._p0 ^ right._p0);
 		}
 
 		public static UInt512 operator <<(in UInt512 value, int shiftAmount)
@@ -1490,36 +1487,63 @@ namespace MissingValues
 
 		public static bool operator ==(in UInt512 left, in UInt512 right)
 		{
-			return (left.Upper == right.Upper) && (left.Lower == right.Lower);
+			return (left._p7 == right._p7) && (left._p6 == right._p6) && (left._p5 == right._p5) && (left._p4 == right._p4)
+				&& (left._p3 == right._p3) && (left._p2 == right._p2) && (left._p1 == right._p1) && (left._p0 == right._p0);
 		}
 
 		public static bool operator !=(in UInt512 left, in UInt512 right)
 		{
-			return (left.Upper != right.Upper) || (left.Lower != right.Lower);
+			return (left._p7 != right._p7) || (left._p6 != right._p6) || (left._p5 != right._p5) || (left._p4 != right._p4)
+				|| (left._p3 != right._p3) || (left._p2 != right._p2) || (left._p1 != right._p1) || (left._p0 != right._p0);
 		}
 
 		public static bool operator <(in UInt512 left, in UInt512 right)
 		{
-			return (left.Upper < right.Upper)
-				|| (left.Upper == right.Upper) && (left.Lower < right.Lower);
+			// Successively compare each part.
+			return (left._p7 < right._p7)
+				|| (left._p7 == right._p7 && ((left._p6 < right._p6)
+				|| (left._p6 == right._p6 && ((left._p5 < right._p5)
+				|| (left._p5 == right._p5 && ((left._p4 < right._p4)
+				|| (left._p4 == right._p4 && ((left._p3 < right._p3)
+				|| (left._p3 == right._p3 && ((left._p2 < right._p2)
+				|| (left._p2 == right._p2 && ((left._p1 < right._p1)
+				|| (left._p1 == right._p1 && (left._p0 < right._p0))))))))))))));
 		}
 
 		public static bool operator >(in UInt512 left, in UInt512 right)
 		{
-			return (left.Upper > right.Upper)
-				|| (left.Upper == right.Upper) && (left.Lower > right.Lower);
+			return (left._p7 > right._p7)
+				|| (left._p7 == right._p7 && ((left._p6 > right._p6) 
+				|| (left._p6 == right._p6 && ((left._p5 > right._p5)
+				|| (left._p5 == right._p5 && ((left._p4 > right._p4)
+				|| (left._p4 == right._p4 && ((left._p3 > right._p3)
+				|| (left._p3 == right._p3 && ((left._p2 > right._p2)
+				|| (left._p2 == right._p2 && ((left._p1 > right._p1) 
+				|| (left._p1 == right._p1 && (left._p0 > right._p0))))))))))))));
 		}
 
 		public static bool operator <=(in UInt512 left, in UInt512 right)
 		{
-			return (left.Upper < right.Upper)
-			   || (left.Upper == right.Upper) && (left.Lower <= right.Lower);
+			return (left._p7 < right._p7)
+				|| (left._p7 == right._p7 && ((left._p6 < right._p6)
+				|| (left._p6 == right._p6 && ((left._p5 < right._p5)
+				|| (left._p5 == right._p5 && ((left._p4 < right._p4)
+				|| (left._p4 == right._p4 && ((left._p3 < right._p3)
+				|| (left._p3 == right._p3 && ((left._p2 < right._p2)
+				|| (left._p2 == right._p2 && ((left._p1 < right._p1)
+				|| (left._p1 == right._p1 && (left._p0 <= right._p0))))))))))))));
 		}
 
 		public static bool operator >=(in UInt512 left, in UInt512 right)
 		{
-			return (left.Upper > right.Upper)
-				|| (left.Upper == right.Upper) && (left.Lower >= right.Lower);
+			return (left._p7 > right._p7)
+				|| (left._p7 == right._p7 && ((left._p6 > right._p6)
+				|| (left._p6 == right._p6 && ((left._p5 > right._p5)
+				|| (left._p5 == right._p5 && ((left._p4 > right._p4)
+				|| (left._p4 == right._p4 && ((left._p3 > right._p3)
+				|| (left._p3 == right._p3 && ((left._p2 > right._p2)
+				|| (left._p2 == right._p2 && ((left._p1 > right._p1)
+				|| (left._p1 == right._p1 && (left._p0 >= right._p0))))))))))))));
 		}
 
 		public static UInt512 operator >>>(in UInt512 value, int shiftAmount)

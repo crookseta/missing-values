@@ -372,6 +372,16 @@ namespace MissingValues.Tests.Core
 			ComparisonOperatorsHelper<UInt, UInt, bool>.GreaterThanOperation(Zero, 1U).Should().BeFalse();
 			ComparisonOperatorsHelper<UInt, UInt, bool>.GreaterThanOperation(One, 1U).Should().BeFalse();
 			ComparisonOperatorsHelper<UInt, UInt, bool>.GreaterThanOperation(MaxValue, 1U).Should().BeTrue();
+
+			ComparisonOperatorsHelper<UInt, UInt, bool>.GreaterThanOperation(
+				new(0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1), new(0x0, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1))
+				.Should().BeTrue();
+			ComparisonOperatorsHelper<UInt, UInt, bool>.GreaterThanOperation(
+				new(0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1), new(0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x0))
+				.Should().BeTrue();
+			ComparisonOperatorsHelper<UInt, UInt, bool>.GreaterThanOperation(
+				new(0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1, 0x1), new(0x1, 0x1, 0x1, 0x1, 0x1, 0x0, 0x1, 0x1))
+				.Should().BeTrue();
 		}
 		[Fact]
 		public static void op_GreaterThanOrEqualTest()
