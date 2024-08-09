@@ -2,6 +2,8 @@
 using System;
 using System.Buffers.Binary;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Drawing;
 using System.Linq;
 using System.Numerics;
 using System.Runtime.CompilerServices;
@@ -214,6 +216,141 @@ namespace MissingValues
 			lower = new UInt128(tl.GetLowerBits(), mull.GetLowerBits());
 
 			return BigMul(ah, bh) + t.GetUpperBits() + tl.GetUpperBits();
+		}
+
+		public static void DivideSlow(Span<ulong> left, ReadOnlySpan<ulong> right, Span<ulong> destination)
+		{
+			Span<ulong> bits = destination.Slice(0, left.Length - right.Length + 1);
+
+			ulong divHi = right[right.Length - 1];
+			ulong divLo = right.Length > 1 ? right[right.Length - 2] : 0;
+
+			int shift = BitOperations.LeadingZeroCount(divHi);
+			int backShift = 64 - shift;
+
+			if (shift > 0)
+			{
+				ulong divNx = right.Length > 2 ? right[right.Length - 3] : 0;
+
+				divHi = (divHi << shift) | (divLo >> backShift);
+				divLo = (divLo << shift) | (divNx >> backShift);
+			}
+
+			// Then, we divide all of the bits as we would do it using
+			// pen and paper: guessing the next digit, subtracting, ...
+			for (int i = left.Length; i >= right.Length; i--)
+			{
+				int n = i - right.Length;
+				ulong t = ((ulong)(i) < (ulong)(left.Length)) ? left[i] : 0;
+
+				UInt128 valHi = ((UInt128)(t) << 64) | left[i - 1];
+				ulong valLo = (i > 1) ? left[i - 2] : 0;
+
+				// We shifted the divisor, we shift the dividend too
+				if (shift > 0)
+				{
+					ulong valNx = i > 2 ? left[i - 3] : 0;
+
+					valHi = (valHi << shift) | (valLo >> backShift);
+					valLo = (valLo << shift) | (valNx >> backShift);
+				}
+
+				// First guess for the current digit of the quotient,
+				// which naturally must have only 64 bits...
+				UInt128 digit = valHi / divHi;
+
+				if (digit > 0xFFFF_FFFF_FFFF_FFFF)
+				{
+					digit = 0xFFFF_FFFF_FFFF_FFFF;
+				}
+
+				// Our first guess may be a little bit to big
+				while (DivideGuessTooBig(digit, valHi, valLo, divHi, divLo))
+				{
+					--digit;
+				}
+
+				if (digit > 0)
+				{
+					// Now it's time to subtract our current quotient
+					ulong carry = SubtractDivisor(left.Slice(n), right, digit);
+
+					if (carry != t)
+					{
+						Debug.Assert(carry == (t + 1));
+
+						// Our guess was still exactly one too high
+						carry = AddDivisor(left.Slice(n), right);
+
+						--digit;
+						Debug.Assert(carry == 1);
+					}
+				}
+
+				// We have the digit!
+				if ((uint)(n) < (uint)(bits.Length))
+				{
+					bits[n] = (ulong)(digit);
+				}
+
+				if ((uint)(i) < (uint)(left.Length))
+				{
+					left[i] = 0;
+				}
+			}
+
+			static ulong AddDivisor(Span<ulong> left, ReadOnlySpan<ulong> right)
+			{
+				UInt128 carry = UInt128.Zero;
+
+				for (int i = 0; i < right.Length; i++)
+				{
+					ref ulong leftElement = ref left[i];
+					UInt128 digit = (leftElement + carry) + right[i];
+
+					leftElement = unchecked((ulong)digit);
+					carry = digit >> 64;
+				}
+
+				return (ulong)carry;
+			}
+
+			static bool DivideGuessTooBig(UInt128 q, UInt128 valHi, ulong valLo, ulong divHi, ulong divLo)
+			{
+				UInt128 chkHi = divHi * q;
+				UInt128 chkLo = divLo * q;
+
+				chkHi += (chkLo >> 64);
+				chkLo = (ulong)(chkLo);
+
+				return (chkHi > valHi) || ((chkHi == valHi) && (chkLo > valLo));
+			}
+
+			static ulong SubtractDivisor(Span<ulong> left, ReadOnlySpan<ulong> right, UInt128 q)
+			{
+				// Combines a subtract and a multiply operation, which is naturally
+				// more efficient than multiplying and then subtracting...
+
+				UInt128 carry = UInt128.Zero;
+
+				for (int i = 0; i < right.Length; i++)
+				{
+					carry += right[i] * q;
+
+					ulong digit = (ulong)(carry);
+					carry >>= 64;
+
+					ref ulong leftElement = ref left[i];
+
+					if (leftElement < digit)
+					{
+						++carry;
+					}
+					leftElement -= digit;
+				}
+
+				return (ulong)(carry);
+			}
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]

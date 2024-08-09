@@ -165,17 +165,15 @@ namespace MissingValues
 			return TryParse(s, CultureInfo.CurrentCulture, out result);
 		}
 
-		[CLSCompliant(false)]
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static unsafe Quad UInt128BitsToQuad(UInt128 bits) => *((Quad*)&bits);
+		public static unsafe Quad UInt128BitsToQuad(UInt128 bits) => System.Runtime.CompilerServices.Unsafe.BitCast<UInt128, Quad>(bits);
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static unsafe Quad Int128BitsToQuad(Int128 bits) => *((Quad*)&bits);
+		public static unsafe Quad Int128BitsToQuad(Int128 bits) => System.Runtime.CompilerServices.Unsafe.BitCast<Int128, Quad>(bits);
 
-		[CLSCompliant(false)]
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static unsafe UInt128 QuadToUInt128Bits(Quad value) => *((UInt128*)&value);
+		public static unsafe UInt128 QuadToUInt128Bits(Quad value) => System.Runtime.CompilerServices.Unsafe.BitCast<Quad, UInt128>(value);
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static unsafe Int128 QuadToInt128Bits(Quad value) => *((Int128*)&value);
+		public static unsafe Int128 QuadToInt128Bits(Quad value) => System.Runtime.CompilerServices.Unsafe.BitCast<Quad, Int128>(value);
 
 		
 		internal static ushort ExtractBiasedExponentFromBits(UInt128 bits)
