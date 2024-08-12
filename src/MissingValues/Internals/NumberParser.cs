@@ -40,7 +40,7 @@ namespace MissingValues
 			public static bool IsValidChar<TChar>(TChar ch)
 				where TChar : unmanaged, IUtfCharacter<TChar>
 			{
-				return char.IsAsciiHexDigit((char)ch);
+				return TChar.IsHexDigit(ch);
 			}
 
 			public static TInteger ShiftLeftForNextDigit(in TInteger value)
@@ -317,93 +317,6 @@ namespace MissingValues
 		 */
 		const int FloatBufferLength = 183466 + 1 + 1; // Max buffer length + 1 for rounding 
 
-		public static unsafe bool TryParseFloat<TFloat, TChar>(ReadOnlySpan<TChar> s, NumberStyles styles, IFormatProvider? provider, [MaybeNullWhen(false)] out TFloat result)
-			where TFloat : struct, IFormattableBinaryFloatingPoint<TFloat>
-			where TChar : unmanaged, IUtfCharacter<TChar>
-		{
-			byte[] buffer = ArrayPool<byte>.Shared.Rent(FloatBufferLength);
-			FloatInfo number = new FloatInfo(buffer);
-			NumberFormatInfo info = NumberFormatInfo.GetInstance(provider);
-
-
-			if (!FloatInfo.TryParse(s, ref number, info, styles))
-			{
-				ReadOnlySpan<TChar> trim = s.Trim(TChar.WhiteSpaceCharacter);
-
-				Span<TChar> positiveInf = stackalloc TChar[TChar.GetLength(info.PositiveInfinitySymbol)];
-				TChar.Copy(info.PositiveInfinitySymbol, positiveInf);
-				
-				if (TChar.Equals(trim, positiveInf, StringComparison.OrdinalIgnoreCase))
-				{
-					result = TFloat.PositiveInfinity;
-					return true;
-				}
-
-				Span<TChar> negativeInf = stackalloc TChar[TChar.GetLength(info.NegativeInfinitySymbol)];
-				TChar.Copy(info.NegativeInfinitySymbol, negativeInf);
-
-				if (TChar.Equals(trim, negativeInf, StringComparison.OrdinalIgnoreCase))
-				{
-					result = TFloat.NegativeInfinity;
-					return true;
-				}
-
-				Span<TChar> nan = stackalloc TChar[TChar.GetLength(info.NaNSymbol)];
-				TChar.Copy(info.NaNSymbol, nan);
-
-				if (TChar.Equals(trim, nan, StringComparison.OrdinalIgnoreCase))
-				{
-					result = TFloat.NaN;
-					return true;
-				}
-
-				Span<TChar> positiveSign = stackalloc TChar[TChar.GetLength(info.PositiveSign)];
-				TChar.Copy(info.PositiveSign, positiveSign);
-
-				if (TChar.StartsWith(trim, positiveSign, StringComparison.OrdinalIgnoreCase))
-				{
-					trim = trim.Slice(positiveSign.Length);
-
-					if (TChar.Equals(trim, positiveInf, StringComparison.OrdinalIgnoreCase))
-					{
-						result = TFloat.PositiveInfinity;
-						return true;
-					}
-					else if (TChar.Equals(trim, nan, StringComparison.OrdinalIgnoreCase))
-					{
-						result = TFloat.NaN;
-						return true;
-					}
-
-					result = TFloat.Zero;
-					return false;
-				}
-				Span<TChar> negativeSign = stackalloc TChar[TChar.GetLength(info.NegativeSign)];
-				TChar.Copy(info.NegativeSign, negativeSign);
-
-				if (TChar.StartsWith(trim, negativeSign, StringComparison.OrdinalIgnoreCase))
-				{
-					if (TChar.Equals(trim[negativeSign.Length..], nan, StringComparison.OrdinalIgnoreCase))
-					{
-						result = TFloat.NaN;
-						return true;
-					}
-
-					if (TChar.StartsWith(trim, negativeSign, StringComparison.OrdinalIgnoreCase))
-					{
-						result = TFloat.NaN;
-						return true;
-					}
-				}
-
-				result = TFloat.Zero;
-				return false; // We really failed
-			}
-
-			result = FloatInfo.ConvertToFloat<TFloat>(ref number);
-			ArrayPool<byte>.Shared.Return(buffer);
-			return true;
-		}
 		public static unsafe bool TryParseFloat<TFloat, TBits, TChar>(ReadOnlySpan<TChar> s, NumberStyles styles, IFormatProvider? provider, [MaybeNullWhen(false)] out TFloat result)
 			where TFloat : struct, IBinaryFloatingPointInfo<TFloat, TBits>
 			where TBits : unmanaged, IBinaryInteger<TBits>, IUnsignedNumber<TBits>
