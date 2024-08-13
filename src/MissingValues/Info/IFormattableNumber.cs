@@ -6,7 +6,7 @@ using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MissingValues.Internals
+namespace MissingValues.Info
 {
 	internal interface IFormattableNumber<TSelf> : INumber<TSelf>
 		where TSelf : IFormattableNumber<TSelf>?

@@ -8,7 +8,7 @@ using System.Linq;
 using System.Numerics;
 using System.Text;
 
-namespace MissingValues
+namespace MissingValues.Info
 {
 	internal static class NumberParser
 	{
@@ -84,10 +84,10 @@ namespace MissingValues
 
 			private readonly int _status;
 
-            private ParsingStatus(int status)
-            {
-                _status = status;
-            }
+			private ParsingStatus(int status)
+			{
+				_status = status;
+			}
 
 			internal void Throw<T>(ReadOnlySpan<byte> utf8Input)
 				where T : IParsable<T>, IMinMaxValue<T>
@@ -107,14 +107,14 @@ namespace MissingValues
 
 			public static implicit operator ParsingStatus(int value) => new(value);
 			public static implicit operator bool(ParsingStatus self) => self._status == Success;
-        }
+		}
 
 		#region Integer
 		public static ParsingStatus ParseDecStringToUnsigned<T, TChar>(ReadOnlySpan<TChar> s, out T output)
 			where T : struct, IFormattableInteger<T>, IMinMaxValue<T>, IUnsignedNumber<T>
 			where TChar : unmanaged, IUtfCharacter<TChar>
 		{
-			if (s.Length > T.MaxDecimalDigits && ((char)s[0]) > T.LastDecimalDigitOfMaxValue)
+			if (s.Length > T.MaxDecimalDigits && (char)s[0] > T.LastDecimalDigitOfMaxValue)
 			{
 				output = default;
 				return ParsingStatus.Overflow;
@@ -127,7 +127,7 @@ namespace MissingValues
 			{
 				acumulator = unchecked(acumulator * T.Ten);
 				var addon = T.GetDecimalValue((char)s[^i]) * acumulator;
-				if ((T.MaxValue - output) < addon)
+				if (T.MaxValue - output < addon)
 				{
 					output = default;
 					return ParsingStatus.Overflow;
@@ -333,7 +333,7 @@ namespace MissingValues
 
 				Span<TChar> positiveInf = stackalloc TChar[TChar.GetLength(info.PositiveInfinitySymbol)];
 				TChar.Copy(info.PositiveInfinitySymbol, positiveInf);
-				
+
 				if (TChar.Equals(trim, positiveInf, StringComparison.OrdinalIgnoreCase))
 				{
 					result = TFloat.PositiveInfinity;

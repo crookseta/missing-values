@@ -7,15 +7,10 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Numerics;
-using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using System.Runtime.Intrinsics.Arm;
-using System.Text;
-using System.Threading.Tasks;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
-namespace MissingValues.Internals
+namespace MissingValues.Info
 {
 	internal static partial class NumberFormatter
 	{
@@ -98,11 +93,12 @@ namespace MissingValues.Internals
 				{
 					digits = stackalloc TChar[39]; // UInt128Precision
 
-					var temp = Ryu.FloatToFloatingDecimal128(in quad);
-
-					mantissa = temp.Mantissa;
-					exponent = temp.Exponent;
-					isNegative = temp.Sign;
+					(mantissa, exponent, isNegative) = Ryu.FloatToDecimalExtract<Quad, UInt128>(in quad);
+				}
+				else if (value is Octo octo)
+				{
+					// TODO: Implement formatting
+					throw new FormatException();
 				}
 				else
 				{
@@ -125,12 +121,18 @@ namespace MissingValues.Internals
 				precision = int.Parse(format[1..]);
 			}
 
+			ValueListBuilder<TChar> builder = new ValueListBuilder<TChar>(digits);
+
 			switch (format[0])
 			{
 				case 'c':
 				case 'C':
-					throw new NotImplementedException();
-					break;
+					if (precision < 0)
+					{
+						precision = provider.CurrencyDecimalDigits;
+					}
+					RoundNumber(digits, ref exponent, ref digitCount, precision);
+					return TryFormatCurrency(destination, digits, exponent, isNegative, digitCount, out charsWritten, false, provider);
 				case 'e':
 					Debug.Assert(TNumber.IsBinaryInteger());
 					if (precision < 0)
@@ -157,6 +159,10 @@ namespace MissingValues.Internals
 					break;
 				case 'g':
 				case 'G':
+					throw new NotImplementedException();
+					break;
+				case 'p':
+				case 'P':
 					throw new NotImplementedException();
 					break;
 			}
@@ -275,6 +281,122 @@ namespace MissingValues.Internals
 		}
 
 
+		private static void FormatGroupedNumeric<TChar>(
+			Span<TChar> destination, ReadOnlySpan<TChar> digits,
+			int precision, int exponent, int[]? groupDigits, ref int charsWritten,
+			ReadOnlySpan<TChar> sDecimal, ReadOnlySpan<TChar> sGroup)
+			where TChar : unmanaged, IUtfCharacter<TChar>
+		{
+			TChar[]? bufferArray;
+			Span<TChar> buffer = bufferArray = ArrayPool<TChar>.Shared.Rent(digits.Length * 2);
+			int i = 1, j = 1;
+
+			if (groupDigits is not null)
+			{
+				int groupSize = 0;
+				for (int k = 0, groupDigitsCount = groupDigits.Length - 1; k < groupDigitsCount; k++)
+				{
+					groupSize = groupDigits[k];
+
+					if (digits[i..].Length < groupSize)
+					{
+						digits.CopyTo(buffer);
+					}
+
+					for (int m = 0; m < groupSize; m++, i++, j++)
+					{
+						buffer[^i] = digits[^j];
+					}
+
+					if (!sGroup.IsEmpty && j <= digits.Length)
+					{
+						i += sGroup.Length;
+						sGroup.CopyTo(buffer[^i..]);
+					}
+				}
+
+
+			}
+
+			if (bufferArray is not null)
+			{
+				ArrayPool<TChar>.Shared.Return(bufferArray);
+			}
+		}
+		private static void FormatGroupedNumeric<TChar>(
+			Span<TChar> destination, ref ValueListBuilder<TChar> vlb,
+			int precision, int exponent, int[]? groupDigits, ref int charsWritten,
+			ReadOnlySpan<TChar> sDecimal, ReadOnlySpan<TChar> sGroup)
+			where TChar : unmanaged, IUtfCharacter<TChar>
+		{
+			if (groupDigits is not null)
+			{
+				int groupSizeIndex = 0;
+				int groupSize = 0;
+
+				if (groupDigits.Length != 0)
+				{
+					int groupSizeCount = groupDigits[groupSizeIndex];
+
+
+				}
+			}
+		}
+
+		private static bool TryFormatCurrency<TChar>(
+			Span<TChar> destination, ReadOnlySpan<TChar> digits,
+			int exponent, bool isNegative, int precision, out int charsWritten,
+			bool isUpper, NumberFormatInfo info)
+			where TChar : unmanaged, IUtfCharacter<TChar>
+		{
+			scoped ReadOnlySpan<TChar> format; 
+
+			if (isNegative)
+			{
+				format = TChar.GetNegativeCurrencyFormat(info.CurrencyNegativePattern);
+			}
+			else
+			{
+				format = TChar.GetPositiveCurrencyFormat(info.CurrencyNegativePattern);
+			}
+
+			int numberIndex = format.IndexOf((TChar)'#');
+            if (numberIndex < 0)
+            {
+				Thrower.InvalidFormat("C");
+            }
+            if (numberIndex != 0)
+			{
+				if (!format[..numberIndex].TryCopyTo(destination))
+				{
+					charsWritten = 0;
+					return false;
+				}
+			}
+			charsWritten = numberIndex;
+
+			Span<TChar> currencyDecimalSeparator = stackalloc TChar[TChar.GetLength(info.CurrencyDecimalSeparator)];
+			TChar.Copy(info.CurrencyDecimalSeparator, currencyDecimalSeparator);
+
+			Span<TChar> currencyGroupSeparator = stackalloc TChar[TChar.GetLength(info.CurrencyGroupSeparator)];
+			TChar.Copy(info.CurrencyGroupSeparator, currencyGroupSeparator);
+			// TODO: Finish implementation.
+			FormatGroupedNumeric(destination[numberIndex..], digits, precision, exponent,
+				 info.CurrencyGroupSizes, ref charsWritten, currencyDecimalSeparator, currencyGroupSeparator);
+
+			if (numberIndex != (format.Length - 1))
+			{
+				if (!format[(numberIndex + 1)..].TryCopyTo(destination))
+				{
+					charsWritten = 0;
+					return false;
+				}
+			}
+			charsWritten += format.Length - numberIndex;
+			return true;
+		}
+
+
 		private static bool TryFormatScientific<TChar>(
 			Span<TChar> destination, ReadOnlySpan<TChar> digits, 
 			int exponent, bool isNegative, int precision, out int charsWritten,
@@ -288,7 +410,11 @@ namespace MissingValues.Internals
 
 			if (isNegative)
 			{
-				negativeSign.CopyTo(destination);
+				if (!negativeSign.TryCopyTo(destination))
+				{
+					charsWritten = 0;
+					return false;
+				}
 				charsWritten = negativeSign.Length;
 				destination[charsWritten++] = digits[0];
 			}
@@ -303,12 +429,21 @@ namespace MissingValues.Internals
 				if (digits[0] != (TChar)'0')
 				{
 					destination[charsWritten++] = (TChar)(isUpper ? 'E' : 'e');
-					CopyInt32(exponent, destination[charsWritten..], ref charsWritten, info);
+					if (!TryCopyInt32(exponent, destination[charsWritten..], ref charsWritten, info))
+					{
+						charsWritten = 0;
+						return false;
+					}
 				}
 
 				return true;
 			}
-			numberDecimalSeparator.CopyTo(destination[charsWritten..]);
+
+			if (!numberDecimalSeparator.TryCopyTo(destination[charsWritten..]))
+			{
+				charsWritten = 0;
+				return false;
+			}
 			charsWritten += numberDecimalSeparator.Length;
 
 			for (int j = 1; charsWritten < digits.Length && j < precision; charsWritten++, j++)
@@ -317,11 +452,107 @@ namespace MissingValues.Internals
 			}
 
 			destination[charsWritten++] = (TChar)(isUpper ? 'E' : 'e');
-			CopyInt32(exponent, destination[charsWritten..], ref charsWritten, info);
+			if (!TryCopyInt32(exponent, destination[charsWritten..], ref charsWritten, info))
+			{
+				charsWritten = 0;
+				return false;
+			}
+
+			return true;
+		}
+		private static bool TryFormatScientific<TChar>(
+			Span<TChar> destination, ref ValueListBuilder<TChar> digits, 
+			int exponent, bool isNegative, int precision, out int charsWritten,
+			bool isUpper, NumberFormatInfo info)
+			where TChar : unmanaged, IUtfCharacter<TChar>
+		{
+			Span<TChar> negativeSign = stackalloc TChar[TChar.GetLength(info.NegativeSign)];
+			TChar.Copy(info.NegativeSign, negativeSign);
+			Span<TChar> numberDecimalSeparator = stackalloc TChar[TChar.GetLength(info.NumberDecimalSeparator)];
+			TChar.Copy(info.NumberDecimalSeparator, numberDecimalSeparator);
+
+			if (isNegative)
+			{
+				if (!negativeSign.TryCopyTo(destination))
+				{
+					charsWritten = 0;
+					return false;
+				}
+				charsWritten = negativeSign.Length;
+				destination[charsWritten++] = digits[0];
+			}
+			else
+			{
+				destination[0] = digits[0];
+				charsWritten = 1;
+			}
+			
+			if (digits.Count == 1)
+			{
+				if (digits[0] != (TChar)'0')
+				{
+					destination[charsWritten++] = (TChar)(isUpper ? 'E' : 'e');
+					if (!TryCopyInt32(exponent, destination[charsWritten..], ref charsWritten, info))
+					{
+						charsWritten = 0;
+						return false;
+					}
+				}
+
+				return true;
+			}
+
+			if (!numberDecimalSeparator.TryCopyTo(destination[charsWritten..]))
+			{
+				charsWritten = 0;
+				return false;
+			}
+			charsWritten += numberDecimalSeparator.Length;
+
+			for (int j = 1; charsWritten < digits.Count && j < precision; charsWritten++, j++)
+			{
+				destination[charsWritten] = digits[j];
+			}
+
+			destination[charsWritten++] = (TChar)(isUpper ? 'E' : 'e');
+			if (!TryCopyInt32(exponent, destination[charsWritten..], ref charsWritten, info))
+			{
+				charsWritten = 0;
+				return false;
+			}
 
 			return true;
 		}
 
+		private static void Replace<TChar>(ReadOnlySpan<TChar> s, Span<TChar> destination, TChar c, ReadOnlySpan<TChar> span)
+			where TChar : unmanaged, IUtfCharacter<TChar>
+		{
+			if (destination.Length < s.Length + span.Length)
+			{
+				throw new ArgumentOutOfRangeException(nameof(destination));
+			}
+
+			int index = s.IndexOf(c);
+            if (index == 0)
+            {
+				span.CopyTo(destination);
+				s[1..].CopyTo(destination[span.Length..]);
+            }
+			else if (index == s.Length - 1)
+			{
+				s.CopyTo(destination);
+				span.CopyTo(destination[s.Length..]);
+			}
+			else
+			{
+				s[..index].CopyTo(destination);
+				var slice = destination[index..];
+				span.CopyTo(slice);
+
+				slice = slice[span.Length..];
+				s[(index + 1)..].CopyTo(slice);
+			}
+		}
 		private static void RoundNumber<TChar>(Span<TChar> digits, ref int exponent, ref int digitCount, int pos)
 			where TChar : unmanaged, IUtfCharacter<TChar>
 		{
@@ -379,8 +610,65 @@ namespace MissingValues.Internals
 				return (char)digit >= '5';
 			}
 		}
+		private static void RoundNumber<TChar>(ref ValueListBuilder<TChar> digits, ref int exponent, ref int digitCount, int pos)
+			where TChar : unmanaged, IUtfCharacter<TChar>
+		{
+			ref TChar dig = ref digits.GetFirstReference();
 
-		private static void CopyInt32<TChar>(int value, Span<TChar> destination, ref int charsWritten, NumberFormatInfo info)
+			int i = 0;
+			while (i <= pos && Unsafe.Add(ref dig, i) != TChar.NullCharacter)
+			{
+				i++;
+			}
+
+			if ((i == (pos + 1)) && ShouldRoundUp(ref dig, i))
+			{
+				while (i > 0 && Unsafe.Add(ref dig, i - 1) == (TChar)'9')
+				{
+					i--;
+				}
+
+				if (i > 0)
+				{
+					Unsafe.Add(ref dig, i - 1) = (TChar)(byte)((byte)Unsafe.Add(ref dig, i - 1) + 1);
+				}
+				else
+				{
+					exponent++;
+					Unsafe.Add(ref dig, 0) = (TChar)('1');
+					i = 1;
+				}
+			}
+			else
+			{
+				while (i > 0 && Unsafe.Add(ref dig, i - 1) == (TChar)'0')
+				{
+					i--;
+				}
+			}
+
+			if (i == 0)
+			{
+				exponent = 0; // Decimals with scale ('0.00') should be rounded.
+			}
+
+			Unsafe.Add(ref dig, i) = TChar.NullCharacter;
+			digitCount = i;
+
+			static bool ShouldRoundUp(ref TChar dig, int i)
+			{
+				TChar digit = Unsafe.Add(ref dig, i);
+
+				if (digit == TChar.NullCharacter)
+				{
+					return false;
+				}
+
+				return (char)digit >= '5';
+			}
+		}
+
+		private static bool TryCopyInt32<TChar>(int value, Span<TChar> destination, ref int charsWritten, NumberFormatInfo info)
 			where TChar : unmanaged, IUtfCharacter<TChar>
 		{
 			Span<TChar> digits = stackalloc TChar[12];
@@ -412,7 +700,7 @@ namespace MissingValues.Internals
 				TChar.Copy(info.PositiveSign, digits[(i - length)..]);
 			}
 
-			digits.TrimStart(TChar.NullCharacter).CopyTo(destination);
+			return digits.TrimStart(TChar.NullCharacter).TryCopyTo(destination);
 		}
 	}
 }

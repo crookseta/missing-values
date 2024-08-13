@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MissingValues.Internals;
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -6,7 +7,7 @@ using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MissingValues.Internals;
+namespace MissingValues.Info;
 
 internal interface IFormattableFloatingPoint<TSelf> : IFloatingPoint<TSelf>, IFormattableNumber<TSelf>
 		where TSelf : IFormattableFloatingPoint<TSelf>
@@ -18,8 +19,9 @@ internal interface IFormattableFloatingPoint<TSelf> : IFloatingPoint<TSelf>, IFo
 		return false;
 	}
 }
-internal interface IFormattableBinaryFloatingPoint<TSelf> : IFormattableFloatingPoint<TSelf>, IBinaryFloatingPointIeee754<TSelf>
-	where TSelf : IFormattableBinaryFloatingPoint<TSelf>
+internal interface IBinaryFloatingPointInfo<TFloat, TSignificand> : IBinaryFloatingPointIeee754<TFloat>, IFormattableFloatingPoint<TFloat>
+	where TFloat : struct, IBinaryFloatingPointInfo<TFloat, TSignificand>
+	where TSignificand : unmanaged, IBinaryInteger<TSignificand>, IUnsignedNumber<TSignificand>
 {
 	abstract static bool ExplicitLeadingBit { get; }
 	abstract static int NormalMantissaBits { get; }
@@ -32,25 +34,25 @@ internal interface IFormattableBinaryFloatingPoint<TSelf> : IFormattableFloating
 	abstract static int ExponentBits { get; }
 	abstract static int ExponentBias { get; }
 	abstract static int OverflowDecimalExponent { get; }
-	abstract static UInt128 DenormalMantissaMask { get; }
-	abstract static UInt128 NormalMantissaMask { get; }
-	abstract static UInt128 TrailingSignificandMask { get; }
-	abstract static UInt128 PositiveZeroBits { get; }
-	abstract static UInt128 PositiveInfinityBits { get; }
-	abstract static UInt128 NegativeInfinityBits { get; }
+	abstract static TSignificand DenormalMantissaMask { get; }
+	abstract static TSignificand NormalMantissaMask { get; }
+	abstract static TSignificand TrailingSignificandMask { get; }
+	abstract static TSignificand PositiveZeroBits { get; }
+	abstract static TSignificand PositiveInfinityBits { get; }
+	abstract static TSignificand NegativeInfinityBits { get; }
 
-	static abstract TSelf BitsToFloat(UInt128 bits);
-	static abstract UInt128 FloatToBits(TSelf value);
-
+	static abstract TFloat BitsToFloat(TSignificand bits);
+	static abstract TSignificand FloatToBits(TFloat value);
 }
 
 internal static partial class NumberFormatter
 {
-	public static string FloatToString<TFloat>(
+	public static string FloatToString<TFloat, TSignificand>(
 		in TFloat value,
 		ReadOnlySpan<char> format,
 		IFormatProvider? provider)
-		where TFloat : struct, IFormattableBinaryFloatingPoint<TFloat>
+		where TFloat : unmanaged, IBinaryFloatingPointInfo<TFloat, TSignificand>
+		where TSignificand : unmanaged, IBinaryInteger<TSignificand>, IUnsignedNumber<TSignificand>
 	{
 		int maxSignificandPrecision = TFloat.MaxSignificandPrecision;
 		int maxBufferAlloc = maxSignificandPrecision + 4 + 4 + 4; // N significant decimal digits precision, 4 possible special symbols, 4 exponent decimal digits
@@ -84,7 +86,7 @@ internal static partial class NumberFormatter
 		NumberFormatInfo info = NumberFormatInfo.GetInstance(provider);
 
 		Span<Utf16Char> buffer = stackalloc Utf16Char[maxBufferAlloc];
-		Ryu.Format(in value, buffer, out _, format, out bool isExceptional, info, precision);
+		Ryu.Format<TFloat, TSignificand, Utf16Char> (in value, buffer, out _, format, out bool isExceptional, info, precision);
 
 		if (isExceptional || format.Contains("E", StringComparison.OrdinalIgnoreCase))
 		{
@@ -94,13 +96,14 @@ internal static partial class NumberFormatter
 		return new string(Utf16Char.CastToCharSpan(GetGeneralFromScientificFloatChars(buffer, info, precision)));
 	}
 
-	public static bool TryFormatFloat<TFloat, TChar>(
+	public static bool TryFormatFloat<TFloat, TSignificand, TChar>(
 		in TFloat value,
 		Span<TChar> destination,
 		out int charsWritten,
 		ReadOnlySpan<char> format,
 		IFormatProvider? provider)
-		where TFloat : struct, IFormattableBinaryFloatingPoint<TFloat>
+		where TFloat : unmanaged, IBinaryFloatingPointInfo<TFloat, TSignificand>
+		where TSignificand : unmanaged, IBinaryInteger<TSignificand>, IUnsignedNumber<TSignificand>
 		where TChar : unmanaged, IUtfCharacter<TChar>
 	{
 		int maxSignificandPrecision = TFloat.MaxSignificandPrecision;
@@ -124,7 +127,7 @@ internal static partial class NumberFormatter
 				precision = maxSignificandPrecision;
 			}
 		}
-		
+
 		NumberFormatInfo info = NumberFormatInfo.GetInstance(provider);
 
 		if (!(format.Contains("G", StringComparison.OrdinalIgnoreCase)
@@ -137,7 +140,7 @@ internal static partial class NumberFormatter
 		}
 
 		Span<TChar> buffer = stackalloc TChar[maxBufferAlloc];
-		Ryu.Format(in value, buffer, out charsWritten, format, out bool isExceptional, info, precision);
+		Ryu.Format<TFloat, TSignificand, TChar>(in value, buffer, out charsWritten, format, out bool isExceptional, info, precision);
 
 		if (isExceptional || format.Contains("E", StringComparison.OrdinalIgnoreCase))
 		{
@@ -148,6 +151,7 @@ internal static partial class NumberFormatter
 		charsWritten = general.Length;
 		return general.TryCopyTo(destination);
 	}
+
 	private static ReadOnlySpan<TChar> GetGeneralFromScientificFloatChars<TChar>(Span<TChar> buffer, NumberFormatInfo info, int precision)
 		where TChar : unmanaged, IUtfCharacter<TChar>
 	{

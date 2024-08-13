@@ -1,11 +1,12 @@
-﻿using System;
+﻿using MissingValues.Internals;
+using System;
 using System.Diagnostics;
 using System.Globalization;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-namespace MissingValues.Internals;
+namespace MissingValues.Info;
 
 internal interface IFormattableInteger<TSelf> : IFormattableNumber<TSelf>, IBigInteger<TSelf>
 		where TSelf : IFormattableInteger<TSelf>?

@@ -1,4 +1,5 @@
-﻿using MissingValues.Internals;
+﻿using MissingValues.Info;
+using MissingValues.Internals;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
