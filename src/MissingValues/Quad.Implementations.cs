@@ -190,12 +190,27 @@ namespace MissingValues
 		{
 			UInt128 bits = Quad.QuadToUInt128Bits(value);
 
-			ushort biasedExponent = ExtractBiasedExponentFromBits(bits); ;
+			if ((Int128)bits <= Int128.Zero)
+			{
+				// Zero and negative values cannot be powers of 2
+				return false;
+			}
+
+			ushort biasedExponent = ExtractBiasedExponentFromBits(bits);
 			UInt128 trailingSignificand = ExtractTrailingSignificandFromBits(bits);
 
-			return (value > UInt128.Zero)
-				&& (biasedExponent != MinBiasedExponent) && (biasedExponent != MaxBiasedExponent)
-				&& (trailingSignificand == MinTrailingSignificand);
+			if (biasedExponent == MinBiasedExponent)
+			{
+				// Subnormal values have 1 bit set when they're powers of 2
+				return UInt128.PopCount(trailingSignificand) == UInt128.One;
+			}
+			else if (biasedExponent == MaxBiasedExponent)
+			{
+				// NaN and Infinite values cannot be powers of 2
+				return false;
+			}
+
+			return trailingSignificand == MinTrailingSignificand;
 		}
 
 		public static bool IsRealNumber(Quad value) => !IsNaN(value);

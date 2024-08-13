@@ -13,90 +13,90 @@ namespace MissingValues
 		IMinMaxValue<Octo>
 	{ // TODO: Implement interface methods.
 		/// <inheritdoc/>
-		public static Octo Epsilon => throw new NotImplementedException();
+		public static Octo Epsilon => UInt256BitsToOcto(EpsilonBits);
 
 		/// <inheritdoc/>
-		public static Octo NaN => throw new NotImplementedException();
+		public static Octo NaN => UInt256BitsToOcto(PositiveQNaNBits);
 
 		/// <inheritdoc/>
-		public static Octo NegativeInfinity => throw new NotImplementedException();
+		public static Octo NegativeInfinity => UInt256BitsToOcto(NegativeInfinityBits);
 
 		/// <inheritdoc/>
-		public static Octo NegativeZero => throw new NotImplementedException();
+		public static Octo NegativeZero => UInt256BitsToOcto(NegativeZeroBits);
 
 		/// <inheritdoc/>
-		public static Octo PositiveInfinity => throw new NotImplementedException();
+		public static Octo PositiveInfinity => UInt256BitsToOcto(PositiveInfinityBits);
 
 		/// <inheritdoc/>
-		public static Octo NegativeOne => throw new NotImplementedException();
+		public static Octo NegativeOne => UInt256BitsToOcto(NegativeOneBits);
 
 		/// <inheritdoc/>
-		public static Octo E => throw new NotImplementedException();
+		public static Octo E => UInt256BitsToOcto(EBits);
 
 		/// <inheritdoc/>
-		public static Octo Pi => throw new NotImplementedException();
+		public static Octo Pi => UInt256BitsToOcto(PiBits);
 
 		/// <inheritdoc/>
-		public static Octo Tau => throw new NotImplementedException();
+		public static Octo Tau => UInt256BitsToOcto(TauBits);
 
 		/// <inheritdoc/>
-		public static Octo One => throw new NotImplementedException();
+		public static Octo One => UInt256BitsToOcto(PositiveOneBits);
 
-		static int INumberBase<Octo>.Radix => throw new NotImplementedException();
-
-		/// <inheritdoc/>
-		public static Octo Zero => throw new NotImplementedException();
-
-		static Octo IAdditiveIdentity<Octo, Octo>.AdditiveIdentity => throw new NotImplementedException();
-
-		static Octo IMultiplicativeIdentity<Octo, Octo>.MultiplicativeIdentity => throw new NotImplementedException();
+		static int INumberBase<Octo>.Radix => 2;
 
 		/// <inheritdoc/>
-		public static Octo MaxValue => throw new NotImplementedException();
+		public static Octo Zero => UInt256BitsToOcto(PositiveZeroBits);
+
+		static Octo IAdditiveIdentity<Octo, Octo>.AdditiveIdentity => UInt256BitsToOcto(PositiveZeroBits);
+
+		static Octo IMultiplicativeIdentity<Octo, Octo>.MultiplicativeIdentity => UInt256BitsToOcto(PositiveOneBits);
 
 		/// <inheritdoc/>
-		public static Octo MinValue => throw new NotImplementedException();
+		public static Octo MaxValue => UInt256BitsToOcto(MaxValueBits);
+
+		/// <inheritdoc/>
+		public static Octo MinValue => UInt256BitsToOcto(MinValueBits);
 
 		static ReadOnlySpan<Octo> IFormattableFloatingPoint<Octo>.PowersOfTen => throw new NotImplementedException();
 
 		static bool IBinaryFloatingPointInfo<Octo, UInt256>.ExplicitLeadingBit => false;
 
-		static int IBinaryFloatingPointInfo<Octo, UInt256>.NormalMantissaBits => throw new NotImplementedException();
+		static int IBinaryFloatingPointInfo<Octo, UInt256>.NormalMantissaBits => BiasedExponentShift + 1;
 
-		static int IBinaryFloatingPointInfo<Octo, UInt256>.DenormalMantissaBits => throw new NotImplementedException();
+		static int IBinaryFloatingPointInfo<Octo, UInt256>.DenormalMantissaBits => BiasedExponentShift;
 
-		static int IBinaryFloatingPointInfo<Octo, UInt256>.MinimumDecimalExponent => throw new NotImplementedException();
+		static int IBinaryFloatingPointInfo<Octo, UInt256>.MinimumDecimalExponent => -78984;
 
-		static int IBinaryFloatingPointInfo<Octo, UInt256>.MaximumDecimalExponent => throw new NotImplementedException();
+		static int IBinaryFloatingPointInfo<Octo, UInt256>.MaximumDecimalExponent => 78913;
 
-		static int IBinaryFloatingPointInfo<Octo, UInt256>.MinBiasedExponent => throw new NotImplementedException();
+		static int IBinaryFloatingPointInfo<Octo, UInt256>.MinBiasedExponent => MinBiasedExponent;
 
-		static int IBinaryFloatingPointInfo<Octo, UInt256>.MaxBiasedExponent => throw new NotImplementedException();
+		static int IBinaryFloatingPointInfo<Octo, UInt256>.MaxBiasedExponent => MaxBiasedExponent;
 
-		static int IBinaryFloatingPointInfo<Octo, UInt256>.MaxSignificandPrecision => throw new NotImplementedException();
+		static int IBinaryFloatingPointInfo<Octo, UInt256>.MaxSignificandPrecision => 70;
 
-		static int IBinaryFloatingPointInfo<Octo, UInt256>.ExponentBits => throw new NotImplementedException();
+		static int IBinaryFloatingPointInfo<Octo, UInt256>.ExponentBits => 19;
 
-		static int IBinaryFloatingPointInfo<Octo, UInt256>.ExponentBias => throw new NotImplementedException();
+		static int IBinaryFloatingPointInfo<Octo, UInt256>.ExponentBias => ExponentBias;
 
-		static int IBinaryFloatingPointInfo<Octo, UInt256>.OverflowDecimalExponent => throw new NotImplementedException();
+		static int IBinaryFloatingPointInfo<Octo, UInt256>.OverflowDecimalExponent => (ExponentBias + (2 * 237) / 3);
 
-		static UInt256 IBinaryFloatingPointInfo<Octo, UInt256>.DenormalMantissaMask => throw new NotImplementedException();
+		static UInt256 IBinaryFloatingPointInfo<Octo, UInt256>.DenormalMantissaMask => TrailingSignificandMask;
 
-		static UInt256 IBinaryFloatingPointInfo<Octo, UInt256>.NormalMantissaMask => throw new NotImplementedException();
+		static UInt256 IBinaryFloatingPointInfo<Octo, UInt256>.NormalMantissaMask => new UInt256(0x0000_1FFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF);
 
-		static UInt256 IBinaryFloatingPointInfo<Octo, UInt256>.TrailingSignificandMask => throw new NotImplementedException();
+		static UInt256 IBinaryFloatingPointInfo<Octo, UInt256>.TrailingSignificandMask => TrailingSignificandMask;
 
-		static UInt256 IBinaryFloatingPointInfo<Octo, UInt256>.PositiveZeroBits => throw new NotImplementedException();
+		static UInt256 IBinaryFloatingPointInfo<Octo, UInt256>.PositiveZeroBits => PositiveZeroBits;
 
-		static UInt256 IBinaryFloatingPointInfo<Octo, UInt256>.PositiveInfinityBits => throw new NotImplementedException();
+		static UInt256 IBinaryFloatingPointInfo<Octo, UInt256>.PositiveInfinityBits => PositiveInfinityBits;
 
-		static UInt256 IBinaryFloatingPointInfo<Octo, UInt256>.NegativeInfinityBits => throw new NotImplementedException();
+		static UInt256 IBinaryFloatingPointInfo<Octo, UInt256>.NegativeInfinityBits => NegativeInfinityBits;
 
 		/// <inheritdoc/>
 		public static Octo Abs(Octo value)
 		{
-			throw new NotImplementedException();
+			return Octo.UInt256BitsToOcto(Octo.OctoToUInt256Bits(value) & Octo.InvertedSignMask);
 		}
 
 		/// <inheritdoc/>
@@ -168,13 +168,53 @@ namespace MissingValues
 		/// <inheritdoc/>
 		public static Octo BitDecrement(Octo x)
 		{
-			throw new NotImplementedException();
+			UInt256 bits = Octo.OctoToUInt256Bits(x);
+
+			if ((bits & Octo.PositiveInfinityBits) >= Octo.PositiveInfinityBits)
+			{
+				// NaN returns NaN
+				// -Infinity returns -Infinity
+				// +Infinity returns MaxValue
+				return (bits == Octo.PositiveInfinityBits) ? Octo.MaxValue : x;
+			}
+
+			if (bits == Octo.PositiveZeroBits)
+			{
+				// +0.0 returns -Epsilon
+				return -Octo.Epsilon;
+			}
+
+			// Negative values need to be incremented
+			// Positive values need to be decremented
+
+			bits += unchecked((UInt256)(((Int256)bits < Int256.Zero) ? Int256.One : Int256.NegativeOne));
+			return Octo.UInt256BitsToOcto(bits);
 		}
 
 		/// <inheritdoc/>
 		public static Octo BitIncrement(Octo x)
 		{
-			throw new NotImplementedException();
+			UInt256 bits = Octo.OctoToUInt256Bits(x);
+
+			if ((bits & Octo.PositiveInfinityBits) >= Octo.PositiveInfinityBits)
+			{
+				// NaN returns NaN
+				// -Infinity returns MinValue
+				// +Infinity returns +Infinity
+				return (bits == Octo.NegativeInfinityBits) ? Octo.MinValue : x;
+			}
+
+			if (bits == Octo.NegativeZeroBits)
+			{
+				// -0.0 returns Epsilon
+				return Octo.Epsilon;
+			}
+
+			// Negative values need to be decremented
+			// Positive values need to be incremented
+
+			bits += unchecked((UInt256)(((Int256)bits < Int256.Zero) ? Int256.NegativeOne : Int256.One));
+			return Octo.UInt256BitsToOcto(bits);
 		}
 
 		/// <inheritdoc/>
@@ -243,112 +283,138 @@ namespace MissingValues
 			throw new NotImplementedException();
 		}
 
-		/// <inheritdoc/>
-		public static bool IsCanonical(Octo value)
+		static bool INumberBase<Octo>.IsCanonical(Octo value)
 		{
-			throw new NotImplementedException();
+			return true;
 		}
 
-		/// <inheritdoc/>
-		public static bool IsComplexNumber(Octo value)
+		static bool INumberBase<Octo>.IsComplexNumber(Octo value)
 		{
-			throw new NotImplementedException();
+			return false;
 		}
 
 		/// <inheritdoc/>
 		public static bool IsEvenInteger(Octo value)
 		{
-			throw new NotImplementedException();
+			return IsInteger(value) && (Abs(value % Two) == Zero);
 		}
 
 		/// <inheritdoc/>
 		public static bool IsFinite(Octo value)
 		{
-			throw new NotImplementedException();
+			Int256 bits = Octo.OctoToInt256Bits(value);
+			return (bits & new Int256(0x7FFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF)) 
+				< new Int256(0x7FFF_F000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
 		}
 
-		/// <inheritdoc/>
-		public static bool IsImaginaryNumber(Octo value)
-		{
-			throw new NotImplementedException();
-		}
+		static bool INumberBase<Octo>.IsImaginaryNumber(Octo value) => false;
 
 		/// <inheritdoc/>
 		public static bool IsInfinity(Octo value)
 		{
-			throw new NotImplementedException();
+			Int256 bits = Octo.OctoToInt256Bits(value);
+			return (bits & new Int256(0x7FFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF))
+				== new Int256(0x7FFF_F000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
 		}
 
 		/// <inheritdoc/>
 		public static bool IsInteger(Octo value)
 		{
-			throw new NotImplementedException();
+			return IsFinite(value) && (value == Truncate(value));
 		}
 
 		/// <inheritdoc/>
 		public static bool IsNaN(Octo value)
 		{
-			throw new NotImplementedException();
+			return StripSign(value) > PositiveInfinityBits;
 		}
 
 		/// <inheritdoc/>
 		public static bool IsNegative(Octo value)
 		{
-			throw new NotImplementedException();
+			return Int256.IsNegative(Octo.OctoToInt256Bits(value));
 		}
 
 		/// <inheritdoc/>
 		public static bool IsNegativeInfinity(Octo value)
 		{
-			throw new NotImplementedException();
+			return value == NegativeInfinity;
 		}
 
 		/// <inheritdoc/>
 		public static bool IsNormal(Octo value)
 		{
-			throw new NotImplementedException();
+			Int256 bits = Octo.OctoToInt256Bits(value);
+			bits &= new Int256(0x7FFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF);
+			Int256 infBits = new Int256(0x7FFF_F000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
+			return (bits < infBits) && (bits != Int256.Zero) && ((bits & infBits) != Int256.Zero);
 		}
 
 		/// <inheritdoc/>
 		public static bool IsOddInteger(Octo value)
 		{
-			throw new NotImplementedException();
+			return IsInteger(value) && (Abs(value % Two) == One);
 		}
 
 		/// <inheritdoc/>
 		public static bool IsPositive(Octo value)
 		{
-			throw new NotImplementedException();
+			return Int256.IsPositive(Octo.OctoToInt256Bits(value));
 		}
 
 		/// <inheritdoc/>
 		public static bool IsPositiveInfinity(Octo value)
 		{
-			throw new NotImplementedException();
+			return value == PositiveInfinity;
 		}
 
 		/// <inheritdoc/>
 		public static bool IsPow2(Octo value)
 		{
-			throw new NotImplementedException();
+			UInt256 bits = Octo.OctoToUInt256Bits(value);
+
+			if ((Int256)bits <= Int256.Zero)
+			{
+				// Zero and negative values cannot be powers of 2
+				return false;
+			}
+
+			uint biasedExponent = ExtractBiasedExponentFromBits(bits); ;
+			UInt256 trailingSignificand = ExtractTrailingSignificandFromBits(bits);
+
+			if (biasedExponent == MinBiasedExponent)
+			{
+				// Subnormal values have 1 bit set when they're powers of 2
+				return UInt256.PopCount(trailingSignificand) == UInt256.One;
+			}
+			else if (biasedExponent == MaxBiasedExponent)
+			{
+				// NaN and Infinite values cannot be powers of 2
+				return false;
+			}
+
+			return trailingSignificand == MinTrailingSignificand;
 		}
 
 		/// <inheritdoc/>
 		public static bool IsRealNumber(Octo value)
 		{
-			throw new NotImplementedException();
+			return !IsNaN(value);
 		}
 
 		/// <inheritdoc/>
 		public static bool IsSubnormal(Octo value)
 		{
-			throw new NotImplementedException();
+			Int256 bits = Octo.OctoToInt256Bits(value);
+			bits &= new Int256(0x7FFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF);
+			Int256 infBits = new Int256(0x7FFF_F000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
+			return (bits < infBits) && (bits != Int256.Zero) && ((bits & infBits) == Int256.Zero);
 		}
 
 		/// <inheritdoc/>
 		public static bool IsZero(Octo value)
 		{
-			throw new NotImplementedException();
+			return value == Zero;
 		}
 
 		/// <inheritdoc/>
@@ -408,37 +474,61 @@ namespace MissingValues
 		/// <inheritdoc/>
 		public static Octo Parse(ReadOnlySpan<char> s, NumberStyles style, IFormatProvider? provider)
 		{
-			throw new NotImplementedException();
+			if (!TryParse(s, style, provider, out Octo result))
+			{
+				Thrower.ParsingError<Octo>(s.ToString());
+			}
+			return result;
 		}
 
 		/// <inheritdoc/>
 		public static Octo Parse(string s, NumberStyles style, IFormatProvider? provider)
 		{
-			throw new NotImplementedException();
+			if (!TryParse(s, style, provider, out Octo result))
+			{
+				Thrower.ParsingError<Octo>(s);
+			}
+			return result;
 		}
 
 		/// <inheritdoc/>
 		public static Octo Parse(ReadOnlySpan<char> s, IFormatProvider? provider)
 		{
-			throw new NotImplementedException();
+			if (!TryParse(s, NumberStyles.Float, provider, out Octo result))
+			{
+				Thrower.ParsingError<Octo>(s.ToString());
+			}
+			return result;
 		}
 
 		/// <inheritdoc/>
 		public static Octo Parse(string s, IFormatProvider? provider)
 		{
-			throw new NotImplementedException();
+			if (!TryParse(s, NumberStyles.Float, provider, out Octo result))
+			{
+				Thrower.ParsingError<Octo>(s);
+			}
+			return result;
 		}
 
 		/// <inheritdoc/>
 		public static Octo Parse(ReadOnlySpan<byte> utf8Text, NumberStyles style, IFormatProvider? provider)
 		{
-			throw new NotImplementedException();
+			if (!TryParse(utf8Text, style, provider, out Octo result))
+			{
+				Thrower.ParsingError<Octo>(utf8Text.ToString());
+			}
+			return result;
 		}
 
 		/// <inheritdoc/>
 		public static Octo Parse(ReadOnlySpan<byte> utf8Text, IFormatProvider? provider)
 		{
-			throw new NotImplementedException();
+			if (!TryParse(utf8Text, NumberStyles.Float, provider, out Octo result))
+			{
+				Thrower.ParsingError<Octo>(utf8Text.ToString());
+			}
+			return result;
 		}
 
 		/// <inheritdoc/>
@@ -520,50 +610,50 @@ namespace MissingValues
 		}
 
 		/// <inheritdoc/>
-		public static bool TryParse(ReadOnlySpan<char> s, NumberStyles style, IFormatProvider? provider, [MaybeNullWhen(false)] out Octo result)
+		public static Octo Truncate(Octo x)
 		{
 			throw new NotImplementedException();
+		}
+
+		/// <inheritdoc/>
+		public static bool TryParse(ReadOnlySpan<char> s, NumberStyles style, IFormatProvider? provider, [MaybeNullWhen(false)] out Octo result)
+		{
+			return NumberParser.TryParseFloat<Octo, UInt256, Utf16Char>(Utf16Char.CastFromCharSpan(s), style, provider, out result);
 		}
 
 		/// <inheritdoc/>
 		public static bool TryParse([NotNullWhen(true)] string? s, NumberStyles style, IFormatProvider? provider, [MaybeNullWhen(false)] out Octo result)
 		{
-			throw new NotImplementedException();
+			return NumberParser.TryParseFloat<Octo, UInt256, Utf16Char>(Utf16Char.CastFromCharSpan(s), style, provider, out result);
 		}
 
 		/// <inheritdoc/>
 		public static bool TryParse(ReadOnlySpan<char> s, IFormatProvider? provider, [MaybeNullWhen(false)] out Octo result)
 		{
-			throw new NotImplementedException();
+			return NumberParser.TryParseFloat<Octo, UInt256, Utf16Char>(Utf16Char.CastFromCharSpan(s), NumberStyles.Float, provider, out result);
 		}
 
 		/// <inheritdoc/>
 		public static bool TryParse([NotNullWhen(true)] string? s, IFormatProvider? provider, [MaybeNullWhen(false)] out Octo result)
 		{
-			throw new NotImplementedException();
+			return NumberParser.TryParseFloat<Octo, UInt256, Utf16Char>(Utf16Char.CastFromCharSpan(s), NumberStyles.Float, provider, out result);
 		}
 
 		/// <inheritdoc/>
 		public static bool TryParse(ReadOnlySpan<byte> utf8Text, NumberStyles style, IFormatProvider? provider, [MaybeNullWhen(false)] out Octo result)
 		{
-			throw new NotImplementedException();
+			return NumberParser.TryParseFloat<Octo, UInt256, Utf8Char>(Utf8Char.CastFromByteSpan(utf8Text), style, provider, out result);
 		}
 
 		/// <inheritdoc/>
 		public static bool TryParse(ReadOnlySpan<byte> utf8Text, IFormatProvider? provider, [MaybeNullWhen(false)] out Octo result)
 		{
-			throw new NotImplementedException();
+			return NumberParser.TryParseFloat<Octo, UInt256, Utf8Char>(Utf8Char.CastFromByteSpan(utf8Text), NumberStyles.Float, provider, out result);
 		}
 
-		static Octo IBinaryFloatingPointInfo<Octo, UInt256>.BitsToFloat(UInt256 bits)
-		{
-			throw new NotImplementedException();
-		}
+		static Octo IBinaryFloatingPointInfo<Octo, UInt256>.BitsToFloat(UInt256 bits) => UInt256BitsToOcto(bits);
 
-		static UInt256 IBinaryFloatingPointInfo<Octo, UInt256>.FloatToBits(Octo value)
-		{
-			throw new NotImplementedException();
-		}
+		static UInt256 IBinaryFloatingPointInfo<Octo, UInt256>.FloatToBits(Octo value) => OctoToUInt256Bits(value);
 
 		static bool INumberBase<Octo>.TryConvertFromChecked<TOther>(TOther value, out Octo result)
 		{
@@ -632,24 +722,26 @@ namespace MissingValues
 		{
 			throw new NotImplementedException();
 		}
-
+		// TODO: Implement formatting support.
 		/// <inheritdoc/>
 		public string ToString(string? format, IFormatProvider? formatProvider)
 		{
-			//return NumberFormatter.FloatToString<Octo, UInt256, FloatingDecimal>(in this, format, formatProvider);
 			throw new NotImplementedException();
+			return NumberFormatter.FloatToString<Octo, UInt256>(in this, format is null ? ReadOnlySpan<char>.Empty : format, formatProvider);
 		}
 
 		/// <inheritdoc/>
 		public bool TryFormat(Span<char> destination, out int charsWritten, ReadOnlySpan<char> format, IFormatProvider? provider)
 		{
 			throw new NotImplementedException();
+			return NumberFormatter.TryFormatFloat<Octo, UInt256, Utf16Char>(in this, Utf16Char.CastFromCharSpan(destination), out charsWritten, format, provider);
 		}
 
 		/// <inheritdoc/>
 		public bool TryFormat(Span<byte> utf8Destination, out int bytesWritten, ReadOnlySpan<char> format, IFormatProvider? provider)
 		{
 			throw new NotImplementedException();
+			return NumberFormatter.TryFormatFloat<Octo, UInt256, Utf8Char>(in this, Utf8Char.CastFromByteSpan(utf8Destination), out bytesWritten, format, provider);
 		}
 
 		bool IFloatingPoint<Octo>.TryWriteExponentBigEndian(Span<byte> destination, out int bytesWritten)
