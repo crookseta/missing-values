@@ -11,9 +11,11 @@ using System.Text.Json.Serialization;
 
 namespace MissingValues
 {
+	/// <summary>
+	/// Represents a 256-bit unsigned integer.
+	/// </summary>
 	[StructLayout(LayoutKind.Sequential)]
 	[JsonConverter(typeof(NumberConverter.UInt256Converter))]
-	[CLSCompliant(false)]
 	[DebuggerDisplay($"{{{nameof(ToString)}(),nq}}")]
 	public readonly partial struct UInt256
 	{
@@ -34,7 +36,13 @@ namespace MissingValues
 		internal UInt128 Lower => new UInt128(_p1, _p0);
 		internal UInt128 Upper => new UInt128(_p3, _p2);
 
-
+		/// <summary>
+		/// Initializes a new instance of the <see cref="UInt256" /> struct.
+		/// </summary>
+		/// <param name="u1">The first 64-bits of the 256-bit value.</param>
+		/// <param name="u2">The second 64-bits of the 256-bit value.</param>
+		/// <param name="l1">The third 64-bits of the 256-bit value.</param>
+		/// <param name="l2">The fourth 64-bits of the 256-bit value.</param>
 		public UInt256(ulong u1, ulong u2, ulong l1, ulong l2)
 		{
 			_p3 = u1;
@@ -62,16 +70,20 @@ namespace MissingValues
 			_p3 = (ulong)(upper >> 64);
 		}
 
+
+		/// <inheritdoc/>
 		public override string ToString()
 		{
 			return ToString("D", CultureInfo.CurrentCulture);
 		}
 
+		/// <inheritdoc/>
 		public override bool Equals(object? obj)
 		{
 			return obj is UInt256 @int && Equals(@int);
 		}
 
+		/// <inheritdoc/>
 		public override int GetHashCode()
 		{
 			return HashCode.Combine(_p3, _p2, _p1, _p0);

@@ -23,20 +23,26 @@ namespace MissingValues
 		IUnsignedNumber<UInt256>,
 		IFormattableUnsignedInteger<UInt256, Int256>
 	{
+		/// <inheritdoc/>
 		public static UInt256 One => new(1);
 
-		public static int Radix => 2;
+		static int INumberBase<UInt256>.Radix => 2;
 
+		/// <inheritdoc/>
 		public static UInt256 Zero => default;
 
+		/// <inheritdoc/>
 		public static UInt256 AdditiveIdentity => default;
 
+		/// <inheritdoc/>
 		public static UInt256 MultiplicativeIdentity => One;
 
 		// 115792089237316195423570985008687907853269984665640564039457584007913129639935
+		/// <inheritdoc/>
 		public static UInt256 MaxValue => new(UInt128.MaxValue, UInt128.MaxValue);
 
-		public static UInt256 MinValue => new(0);
+		/// <inheritdoc/>
+		public static UInt256 MinValue => default;
 
 		static UInt256 IFormattableInteger<UInt256>.Two => new(0x2);
 
@@ -68,6 +74,7 @@ namespace MissingValues
 
 		static UInt256 INumberBase<UInt256>.Abs(UInt256 value) => value;
 
+		/// <inheritdoc/>
 		public static UInt256 Clamp(UInt256 value, UInt256 min, UInt256 max)
 		{
 			if (min > max)
@@ -87,6 +94,7 @@ namespace MissingValues
 			return value;
 		}
 
+		/// <inheritdoc/>
 		public int CompareTo(UInt256 other)
 		{
 			if (this < other) return -1;
@@ -94,6 +102,7 @@ namespace MissingValues
 			else return 0;
 		}
 
+		/// <inheritdoc/>
 		public int CompareTo(object? obj)
 		{
 			if(obj is UInt256 value)
@@ -108,6 +117,7 @@ namespace MissingValues
 			return default;
 		}
 
+		/// <inheritdoc/>
 		public static UInt256 CreateChecked<TOther>(TOther value)
 			where TOther : INumberBase<TOther>
 		{
@@ -125,6 +135,7 @@ namespace MissingValues
 			return result;
 		}
 
+		/// <inheritdoc/>
 		public static UInt256 CreateSaturating<TOther>(TOther value)
 			where TOther : INumberBase<TOther>
 		{
@@ -142,6 +153,7 @@ namespace MissingValues
 			return result;
 		}
 
+		/// <inheritdoc/>
 		public static UInt256 CreateTruncating<TOther>(TOther value)
 			where TOther : INumberBase<TOther>
 		{
@@ -159,18 +171,21 @@ namespace MissingValues
 			return result;
 		}
 
+		/// <inheritdoc/>
 		public static (UInt256 Quotient, UInt256 Remainder) DivRem(UInt256 left, UInt256 right)
 		{
 			UInt256 quotient = left / right;
 			return (quotient, (left - (quotient * right)));
 		}
 
+		/// <inheritdoc/>
 		public bool Equals(UInt256 other) => this == other;
 
 		static bool INumberBase<UInt256>.IsCanonical(UInt256 value) => true;
 
 		static bool INumberBase<UInt256>.IsComplexNumber(UInt256 value) => false;
 
+		/// <inheritdoc/>
 		public static bool IsEvenInteger(UInt256 value) => (value._p0 & 1) == 0;
 
 		static bool INumberBase<UInt256>.IsFinite(UInt256 value) => true;
@@ -189,12 +204,14 @@ namespace MissingValues
 
 		static bool INumberBase<UInt256>.IsNormal(UInt256 value) => value != UInt128.Zero;
 
+		/// <inheritdoc/>
 		public static bool IsOddInteger(UInt256 value) => (value._p0 & 1) != 0;
 
 		static bool INumberBase<UInt256>.IsPositive(UInt256 value) => true;
 
 		static bool INumberBase<UInt256>.IsPositiveInfinity(UInt256 value) => false;
 
+		/// <inheritdoc/>
 		public static bool IsPow2(UInt256 value) => PopCount(in value) == 1;
 
 		static bool INumberBase<UInt256>.IsRealNumber(UInt256 value) => true;
@@ -203,6 +220,7 @@ namespace MissingValues
 
 		static bool INumberBase<UInt256>.IsZero(UInt256 value) => value == Zero;
 
+		/// <inheritdoc/>
 		public static UInt256 LeadingZeroCount(UInt256 value)
 		{
 			if (value.Upper == UInt128.Zero)
@@ -212,6 +230,7 @@ namespace MissingValues
 			return UInt128.LeadingZeroCount(value.Upper);
 		}
 
+		/// <inheritdoc/>
 		public static UInt256 Log2(UInt256 value)
 		{
 			if(value.Upper == 0)
@@ -221,6 +240,7 @@ namespace MissingValues
 			return 128 + UInt128.Log2(value.Upper);
 		}
 
+		/// <inheritdoc/>
 		public static UInt256 Max(UInt256 x, UInt256 y) => (x >= y) ? x : y;
 
 		static UInt256 INumber<UInt256>.MaxNumber(UInt256 x, UInt256 y) => Max(x, y);
@@ -229,6 +249,7 @@ namespace MissingValues
 
 		static UInt256 INumberBase<UInt256>.MaxMagnitudeNumber(UInt256 x, UInt256 y) => Max(x, y);
 
+		/// <inheritdoc/>
 		public static UInt256 Min(UInt256 x, UInt256 y) => (x <= y) ? x : y;
 
 		static UInt256 INumber<UInt256>.MinNumber(UInt256 x, UInt256 y) => Min(x, y);
@@ -237,6 +258,7 @@ namespace MissingValues
 
 		static UInt256 INumberBase<UInt256>.MinMagnitudeNumber(UInt256 x, UInt256 y) => Min(x, y);
 
+		/// <inheritdoc/>
 		public static UInt256 Parse(ReadOnlySpan<char> s, NumberStyles style, IFormatProvider? provider)
 		{
 			var status = NumberParser.TryParseToUnsigned(Utf16Char.CastFromCharSpan(s), style, provider, out UInt256 output);
@@ -247,8 +269,10 @@ namespace MissingValues
 			return output;
 		}
 
+		/// <inheritdoc/>
 		public static UInt256 Parse(string s, NumberStyles style, IFormatProvider? provider)
 		{
+			ArgumentNullException.ThrowIfNull(s);
 			var status = NumberParser.TryParseToUnsigned(Utf16Char.CastFromCharSpan(s), style, provider, out UInt256 output);
 			if (!status)
 			{
@@ -257,6 +281,7 @@ namespace MissingValues
 			return output;
 		}
 
+		/// <inheritdoc/>
 		public static UInt256 Parse(ReadOnlySpan<char> s, IFormatProvider? provider)
 		{
 			var status = NumberParser.TryParseToUnsigned(Utf16Char.CastFromCharSpan(s), NumberStyles.Integer, provider, out UInt256 output);
@@ -267,8 +292,10 @@ namespace MissingValues
 			return output;
 		}
 
+		/// <inheritdoc/>
 		public static UInt256 Parse(string s, IFormatProvider? provider)
 		{
+			ArgumentNullException.ThrowIfNull(s);
 			var status = NumberParser.TryParseToUnsigned(Utf16Char.CastFromCharSpan(s), NumberStyles.Integer, provider, out UInt256 output);
 			if (!status)
 			{
@@ -277,6 +304,7 @@ namespace MissingValues
 			return output;
 		}
 
+		/// <inheritdoc/>
 		public static UInt256 Parse(ReadOnlySpan<byte> utf8Text, NumberStyles style, IFormatProvider? provider)
 		{
 			var status = NumberParser.TryParseToUnsigned(Utf8Char.CastFromByteSpan(utf8Text), style, provider, out UInt256 output);
@@ -286,6 +314,7 @@ namespace MissingValues
 			}
 			return output;
 		}
+		/// <inheritdoc/>
 		public static UInt256 Parse(ReadOnlySpan<byte> utf8Text, IFormatProvider? provider)
 		{
 			var status = NumberParser.TryParseToUnsigned(Utf8Char.CastFromByteSpan(utf8Text), NumberStyles.Integer, provider, out UInt256 output);
@@ -299,21 +328,25 @@ namespace MissingValues
 		private static int PopCount(in UInt256 value) =>
 			BitOperations.PopCount(value._p0) + BitOperations.PopCount(value._p1) + BitOperations.PopCount(value._p2) + BitOperations.PopCount(value._p3);
 
+		/// <inheritdoc/>
 		public static UInt256 PopCount(UInt256 value)
 		{
 			return (UInt256)(BitOperations.PopCount(value._p0) + BitOperations.PopCount(value._p1) + BitOperations.PopCount(value._p2) + BitOperations.PopCount(value._p3));
 		}
 
+		/// <inheritdoc/>
 		public static UInt256 RotateLeft(UInt256 value, int rotateAmount)
 		{
 			return (value << rotateAmount) | (value >>> (256 - rotateAmount));
 		}
 
+		/// <inheritdoc/>
 		public static UInt256 RotateRight(UInt256 value, int rotateAmount)
 		{
 			return (value >>> rotateAmount) | (value << (256 - rotateAmount));
 		}
 
+		/// <inheritdoc/>
 		public static UInt256 TrailingZeroCount(UInt256 value)
 		{
 			if (value.Lower == 0)
@@ -323,6 +356,7 @@ namespace MissingValues
 			return UInt128.TrailingZeroCount(value.Lower);
 		}
 
+		/// <inheritdoc/>
 		public static bool TryParse(ReadOnlySpan<char> s, NumberStyles style, IFormatProvider? provider, [MaybeNullWhen(false)] out UInt256 result)
 		{
 			if (s.Length == 0 || s.IsWhiteSpace())
@@ -334,6 +368,7 @@ namespace MissingValues
 			return NumberParser.TryParseToUnsigned(Utf16Char.CastFromCharSpan(s), style, provider, out result);
 		}
 
+		/// <inheritdoc/>
 		public static bool TryParse([NotNullWhen(true)] string? s, NumberStyles style, IFormatProvider? provider, [MaybeNullWhen(false)] out UInt256 result)
 		{
 			if (string.IsNullOrWhiteSpace(s))
@@ -345,6 +380,7 @@ namespace MissingValues
 			return NumberParser.TryParseToUnsigned(Utf16Char.CastFromCharSpan(s), style, provider, out result);
 		}
 
+		/// <inheritdoc/>
 		public static bool TryParse(ReadOnlySpan<char> s, IFormatProvider? provider, [MaybeNullWhen(false)] out UInt256 result)
 		{
 			if (s.Length == 0 || s.IsWhiteSpace())
@@ -356,6 +392,7 @@ namespace MissingValues
 			return NumberParser.TryParseToUnsigned(Utf16Char.CastFromCharSpan(s), NumberStyles.Integer, provider, out result);
 		}
 
+		/// <inheritdoc/>
 		public static bool TryParse([NotNullWhen(true)] string? s, IFormatProvider? provider, [MaybeNullWhen(false)] out UInt256 result)
 		{
 			if (string.IsNullOrWhiteSpace(s))
@@ -367,6 +404,7 @@ namespace MissingValues
 			return NumberParser.TryParseToUnsigned(Utf16Char.CastFromCharSpan(s), NumberStyles.Integer, provider, out result);
 		}
 
+		/// <inheritdoc/>
 		public static bool TryParse(ReadOnlySpan<byte> utf8Text, NumberStyles style, IFormatProvider? provider, [MaybeNullWhen(false)] out UInt256 result)
 		{
 			if (utf8Text.Length == 0 || !utf8Text.ContainsAnyExcept((byte)' '))
@@ -378,6 +416,7 @@ namespace MissingValues
 			return NumberParser.TryParseToUnsigned(Utf8Char.CastFromByteSpan(utf8Text), style, provider, out result);
 		}
 
+		/// <inheritdoc/>
 		public static bool TryParse(ReadOnlySpan<byte> utf8Text, IFormatProvider? provider, [MaybeNullWhen(false)] out UInt256 result)
 		{
 			if (utf8Text.Length == 0 || !utf8Text.ContainsAnyExcept((byte)' '))
@@ -389,7 +428,7 @@ namespace MissingValues
 			return NumberParser.TryParseToUnsigned(Utf8Char.CastFromByteSpan(utf8Text), NumberStyles.Integer, provider, out result);
 		}
 
-		public static bool TryReadBigEndian(ReadOnlySpan<byte> source, bool isUnsigned, out UInt256 value)
+		static bool IBinaryInteger<UInt256>.TryReadBigEndian(ReadOnlySpan<byte> source, bool isUnsigned, out UInt256 value)
 		{
 			UInt256 result = default;
 
@@ -445,7 +484,7 @@ namespace MissingValues
 			return true;
 		}
 
-		public static bool TryReadLittleEndian(ReadOnlySpan<byte> source, bool isUnsigned, out UInt256 value)
+		static bool IBinaryInteger<UInt256>.TryReadLittleEndian(ReadOnlySpan<byte> source, bool isUnsigned, out UInt256 value)
 		{
 			UInt256 result = default;
 
@@ -712,27 +751,30 @@ namespace MissingValues
 			return converted;
 		}
 
-		public int GetByteCount()
+		int IBinaryInteger<UInt256>.GetByteCount()
 		{
 			return Size;
 		}
 
-		public int GetShortestBitLength()
+		int IBinaryInteger<UInt256>.GetShortestBitLength()
 		{
 			UInt256 value = this;
 			return (Size * 8) - BitHelper.LeadingZeroCount(value);
 		}
 
+		/// <inheritdoc/>
 		public string ToString([StringSyntax(StringSyntaxAttribute.NumericFormat)] string? format, IFormatProvider? formatProvider)
 		{
 			return NumberFormatter.FormatUnsignedInteger<UInt256, Int256>(in this, format, formatProvider);
 		}
 
+		/// <inheritdoc/>
 		public bool TryFormat(Span<char> destination, out int charsWritten, [StringSyntax(StringSyntaxAttribute.NumericFormat)] ReadOnlySpan<char> format, IFormatProvider? provider)
 		{
 			return NumberFormatter.TryFormatUnsignedInteger<UInt256, Int256, Utf16Char>(in this, Utf16Char.CastFromCharSpan(destination), out charsWritten, format, provider);
 		}
 
+		/// <inheritdoc/>
 		public bool TryFormat(Span<byte> utf8Destination, out int bytesWritten, [StringSyntax(StringSyntaxAttribute.NumericFormat)] ReadOnlySpan<char> format, IFormatProvider? provider)
 		{
 			return NumberFormatter.TryFormatUnsignedInteger<UInt256, Int256, Utf8Char>(in this, Utf8Char.CastFromByteSpan(utf8Destination), out bytesWritten, format, provider);

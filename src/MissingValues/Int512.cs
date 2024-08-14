@@ -13,6 +13,9 @@ using System.Threading.Tasks;
 
 namespace MissingValues
 {
+	/// <summary>
+	/// Represents a 512-bit signed integer.
+	/// </summary>
 	[StructLayout(LayoutKind.Sequential)]
 	[JsonConverter(typeof(NumberConverter.Int512Converter))]
 	[DebuggerDisplay($"{{{nameof(ToString)}(),nq}}")]
@@ -54,9 +57,18 @@ namespace MissingValues
 			_p6 = 0;
 			_p7 = 0;
 		}
+		/// <summary>
+		/// Initializes a new instance of the <see cref="Int512"/> struct.
+		/// </summary>
+		/// <param name="lower">The lower 256-bits of the 512-bit value.</param>
 		public Int512(UInt256 lower) : this(UInt256.Zero, lower)
 		{
 		}
+		/// <summary>
+		/// Initializes a new instance of the <see cref="Int512"/> struct.
+		/// </summary>
+		/// <param name="upper">The upper 256-bits of the 512-bit value.</param>
+		/// <param name="lower">The lower 256-bits of the 512-bit value.</param>
 		public Int512(UInt256 upper, UInt256 lower)
 		{
 			lower.GetLowerParts(out _p1, out _p0);
@@ -64,6 +76,13 @@ namespace MissingValues
 			upper.GetLowerParts(out _p5, out _p4);
 			upper.GetUpperParts(out _p7, out _p6);
 		}
+		/// <summary>
+		/// Initializes a new instance of the <see cref="Int512"/> struct.
+		/// </summary>
+		/// <param name="uu">The first 128-bits of the 512-bit value.</param>
+		/// <param name="ul">The second 128-bits of the 512-bit value.</param>
+		/// <param name="lu">The third 128-bits of the 512-bit value.</param>
+		/// <param name="ll">The fourth 128-bits of the 512-bit value.</param>
 		public Int512(UInt128 uu, UInt128 ul, UInt128 lu, UInt128 ll)
 		{
 			_p0 = (ulong)ll;
@@ -75,6 +94,17 @@ namespace MissingValues
 			_p6 = (ulong)uu;
 			_p7 = (ulong)(uu >>> 64);
 		}
+		/// <summary>
+		/// Initializes a new instance of the <see cref="Int512"/> struct.
+		/// </summary>
+		/// <param name="uuu">The first 64-bits of the 512-bit value.</param>
+		/// <param name="uul">The second 64-bits of the 512-bit value.</param>
+		/// <param name="ulu">The third 64-bits of the 512-bit value.</param>
+		/// <param name="ull">The fourth 64-bits of the 512-bit value.</param>
+		/// <param name="luu">The fifth 64-bits of the 512-bit value.</param>
+		/// <param name="lul">The sixth 64-bits of the 512-bit value.</param>
+		/// <param name="llu">The seventh 64-bits of the 512-bit value.</param>
+		/// <param name="lll">The eighth 64-bits of the 512-bit value.</param>
 		public Int512(ulong uuu, ulong uul, ulong ulu, ulong ull, ulong luu, ulong lul, ulong llu, ulong lll)
 		{
 			_p0 = lll;
@@ -87,16 +117,19 @@ namespace MissingValues
 			_p7 = uuu;
 		}
 
+		/// <inheritdoc/>
 		public override bool Equals([NotNullWhen(true)] object? obj)
 		{
 			return obj is Int512 @int && Equals(@int);
 		}
 
+		/// <inheritdoc/>
 		public override int GetHashCode()
 		{
 			return HashCode.Combine(Upper, Lower);
 		}
 
+		/// <inheritdoc/>
 		public override string? ToString()
 		{
 			return ToString("D", CultureInfo.CurrentCulture);

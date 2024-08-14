@@ -20,20 +20,26 @@ namespace MissingValues
 		IUnsignedNumber<UInt512>,
 		IFormattableUnsignedInteger<UInt512, Int512>
 	{
+		/// <inheritdoc/>
 		public static UInt512 One => new UInt512(0, 0, 0, 0, 0, 0, 0, 1);
 
 		static int INumberBase<UInt512>.Radix => 2;
 
+		/// <inheritdoc/>
 		public static UInt512 Zero => default;
 
+		/// <inheritdoc/>
 		public static UInt512 AdditiveIdentity => default;
 
+		/// <inheritdoc/>
 		public static UInt512 MultiplicativeIdentity => One;
 
+		/// <inheritdoc/>
 		public static UInt512 MaxValue => new UInt512(
 			   0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF,
 			   0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF);
 
+		/// <inheritdoc/>
 		public static UInt512 MinValue => default;
 
 		static UInt512 IFormattableUnsignedInteger<UInt512, Int512>.SignedMaxMagnitude => new UInt512(
@@ -68,6 +74,7 @@ namespace MissingValues
 
 		static UInt512 INumberBase<UInt512>.Abs(UInt512 value) => value;
 
+		/// <inheritdoc/>
 		public static UInt512 Clamp(UInt512 value, UInt512 min, UInt512 max)
 		{
 			if (min > max)
@@ -87,6 +94,7 @@ namespace MissingValues
 			return value;
 		}
 
+		/// <inheritdoc/>
 		public int CompareTo(object? obj)
 		{
 			if (obj is UInt512 value)
@@ -101,6 +109,7 @@ namespace MissingValues
 			return default;
 		}
 
+		/// <inheritdoc/>
 		public int CompareTo(UInt512 other)
 		{
 			if (this < other) return -1;
@@ -108,6 +117,7 @@ namespace MissingValues
 			else return 0;
 		}
 
+		/// <inheritdoc/>
 		public static UInt512 CreateChecked<TOther>(TOther value)
 			where TOther : INumberBase<TOther>
 		{
@@ -125,6 +135,7 @@ namespace MissingValues
 			return result;
 		}
 
+		/// <inheritdoc/>
 		public static UInt512 CreateSaturating<TOther>(TOther value)
 			where TOther : INumberBase<TOther>
 		{
@@ -142,6 +153,7 @@ namespace MissingValues
 			return result;
 		}
 
+		/// <inheritdoc/>
 		public static UInt512 CreateTruncating<TOther>(TOther value)
 			where TOther : INumberBase<TOther>
 		{
@@ -159,20 +171,22 @@ namespace MissingValues
 			return result;
 		}
 
+		/// <inheritdoc/>
 		public static (UInt512 Quotient, UInt512 Remainder) DivRem(UInt512 left, UInt512 right)
 		{
 			UInt512 quotient = left / right;
 			return (quotient, (left - (quotient * right)));
 		}
 
+		/// <inheritdoc/>
 		public bool Equals(UInt512 other) => this == other;
 
-		public int GetByteCount()
+		int IBinaryInteger<UInt512>.GetByteCount()
 		{
 			return Size;
 		}
 
-		public int GetShortestBitLength()
+		int IBinaryInteger<UInt512>.GetShortestBitLength()
 		{
 			UInt512 value = this;
 			return (Size * 8) - BitHelper.LeadingZeroCount(value);
@@ -188,6 +202,7 @@ namespace MissingValues
 			return false;
 		}
 
+		/// <inheritdoc/>
 		public static bool IsEvenInteger(UInt512 value)
 		{
 			return (value._p0 & 1) == 0;
@@ -233,6 +248,7 @@ namespace MissingValues
 			return value != Zero;
 		}
 
+		/// <inheritdoc/>
 		public static bool IsOddInteger(UInt512 value)
 		{
 			return (value._p0 & UInt256.One) != UInt256.Zero;
@@ -248,6 +264,7 @@ namespace MissingValues
 			return false;
 		}
 
+		/// <inheritdoc/>
 		public static bool IsPow2(UInt512 value)
 		{
 			return PopCount(in value) == 1;
@@ -268,6 +285,7 @@ namespace MissingValues
 			return value == Zero;
 		}
 
+		/// <inheritdoc/>
 		public static UInt512 LeadingZeroCount(UInt512 value)
 		{
 			if (value.Upper == UInt256.Zero)
@@ -278,6 +296,7 @@ namespace MissingValues
 			return UInt256.LeadingZeroCount(value.Upper);
 		}
 
+		/// <inheritdoc/>
 		public static UInt512 Log2(UInt512 value)
 		{
 			if (value.Upper == UInt256.Zero)
@@ -287,22 +306,27 @@ namespace MissingValues
 			return 256 + UInt256.Log2(value.Upper);
 		}
 
+		/// <inheritdoc/>
 		public static UInt512 Max(UInt512 x, UInt512 y) => (x >= y) ? x : y;
 
 		static UInt512 INumber<UInt512>.MaxNumber(UInt512 x, UInt512 y) => Max(x, y);
 
+		/// <inheritdoc/>
 		public static UInt512 MaxMagnitude(UInt512 x, UInt512 y) => Max(x, y);
 
-		public static UInt512 MaxMagnitudeNumber(UInt512 x, UInt512 y) => Max(x, y);
+		static UInt512 INumberBase<UInt512>.MaxMagnitudeNumber(UInt512 x, UInt512 y) => Max(x, y);
 
+		/// <inheritdoc/>
 		public static UInt512 Min(UInt512 x, UInt512 y) => (x <= y) ? x : y;
 
 		static UInt512 INumber<UInt512>.MinNumber(UInt512 x, UInt512 y) => Min(x, y);
 
+		/// <inheritdoc/>
 		public static UInt512 MinMagnitude(UInt512 x, UInt512 y) => Min(x, y);
 
-		public static UInt512 MinMagnitudeNumber(UInt512 x, UInt512 y) => Min(x, y);
+		static UInt512 INumberBase<UInt512>.MinMagnitudeNumber(UInt512 x, UInt512 y) => Min(x, y);
 
+		/// <inheritdoc/>
 		public static UInt512 Parse(ReadOnlySpan<char> s, NumberStyles style, IFormatProvider? provider)
 		{
 			var status = NumberParser.TryParseToUnsigned(Utf16Char.CastFromCharSpan(s), style, provider, out UInt512 output);
@@ -313,8 +337,10 @@ namespace MissingValues
 			return output;
 		}
 
+		/// <inheritdoc/>
 		public static UInt512 Parse(string s, NumberStyles style, IFormatProvider? provider)
 		{
+			ArgumentNullException.ThrowIfNull(s);
 			var status = NumberParser.TryParseToUnsigned(Utf16Char.CastFromCharSpan(s), style, provider, out UInt512 output);
 			if (!status)
 			{
@@ -323,6 +349,7 @@ namespace MissingValues
 			return output;
 		}
 
+		/// <inheritdoc/>
 		public static UInt512 Parse(ReadOnlySpan<char> s, IFormatProvider? provider)
 		{
 			var status = NumberParser.TryParseToUnsigned(Utf16Char.CastFromCharSpan(s), NumberStyles.Integer, provider, out UInt512 output);
@@ -333,8 +360,10 @@ namespace MissingValues
 			return output;
 		}
 
+		/// <inheritdoc/>
 		public static UInt512 Parse(string s, IFormatProvider? provider)
 		{
+			ArgumentNullException.ThrowIfNull(s);
 			var status = NumberParser.TryParseToUnsigned(Utf16Char.CastFromCharSpan(s), NumberStyles.Integer, provider, out UInt512 output);
 			if (!status)
 			{
@@ -343,6 +372,7 @@ namespace MissingValues
 			return output;
 		}
 
+		/// <inheritdoc/>
 		public static UInt512 Parse(ReadOnlySpan<byte> utf8Text, NumberStyles style, IFormatProvider? provider)
 		{
 			var status = NumberParser.TryParseToUnsigned(Utf8Char.CastFromByteSpan(utf8Text), style, provider, out UInt512 output);
@@ -352,6 +382,7 @@ namespace MissingValues
 			}
 			return output;
 		}
+		/// <inheritdoc/>
 		public static UInt512 Parse(ReadOnlySpan<byte> utf8Text, IFormatProvider? provider)
 		{
 			var status = NumberParser.TryParseToUnsigned(Utf8Char.CastFromByteSpan(utf8Text), NumberStyles.Integer, provider, out UInt512 output);
@@ -366,22 +397,26 @@ namespace MissingValues
 			BitOperations.PopCount(value._p0) + BitOperations.PopCount(value._p1) + BitOperations.PopCount(value._p2) + BitOperations.PopCount(value._p3)
 			+ BitOperations.PopCount(value._p4) + BitOperations.PopCount(value._p5) + BitOperations.PopCount(value._p6) + BitOperations.PopCount(value._p7);
 
+		/// <inheritdoc/>
 		public static UInt512 PopCount(UInt512 value)
 		{
 			return (UInt512)(BitOperations.PopCount(value._p0) + BitOperations.PopCount(value._p1) + BitOperations.PopCount(value._p2) + BitOperations.PopCount(value._p3)
 			+ BitOperations.PopCount(value._p4) + BitOperations.PopCount(value._p5) + BitOperations.PopCount(value._p6) + BitOperations.PopCount(value._p7));
 		}
 
+		/// <inheritdoc/>
 		public static UInt512 RotateLeft(UInt512 value, int rotateAmount)
 		{
 			return (value << rotateAmount) | (value >>> (512 - rotateAmount));
 		}
 
+		/// <inheritdoc/>
 		public static UInt512 RotateRight(UInt512 value, int rotateAmount)
 		{
 			return (value >>> rotateAmount) | (value << (512 - rotateAmount));
 		}
 
+		/// <inheritdoc/>
 		public static UInt512 TrailingZeroCount(UInt512 value)
 		{
 			if (value.Lower == 0)
@@ -391,6 +426,7 @@ namespace MissingValues
 			return UInt256.TrailingZeroCount(value.Lower);
 		}
 
+		/// <inheritdoc/>
 		public static bool TryParse(ReadOnlySpan<char> s, NumberStyles style, IFormatProvider? provider, [MaybeNullWhen(false)] out UInt512 result)
 		{
 			if (s.Length == 0 || s.IsWhiteSpace())
@@ -402,6 +438,7 @@ namespace MissingValues
 			return NumberParser.TryParseToUnsigned(Utf16Char.CastFromCharSpan(s), style, provider, out result);
 		}
 
+		/// <inheritdoc/>
 		public static bool TryParse([NotNullWhen(true)] string? s, NumberStyles style, IFormatProvider? provider, [MaybeNullWhen(false)] out UInt512 result)
 		{
 			if (string.IsNullOrWhiteSpace(s))
@@ -413,6 +450,7 @@ namespace MissingValues
 			return NumberParser.TryParseToUnsigned(Utf16Char.CastFromCharSpan(s), style, provider, out result);
 		}
 
+		/// <inheritdoc/>
 		public static bool TryParse(ReadOnlySpan<char> s, IFormatProvider? provider, [MaybeNullWhen(false)] out UInt512 result)
 		{
 			if (s.Length == 0 || s.IsWhiteSpace())
@@ -424,6 +462,7 @@ namespace MissingValues
 			return NumberParser.TryParseToUnsigned(Utf16Char.CastFromCharSpan(s), NumberStyles.Integer, provider, out result);
 		}
 
+		/// <inheritdoc/>
 		public static bool TryParse([NotNullWhen(true)] string? s, IFormatProvider? provider, [MaybeNullWhen(false)] out UInt512 result)
 		{
 			if (string.IsNullOrWhiteSpace(s))
@@ -435,6 +474,7 @@ namespace MissingValues
 			return NumberParser.TryParseToUnsigned(Utf16Char.CastFromCharSpan(s), NumberStyles.Integer, provider, out result);
 		}
 
+		/// <inheritdoc/>
 		public static bool TryParse(ReadOnlySpan<byte> utf8Text, NumberStyles style, IFormatProvider? provider, [MaybeNullWhen(false)] out UInt512 result)
 		{
 			if (utf8Text.Length == 0 || !utf8Text.ContainsAnyExcept((byte)' '))
@@ -445,6 +485,7 @@ namespace MissingValues
 
 			return NumberParser.TryParseToUnsigned(Utf8Char.CastFromByteSpan(utf8Text), style, provider, out result);
 		}
+		/// <inheritdoc/>
 		public static bool TryParse(ReadOnlySpan<byte> utf8Text, IFormatProvider? provider, [MaybeNullWhen(false)] out UInt512 result)
 		{
 			if (utf8Text.Length == 0 || !utf8Text.ContainsAnyExcept((byte)' '))
@@ -456,7 +497,7 @@ namespace MissingValues
 			return NumberParser.TryParseToUnsigned(Utf8Char.CastFromByteSpan(utf8Text), NumberStyles.Integer, provider, out result);
 		}
 
-		public static bool TryReadBigEndian(ReadOnlySpan<byte> source, bool isUnsigned, out UInt512 value)
+		static bool IBinaryInteger<UInt512>.TryReadBigEndian(ReadOnlySpan<byte> source, bool isUnsigned, out UInt512 value)
 		{
 			UInt512 result = default;
 
@@ -512,7 +553,7 @@ namespace MissingValues
 			return true;
 		}
 
-		public static bool TryReadLittleEndian(ReadOnlySpan<byte> source, bool isUnsigned, out UInt512 value)
+		static bool IBinaryInteger<UInt512>.TryReadLittleEndian(ReadOnlySpan<byte> source, bool isUnsigned, out UInt512 value)
 		{
 			UInt512 result = default;
 
@@ -591,6 +632,7 @@ namespace MissingValues
 			throw new FormatException();
 		}
 
+		/// <inheritdoc/>
 		public string ToString([StringSyntax(StringSyntaxAttribute.NumericFormat)] string? format, IFormatProvider? formatProvider)
 		{
 			return NumberFormatter.FormatUnsignedInteger<UInt512, Int512>(in this, format, formatProvider);
@@ -803,11 +845,13 @@ namespace MissingValues
 			return converted;
 		}
 
+		/// <inheritdoc/>
 		public bool TryFormat(Span<char> destination, out int charsWritten, [StringSyntax(StringSyntaxAttribute.NumericFormat)] ReadOnlySpan<char> format, IFormatProvider? provider)
 		{
 			return NumberFormatter.TryFormatUnsignedInteger<UInt512, Int512, Utf16Char>(in this, Utf16Char.CastFromCharSpan(destination), out charsWritten, format, provider);
 		}
 
+		/// <inheritdoc/>
 		public bool TryFormat(Span<byte> utf8Destination, out int bytesWritten, [StringSyntax(StringSyntaxAttribute.NumericFormat)] ReadOnlySpan<char> format, IFormatProvider? provider)
 		{
 			return NumberFormatter.TryFormatUnsignedInteger<UInt512, Int512, Utf8Char>(in this, Utf8Char.CastFromByteSpan(utf8Destination), out bytesWritten, format, provider);
@@ -939,11 +983,13 @@ namespace MissingValues
 			return digits;
 		}
 
+		/// <inheritdoc/>
 		public static UInt512 operator +(in UInt512 value)
 		{
 			return value;
 		}
 
+		/// <inheritdoc/>
 		public static UInt512 operator +(in UInt512 left, in UInt512 right)
 		{
 			// For unsigned addition, we can detect overflow by checking `(x + y) < x`
@@ -975,6 +1021,7 @@ namespace MissingValues
 			return new UInt512(part7, part6, part5, part4, part3, part2, part1, part0);
 		}
 
+		/// <inheritdoc/>
 		public static UInt512 operator checked +(in UInt512 left, in UInt512 right)
 		{
 			ulong part0 = left._p0 + right._p0;
@@ -1003,16 +1050,19 @@ namespace MissingValues
 			return new UInt512(part7, part6, part5, part4, part3, part2, part1, part0);
 		}
 
+		/// <inheritdoc/>
 		public static UInt512 operator -(in UInt512 value)
 		{
 			return Zero - value;
 		}
 		
+		/// <inheritdoc/>
 		public static UInt512 operator checked -(in UInt512 value)
 		{
 			return checked(Zero - value);
 		}
 
+		/// <inheritdoc/>
 		public static UInt512 operator -(in UInt512 left, in UInt512 right)
 		{
 			// For unsigned subtract, we can detect overflow by checking `(x - y) > x`
@@ -1043,7 +1093,8 @@ namespace MissingValues
 
 			return new UInt512(part7, part6, part5, part4, part3, part2, part1, part0);
 		}
-		
+
+		/// <inheritdoc/>
 		public static UInt512 operator checked -(in UInt512 left, in UInt512 right)
 		{
 			// For unsigned subtract, we can detect overflow by checking `(x - y) > x`
@@ -1075,31 +1126,37 @@ namespace MissingValues
 			return new UInt512(part7, part6, part5, part4, part3, part2, part1, part0);
 		}
 
+		/// <inheritdoc/>
 		public static UInt512 operator ~(in UInt512 value)
 		{
 			return new(~value._p7, ~value._p6, ~value._p5, ~value._p4, ~value._p3, ~value._p2, ~value._p1, ~value._p0);
 		}
 
+		/// <inheritdoc/>
 		public static UInt512 operator ++(in UInt512 value)
 		{
 			return value + One;
 		}
 		
+		/// <inheritdoc/>
 		public static UInt512 operator checked ++(in UInt512 value)
 		{
 			return checked(value + One);
 		}
 
+		/// <inheritdoc/>
 		public static UInt512 operator --(in UInt512 value)
 		{
 			return value - One;
 		}
 		
+		/// <inheritdoc/>
 		public static UInt512 operator checked --(in UInt512 value)
 		{
 			return checked(value - One);
 		}
 
+		/// <inheritdoc/>
 		public static UInt512 operator *(in UInt512 left, in UInt512 right)
 		{
 			UInt256 upper = UInt256.BigMul(left.Lower, right.Lower, out UInt256 lower);
@@ -1107,6 +1164,7 @@ namespace MissingValues
 			return new UInt512(upper, lower);
 		}
 		
+		/// <inheritdoc/>
 		public static UInt512 operator checked *(in UInt512 left, in UInt512 right)
 		{
 			UInt512 upper = BigMul(left, right, out UInt512 lower);
@@ -1119,6 +1177,7 @@ namespace MissingValues
 			return lower;
 		}
 
+		/// <inheritdoc/>
 		public static UInt512 operator /(in UInt512 left, in UInt512 right)
 		{
 			if (right._p7 == 0 && right._p6 == 0 && right._p5 == 0 && right._p4 == 0)
@@ -1187,27 +1246,32 @@ namespace MissingValues
 			}
 		}
 
+		/// <inheritdoc/>
 		public static UInt512 operator %(in UInt512 left, in UInt512 right)
 		{
 			UInt512 quotient = left / right;
 			return left - (quotient * right);
 		}
 
+		/// <inheritdoc/>
 		public static UInt512 operator &(in UInt512 left, in UInt512 right)
 		{
 			return new(left._p7 & right._p7, left._p6 & right._p6, left._p5 & right._p5, left._p4 & right._p4, left._p3 & right._p3, left._p2 & right._p2, left._p1 & right._p1, left._p0 & right._p0);
 		}
 
+		/// <inheritdoc/>
 		public static UInt512 operator |(in UInt512 left, in UInt512 right)
 		{
 			return new(left._p7 | right._p7, left._p6 | right._p6, left._p5 | right._p5, left._p4 | right._p4, left._p3 | right._p3, left._p2 | right._p2, left._p1 | right._p1, left._p0 | right._p0);
 		}
 
+		/// <inheritdoc/>
 		public static UInt512 operator ^(in UInt512 left, in UInt512 right)
 		{
 			return new(left._p7 ^ right._p7, left._p6 ^ right._p6, left._p5 ^ right._p5, left._p4 ^ right._p4, left._p3 ^ right._p3, left._p2 ^ right._p2, left._p1 ^ right._p1, left._p0 ^ right._p0);
 		}
 
+		/// <inheritdoc/>
 		public static UInt512 operator <<(in UInt512 value, int shiftAmount)
 		{
 			// C# automatically masks the shift amount for UInt64 to be 0x3F. So we
@@ -1347,23 +1411,27 @@ namespace MissingValues
 			}
 		}
 
+		/// <inheritdoc/>
 		public static UInt512 operator >>(in UInt512 value, int shiftAmount)
 		{
 			return value >>> shiftAmount;
 		}
 
+		/// <inheritdoc/>
 		public static bool operator ==(in UInt512 left, in UInt512 right)
 		{
 			return (left._p7 == right._p7) && (left._p6 == right._p6) && (left._p5 == right._p5) && (left._p4 == right._p4)
 				&& (left._p3 == right._p3) && (left._p2 == right._p2) && (left._p1 == right._p1) && (left._p0 == right._p0);
 		}
 
+		/// <inheritdoc/>
 		public static bool operator !=(in UInt512 left, in UInt512 right)
 		{
 			return (left._p7 != right._p7) || (left._p6 != right._p6) || (left._p5 != right._p5) || (left._p4 != right._p4)
 				|| (left._p3 != right._p3) || (left._p2 != right._p2) || (left._p1 != right._p1) || (left._p0 != right._p0);
 		}
 
+		/// <inheritdoc/>
 		public static bool operator <(in UInt512 left, in UInt512 right)
 		{
 			// Successively compare each part.
@@ -1377,6 +1445,7 @@ namespace MissingValues
 				|| (left._p1 == right._p1 && (left._p0 < right._p0))))))))))))));
 		}
 
+		/// <inheritdoc/>
 		public static bool operator >(in UInt512 left, in UInt512 right)
 		{
 			return (left._p7 > right._p7)
@@ -1389,6 +1458,7 @@ namespace MissingValues
 				|| (left._p1 == right._p1 && (left._p0 > right._p0))))))))))))));
 		}
 
+		/// <inheritdoc/>
 		public static bool operator <=(in UInt512 left, in UInt512 right)
 		{
 			return (left._p7 < right._p7)
@@ -1401,6 +1471,7 @@ namespace MissingValues
 				|| (left._p1 == right._p1 && (left._p0 <= right._p0))))))))))))));
 		}
 
+		/// <inheritdoc/>
 		public static bool operator >=(in UInt512 left, in UInt512 right)
 		{
 			return (left._p7 > right._p7)
@@ -1413,6 +1484,7 @@ namespace MissingValues
 				|| (left._p1 == right._p1 && (left._p0 >= right._p0))))))))))))));
 		}
 
+		/// <inheritdoc/>
 		public static UInt512 operator >>>(in UInt512 value, int shiftAmount)
 		{
 			// C# automatically masks the shift amount for UInt64 to be 0x3F. So we

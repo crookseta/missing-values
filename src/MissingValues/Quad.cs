@@ -115,7 +115,6 @@ namespace MissingValues
 		/// <param name="sign">A <see cref="bool"/> indicating the sign of the number. <see langword="true"/> represents a negative number, and <see langword="false"/> represents a positive number.</param>
 		/// <param name="exp">An <see cref="ushort"/> representing the exponent part of the floating-point number.</param>
 		/// <param name="sig">An <see cref="UInt128"/> representing the significand part of the floating-point number.</param>
-		[CLSCompliant(false)]
 		public Quad(bool sign, ushort exp, UInt128 sig)
 		{
 			UInt128 value = (((sign ? UInt128.One : UInt128.Zero) << SignShift) + ((((UInt128)exp) << BiasedExponentShift) & BiasedExponentMask) + (sig & TrailingSignificandMask));
@@ -166,13 +165,33 @@ namespace MissingValues
 			return TryParse(s, CultureInfo.CurrentCulture, out result);
 		}
 
+		/// <summary>
+		/// Reinterprets the specified 128-bit unsigned integer to a quadruple-precision floating point number.
+		/// </summary>
+		/// <param name="bits">The number to convert.</param>
+		/// <returns>A quadruple-precision floating point number whose bits are identical to <paramref name="bits"/>.</returns>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static unsafe Quad UInt128BitsToQuad(UInt128 bits) => System.Runtime.CompilerServices.Unsafe.BitCast<UInt128, Quad>(bits);
+		/// <summary>
+		/// Reinterprets the specified 128-bit signed integer to a quadruple-precision floating point number.
+		/// </summary>
+		/// <param name="bits">The number to convert.</param>
+		/// <returns>A quadruple-precision floating point number whose bits are identical to <paramref name="bits"/>.</returns>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static unsafe Quad Int128BitsToQuad(Int128 bits) => System.Runtime.CompilerServices.Unsafe.BitCast<Int128, Quad>(bits);
 
+		/// <summary>
+		/// Converts the specified quadruple-precision floating point number to a 128-bit unsigned integer.
+		/// </summary>
+		/// <param name="value">The number to convert.</param>
+		/// <returns>A 128-bit unsigned integer whose value is equivalent to <paramref name="value"/>.</returns>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static unsafe UInt128 QuadToUInt128Bits(Quad value) => System.Runtime.CompilerServices.Unsafe.BitCast<Quad, UInt128>(value);
+		/// <summary>
+		/// Converts the specified quadruple-precision floating point number to a 128-bit signed integer.
+		/// </summary>
+		/// <param name="value">The number to convert.</param>
+		/// <returns>A 128-bit signed integer whose value is equivalent to <paramref name="value"/>.</returns>
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static unsafe Int128 QuadToInt128Bits(Quad value) => System.Runtime.CompilerServices.Unsafe.BitCast<Quad, Int128>(value);
 

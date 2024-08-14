@@ -13,6 +13,9 @@ using System.Threading.Tasks;
 
 namespace MissingValues
 {
+	/// <summary>
+	/// Represents a 256-bit signed integer.
+	/// </summary>
 	[StructLayout(LayoutKind.Sequential)]
 	[JsonConverter(typeof(NumberConverter.Int256Converter))]
 	[DebuggerDisplay($"{{{nameof(ToString)}(),nq}}")]
@@ -31,10 +34,16 @@ namespace MissingValues
 		private readonly ulong _p2;
 		private readonly ulong _p3;
 #endif
-		public UInt128 Lower => new UInt128(_p1, _p0);
-		public UInt128 Upper => new UInt128(_p3, _p2);
+		internal UInt128 Lower => new UInt128(_p1, _p0);
+		internal UInt128 Upper => new UInt128(_p3, _p2);
 
-		[CLSCompliant(false)]
+		/// <summary>
+		/// Initializes a new instance of the <see cref="Int256" /> struct.
+		/// </summary>
+		/// <param name="u1">The first 64-bits of the 256-bit value.</param>
+		/// <param name="u2">The second 64-bits of the 256-bit value.</param>
+		/// <param name="l1">The third 64-bits of the 256-bit value.</param>
+		/// <param name="l2">The fourth 64-bits of the 256-bit value.</param>
 		public Int256(ulong u1, ulong u2, ulong l1, ulong l2)
 		{
 			_p0 = l2;
@@ -46,7 +55,6 @@ namespace MissingValues
 		/// Initializes a new instance of the <see cref="Int256" /> struct.
 		/// </summary>
 		/// <param name="lower">The lower 128-bits of the 256-bit value.</param>
-		[CLSCompliant(false)]
 		public Int256(UInt128 lower) : this(UInt128.Zero, lower)
 		{
 		}
@@ -55,7 +63,6 @@ namespace MissingValues
 		/// </summary>
 		/// <param name="upper">The upper 128-bits of the 256-bit value.</param>
 		/// <param name="lower">The lower 128-bits of the 256-bit value.</param>
-		[CLSCompliant(false)]
 		public Int256(UInt128 upper, UInt128 lower)
 		{
 			_p0 = (ulong)lower;
@@ -64,16 +71,19 @@ namespace MissingValues
 			_p3 = (ulong)(upper >> 64);
 		}
 
+		/// <inheritdoc/>
 		public override bool Equals([NotNullWhen(true)] object? obj)
 		{
 			return (obj is Int256 other) && Equals(other);
 		}
 
+		/// <inheritdoc/>
 		public override int GetHashCode()
 		{
 			return HashCode.Combine(_p3, _p2, _p1, _p0);
 		}
 
+		/// <inheritdoc/>
 		public override string ToString()
 		{
 			return ToString("D", CultureInfo.CurrentCulture);
@@ -84,7 +94,7 @@ namespace MissingValues
 		/// </summary>
 		/// <param name="left">First number to multiply.</param>
 		/// <param name="right">Second number to multiply.</param>
-		/// <param name="lower">The low 256-bit of the product of the specified numbers.</param>
+		/// <param name="low">The low 256-bit of the product of the specified numbers.</param>
 		/// <returns>The high 256-bit of the product of the specified numbers.</returns>
 		public static Int256 BigMul(Int256 left, Int256 right, out Int256 low)
 		{
@@ -115,9 +125,7 @@ namespace MissingValues
 
 		#region From Int256
 		// Signed
-		[CLSCompliant(false)]
 		public static explicit operator sbyte(Int256 value) => (sbyte)value._p0;
-		[CLSCompliant(false)]
 		public static explicit operator checked sbyte(Int256 value)
 		{
 			if (~value.Upper == 0)

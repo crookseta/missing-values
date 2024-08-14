@@ -14,37 +14,50 @@ namespace MissingValues
 		IBinaryFloatingPointIeee754<Quad>,
 		IBinaryFloatingPointInfo<Quad, UInt128>,
 		IMinMaxValue<Quad>
-	{ // Inherit documentation.
+	{
+		/// <inheritdoc/>
 		public static Quad Epsilon => Quad.UInt128BitsToQuad(EpsilonBits);
 
+		/// <inheritdoc/>
 		public static Quad NaN => Quad.UInt128BitsToQuad(NegativeQNaNBits);
 
+		/// <inheritdoc/>
 		public static Quad NegativeInfinity => Quad.UInt128BitsToQuad(NegativeInfinityBits);
 
+		/// <inheritdoc/>
 		public static Quad NegativeZero => Quad.UInt128BitsToQuad(NegativeZeroBits);
 
+		/// <inheritdoc/>
 		public static Quad PositiveInfinity => Quad.UInt128BitsToQuad(PositiveInfinityBits);
 
+		/// <inheritdoc/>
 		public static Quad NegativeOne => Quad.UInt128BitsToQuad(NegativeOneBits);
 
+		/// <inheritdoc/>
 		public static Quad E => Quad.UInt128BitsToQuad(EBits);
 
+		/// <inheritdoc/>
 		public static Quad Pi => Quad.UInt128BitsToQuad(PiBits);
 
+		/// <inheritdoc/>
 		public static Quad Tau => Quad.UInt128BitsToQuad(TauBits);
 
+		/// <inheritdoc/>
 		public static Quad One => Quad.UInt128BitsToQuad(PositiveOneBits);
 
 		static int INumberBase<Quad>.Radix => 2;
 
+		/// <inheritdoc/>
 		public static Quad Zero => Quad.UInt128BitsToQuad(PositiveZeroBits);
 
 		static Quad IAdditiveIdentity<Quad, Quad>.AdditiveIdentity => Quad.UInt128BitsToQuad(PositiveZeroBits);
 
 		static Quad IMultiplicativeIdentity<Quad, Quad>.MultiplicativeIdentity => Quad.UInt128BitsToQuad(PositiveOneBits);
 
+		/// <inheritdoc/>
 		public static Quad MaxValue => Quad.UInt128BitsToQuad(MaxValueBits);
 
+		/// <inheritdoc/>
 		public static Quad MinValue => Quad.UInt128BitsToQuad(MinValueBits);
 
 		static Quad IBinaryNumber<Quad>.AllBitsSet => Quad.UInt128BitsToQuad(new UInt128(0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF));
@@ -85,14 +98,19 @@ namespace MissingValues
 
 		static UInt128 IBinaryFloatingPointInfo<Quad, UInt128>.NegativeInfinityBits => NegativeInfinityBits;
 
+		/// <inheritdoc/>
 		public static Quad Abs(Quad value) => MathQ.Abs(value);
 
+		/// <inheritdoc/>
 		public static Quad Ceiling(Quad x) => MathQ.Ceiling(x);
 
+		/// <inheritdoc/>
 		public static Quad Clamp(Quad value, Quad min, Quad max) => MathQ.Clamp(value, min, max);
 
+		/// <inheritdoc/>
 		public static Quad CopySign(Quad value, Quad sign) => MathQ.CopySign(value, sign);
 
+		/// <inheritdoc/>
 		public static Quad CreateChecked<TOther>(TOther value)
 			where TOther : INumberBase<TOther>
 		{
@@ -109,6 +127,7 @@ namespace MissingValues
 			return result;
 		}
 
+		/// <inheritdoc/>
 		public static Quad CreateSaturating<TOther>(TOther value)
 			where TOther : INumberBase<TOther>
 		{
@@ -126,6 +145,7 @@ namespace MissingValues
 			return result;
 		}
 
+		/// <inheritdoc/>
 		public static Quad CreateTruncating<TOther>(TOther value)
 			where TOther : INumberBase<TOther>
 		{
@@ -143,14 +163,17 @@ namespace MissingValues
 			return result;
 		}
 
+		/// <inheritdoc/>
 		public static Quad Floor(Quad x) => MathQ.Floor(x);
 
 		static bool INumberBase<Quad>.IsCanonical(Quad value) => true;
 
 		static bool INumberBase<Quad>.IsComplexNumber(Quad value) => false;
 
+		/// <inheritdoc/>
 		public static bool IsEvenInteger(Quad value) => IsInteger(value) && (Abs(value % Two) == Zero);
 
+		/// <inheritdoc/>
 		public static bool IsFinite(Quad value)
 		{
 			Int128 bits = Quad.QuadToInt128Bits(value);
@@ -159,20 +182,26 @@ namespace MissingValues
 
 		static bool INumberBase<Quad>.IsImaginaryNumber(Quad value) => false;
 
+		/// <inheritdoc/>
 		public static bool IsInfinity(Quad value)
 		{
 			Int128 bits = Quad.QuadToInt128Bits(value);
 			return (bits & new Int128(0x7FFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF)) == new Int128(0x7FFF_0000_0000_0000, 0x0000_0000_0000_0000);
 		}
 
+		/// <inheritdoc/>
 		public static bool IsInteger(Quad value) => IsFinite(value) && (value == Truncate(value));
 
+		/// <inheritdoc/>
 		public static bool IsNaN(Quad value) => StripSign(value) > PositiveInfinityBits;
 
+		/// <inheritdoc/>
 		public static bool IsNegative(Quad value) => Int128.IsNegative(Quad.QuadToInt128Bits(value));
 
+		/// <inheritdoc/>
 		public static bool IsNegativeInfinity(Quad value) => value == NegativeInfinity;
 
+		/// <inheritdoc/>
 		public static bool IsNormal(Quad value)
 		{
 			Int128 bits = Quad.QuadToInt128Bits(value);
@@ -181,12 +210,16 @@ namespace MissingValues
 			return (bits < infBits) && (bits != Int128.Zero) && ((bits & infBits) != Int128.Zero);
 		}
 
+		/// <inheritdoc/>
 		public static bool IsOddInteger(Quad value) => IsInteger(value) && (Abs(value % Two) == One);
 
+		/// <inheritdoc/>
 		public static bool IsPositive(Quad value) => Int128.IsPositive(Quad.QuadToInt128Bits(value));
 
+		/// <inheritdoc/>
 		public static bool IsPositiveInfinity(Quad value) => value == PositiveInfinity;
 
+		/// <inheritdoc/>
 		public static bool IsPow2(Quad value)
 		{
 			UInt128 bits = Quad.QuadToUInt128Bits(value);
@@ -214,8 +247,10 @@ namespace MissingValues
 			return trailingSignificand == MinTrailingSignificand;
 		}
 
+		/// <inheritdoc/>
 		public static bool IsRealNumber(Quad value) => !IsNaN(value);
 
+		/// <inheritdoc/>
 		public static bool IsSubnormal(Quad value)
 		{
 			Int128 bits = Quad.QuadToInt128Bits(value);
@@ -226,10 +261,13 @@ namespace MissingValues
 
 		static bool INumberBase<Quad>.IsZero(Quad value) => value == Zero;
 
+		/// <inheritdoc/>
 		public static Quad Max(Quad x, Quad y) => MathQ.Max(x, y);
 
+		/// <inheritdoc/>
 		public static Quad MaxMagnitude(Quad x, Quad y) => MathQ.MaxMagnitude(x, y);
 
+		/// <inheritdoc/>
 		public static Quad MaxMagnitudeNumber(Quad x, Quad y)
 		{
 			// This matches the IEEE 754:2019 `maximumMagnitudeNumber` function
@@ -254,6 +292,7 @@ namespace MissingValues
 			return y;
 		}
 
+		/// <inheritdoc/>
 		public static Quad MaxNumber(Quad x, Quad y)
 		{
 			// This matches the IEEE 754:2019 `maximumNumber` function
@@ -275,10 +314,13 @@ namespace MissingValues
 			return IsNegative(y) ? x : y;
 		}
 
+		/// <inheritdoc/>
 		public static Quad Min(Quad x, Quad y) => MathQ.Min(x, y);
 
+		/// <inheritdoc/>
 		public static Quad MinMagnitude(Quad x, Quad y) => MathQ.MinMagnitude(x, y);
 
+		/// <inheritdoc/>
 		public static Quad MinMagnitudeNumber(Quad x, Quad y)
 		{
 			// This matches the IEEE 754:2019 `minimumMagnitudeNumber` function
@@ -303,6 +345,7 @@ namespace MissingValues
 			return y;
 		}
 
+		/// <inheritdoc/>
 		public static Quad MinNumber(Quad x, Quad y)
 		{
 			// This matches the IEEE 754:2019 `minimumNumber` function
@@ -324,6 +367,7 @@ namespace MissingValues
 			return IsNegative(x) ? x : y;
 		}
 
+		/// <inheritdoc/>
 		public static Quad Parse(ReadOnlySpan<char> s, NumberStyles style, IFormatProvider? provider)
 		{
 			if (!TryParse(s, style, provider, out Quad result))
@@ -333,15 +377,17 @@ namespace MissingValues
 			return result;
 		}
 
+		/// <inheritdoc/>
 		public static Quad Parse(string s, NumberStyles style, IFormatProvider? provider)
 		{
+			ArgumentNullException.ThrowIfNull(s);
 			if (!TryParse(s, style, provider, out Quad result))
 			{
 				Thrower.ParsingError<Quad>(s);
 			}
 			return result;
 		}
-
+		/// <inheritdoc/>
 		public static Quad Parse(ReadOnlySpan<char> s, IFormatProvider? provider)
 		{
 			if (!TryParse(s, NumberStyles.Float, provider, out Quad result))
@@ -350,9 +396,10 @@ namespace MissingValues
 			}
 			return result;
 		}
-
+		/// <inheritdoc/>
 		public static Quad Parse(string s, IFormatProvider? provider)
 		{
+			ArgumentNullException.ThrowIfNull(s);
 			if (!TryParse(s, NumberStyles.Float, provider, out Quad result))
 			{
 				Thrower.ParsingError<Quad>(s);
@@ -360,6 +407,7 @@ namespace MissingValues
 			return result;
 		}
 
+		/// <inheritdoc/>
 		public static Quad Parse(ReadOnlySpan<byte> utf8Text, NumberStyles style, IFormatProvider? provider)
 		{
 			if (!TryParse(utf8Text, style, provider, out Quad result))
@@ -369,6 +417,7 @@ namespace MissingValues
 			return result;
 		}
 
+		/// <inheritdoc/>
 		public static Quad Parse(ReadOnlySpan<byte> utf8Text, IFormatProvider? provider)
 		{
 			if (!TryParse(utf8Text, NumberStyles.Float, provider, out Quad result))
@@ -378,44 +427,57 @@ namespace MissingValues
 			return result;
 		}
 
+		/// <inheritdoc/>
 		public static Quad Round(Quad x) => MathQ.Round(x);
 
+		/// <inheritdoc/>
 		public static Quad Round(Quad x, int digits) => MathQ.Round(x, digits);
 
+		/// <inheritdoc/>
 		public static Quad Round(Quad x, MidpointRounding mode) => MathQ.Round(x, mode);
 
+		/// <inheritdoc/>
 		public static Quad Round(Quad x, int digits, MidpointRounding mode) => MathQ.Round(x, digits, mode);
 
+		/// <inheritdoc/>
 		public static int Sign(Quad value) => MathQ.Sign(value);
 
+		/// <inheritdoc/>
 		public static Quad Sqrt(Quad x) => MathQ.Sqrt(x);
 
+		/// <inheritdoc/>
 		public static Quad Truncate(Quad x) => MathQ.Truncate(x);
 
+		/// <inheritdoc/>
 		public static bool TryParse(ReadOnlySpan<char> s, NumberStyles style, IFormatProvider? provider, [MaybeNullWhen(false)] out Quad result)
 		{
 			return NumberParser.TryParseFloat<Quad, UInt128, Utf16Char>(Utf16Char.CastFromCharSpan(s), style, provider, out result);
 		}
 
+		/// <inheritdoc/>
 		public static bool TryParse([NotNullWhen(true)] string? s, NumberStyles style, IFormatProvider? provider, [MaybeNullWhen(false)] out Quad result)
 		{
 			return NumberParser.TryParseFloat<Quad, UInt128, Utf16Char>(Utf16Char.CastFromCharSpan(s), style, provider, out result);
 		}
 
+		/// <inheritdoc/>
 		public static bool TryParse(ReadOnlySpan<char> s, IFormatProvider? provider, [MaybeNullWhen(false)] out Quad result)
 		{
 			return NumberParser.TryParseFloat<Quad, UInt128, Utf16Char>(Utf16Char.CastFromCharSpan(s), NumberStyles.Float, provider, out result);
 		}
 
+		/// <inheritdoc/>
 		public static bool TryParse([NotNullWhen(true)] string? s, IFormatProvider? provider, [MaybeNullWhen(false)] out Quad result)
 		{
 			return NumberParser.TryParseFloat<Quad, UInt128, Utf16Char>(Utf16Char.CastFromCharSpan(s), NumberStyles.Float, provider, out result);
 		}
 
+		/// <inheritdoc/>
 		public static bool TryParse(ReadOnlySpan<byte> s, NumberStyles style, IFormatProvider? provider, [MaybeNullWhen(false)] out Quad result)
 		{
 			return NumberParser.TryParseFloat<Quad, UInt128, Utf8Char>(Utf8Char.CastFromByteSpan(s), style, provider, out result);
 		}
+		/// <inheritdoc/>
 		public static bool TryParse(ReadOnlySpan<byte> s, IFormatProvider? provider, [MaybeNullWhen(false)] out Quad result)
 		{
 			return NumberParser.TryParseFloat<Quad, UInt128, Utf8Char>(Utf8Char.CastFromByteSpan(s), NumberStyles.Float, provider, out result);
@@ -530,6 +592,7 @@ namespace MissingValues
 			return converted;
 		}
 
+		/// <inheritdoc/>
 		public int CompareTo(object? obj)
 		{
 			if (obj is not Quad o)
@@ -547,6 +610,7 @@ namespace MissingValues
 			return CompareTo(o);
 		}
 
+		/// <inheritdoc/>
 		public int CompareTo(Quad other)
 		{
 			if (this < other)
@@ -572,6 +636,7 @@ namespace MissingValues
 			return 1;
 		}
 
+		/// <inheritdoc/>
 		public bool Equals(Quad other)
 		{
 			return (_upper == other._upper && _lower == other._lower)
@@ -599,16 +664,19 @@ namespace MissingValues
 
 		int IFloatingPoint<Quad>.GetSignificandByteCount() => 16;
 
+		/// <inheritdoc/>
 		public string ToString(string? format, IFormatProvider? formatProvider)
 		{
 			return NumberFormatter.FloatToString<Quad, UInt128>(in this, format is null ? ReadOnlySpan<char>.Empty : format, formatProvider);
 		}
 
+		/// <inheritdoc/>
 		public bool TryFormat(Span<char> destination, out int charsWritten, ReadOnlySpan<char> format, IFormatProvider? provider)
 		{
 			return NumberFormatter.TryFormatFloat<Quad, UInt128, Utf16Char>(in this, Utf16Char.CastFromCharSpan(destination), out charsWritten, format, provider);
 		}
 
+		/// <inheritdoc/>
 		public bool TryFormat(Span<byte> utf8Destination, out int bytesWritten, ReadOnlySpan<char> format, IFormatProvider? provider)
 		{
 			return NumberFormatter.TryFormatFloat<Quad, UInt128, Utf8Char>(in this, Utf8Char.CastFromByteSpan(utf8Destination), out bytesWritten, format, provider);
@@ -706,23 +774,33 @@ namespace MissingValues
 			}
 		}
 
+		/// <inheritdoc/>
 		public static Quad Atan2(Quad y, Quad x) => MathQ.Atan2(y, x);
 
+		/// <inheritdoc/>
 		public static Quad Atan2Pi(Quad y, Quad x) => Atan2(y, x) / Pi;
 
+		/// <inheritdoc/>
 		public static Quad BitDecrement(Quad x) => MathQ.BitDecrement(x);
 
+		/// <inheritdoc/>
 		public static Quad BitIncrement(Quad x) => MathQ.BitIncrement(x);
 
+		/// <inheritdoc/>
 		public static Quad FusedMultiplyAdd(Quad left, Quad right, Quad addend) => MathQ.FusedMultiplyAdd(left, right, addend);
 
+		/// <inheritdoc/>
 		public static Quad Ieee754Remainder(Quad left, Quad right) => MathQ.IEEERemainder(left, right);
 
+		/// <inheritdoc/>
 		public static int ILogB(Quad x) => MathQ.ILogB(x);
 
+		/// <inheritdoc/>
 		public static Quad ScaleB(Quad x, int n) => MathQ.ScaleB(x, n);
 
+		/// <inheritdoc/>
 		public static Quad Exp(Quad x) => MathQ.Exp(x);
+		/// <inheritdoc/>
 		public static Quad ExpM1(Quad x)
 		{
 			/* origin: FreeBSD /usr/src/lib/msun/ld128/s_expl.c */
@@ -859,6 +937,7 @@ namespace MissingValues
 			return t * twopk;
 		}
 
+		/// <inheritdoc/>
 		public static Quad Exp10(Quad x)
 		{
 			ReadOnlySpan<Quad> P10 = stackalloc Quad[]
@@ -910,8 +989,10 @@ namespace MissingValues
 
 			return Pow(P10[16], x);
 		}
+		/// <inheritdoc/>
 		public static Quad Exp10M1(Quad x) => Exp10(x) - One;
 
+		/// <inheritdoc/>
 		public static Quad Exp2(Quad x)
 		{
 			int e = x.BiasedExponent;
@@ -971,18 +1052,25 @@ namespace MissingValues
 
 			return MathQ.ScaleB(r, k.i);
 		}
+		/// <inheritdoc/>
 		public static Quad Exp2M1(Quad x) => Exp2(x) - One;
 
+		/// <inheritdoc/>
 		public static Quad Acosh(Quad x) => MathQ.Acosh(x);
 
+		/// <inheritdoc/>
 		public static Quad Asinh(Quad x) => MathQ.Asinh(x);
 
+		/// <inheritdoc/>
 		public static Quad Atanh(Quad x) => MathQ.Atanh(x);
 
+		/// <inheritdoc/>
 		public static Quad Cosh(Quad x) => MathQ.Cosh(x);
 
+		/// <inheritdoc/>
 		public static Quad Sinh(Quad x) => MathQ.Sinh(x);
 
+		/// <inheritdoc/>
 		public static Quad Tanh(Quad x) => MathQ.Tanh(x);
 
 		/// <summary>Performs a linear interpolation between two values based on the given weight.</summary>
@@ -996,7 +1084,9 @@ namespace MissingValues
 			return (value1 * (One - amount)) + (value2 * amount);
 		}
 
+		/// <inheritdoc/>
 		public static Quad Log(Quad x) => MathQ.Log(x);
+		/// <inheritdoc/>
 		public static Quad LogP1(Quad x)
 		{
 			/* origin: FreeBSD /usr/src/lib/msun/ld128/s_logl.c */
@@ -1103,18 +1193,26 @@ namespace MissingValues
 			return val_hi + val_lo;
 		}
 
+		/// <inheritdoc/>
 		public static Quad Log(Quad x, Quad newBase) => MathQ.Log(x, newBase);
 
+		/// <inheritdoc/>
 		public static Quad Log10(Quad x) => MathQ.Log10(x);
+		/// <inheritdoc/>
 		public static Quad Log10P1(Quad x) => MathQ.Log10(x + One);
 
+		/// <inheritdoc/>
 		public static Quad Log2(Quad value) => MathQ.Log2(value);
+		/// <inheritdoc/>
 		public static Quad Log2P1(Quad value) => MathQ.Log2(value + One);
 
+		/// <inheritdoc/>
 		public static Quad Pow(Quad x, Quad y) => MathQ.Pow(x, y);
 
+		/// <inheritdoc/>
 		public static Quad Cbrt(Quad x) => MathQ.Cbrt(x);
 
+		/// <inheritdoc/>
 		public static Quad Hypot(Quad x, Quad y)
 		{
 			int ex = x.BiasedExponent, ey = y.BiasedExponent;
@@ -1174,10 +1272,13 @@ namespace MissingValues
 			}
 		}
 
+		/// <inheritdoc/>
 		public static Quad ReciprocalEstimate(Quad x) => MathQ.ReciprocalEstimate(x);
 
+		/// <inheritdoc/>
 		public static Quad ReciprocalSqrtEstimate(Quad x) => MathQ.ReciprocalSqrtEstimate(x);
 
+		/// <inheritdoc/>
 		public static Quad RootN(Quad x, int n)
 		{
 			Quad result;
@@ -1316,20 +1417,28 @@ namespace MissingValues
 			return (radians * new Quad(0x4006_6800_0000_0000, 0x0000_0000_0000_0000)) / Pi;
 		}
 
+		/// <inheritdoc/>
 		public static Quad Acos(Quad x) => MathQ.Acos(x);
 
+		/// <inheritdoc/>
 		public static Quad AcosPi(Quad x) => Acos(x) / Pi;
 
+		/// <inheritdoc/>
 		public static Quad Asin(Quad x) => MathQ.Asin(x);
 
+		/// <inheritdoc/>
 		public static Quad AsinPi(Quad x) => Asin(x) / Pi;
 
+		/// <inheritdoc/>
 		public static Quad Atan(Quad x) => MathQ.Atan(x);
 
+		/// <inheritdoc/>
 		public static Quad AtanPi(Quad x) => Atan(x) / Pi;
 
+		/// <inheritdoc/>
 		public static Quad Cos(Quad x) => MathQ.Cos(x);
 
+		/// <inheritdoc/>
 		public static Quad CosPi(Quad x)
 		{
 			Quad ai, ar, ax, c;
@@ -1423,12 +1532,16 @@ namespace MissingValues
 			return IsEvenInteger(ax) ? One : NegativeOne;
 		}
 
+		/// <inheritdoc/>
 		public static Quad Sin(Quad x) => MathQ.Sin(x);
 
+		/// <inheritdoc/>
 		public static (Quad Sin, Quad Cos) SinCos(Quad x) => MathQ.SinCos(x);
 
+		/// <inheritdoc/>
 		public static (Quad SinPi, Quad CosPi) SinCosPi(Quad x) => (SinPi(x), CosPi(x));
 
+		/// <inheritdoc/>
 		public static Quad SinPi(Quad x)
 		{
 			Quad pi_hi = new Quad(0x4000_921F_B544_42D1, 0x8400_0000_0000_0000);
@@ -1521,8 +1634,10 @@ namespace MissingValues
 			return CopySign(Zero, x);
 		}
 
+		/// <inheritdoc/>
 		public static Quad Tan(Quad x) => MathQ.Tan(x);
 
+		/// <inheritdoc/>
 		public static Quad TanPi(Quad x)
 		{
 			Quad pi_hi = new Quad(0x4000_921F_B544_42D1, 0x8400_0000_0000_0000);
@@ -1625,39 +1740,53 @@ namespace MissingValues
 			}
 		}
 
+		/// <inheritdoc/>
 		public static Quad operator +(Quad value) => value;
 
+		/// <inheritdoc/>
 		public static Quad operator +(Quad left, Quad right) => MathQ.Add(left, right);
 
+		/// <inheritdoc/>
 		public static Quad operator -(Quad value)
 		{
 			// Invert the sign bit
 			return value ^ new Quad(0x8000_0000_0000_0000, 0x0000_0000_0000_0000);
 		}
 
+		/// <inheritdoc/>
 		public static Quad operator -(Quad left, Quad right) => MathQ.Sub(left, right);
 
+		/// <inheritdoc/>
 		public static Quad operator ~(Quad value) => new Quad(~value._upper, ~value._lower);
 
+		/// <inheritdoc/>
 		public static Quad operator ++(Quad value) => MathQ.Add(value, One);
 
+		/// <inheritdoc/>
 		public static Quad operator --(Quad value) => MathQ.Sub(value, One);
 
+		/// <inheritdoc/>
 		public static Quad operator *(Quad left, Quad right) => MathQ.Mul(left, right);
 
+		/// <inheritdoc/>
 		public static Quad operator /(Quad left, Quad right) => MathQ.Div(left, right);
 
+		/// <inheritdoc/>
 		public static Quad operator %(Quad left, Quad right)
 		{
 			return (MathQ.Abs(left) - (MathQ.Abs(right) * (MathQ.Floor(MathQ.Abs(left) / MathQ.Abs(right))))) * MathQ.Sign(left);
 		}
 
+		/// <inheritdoc/>
 		public static Quad operator &(Quad left, Quad right) => new Quad(left._upper & right._upper, left._lower & right._lower);
 
+		/// <inheritdoc/>
 		public static Quad operator |(Quad left, Quad right) => new Quad(left._upper | right._upper, left._lower | right._lower);
 
+		/// <inheritdoc/>
 		public static Quad operator ^(Quad left, Quad right) => new Quad(left._upper ^ right._upper, left._lower ^ right._lower);
 
+		/// <inheritdoc/>
 		public static bool operator ==(Quad left, Quad right)
 		{
 			if (IsNaN(left) || IsNaN(right))
@@ -1670,8 +1799,10 @@ namespace MissingValues
 			return (left._upper == right._upper && left._lower == right._lower) || AreZero(left, right);
 		}
 
+		/// <inheritdoc/>
 		public static bool operator !=(Quad left, Quad right) => !(left == right);
 
+		/// <inheritdoc/>
 		public static bool operator <(Quad left, Quad right)
 		{
 			if (IsNaN(left) || IsNaN(right))
@@ -1696,6 +1827,7 @@ namespace MissingValues
 			return (leftBits != rightBits) && ((leftBits < rightBits) ^ leftIsNegative);
 		}
 
+		/// <inheritdoc/>
 		public static bool operator >(Quad left, Quad right)
 		{
 			if (IsNaN(right) || IsNaN(left))
@@ -1717,6 +1849,7 @@ namespace MissingValues
 			return (rightBits != leftBits) && ((rightBits < leftBits) ^ rightIsNegative);
 		}
 
+		/// <inheritdoc/>
 		public static bool operator <=(Quad left, Quad right)
 		{
 			if (IsNaN(left) || IsNaN(right))
@@ -1741,6 +1874,7 @@ namespace MissingValues
 			return (leftBits == rightBits) || ((leftBits < rightBits) ^ leftIsNegative);
 		}
 
+		/// <inheritdoc/>
 		public static bool operator >=(Quad left, Quad right)
 		{
 			if (IsNaN(right) || IsNaN(left))
