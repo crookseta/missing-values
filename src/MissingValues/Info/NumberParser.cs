@@ -323,11 +323,11 @@ namespace MissingValues.Info
 			where TChar : unmanaged, IUtfCharacter<TChar>
 		{
 			byte[] buffer = ArrayPool<byte>.Shared.Rent(FloatBufferLength);
-			FloatInfo number = new FloatInfo(buffer);
+			NumberInfo number = new NumberInfo(buffer);
 			NumberFormatInfo info = NumberFormatInfo.GetInstance(provider);
 
 
-			if (!FloatInfo.TryParse(s, ref number, info, styles))
+			if (!NumberInfo.TryParse(s, ref number, info, styles))
 			{
 				ReadOnlySpan<TChar> trim = s.Trim(TChar.WhiteSpaceCharacter);
 
@@ -401,7 +401,7 @@ namespace MissingValues.Info
 				return false; // We really failed
 			}
 
-			result = FloatInfo.ConvertToFloat<TFloat, TBits>(ref number);
+			result = NumberInfo.ConvertToFloat<TFloat, TBits>(ref number);
 			ArrayPool<byte>.Shared.Return(buffer);
 			return true;
 		}

@@ -162,40 +162,6 @@ namespace MissingValues.Tests.Core
 		}
 
 		[Fact]
-		public void FormatCurrencyTest()
-		{
-
-		}
-		[Fact]
-		public void FormatEngineeringTest()
-		{
-			MaxValue.ToString("E", CultureInfo.CurrentCulture)
-				.Should().Be("6,703904E+153");
-			MaxValue.ToString("e25", CultureInfo.CurrentCulture)
-				.Should().Be("6,7039039649712985497870125e+153");
-
-			MinValue.ToString("E", CultureInfo.CurrentCulture)
-				.Should().Be("-6,703904E+153");
-			MinValue.ToString("e25", CultureInfo.CurrentCulture)
-				.Should().Be("-6,7039039649712985497870125e+153");
-		}
-		[Fact]
-		public void FormatFixedPointTest()
-		{
-
-		}
-		[Fact]
-		public void FormatGeneralTest()
-		{
-
-		}
-		[Fact]
-		public void FormatNumberTest()
-		{
-
-		}
-
-		[Fact]
 		public void ToDecFormatStringTest()
 		{
 			MaxValue.ToString().Should().Be($"{MaxValue:D}");

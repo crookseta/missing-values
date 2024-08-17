@@ -728,7 +728,7 @@ namespace MissingValues
 		public string ToString(string? format, IFormatProvider? formatProvider)
 		{
 			throw new NotImplementedException();
-			return NumberFormatter.FloatToString<Octo, UInt256>(in this, format is null ? ReadOnlySpan<char>.Empty : format, formatProvider);
+			return NumberFormatter.FloatToString<Octo, UInt256>(in this, format, formatProvider);
 		}
 
 		/// <inheritdoc/>

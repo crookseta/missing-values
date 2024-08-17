@@ -528,7 +528,7 @@ internal static partial class NumberFormatter
 			}
 		});
 	}
-	public static string FormatUnsignedInteger<TUnsigned, TSigned>(in TUnsigned value, string? format, IFormatProvider? formatProvider)
+	public static string FormatUnsignedInteger<TUnsigned, TSigned>(in TUnsigned value, string? format, IFormatProvider? provider)
 		where TUnsigned : struct, IFormattableUnsignedInteger<TUnsigned, TSigned>
 		where TSigned : struct, IFormattableSignedInteger<TSigned, TUnsigned>
 	{
@@ -566,13 +566,15 @@ internal static partial class NumberFormatter
 				});
 			case 'd':
 			case 'D':
+			case 'g':
+			case 'G':
 				precision = int.Max(precision, TUnsigned.CountDigits(in value));
 				return string.Create(precision, value, (destination, number) =>
 				{
 					UnsignedIntegerToDecChars<TUnsigned, TSigned, Utf16Char>(number, Utf16Char.CastFromCharSpan(destination), destination.Length);
 				});
 			default:
-				return FormatNumber(in value, format!, NumberFormatInfo.GetInstance(formatProvider));
+				return FormatNumber(in value, format!, provider is null ? NumberFormatInfo.CurrentInfo : NumberFormatInfo.GetInstance(provider));
 		}
 	}
 	public static bool TryFormatUnsignedInteger<TUnsigned, TSigned, TChar>(in TUnsigned value, Span<TChar> destination, out int charsWritten, ReadOnlySpan<char> format, IFormatProvider? provider)
@@ -620,6 +622,8 @@ internal static partial class NumberFormatter
 				break;
 			case 'd':
 			case 'D':
+			case 'g':
+			case 'G':
 				charsWritten = int.Max(precision, TUnsigned.CountDigits(in value));
 				if (destination.Length < charsWritten)
 				{
@@ -629,7 +633,7 @@ internal static partial class NumberFormatter
 				UnsignedIntegerToDecChars<TUnsigned, TSigned, TChar>(value, destination, charsWritten);
 				break;
 			default:
-				return TryFormatNumber(in value, destination, out charsWritten, format, NumberFormatInfo.GetInstance(provider));
+				return TryFormatNumber(in value, destination, out charsWritten, format, provider is null ? NumberFormatInfo.CurrentInfo : NumberFormatInfo.GetInstance(provider));
 		}
 		return true;
 	}

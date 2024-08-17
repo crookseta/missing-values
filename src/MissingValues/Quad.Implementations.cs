@@ -667,7 +667,7 @@ namespace MissingValues
 		/// <inheritdoc/>
 		public string ToString(string? format, IFormatProvider? formatProvider)
 		{
-			return NumberFormatter.FloatToString<Quad, UInt128>(in this, format is null ? ReadOnlySpan<char>.Empty : format, formatProvider);
+			return NumberFormatter.FloatToString<Quad, UInt128>(in this, format, formatProvider);
 		}
 
 		/// <inheritdoc/>

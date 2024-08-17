@@ -854,6 +854,17 @@ internal static partial class NumberFormatter
 			var fd = FloatToDecimal<TFloat, FloatingDecimal<TSignificand>, TSignificand>(in value);
 			charsWritten = ToCharSpan<FloatingDecimal<TSignificand>, TSignificand, TChar>(in fd, destination, format, info is null ? NumberFormatInfo.CurrentInfo : info!, out isExceptional);
 		}
+		public static void Format<TFloat, TSignificand>(in TFloat value, scoped ref NumberInfo number, out bool isExceptional)
+			where TFloat : struct, IBinaryFloatingPointInfo<TFloat, TSignificand>
+			where TSignificand : unmanaged, IBinaryInteger<TSignificand>, IUnsignedNumber<TSignificand>
+		{
+			var fd = FloatToDecimal<TFloat, FloatingDecimal<TSignificand>, TSignificand>(in value);
+			UInt256 significand = UInt256.CreateTruncating(fd.Mantissa);
+			UIntToNumber<UInt256, Int256>(in significand, ref number);
+			number.Scale += fd.Exponent;
+			number.IsNegative = fd.Sign;
+			isExceptional = fd.Exponent == FD128ExceptionalExponent;
+		}
 
 		private static int ToCharSpan<TDecimal, TSignificand, TChar>(in TDecimal v, Span<TChar> destination, ReadOnlySpan<char> format, NumberFormatInfo info, out bool isExceptional)
 			where TDecimal : struct, IBinaryFloatingPointDecimalFormat<TDecimal, TSignificand>
@@ -866,17 +877,17 @@ internal static partial class NumberFormatter
 				if (v.Mantissa != TSignificand.Zero)
 				{
 					TChar.Copy(info.NaNSymbol, destination);
-					return destination.Length;
+					return TChar.GetLength(info.NaNSymbol);
 				}
 				if (v.Sign)
 				{
 					TChar.Copy(info.NegativeInfinitySymbol, destination);
-					return destination.Length;
+					return TChar.GetLength(info.NegativeInfinitySymbol);
 				}
 				else
 				{
 					TChar.Copy(info.PositiveInfinitySymbol, destination);
-					return destination.Length;
+					return TChar.GetLength(info.PositiveInfinitySymbol);
 				}
 			}
 

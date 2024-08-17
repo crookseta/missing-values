@@ -133,32 +133,6 @@ namespace MissingValues.Tests.Core
 		}
 
 		[Fact]
-		public void FormatCurrencyTest()
-		{
-
-		}
-		[Fact]
-		public void FormatEngineeringTest()
-		{
-
-		}
-		[Fact]
-		public void FormatFixedPointTest()
-		{
-
-		}
-		[Fact]
-		public void FormatGeneralTest()
-		{
-
-		}
-		[Fact]
-		public void FormatNumberTest()
-		{
-
-		}
-
-		[Fact]
 		public void ToDecFormatStringTest()
 		{
 			MaxValue.ToString().Should().Be($"{MaxValue:D}");

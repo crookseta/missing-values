@@ -1,5 +1,6 @@
 ﻿using MissingValues.Internals;
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -49,7 +50,7 @@ internal static partial class NumberFormatter
 {
 	public static string FloatToString<TFloat, TSignificand>(
 		in TFloat value,
-		ReadOnlySpan<char> format,
+		string? format,
 		IFormatProvider? provider)
 		where TFloat : unmanaged, IBinaryFloatingPointInfo<TFloat, TSignificand>
 		where TSignificand : unmanaged, IBinaryInteger<TSignificand>, IUnsignedNumber<TSignificand>
@@ -58,14 +59,15 @@ internal static partial class NumberFormatter
 		int maxBufferAlloc = maxSignificandPrecision + 4 + 4 + 4; // N significant decimal digits precision, 4 possible special symbols, 4 exponent decimal digits
 
 		int precision;
+		bool noFormat = string.IsNullOrWhiteSpace(format);
 
-		if (format.IsEmpty)
+		if (noFormat)
 		{
 			precision = maxSignificandPrecision;
 		}
 		else
 		{
-			if (int.TryParse(format.Trim()[1..], out int p))
+			if (format!.Length > 1 && int.TryParse(format![1..].TrimEnd(), out int p))
 			{
 				precision = p > maxSignificandPrecision ? maxSignificandPrecision : p;
 			}
@@ -73,22 +75,22 @@ internal static partial class NumberFormatter
 			{
 				precision = maxSignificandPrecision;
 			}
-
-			if (!(format.Contains("F", StringComparison.OrdinalIgnoreCase)
-			|| format.Contains("G", StringComparison.OrdinalIgnoreCase)
-			|| format.Contains("N", StringComparison.OrdinalIgnoreCase)
-			|| format.Contains("E", StringComparison.OrdinalIgnoreCase)))
-			{
-				Thrower.NotSupported();
-			}
 		}
+
+		ReadOnlySpan<char> fmt = noFormat ? ['G'] : format;
 
 		NumberFormatInfo info = NumberFormatInfo.GetInstance(provider);
 
 		Span<Utf16Char> buffer = stackalloc Utf16Char[maxBufferAlloc];
-		Ryu.Format<TFloat, TSignificand, Utf16Char> (in value, buffer, out _, format, out bool isExceptional, info, precision);
+		if (!(fmt.Contains("G", StringComparison.OrdinalIgnoreCase)
+			|| fmt.Contains("E", StringComparison.OrdinalIgnoreCase)))
+		{
+			return FormatNumber(in value, format!, info);
+		}
 
-		if (isExceptional || format.Contains("E", StringComparison.OrdinalIgnoreCase))
+		Ryu.Format<TFloat, TSignificand, Utf16Char>(in value, buffer, out _, fmt, out bool isExceptional, info, precision);
+
+		if (isExceptional || fmt.Contains("E", StringComparison.OrdinalIgnoreCase))
 		{
 			return new string(Utf16Char.CastToCharSpan(buffer).TrimEnd('\0'));
 		}
@@ -111,6 +113,7 @@ internal static partial class NumberFormatter
 
 		int precision;
 
+		NumberFormatInfo info = provider is null ? NumberFormatInfo.CurrentInfo : NumberFormatInfo.GetInstance(provider);
 		if (format.IsEmpty)
 		{
 			format = "G";
@@ -128,14 +131,10 @@ internal static partial class NumberFormatter
 			}
 		}
 
-		NumberFormatInfo info = NumberFormatInfo.GetInstance(provider);
 
 		if (!(format.Contains("G", StringComparison.OrdinalIgnoreCase)
-			|| format.Contains("F", StringComparison.OrdinalIgnoreCase)
-			|| format.Contains("N", StringComparison.OrdinalIgnoreCase)
 			|| format.Contains("E", StringComparison.OrdinalIgnoreCase)))
 		{
-			Thrower.NotSupported();
 			return TryFormatNumber(in value, destination, out charsWritten, format, info);
 		}
 

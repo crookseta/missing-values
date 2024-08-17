@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MissingValues.Info;
+using System;
 using System.Buffers.Binary;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -8,6 +9,7 @@ using System.Linq;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Text;
 
 namespace MissingValues.Internals
 {
@@ -57,7 +59,7 @@ namespace MissingValues.Internals
 		}
 	}
 
-	internal ref struct FloatInfo
+	internal ref struct NumberInfo
 	{
 		public int DigitsCount;
 		public int Scale;
@@ -65,7 +67,7 @@ namespace MissingValues.Internals
 		public bool HasNonZeroTail;
 		public Span<byte> Digits;
 
-        public FloatInfo(Span<byte> digits)
+        public NumberInfo(Span<byte> digits)
         {
 			DigitsCount = 0;
 			Scale = 0;
@@ -75,7 +77,7 @@ namespace MissingValues.Internals
 			Digits[0] = (byte)'\0';
 		}
 
-		public static TFloat ConvertToFloat<TFloat, TBits>(ref FloatInfo number)
+		public static TFloat ConvertToFloat<TFloat, TBits>(ref NumberInfo number)
 			where TFloat : struct, IBinaryFloatingPointInfo<TFloat, TBits>
 			where TBits : unmanaged, IBinaryInteger<TBits>, IUnsignedNumber<TBits>
 		{
@@ -98,7 +100,12 @@ namespace MissingValues.Internals
 			return number.IsNegative ? -result : result;
 		}
 
-		public static unsafe bool TryParse<TChar>(ReadOnlySpan<TChar> s, ref FloatInfo info, NumberFormatInfo formatInfo, NumberStyles styles = NumberStyles.Float)
+		public override string ToString()
+		{
+			return Encoding.UTF8.GetString(Digits[..DigitsCount]);
+		}
+
+		public static unsafe bool TryParse<TChar>(ReadOnlySpan<TChar> s, ref NumberInfo info, NumberFormatInfo formatInfo, NumberStyles styles = NumberStyles.Float)
 			where TChar : unmanaged, IUtfCharacter<TChar>
 		{
 			const int StateSign = 0x0001;
@@ -353,7 +360,7 @@ namespace MissingValues.Internals
 			return false;
 		}
 
-		private static TBits GetFloatBits<TFloat, TBits>(ref FloatInfo number)
+		private static TBits GetFloatBits<TFloat, TBits>(ref NumberInfo number)
 			where TFloat : struct, IBinaryFloatingPointInfo<TFloat, TBits>
 			where TBits : unmanaged, IBinaryInteger<TBits>, IUnsignedNumber<TBits>
 		{
@@ -793,7 +800,7 @@ namespace MissingValues.Internals
 			return roundBit && (hasTailBits || lsbBit);
 		}
 
-		private static unsafe void AccumulateDecimalDigitsIntoBigNumber(scoped ref FloatInfo number, uint firstIndex, uint lastIndex, out BigNumber result)
+		private static unsafe void AccumulateDecimalDigitsIntoBigNumber(scoped ref NumberInfo number, uint firstIndex, uint lastIndex, out BigNumber result)
 		{
 			BigNumber.SetZero(out result);
 
@@ -864,9 +871,13 @@ namespace MissingValues.Internals
 			return (uint)val;
 		}
 
-		private unsafe byte* GetDigitsPointer()
+		internal unsafe byte* GetDigitsPointer()
 		{
 			return (byte*)Unsafe.AsPointer(ref MemoryMarshal.GetReference(Digits));
+		}
+		internal ref byte GetDigitsReference()
+		{
+			return ref MemoryMarshal.GetReference(Digits);
 		}
 	}
 }

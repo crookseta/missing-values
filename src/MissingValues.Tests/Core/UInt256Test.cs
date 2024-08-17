@@ -126,32 +126,6 @@ namespace MissingValues.Tests.Core
 		}
 
 		[Fact]
-		public void FormatCurrencyTest()
-		{
-
-		}
-		[Fact]
-		public void FormatEngineeringTest()
-		{
-
-		}
-		[Fact]
-		public void FormatFixedPointTest()
-		{
-
-		}
-		[Fact]
-		public void FormatGeneralTest()
-		{
-
-		}
-		[Fact]
-		public void FormatNumberTest()
-		{
-
-		}
-
-		[Fact]
 		public void ToDecFormatUtf8StringTest()
 		{
 			ReadOnlySpan<byte> toString = Encoding.UTF8.GetBytes(MaxValue.ToString()!);
