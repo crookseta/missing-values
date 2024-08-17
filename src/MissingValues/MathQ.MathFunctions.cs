@@ -547,7 +547,7 @@ namespace MissingValues
 		/// Returns the angle whose hyperbolic tangent is the specified number.
 		/// </summary>
 		/// <param name="x">A number representing a hyperbolic tangent, where <paramref name="x"/> must be greater than or equal to -1, but less than or equal to 1.</param>
-		/// <returns>An angle, θ, measured in radians, such that -∞ < θ <-1, or 1 < θ < ∞.</returns>
+		/// <returns>An angle, θ, measured in radians.</returns>
 		public static Quad Atanh(Quad x)
 		{
 			var exponent = x.BiasedExponent;
@@ -763,6 +763,13 @@ namespace MissingValues
 			}
 			return x + y;
 		}
+		/// <summary>
+		/// Returns <paramref name="value"/> clamped to the inclusive range of <paramref name="min"/> and <paramref name="max"/>.
+		/// </summary>
+		/// <param name="value">The value to be clamped</param>
+		/// <param name="min">The lower bound of the result</param>
+		/// <param name="max">The upper bound of the result</param>
+		/// <returns><paramref name="value"/> if <paramref name="min"/> ≤ <paramref name="value"/> ≤ <paramref name="max"/>.</returns>
 		public static Quad Clamp(Quad value, Quad min, Quad max)
 		{
 			if (min > max)
@@ -1179,7 +1186,6 @@ namespace MissingValues
 		public static Quad Cosh(Quad x)
 		{
 			var exponent = x.BiasedExponent;
-			uint w;
 			Quad t;
 
 			x = Quad.Abs(x);
@@ -1733,8 +1739,8 @@ namespace MissingValues
 		/// <summary>
 		/// Returns the smaller magnitude of two quadruple-precision floating-point numbers.
 		/// </summary>
-		/// <param name="val1">The first of two quadruple-precision floating-point numbers to compare.</param>
-		/// <param name="val2">The second of two quadruple-precision floating-point numbers to compare.</param>
+		/// <param name="x">The first of two quadruple-precision floating-point numbers to compare.</param>
+		/// <param name="y">The second of two quadruple-precision floating-point numbers to compare.</param>
 		/// <returns>Parameter <paramref name="x"/> or <paramref name="y"/>, whichever has the smaller magnitude. If <paramref name="x"/>, or <paramref name="y"/>, or both <paramref name="x"/> and <paramref name="y"/> are equal to <see cref="Quad.NaN"/>, <see cref="Quad.NaN"/> is returned.</returns>
 		public static Quad MinMagnitude(Quad x, Quad y)
 		{
