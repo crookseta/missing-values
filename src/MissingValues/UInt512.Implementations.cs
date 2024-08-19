@@ -943,12 +943,12 @@ namespace MissingValues
 
 		char IFormattableInteger<UInt512>.ToChar()
 		{
-			return (char)this.Lower.Lower;
+			return (char)this._p0;
 		}
 
 		int IFormattableInteger<UInt512>.ToInt32()
 		{
-			return (int)this.Lower.Lower;
+			return (int)this._p0;
 		}
 
 		Int512 IFormattableUnsignedInteger<UInt512, Int512>.ToSigned()

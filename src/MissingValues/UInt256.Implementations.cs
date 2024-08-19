@@ -233,7 +233,7 @@ namespace MissingValues
 		/// <inheritdoc/>
 		public static UInt256 Log2(UInt256 value)
 		{
-			if(value.Upper == 0)
+			if(value.Upper == UInt128.Zero)
 			{
 				return UInt128.Log2(value.Lower);
 			}
@@ -865,12 +865,12 @@ namespace MissingValues
 
 		char IFormattableInteger<UInt256>.ToChar()
 		{
-			return (char)this;
+			return (char)this._p0;
 		}
 
 		int IFormattableInteger<UInt256>.ToInt32()
 		{
-			return (int)this;
+			return (int)this._p0;
 		}
 
 		static UInt256 IFormattableNumber<UInt256>.GetDecimalValue(char value)
@@ -1120,7 +1120,7 @@ namespace MissingValues
 				ulong* pRight = stackalloc ulong[UlongCount];
 
 				Unsafe.WriteUnaligned(ref *(byte*)(pRight + 0), (divisor._p0));
-				Unsafe.WriteUnaligned(ref *(byte*)(pRight + 1), (divisor.	_p1));
+				Unsafe.WriteUnaligned(ref *(byte*)(pRight + 1), (divisor._p1));
 
 				Unsafe.WriteUnaligned(ref *(byte*)(pRight + 2), (divisor._p2));
 				Unsafe.WriteUnaligned(ref *(byte*)(pRight + 3), (divisor._p3));
