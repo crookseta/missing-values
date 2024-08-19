@@ -80,6 +80,7 @@ namespace MissingValues.Info
 				UInt512 => 155,
 				Int512 => 154 + 2,
 				Quad => 11563,
+				Octo => 183466
 			};
 			byte[]? bufferArray = null;
 			scoped Span<byte> buffer;
@@ -200,6 +201,23 @@ namespace MissingValues.Info
 			}
 
 			public override void Write(Utf8JsonWriter writer, Quad value, JsonSerializerOptions options)
+			{
+				WriteCore(writer, value);
+			}
+		}
+		internal sealed class OctoConverter : JsonConverter<Octo>
+		{
+			public override Octo Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+			{
+				if (reader.TokenType != JsonTokenType.Number)
+				{
+					Thrower.ExpectedNumber(reader.TokenType);
+				}
+
+				return ReadCore<Octo>(ref reader);
+			}
+
+			public override void Write(Utf8JsonWriter writer, Octo value, JsonSerializerOptions options)
 			{
 				WriteCore(writer, value);
 			}

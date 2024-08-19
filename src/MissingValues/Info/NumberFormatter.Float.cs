@@ -95,7 +95,7 @@ internal static partial class NumberFormatter
 			return new string(Utf16Char.CastToCharSpan(buffer).TrimEnd('\0'));
 		}
 
-		return new string(Utf16Char.CastToCharSpan(GetGeneralFromScientificFloatChars(buffer, info, precision)));
+		return new string(Utf16Char.CastToCharSpan(GetGeneralFromScientificFloatChars(buffer, info, precision, maxSignificandPrecision)));
 	}
 
 	public static bool TryFormatFloat<TFloat, TSignificand, TChar>(
@@ -146,16 +146,14 @@ internal static partial class NumberFormatter
 			return buffer.TrimEnd(TChar.NullCharacter).TryCopyTo(destination);
 		}
 
-		ReadOnlySpan<TChar> general = GetGeneralFromScientificFloatChars(buffer, info, precision);
+		ReadOnlySpan<TChar> general = GetGeneralFromScientificFloatChars(buffer, info, precision, maxSignificandPrecision);
 		charsWritten = general.Length;
 		return general.TryCopyTo(destination);
 	}
 
-	private static ReadOnlySpan<TChar> GetGeneralFromScientificFloatChars<TChar>(Span<TChar> buffer, NumberFormatInfo info, int precision)
+	private static ReadOnlySpan<TChar> GetGeneralFromScientificFloatChars<TChar>(Span<TChar> buffer, NumberFormatInfo info, int precision, int maxSignificandPrecision)
 		where TChar : unmanaged, IUtfCharacter<TChar>
 	{
-		const int MaxSignificandPrecision = 33;
-
 		Span<TChar> actualValue = buffer.TrimEnd(TChar.NullCharacter);
 
 		int eIndex = actualValue.IndexOf((TChar)'E');
@@ -175,16 +173,16 @@ internal static partial class NumberFormatter
 		bool containsDecimalSeparator = dotIndex >= 0;
 
 		// If buffer cannot be represented with precision.
-		if ((!isNegativeExponent && (containsDecimalSeparator && exponent >= actualValue[(dotIndex + 1)..eIndex].Length && MaxSignificandPrecision < actualValue.Length)) ||
-			(isNegativeExponent && (containsDecimalSeparator && (-exponent) >= 1 && MaxSignificandPrecision < actualValue.Length)))
+		if ((!isNegativeExponent && (containsDecimalSeparator && exponent >= actualValue[(dotIndex + 1)..eIndex].Length && maxSignificandPrecision < actualValue.Length)) ||
+			(isNegativeExponent && (containsDecimalSeparator && (-exponent) >= 1 && maxSignificandPrecision < actualValue.Length)))
 		{
 			return actualValue;
 		}
-		if (!containsDecimalSeparator && ((isNegativeExponent && (-exponent) >= MaxSignificandPrecision) || (!isNegativeExponent && exponent >= MaxSignificandPrecision)))
+		if (!containsDecimalSeparator && ((isNegativeExponent && (-exponent) >= maxSignificandPrecision) || (!isNegativeExponent && exponent >= maxSignificandPrecision)))
 		{
 			return actualValue;
 		}
-		if (int.Abs(exponent) >= MaxSignificandPrecision)
+		if (int.Abs(exponent) >= maxSignificandPrecision)
 		{
 			return actualValue;
 		}
