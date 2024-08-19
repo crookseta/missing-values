@@ -251,7 +251,7 @@ namespace MissingValues
 		/// <inheritdoc/>
 		public static bool IsOddInteger(UInt512 value)
 		{
-			return (value._p0 & UInt256.One) != UInt256.Zero;
+			return (value._p0 & 1) != 0;
 		}
 
 		static bool INumberBase<UInt512>.IsPositive(UInt512 value)

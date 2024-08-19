@@ -592,12 +592,10 @@ namespace MissingValues
 			}
 		}
 		// Signed
-		[CLSCompliant(false)]
 		public static explicit operator sbyte(Quad value)
 		{
 			return (sbyte)(long)value;
 		}
-		[CLSCompliant(false)]
 		public static explicit operator checked sbyte(Quad value)
 		{
 			return checked((sbyte)(long)value);
@@ -947,7 +945,7 @@ namespace MissingValues
 		{
 			return (decimal)(double)value;
 		}
-		public static explicit operator Octo(Quad value)
+		public static implicit operator Octo(Quad value)
 		{
 			bool sign = IsNegative(value);
 			int exp = value.BiasedExponent;
@@ -1273,47 +1271,5 @@ namespace MissingValues
 			return new Quad(sign, (ushort)(exp + (ExponentBias - HalfExponentBias)), (UInt128)sig << 102);
 		}
 		#endregion
-
-		private static double CreateDoubleNaN(bool sign, ulong significand)
-		{
-			const ulong NaNBits = 0x7FF0_0000_0000_0000 | 0x80000_00000000; // Most significant significand bit
-
-			ulong signInt = (sign ? 1UL : 0UL) << 63;
-			ulong sigInt = significand >> 12;
-
-			return BitConverter.UInt64BitsToDouble(signInt | NaNBits | sigInt);
-		}
-		private static double CreateDouble(bool sign, ushort exp, ulong sig)
-		{
-			return BitConverter.UInt64BitsToDouble(((sign ? 1UL : 0UL) << 63) + ((ulong)exp << 52) + sig);
-		}
-
-		private static float CreateSingleNaN(bool sign, ulong significand)
-		{
-			const uint NaNBits = 0x7F80_0000 | 0x400000; // Most significant significand bit
-
-			uint signInt = (sign ? 1U : 0U) << 31;
-			uint sigInt = (uint)(significand >> 41);
-
-			return BitConverter.UInt32BitsToSingle(signInt | NaNBits | sigInt);
-		}
-		private static float CreateSingle(bool sign, byte exp, uint sig)
-		{
-			return BitConverter.UInt32BitsToSingle(((sign ? 1U : 0U) << 31) + ((uint)exp << 23) + sig);
-		}
-
-		private static Half CreateHalfNaN(bool sign, ulong significand)
-		{
-			const uint NaNBits = 0x7C00 | 0x200; // Most significant significand bit
-
-			uint signInt = (sign ? 1U : 0U) << 15;
-			uint sigInt = (uint)(significand >> 54);
-
-			return BitConverter.UInt16BitsToHalf((ushort)(signInt | NaNBits | sigInt));
-		}
-		private static Half CreateHalf(bool sign, ushort exp, ushort sig)
-		{
-			return BitConverter.UInt16BitsToHalf(((ushort)(((sign ? 1 : 0) << 15) + (exp << 10) + sig)));
-		}
 	}
 }
