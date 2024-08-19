@@ -62,8 +62,6 @@ namespace MissingValues
 		private static Quad M_PI_2 => new Quad(0x3FFF_921F_B544_42D1, 0x8469_898C_C517_01B8); // pi / 2
 		private static Quad M_PI_4 => new Quad(0x3FFE_921F_B544_42D1, 0x8469_898C_C517_01B8); // pi / 4
 		private static Quad LN2 => new Quad(0x3FFE_62E4_2FEF_A39E, 0xF357_ADEB_B905_E4BD);
-		private static Quad LOG2EA => new Quad();
-		private static Quad SQRTH => new Quad();
 
 		private static Quad RoundLimit => new Quad(0x4073_3426_172C_74D8, 0x22B8_78FE_8000_0000); // 1E35
 		internal static ReadOnlySpan<Quad> RoundPower10 => new Quad[MaxRoundingDigits + 1] 
@@ -1219,7 +1217,7 @@ namespace MissingValues
 		/// <returns>The number <seealso cref="Quad.E"/> raised to the power <paramref name="x"/>. If <paramref name="x"/> equals <see cref="Quad.NaN"/> or <see cref="Quad.PositiveInfinity"/>, that value is returned. If <paramref name="x"/> equals <see cref="Quad.NegativeInfinity"/>, 0 is returned.</returns>
 		public static Quad Exp(Quad x)
 		{
-			Quad t, twopk;
+			Quad t;
 
 			ushort ix;
 
@@ -1255,7 +1253,7 @@ namespace MissingValues
 		}
 		private static void Exp(Quad x, out Quad hip, out Quad lop, out int kp)
 		{
-			Quad q, r, r1, t, z;
+			Quad q, r, r1, t;
 			double dr, fn, r2;
 			int n, n2;
 
@@ -1935,7 +1933,6 @@ namespace MissingValues
 				Quad huge = Constants.Pow.Huge;
 				Quad tiny = Constants.Pow.Tiny;
 
-				/* if (1 - 2^-113)^y underflows, y > 1.1873e38 */
 				if (iy > 0x407d654b)
 				{
 					if (ix <= 0x3ffeffff)
@@ -2181,7 +2178,7 @@ namespace MissingValues
 			for (int i = 0; i < 15; i++)
 			{
 				// X1 = X(2 - DX)
-				//Quad x1 = f * (two - (normalizedValue * f));
+				// x1 = f * (two - (normalizedValue * f))
 				Quad x1 = x0 * FusedMultiplyAdd(normalizedValue, x0, two);
 				// Since we need: two - (normalizedValue * f)
 				// to make use of FusedMultiplyAdd, we can rewrite it to (-normalizedValue * f) + two
@@ -2219,7 +2216,7 @@ namespace MissingValues
 			// This is based on the 'Berkeley SoftFloat Release 3e' algorithm
 			// source: berkeley-softfloat-3/source/f128_roundToInt.c
 
-			UInt128 uiZ, lastBitMask;
+			UInt128 uiZ;
 			UInt128 bits = Quad.QuadToUInt128Bits(x);
 			ulong uiZ64 = x._upper, uiZ0 = x._lower, roundBitsMask;
 			ulong lastBitMask64, lastBitMask0;
