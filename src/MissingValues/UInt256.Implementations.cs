@@ -842,7 +842,7 @@ namespace MissingValues
 			ref byte address = ref MemoryMarshal.GetReference(destination);
 
 			Unsafe.WriteUnaligned(ref address, upper);
-			Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref address, BitHelper.SizeOf<UInt128>()), lower);
+			Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref address, Unsafe.SizeOf<UInt128>()), lower);
 		}
 		private void WriteLittleEndianUnsafe(Span<byte> destination)
 		{
@@ -860,7 +860,7 @@ namespace MissingValues
 			ref byte address = ref MemoryMarshal.GetReference(destination);
 
 			Unsafe.WriteUnaligned(ref address, lower);
-			Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref address, BitHelper.SizeOf<UInt128>()), upper);
+			Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref address, Unsafe.SizeOf<UInt128>()), upper);
 		}
 
 		char IFormattableInteger<UInt256>.ToChar()
