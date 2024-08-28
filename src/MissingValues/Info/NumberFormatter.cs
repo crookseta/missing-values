@@ -65,6 +65,7 @@ namespace MissingValues.Info
 		{
 			scoped NumberInfo number;
 			scoped Span<byte> digits;
+			byte[]? digitsArray = null;
 			ValueListBuilder<TChar> builder = new ValueListBuilder<TChar>(stackalloc TChar[256]);
 
 			if (TNumber.IsBinaryInteger())
@@ -95,7 +96,8 @@ namespace MissingValues.Info
 				}
 				else
 				{
-					throw new FormatException();
+					Thrower.NotSupported<TNumber>();
+					number = default;
 				}
 			}
 			else
@@ -104,27 +106,28 @@ namespace MissingValues.Info
 
 				if (value is Quad quad)
 				{
-					digits = stackalloc byte[11563 + 1 + 1];
+					digits = digitsArray = ArrayPool<byte>.Shared.Rent(NumberParser.QuadBufferLength);
 
-					number = new(digits);
+					number = new(digits[..NumberParser.QuadBufferLength]);
 					Ryu.Format<Quad, UInt128>(in quad, ref number, out exceptional);
 				}
 				else if (value is Octo octo)
 				{
-					digits = stackalloc byte[183466 + 1 + 1];
+					digits = digitsArray = ArrayPool<byte>.Shared.Rent(NumberParser.OctoBufferLength);
 
-					number = new(digits);
+					number = new(digits[..NumberParser.OctoBufferLength]);
 					Ryu.Format<Octo, UInt256>(in octo, ref number, out exceptional);
 				}
 				else
 				{
-					throw new FormatException();
+					Thrower.NotSupported<TNumber>();
+					number = default;
+					exceptional = false;
 				}
 
 				if (exceptional)
 				{
 					scoped Span<TChar> sign;
-					bool result;
 					if (number.DigitsCount > 1) // NaN
 					{
 						sign = stackalloc TChar[TChar.GetLength(provider.NaNSymbol)];
@@ -140,7 +143,8 @@ namespace MissingValues.Info
 						sign = stackalloc TChar[TChar.GetLength(provider.PositiveInfinitySymbol)];
 						TChar.Copy(provider.PositiveInfinitySymbol, sign);
 					}
-					if(result = sign.TryCopyTo(destination))
+					bool res;
+					if(res = sign.TryCopyTo(destination))
 					{
 						charsWritten = sign.Length;
 					}
@@ -148,38 +152,54 @@ namespace MissingValues.Info
 					{
 						charsWritten = 0;
 					}
-					return result;
+					return res;
 					
 				}
 			}
 
 			char fmt = GetFormat(format, out int precision);
+			bool result;
 
 			switch (fmt)
 			{
 				case 'c':
 				case 'C':
 					Format<CurrencyFormat>(ref builder, ref number, precision, false, provider);
-					return builder.TryCopyTo(destination, out charsWritten);
+					result = builder.TryCopyTo(destination, out charsWritten);
+					break;
 				case 'e':
 					Debug.Assert(TNumber.IsBinaryInteger());
 					Format<EngineeringFormat>(ref builder, ref number, precision, false, provider);
-					return builder.TryCopyTo(destination, out charsWritten);
+					result = builder.TryCopyTo(destination, out charsWritten);
+					break;
 				case 'E':
 					Debug.Assert(TNumber.IsBinaryInteger());
 					Format<EngineeringFormat>(ref builder, ref number, precision, true, provider);
-					return builder.TryCopyTo(destination, out charsWritten);
+					result = builder.TryCopyTo(destination, out charsWritten);
+					break;
 				case 'f':
 				case 'F':
 					Format<FixedFormat>(ref builder, ref number, precision, false, provider);
-					return builder.TryCopyTo(destination, out charsWritten);
+					result = builder.TryCopyTo(destination, out charsWritten);
+					break;
 				case 'n':
 				case 'N':
 					Format<NumericFormat>(ref builder, ref number, precision, false, provider);
-					return builder.TryCopyTo(destination, out charsWritten);
+					result = builder.TryCopyTo(destination, out charsWritten);
+					break;
 				default:
-					throw new FormatException();
+					Thrower.InvalidFormat(fmt);
+					charsWritten = 0;
+					result = false;
+					break;
 			}
+
+			if (digitsArray is not null)
+			{
+				ArrayPool<byte>.Shared.Return(digitsArray);
+			}
+
+			return result;
 			static void Format<TFormat>(ref ValueListBuilder<TChar> vlb, ref NumberInfo number, int nMaxDigits, bool isUpper, NumberFormatInfo info)
 				where TFormat : struct, INumberFormat
 			{
@@ -199,11 +219,9 @@ namespace MissingValues.Info
 			where TUnsigned : struct, IFormattableUnsignedInteger<TUnsigned, TSigned>
 			where TSigned : struct, IFormattableSignedInteger<TSigned, TUnsigned>
 		{
-			number.DigitsCount = TUnsigned.MaxDecimalDigits;
+			int charsWritten = number.DigitsCount = TUnsigned.CountDigits(in value);
+			UnsignedIntegerToDecChars(value, MemoryMarshal.Cast<byte, Utf8Char>(number.Digits), charsWritten);
 
-			TryFormatUnsignedInteger<TUnsigned, TSigned, Utf8Char>(in value, MemoryMarshal.Cast<byte, Utf8Char>(number.Digits), out int charsWritten, [], null);
-
-			number.DigitsCount = charsWritten;
 			number.Scale = charsWritten;
 			number.Digits[charsWritten] = (byte)'\0';
 
@@ -374,7 +392,7 @@ namespace MissingValues.Info
 
 			Span<TChar> digits = stackalloc TChar[10];
 			int charsWritten = 0;
-			TryCopyInt32(value, digits, ref charsWritten, info);
+			TryCopyInt32(value, digits, ref charsWritten);
 			vlb.Append(digits[..charsWritten]);
 		}
 
@@ -435,7 +453,7 @@ namespace MissingValues.Info
 			}
 		}
 
-		private static bool TryCopyInt32<TChar>(int value, Span<TChar> destination, ref int charsWritten, NumberFormatInfo info)
+		private static bool TryCopyInt32<TChar>(int value, Span<TChar> destination, ref int charsWritten)
 			where TChar : unmanaged, IUtfCharacter<TChar>
 		{
 			Span<TChar> digits = stackalloc TChar[12];
@@ -453,19 +471,6 @@ namespace MissingValues.Info
 				digits[(--i)] = (TChar)(byte)(quo + '0');
 				charsWritten++;
 			}
-
-			//if (int.IsNegative(value))
-			//{
-			//	var length = TChar.GetLength(info.NegativeSign);
-			//	charsWritten += length;
-			//	TChar.Copy(info.NegativeSign, digits[(i - length)..]);
-			//}
-			//else
-			//{
-			//	var length = TChar.GetLength(info.PositiveSign);
-			//	charsWritten += length;
-			//	TChar.Copy(info.PositiveSign, digits[(i - length)..]);
-			//}
 
 			return digits.TrimStart(TChar.NullCharacter).TryCopyTo(destination);
 		}

@@ -56,6 +56,11 @@ namespace MissingValues.Internals
 			throw new ArithmeticException($"{nameof(x)} cannot be {NumberFormatInfo.CurrentInfo.NaNSymbol}");
 		}
 		[DoesNotReturn]
+		public static void InvalidFormat(char format)
+		{
+			throw new FormatException($"The format '{format}' is invalid.");
+		}
+		[DoesNotReturn]
 		public static void InvalidFormat(string format)
 		{
 			throw new FormatException($"The format '{format}' is invalid.");
@@ -146,9 +151,14 @@ namespace MissingValues.Internals
 			throw new NotSupportedException($"{typeof(TFrom)} cannot be represented as {typeof(TTo)}.\n");
 		}
 		[DoesNotReturn]
+		public static void NotSupported<T>()
+		{
+			throw new NotSupportedException($"{typeof(T)} is not supported.\n");
+		}
+		[DoesNotReturn]
 		public static void NotSupported()
 		{
-			throw new NotSupportedException($"Operation not supported.\n");
+			throw new NotSupportedException("Operation not supported.\n");
 		}
 		[DoesNotReturn]
 		public static void ExpectedNumber(JsonTokenType actual)

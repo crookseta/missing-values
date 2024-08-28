@@ -315,14 +315,15 @@ namespace MissingValues.Info
 		 * Quad: 11563
 		 * Octo: 183466
 		 */
-		const int FloatBufferLength = 183466 + 1 + 1; // Max buffer length + 1 for rounding 
+		internal const int QuadBufferLength = 11563 + 1 + 1; // Max buffer length + 1 for rounding 
+		internal const int OctoBufferLength = 183466 + 1 + 1; // Max buffer length + 1 for rounding 
 
 		public static unsafe bool TryParseFloat<TFloat, TBits, TChar>(ReadOnlySpan<TChar> s, NumberStyles styles, IFormatProvider? provider, [MaybeNullWhen(false)] out TFloat result)
 			where TFloat : struct, IBinaryFloatingPointInfo<TFloat, TBits>
 			where TBits : unmanaged, IBinaryInteger<TBits>, IUnsignedNumber<TBits>
 			where TChar : unmanaged, IUtfCharacter<TChar>
 		{
-			byte[] buffer = ArrayPool<byte>.Shared.Rent(FloatBufferLength);
+			byte[] buffer = ArrayPool<byte>.Shared.Rent(OctoBufferLength);
 			NumberInfo number = new NumberInfo(buffer);
 			NumberFormatInfo info = NumberFormatInfo.GetInstance(provider);
 
