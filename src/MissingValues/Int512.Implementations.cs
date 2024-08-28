@@ -490,7 +490,7 @@ namespace MissingValues
 		/// <inheritdoc/>
 		public string ToString(string? format, IFormatProvider? formatProvider)
 		{
-			return NumberFormatter.FormatSignedInteger<Int512, UInt512>(in this, format, NumberStyles.Integer, formatProvider);
+			return NumberFormatter.FormatInt512(in this, format, formatProvider);
 		}
 
 		/// <inheritdoc/>
@@ -506,13 +506,13 @@ namespace MissingValues
 		/// <inheritdoc/>
 		public bool TryFormat(Span<char> destination, out int charsWritten, ReadOnlySpan<char> format, IFormatProvider? provider)
 		{
-			return NumberFormatter.TryFormatSignedInteger<Int512, UInt512, Utf16Char>(in this, Utf16Char.CastFromCharSpan(destination), out charsWritten, format, provider);
+			return NumberFormatter.TryFormatInt512(in this, Utf16Char.CastFromCharSpan(destination), out charsWritten, format, provider);
 		}
 
 		/// <inheritdoc/>
 		public bool TryFormat(Span<byte> utf8Destination, out int bytesWritten, ReadOnlySpan<char> format, IFormatProvider? provider)
 		{
-			return NumberFormatter.TryFormatSignedInteger<Int512, UInt512, Utf8Char>(in this, Utf8Char.CastFromByteSpan(utf8Destination), out bytesWritten, format, provider);
+			return NumberFormatter.TryFormatInt512(in this, Utf8Char.CastFromByteSpan(utf8Destination), out bytesWritten, format, provider);
 		}
 
 		/// <inheritdoc/>

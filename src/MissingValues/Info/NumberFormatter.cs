@@ -153,13 +153,9 @@ namespace MissingValues.Info
 				}
 			}
 
-			int precision = -1;
-			if (format.Length > 1)
-			{
-				precision = int.Parse(format[1..]);
-			}
+			char fmt = GetFormat(format, out int precision);
 
-			switch (format[0])
+			switch (fmt)
 			{
 				case 'c':
 				case 'C':
@@ -472,6 +468,35 @@ namespace MissingValues.Info
 			//}
 
 			return digits.TrimStart(TChar.NullCharacter).TryCopyTo(destination);
+		}
+		private static char GetFormat(ReadOnlySpan<char> format, out int digits)
+		{
+			char fmt = default;
+			digits = -1;
+			if (format.Length > 0)
+			{
+				fmt = format[0];
+				switch (format.Length)
+				{
+					case 1:
+						break;
+					case 2:
+						int d = format[1] - '0';
+						digits = (uint)d < 10 ? d : -1;
+						break;
+					case 3:
+						int d1 = format[1] - '0', d2 = format[2] - '0';
+						digits = ((uint)d1 < 10 && (uint)d2 < 10) ? d1 * 10 + d2 : -1;
+						break;
+					default:
+						if (!int.TryParse(format[1..], out digits))
+						{
+							Thrower.InvalidFormat(format.ToString());
+						}
+						break;
+				}
+			}
+			return fmt;
 		}
 	}
 }

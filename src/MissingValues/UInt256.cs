@@ -35,6 +35,10 @@ namespace MissingValues
 
 		internal UInt128 Lower => new UInt128(_p1, _p0);
 		internal UInt128 Upper => new UInt128(_p3, _p2);
+		internal ulong Part0 => _p0;
+		internal ulong Part1 => _p1;
+		internal ulong Part2 => _p2;
+		internal ulong Part3 => _p3;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="UInt256" /> struct.

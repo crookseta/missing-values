@@ -133,6 +133,7 @@ namespace MissingValues.Tests.Core
 			MathOperatorsHelper.ModulusOperation<UInt, UInt, UInt>(Two, Two).Should().Be(Zero);
 			MathOperatorsHelper.ModulusOperation<UInt, UInt, UInt>(One, Two).Should().NotBe(Zero);
 			MathOperatorsHelper.ModulusOperation<UInt, UInt, UInt>(MaxValue, new(10U)).Should().Be(5U);
+			MathOperatorsHelper.ModulusOperation<UInt, UInt, UInt>(MaxValue, new(10_000_000_000_000_000_000U)).Should().Be(7584007913129639935U);
 
 			Assert.Throws<DivideByZeroException>(() => MathOperatorsHelper.ModulusOperation<UInt, UInt, UInt>(One, Zero));
 		}

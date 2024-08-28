@@ -44,6 +44,14 @@ namespace MissingValues
 #endif
 		internal UInt256 Lower => new(_p3, _p2, _p1, _p0);
 		internal UInt256 Upper => new(_p7, _p6, _p5, _p4);
+		internal ulong Part0 => _p0;
+		internal ulong Part1 => _p1;
+		internal ulong Part2 => _p2;
+		internal ulong Part3 => _p3;
+		internal ulong Part4 => _p4;
+		internal ulong Part5 => _p5;
+		internal ulong Part6 => _p6;
+		internal ulong Part7 => _p7;
 
 		internal UInt512(ulong lower)
 		{

@@ -635,7 +635,7 @@ namespace MissingValues
 		/// <inheritdoc/>
 		public string ToString([StringSyntax(StringSyntaxAttribute.NumericFormat)] string? format, IFormatProvider? formatProvider)
 		{
-			return NumberFormatter.FormatUnsignedInteger<UInt512, Int512>(in this, format, formatProvider);
+			return NumberFormatter.FormatUInt512(in this, format, formatProvider);
 		}
 
 		static bool INumberBase<UInt512>.TryConvertFromChecked<TOther>(TOther value, out UInt512 result) => TryConvertFromChecked(value, out result);
@@ -848,13 +848,13 @@ namespace MissingValues
 		/// <inheritdoc/>
 		public bool TryFormat(Span<char> destination, out int charsWritten, [StringSyntax(StringSyntaxAttribute.NumericFormat)] ReadOnlySpan<char> format, IFormatProvider? provider)
 		{
-			return NumberFormatter.TryFormatUnsignedInteger<UInt512, Int512, Utf16Char>(in this, Utf16Char.CastFromCharSpan(destination), out charsWritten, format, provider);
+			return NumberFormatter.TryFormatUInt512(in this, Utf16Char.CastFromCharSpan(destination), out charsWritten, format, provider);
 		}
 
 		/// <inheritdoc/>
 		public bool TryFormat(Span<byte> utf8Destination, out int bytesWritten, [StringSyntax(StringSyntaxAttribute.NumericFormat)] ReadOnlySpan<char> format, IFormatProvider? provider)
 		{
-			return NumberFormatter.TryFormatUnsignedInteger<UInt512, Int512, Utf8Char>(in this, Utf8Char.CastFromByteSpan(utf8Destination), out bytesWritten, format, provider);
+			return NumberFormatter.TryFormatUInt512(in this, Utf8Char.CastFromByteSpan(utf8Destination), out bytesWritten, format, provider);
 		}
 
 		bool IBinaryInteger<UInt512>.TryWriteBigEndian(Span<byte> destination, out int bytesWritten)
@@ -957,6 +957,11 @@ namespace MissingValues
 		}
 
 		static int IFormattableUnsignedInteger<UInt512, Int512>.CountDigits(in UInt512 value)
+		{
+			return CountDigits(in value);
+		}
+
+		internal static int CountDigits(in UInt512 value)
 		{
 			var upper = value.Upper;
 			if (upper == UInt256.Zero)
