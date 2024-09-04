@@ -114,13 +114,13 @@ namespace MissingValues
 			UInt128 bl = right.Lower;
 			UInt128 bh = right.Upper;
 
-			UInt256 mull = BitHelper.BigMul(al, bl);
-			UInt256 t = BitHelper.BigMul(ah, bl) + mull.Upper;
-			UInt256 tl = BitHelper.BigMul(al, bh) + t.Lower;
+			UInt256 mull = Calculator.BigMul(al, bl);
+			UInt256 t = Calculator.BigMul(ah, bl) + mull.Upper;
+			UInt256 tl = Calculator.BigMul(al, bh) + t.Lower;
 
 			lower = new UInt256(tl.Lower, mull.Lower);
 
-			return BitHelper.BigMul(ah, bh) + t.Upper + tl.Upper;
+			return Calculator.BigMul(ah, bh) + t.Upper + tl.Upper;
 		}
 
 		/// <summary>Parses a span of characters into a value.</summary>

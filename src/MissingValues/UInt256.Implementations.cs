@@ -1173,7 +1173,7 @@ namespace MissingValues
 				}
 				return Calculator.Multiply(in left, right._p0, out _);
 			}
-			UInt128 upper = BitHelper.BigMul(left.Lower, right.Lower, out UInt128 lower);
+			UInt128 upper = Calculator.BigMul(left.Lower, right.Lower, out UInt128 lower);
 			upper += (left.Upper * right.Lower) + (left.Lower * right.Upper);
 			return new UInt256(upper, lower);
 		}

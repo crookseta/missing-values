@@ -169,13 +169,13 @@ namespace MissingValues
 			UInt256 bl = right.Lower;
 			UInt256 bh = right.Upper;
 
-			UInt512 mull = BitHelper.BigMul(al, bl);
-			UInt512 t = BitHelper.BigMul(ah, bl) + mull.Upper;
-			UInt512 tl = BitHelper.BigMul(al, bh) + t.Lower;
+			UInt512 mull = Calculator.BigMul(al, bl);
+			UInt512 t = Calculator.BigMul(ah, bl) + mull.Upper;
+			UInt512 tl = Calculator.BigMul(al, bh) + t.Lower;
 
 			lower = new UInt512(tl.Lower, mull.Lower);
 
-			return BitHelper.BigMul(ah, bh) + t.Upper + tl.Upper;
+			return Calculator.BigMul(ah, bh) + t.Upper + tl.Upper;
 		}
 
 		/// <summary>Parses a span of characters into a value.</summary>
