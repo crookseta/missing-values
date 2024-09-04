@@ -174,8 +174,110 @@ namespace MissingValues
 		/// <inheritdoc/>
 		public static (UInt256 Quotient, UInt256 Remainder) DivRem(UInt256 left, UInt256 right)
 		{
-			UInt256 quotient = left / right;
-			return (quotient, (left - (quotient * right)));
+			UInt256 quotient, remainder;
+
+			if (right._p3 == 0 && right._p2 == 0)
+			{
+				if (right._p1 == 0)
+				{
+					if (right._p0 == 0)
+					{
+						Thrower.DivideByZero();
+					}
+					DivRemFast(in left, right._p0, out quotient, out remainder);
+					return (quotient, remainder);
+				}
+
+				if (left._p3 == 0 && left._p2 == 0)
+				{
+					return UInt128.DivRem(left.Lower, right.Lower);
+				}
+			}
+
+			if (right >= left)
+			{
+				quotient = (right == left) ? One : Zero;
+				return (quotient, (left - (quotient * right)));
+			}
+
+			DivRemSlow(in left, in right, out quotient, out remainder);
+			return (quotient, remainder);
+
+			unsafe static void DivRemFast(in UInt256 quotient, ulong divisor, out UInt256 quo, out UInt256 rem)
+			{
+				const int UlongCount = Size / sizeof(ulong);
+
+				ulong* pLeft = stackalloc ulong[UlongCount];
+
+				Unsafe.WriteUnaligned(ref *(byte*)(pLeft + 0), (quotient._p0));
+				Unsafe.WriteUnaligned(ref *(byte*)(pLeft + 1), (quotient._p1));
+
+				Unsafe.WriteUnaligned(ref *(byte*)(pLeft + 2), (quotient._p2));
+				Unsafe.WriteUnaligned(ref *(byte*)(pLeft + 3), (quotient._p3));
+
+				Span<ulong> left = new Span<ulong>(pLeft, (UlongCount) - (BitHelper.LeadingZeroCount(quotient) / 64));
+
+				Span<ulong> rawBits = stackalloc ulong[UlongCount];
+				rawBits.Clear();
+
+				Calculator.DivRem(left, divisor, rawBits, out ulong remainder);
+
+				quo = new UInt256(
+					rawBits[3], rawBits[2],
+					rawBits[1], rawBits[0]
+					);
+				rem = remainder;
+			}
+			unsafe static void DivRemSlow(in UInt256 quotient, in UInt256 divisor, out UInt256 quo, out UInt256 rem)
+			{
+				const int UIntCount = Size / sizeof(uint);
+
+				uint* pLeft = stackalloc uint[UIntCount];
+
+				Unsafe.WriteUnaligned(ref *(byte*)(pLeft + 0), (uint)(quotient._p0 >> 00));
+				Unsafe.WriteUnaligned(ref *(byte*)(pLeft + 1), (uint)(quotient._p0 >> 32));
+				Unsafe.WriteUnaligned(ref *(byte*)(pLeft + 2), (uint)(quotient._p1 >> 00));
+				Unsafe.WriteUnaligned(ref *(byte*)(pLeft + 3), (uint)(quotient._p1 >> 32));
+
+				Unsafe.WriteUnaligned(ref *(byte*)(pLeft + 4), (uint)(quotient._p2 >> 00));
+				Unsafe.WriteUnaligned(ref *(byte*)(pLeft + 5), (uint)(quotient._p2 >> 32));
+				Unsafe.WriteUnaligned(ref *(byte*)(pLeft + 6), (uint)(quotient._p3 >> 00));
+				Unsafe.WriteUnaligned(ref *(byte*)(pLeft + 7), (uint)(quotient._p3 >> 32));
+
+				Span<uint> left = new Span<uint>(pLeft, (UIntCount) - (BitHelper.LeadingZeroCount(quotient) / 32));
+
+
+				uint* pRight = stackalloc uint[UIntCount];
+
+				Unsafe.WriteUnaligned(ref *(byte*)(pRight + 0), (uint)(divisor._p0 >> 00));
+				Unsafe.WriteUnaligned(ref *(byte*)(pRight + 1), (uint)(divisor._p0 >> 32));
+				Unsafe.WriteUnaligned(ref *(byte*)(pRight + 2), (uint)(divisor._p1 >> 00));
+				Unsafe.WriteUnaligned(ref *(byte*)(pRight + 3), (uint)(divisor._p1 >> 32));
+
+				Unsafe.WriteUnaligned(ref *(byte*)(pRight + 4), (uint)(divisor._p2 >> 00));
+				Unsafe.WriteUnaligned(ref *(byte*)(pRight + 5), (uint)(divisor._p2 >> 32));
+				Unsafe.WriteUnaligned(ref *(byte*)(pRight + 6), (uint)(divisor._p3 >> 00));
+				Unsafe.WriteUnaligned(ref *(byte*)(pRight + 7), (uint)(divisor._p3 >> 32));
+
+				Span<uint> right = new Span<uint>(pRight, (UIntCount) - (BitHelper.LeadingZeroCount(divisor) / 32));
+
+
+				Span<uint> quoBits = stackalloc uint[UIntCount];
+				quoBits.Clear();
+				Span<uint> remBits = stackalloc uint[UIntCount];
+				remBits.Clear();
+
+				Calculator.DivRem(left, right, quoBits, remBits);
+
+				quo = new UInt256(
+					(((ulong)quoBits[07] << 32) | quoBits[06]), (((ulong)quoBits[05] << 32) | quoBits[04]),
+					(((ulong)quoBits[03] << 32) | quoBits[02]), (((ulong)quoBits[01] << 32) | quoBits[00])
+					);
+				rem = new UInt256(
+					(((ulong)remBits[07] << 32) | remBits[06]), (((ulong)remBits[05] << 32) | remBits[04]),
+					(((ulong)remBits[03] << 32) | remBits[02]), (((ulong)remBits[01] << 32) | remBits[00])
+					);
+			}
 		}
 
 		/// <inheritdoc/>
@@ -1062,6 +1164,15 @@ namespace MissingValues
 		/// <inheritdoc/>
 		public static UInt256 operator *(in UInt256 left, in UInt256 right)
 		{
+			if (right._p3 == 0 && right._p2 == 0 && right._p1 == 0)
+			{
+				if (left._p3 == 0 && left._p2 == 0 && left._p1 == 0)
+				{
+					ulong up = Math.BigMul(left._p0, right._p0, out ulong low);
+					return new UInt256(0, 0, up, low);
+				}
+				return Calculator.Multiply(in left, right._p0, out _);
+			}
 			UInt128 upper = BitHelper.BigMul(left.Lower, right.Lower, out UInt128 lower);
 			upper += (left.Upper * right.Lower) + (left.Lower * right.Upper);
 			return new UInt256(upper, lower);
@@ -1069,7 +1180,21 @@ namespace MissingValues
 		/// <inheritdoc/>
 		public static UInt256 operator checked *(in UInt256 left, in UInt256 right)
 		{
-			UInt256 upper = BigMul(left, right, out UInt256 lower);
+			UInt256 lower;
+
+			if (right._p3 == 0 && right._p2 == 0 && right._p1 == 0)
+			{
+				lower = Calculator.Multiply(in left, right._p0, out ulong carry);
+
+				if (carry != 0)
+				{
+					Thrower.ArithmethicOverflow(Thrower.ArithmethicOperation.Multiplication);
+				}
+
+				return lower;
+			}
+
+			UInt256 upper = BigMul(left, right, out lower);
 
 			if(upper != Zero)
 			{
@@ -1084,9 +1209,13 @@ namespace MissingValues
 		{
 			if (right._p3 == 0 && right._p2 == 0)
 			{
-				if (right._p1 == 0 && right._p0 == 0)
+				if (right._p1 == 0)
 				{
-					Thrower.DivideByZero();
+					if (right._p0 == 0)
+					{
+						Thrower.DivideByZero();
+					}
+					return DivideFast(in left, right._p0);
 				}
 
 				if (left._p3 == 0 && left._p2 == 0)
@@ -1102,7 +1231,7 @@ namespace MissingValues
 
 			return DivideSlow(in left, in right);
 
-			unsafe static UInt256 DivideSlow(in UInt256 quotient, in UInt256 divisor)
+			unsafe static UInt256 DivideFast(in UInt256 quotient, ulong divisor)
 			{
 				const int UlongCount = Size / sizeof(ulong);
 
@@ -1116,26 +1245,58 @@ namespace MissingValues
 
 				Span<ulong> left = new Span<ulong>(pLeft, (UlongCount) - (BitHelper.LeadingZeroCount(quotient) / 64));
 
-
-				ulong* pRight = stackalloc ulong[UlongCount];
-
-				Unsafe.WriteUnaligned(ref *(byte*)(pRight + 0), (divisor._p0));
-				Unsafe.WriteUnaligned(ref *(byte*)(pRight + 1), (divisor._p1));
-
-				Unsafe.WriteUnaligned(ref *(byte*)(pRight + 2), (divisor._p2));
-				Unsafe.WriteUnaligned(ref *(byte*)(pRight + 3), (divisor._p3));
-
-				Span<ulong> right = new Span<ulong>(pRight, (UlongCount) - (BitHelper.LeadingZeroCount(divisor) / 64));
-
-
 				Span<ulong> rawBits = stackalloc ulong[UlongCount];
 				rawBits.Clear();
 
-				BitHelper.DivideSlow(left, right, rawBits);
+				Calculator.Divide(left, divisor, rawBits);
 
 				return new UInt256(
 					rawBits[3], rawBits[2],
 					rawBits[1], rawBits[0]
+					);
+			}
+			unsafe static UInt256 DivideSlow(in UInt256 quotient, in UInt256 divisor)
+			{
+				const int UIntCount = Size / sizeof(uint);
+
+				uint* pLeft = stackalloc uint[UIntCount];
+
+				Unsafe.WriteUnaligned(ref *(byte*)(pLeft + 0), (uint)(quotient._p0 >> 00));
+				Unsafe.WriteUnaligned(ref *(byte*)(pLeft + 1), (uint)(quotient._p0 >> 32));
+				Unsafe.WriteUnaligned(ref *(byte*)(pLeft + 2), (uint)(quotient._p1 >> 00));
+				Unsafe.WriteUnaligned(ref *(byte*)(pLeft + 3), (uint)(quotient._p1 >> 32));
+
+				Unsafe.WriteUnaligned(ref *(byte*)(pLeft + 4), (uint)(quotient._p2 >> 00));
+				Unsafe.WriteUnaligned(ref *(byte*)(pLeft + 5), (uint)(quotient._p2 >> 32));
+				Unsafe.WriteUnaligned(ref *(byte*)(pLeft + 6), (uint)(quotient._p3 >> 00));
+				Unsafe.WriteUnaligned(ref *(byte*)(pLeft + 7), (uint)(quotient._p3 >> 32));
+
+				Span<uint> left = new Span<uint>(pLeft, (UIntCount) - (BitHelper.LeadingZeroCount(quotient) / 32));
+
+
+				uint* pRight = stackalloc uint[UIntCount];
+
+				Unsafe.WriteUnaligned(ref *(byte*)(pRight + 0), (uint)(divisor._p0 >> 00));
+				Unsafe.WriteUnaligned(ref *(byte*)(pRight + 1), (uint)(divisor._p0 >> 32));
+				Unsafe.WriteUnaligned(ref *(byte*)(pRight + 2), (uint)(divisor._p1 >> 00));
+				Unsafe.WriteUnaligned(ref *(byte*)(pRight + 3), (uint)(divisor._p1 >> 32));
+
+				Unsafe.WriteUnaligned(ref *(byte*)(pRight + 4), (uint)(divisor._p2 >> 00));
+				Unsafe.WriteUnaligned(ref *(byte*)(pRight + 5), (uint)(divisor._p2 >> 32));
+				Unsafe.WriteUnaligned(ref *(byte*)(pRight + 6), (uint)(divisor._p3 >> 00));
+				Unsafe.WriteUnaligned(ref *(byte*)(pRight + 7), (uint)(divisor._p3 >> 32));
+
+				Span<uint> right = new Span<uint>(pRight, (UIntCount) - (BitHelper.LeadingZeroCount(divisor) / 32));
+
+
+				Span<uint> rawBits = stackalloc uint[UIntCount];
+				rawBits.Clear();
+
+				Calculator.Divide(left, right, rawBits);
+
+				return new UInt256(
+					(((ulong)rawBits[7] << 32) | rawBits[6]), (((ulong)rawBits[5] << 32) | rawBits[4]),
+					(((ulong)rawBits[3] << 32) | rawBits[2]), (((ulong)rawBits[1] << 32) | rawBits[0])
 					);
 			}
 		}
@@ -1143,8 +1304,91 @@ namespace MissingValues
 		/// <inheritdoc/>
 		public static UInt256 operator %(in UInt256 left, in UInt256 right)
 		{
-			UInt256 quotient = left / right;
-			return left - (quotient * right);
+			if (right._p3 == 0 && right._p2 == 0)
+			{
+				if (right._p1 == 0)
+				{
+					if (right._p0 == 0)
+					{
+						Thrower.DivideByZero();
+					}
+					return RemainderFast(in left, right._p0);
+				}
+
+				if (left._p3 == 0 && left._p2 == 0)
+				{
+					return left.Lower % right.Lower;
+				}
+			}
+
+			if (right >= left)
+			{
+				UInt256 quotient = (right == left) ? One : Zero;
+				return left - (quotient * right);
+			}
+
+			return RemainderSlow(in left, in right);
+
+			unsafe static UInt256 RemainderFast(in UInt256 quotient, ulong divisor)
+			{
+				const int UlongCount = Size / sizeof(ulong);
+
+				ulong* pLeft = stackalloc ulong[UlongCount];
+
+				Unsafe.WriteUnaligned(ref *(byte*)(pLeft + 0), (quotient._p0));
+				Unsafe.WriteUnaligned(ref *(byte*)(pLeft + 1), (quotient._p1));
+
+				Unsafe.WriteUnaligned(ref *(byte*)(pLeft + 2), (quotient._p2));
+				Unsafe.WriteUnaligned(ref *(byte*)(pLeft + 3), (quotient._p3));
+
+				Span<ulong> left = new Span<ulong>(pLeft, (UlongCount) - (BitHelper.LeadingZeroCount(quotient) / 64));
+
+				return Calculator.Remainder(left, divisor);
+			}
+			unsafe static UInt256 RemainderSlow(in UInt256 quotient, in UInt256 divisor)
+			{
+				const int UIntCount = Size / sizeof(uint);
+
+				uint* pLeft = stackalloc uint[UIntCount];
+
+				Unsafe.WriteUnaligned(ref *(byte*)(pLeft + 0), (uint)(quotient._p0 >> 00));
+				Unsafe.WriteUnaligned(ref *(byte*)(pLeft + 1), (uint)(quotient._p0 >> 32));
+				Unsafe.WriteUnaligned(ref *(byte*)(pLeft + 2), (uint)(quotient._p1 >> 00));
+				Unsafe.WriteUnaligned(ref *(byte*)(pLeft + 3), (uint)(quotient._p1 >> 32));
+
+				Unsafe.WriteUnaligned(ref *(byte*)(pLeft + 4), (uint)(quotient._p2 >> 00));
+				Unsafe.WriteUnaligned(ref *(byte*)(pLeft + 5), (uint)(quotient._p2 >> 32));
+				Unsafe.WriteUnaligned(ref *(byte*)(pLeft + 6), (uint)(quotient._p3 >> 00));
+				Unsafe.WriteUnaligned(ref *(byte*)(pLeft + 7), (uint)(quotient._p3 >> 32));
+
+				Span<uint> left = new Span<uint>(pLeft, (UIntCount) - (BitHelper.LeadingZeroCount(quotient) / 32));
+
+
+				uint* pRight = stackalloc uint[UIntCount];
+
+				Unsafe.WriteUnaligned(ref *(byte*)(pRight + 0), (uint)(divisor._p0 >> 00));
+				Unsafe.WriteUnaligned(ref *(byte*)(pRight + 1), (uint)(divisor._p0 >> 32));
+				Unsafe.WriteUnaligned(ref *(byte*)(pRight + 2), (uint)(divisor._p1 >> 00));
+				Unsafe.WriteUnaligned(ref *(byte*)(pRight + 3), (uint)(divisor._p1 >> 32));
+
+				Unsafe.WriteUnaligned(ref *(byte*)(pRight + 4), (uint)(divisor._p2 >> 00));
+				Unsafe.WriteUnaligned(ref *(byte*)(pRight + 5), (uint)(divisor._p2 >> 32));
+				Unsafe.WriteUnaligned(ref *(byte*)(pRight + 6), (uint)(divisor._p3 >> 00));
+				Unsafe.WriteUnaligned(ref *(byte*)(pRight + 7), (uint)(divisor._p3 >> 32));
+
+				Span<uint> right = new Span<uint>(pRight, (UIntCount) - (BitHelper.LeadingZeroCount(divisor) / 32));
+
+
+				Span<uint> rawBits = stackalloc uint[UIntCount];
+				rawBits.Clear();
+
+				Calculator.Remainder(left, right, rawBits);
+
+				return new UInt256(
+					(((ulong)rawBits[7] << 32) | rawBits[6]), (((ulong)rawBits[5] << 32) | rawBits[4]),
+					(((ulong)rawBits[3] << 32) | rawBits[2]), (((ulong)rawBits[1] << 32) | rawBits[0])
+					);
+			}
 		}
 
 		/// <inheritdoc/>
