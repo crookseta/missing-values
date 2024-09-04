@@ -955,7 +955,7 @@ namespace MissingValues
             {
 				if (sig != UInt128.Zero)
 				{
-					return BitHelper.CreateOctoNaN(sign, (UInt256)sig << Octo.MantissaDigits);
+					return BitHelper.CreateOctoNaN(sign, (UInt256)sig << 124);
 				}
 				return sign ? Octo.NegativeInfinity : Octo.PositiveInfinity;
             }

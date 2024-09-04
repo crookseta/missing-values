@@ -1,4 +1,5 @@
-﻿using MissingValues.Internals;
+﻿using MissingValues.Info;
+using MissingValues.Internals;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -17,13 +18,14 @@ namespace MissingValues
 	/// Represents an octuple-precision floating-point number.
 	/// </summary>
 	[StructLayout(LayoutKind.Sequential)]
-	//[JsonConverter(typeof(NumberConverter.OctoConverter))]
+	[JsonConverter(typeof(NumberConverter.OctoConverter))]
 	[DebuggerDisplay($"{{{nameof(ToString)}(),nq}}")]
 	public readonly partial struct Octo
 	{
 		internal static UInt256 SignMask => new UInt256(0x8000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
 		internal static UInt256 InvertedSignMask => new UInt256(0x7FFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF);
 
+		internal const int SignShift = 255;
 		internal const int MantissaDigits = 237;
 		internal const int ExponentBias = 262143;
 		internal const int BiasedExponentShift = 236;
@@ -59,8 +61,42 @@ namespace MissingValues
 		internal static UInt256 EBits => throw new NotImplementedException(); // TODO: Add E bits
 		#endregion
 		#region Constants
+		internal static Octo Quarter => new Octo(0x3FFF_D000_0000_0000, 0, 0, 0);
+		internal static Octo HalfOne => new Octo(0x3FFF_E000_0000_0000, 0, 0, 0);
 		internal static Octo Two => new Octo(0x4000_0000_0000_0000, 0, 0, 0);
+		internal static ReadOnlySpan<Octo> RoundPower10 => throw new NotImplementedException() /*new Octo[71]*/;
 		#endregion
+
+		internal uint BiasedExponent
+		{
+			get
+			{
+				UInt256 bits = OctoToUInt256Bits(this);
+				return ExtractBiasedExponentFromBits(bits);
+			}
+		}
+		internal int Exponent
+		{
+			get
+			{
+				return (int)(BiasedExponent - ExponentBias);
+			}
+		}
+		internal UInt256 Significand
+		{
+			get
+			{
+				return (TrailingSignificand | ((BiasedExponent != 0) ? (SignificandSignMask) : UInt256.Zero));
+			}
+		}
+		internal UInt256 TrailingSignificand
+		{
+			get
+			{
+				UInt256 bits = OctoToUInt256Bits(this);
+				return ExtractTrailingSignificandFromBits(bits);
+			}
+		}
 
 #if BIGENDIAN
 		private readonly ulong _bits3;
@@ -89,8 +125,11 @@ namespace MissingValues
 		/// <param name="sig">An <see cref="UInt256"/> representing the significand part of the floating-point number.</param>
 		public Octo(bool sign, uint exp, UInt256 sig)
 		{
-			var bits = sig | new UInt256((sign ? 0x8000_0000_0000_0000 : 0) | ((ulong)exp << 44),0,0,0);
-			System.Runtime.CompilerServices.Unsafe.As<Octo, UInt256>(ref System.Runtime.CompilerServices.Unsafe.AsRef(in this)) = bits;
+			var bits = (sig & TrailingSignificandMask) | new UInt256((sign ? 0x8000_0000_0000_0000 : 0) | ((ulong)(exp & 0x7FFFF) << 44),0,0,0);
+			_bits0 = bits.Part0;
+			_bits1 = bits.Part1;
+			_bits2 = bits.Part2;
+			_bits3 = bits.Part3;
 		}
 
 		/// <inheritdoc/>
@@ -142,11 +181,15 @@ namespace MissingValues
 		public static unsafe Int256 OctoToInt256Bits(Octo value) => *((Int256*)&value);
 
 
-		internal static uint ExtractBiasedExponentFromBits(UInt256 bits)
+		internal static bool AreZero(in Octo x, in Octo y)
+		{
+			return ((OctoToUInt256Bits(x) | OctoToUInt256Bits(y)) & ~SignMask) == UInt256.Zero;
+		}
+		internal static uint ExtractBiasedExponentFromBits(in UInt256 bits)
 		{
 			return (uint)((bits >> BiasedExponentShift) & ShiftedBiasedExponentMask);
 		}
-		internal static UInt256 ExtractTrailingSignificandFromBits(UInt256 bits)
+		internal static UInt256 ExtractTrailingSignificandFromBits(in UInt256 bits)
 		{
 			return (bits & TrailingSignificandMask);
 		}
@@ -156,10 +199,228 @@ namespace MissingValues
 		}
 		// TODO: Add casting to other primitive types.
 		#region From Octo
+		// Unsigned
+		public static explicit operator byte(Octo value)
+		{
+			throw new NotImplementedException();
+		}
+		public static explicit operator checked byte(Octo value)
+		{
+			throw new NotImplementedException();
+		}
+		public static explicit operator ushort(Octo value)
+		{
+			throw new NotImplementedException();
+		}
+		public static explicit operator checked ushort(Octo value)
+		{
+			throw new NotImplementedException();
+		}
+		public static explicit operator uint(Octo value)
+		{
+			throw new NotImplementedException();
+		}
+		public static explicit operator checked uint(Octo value)
+		{
+			throw new NotImplementedException();
+		}
+		public static explicit operator ulong(Octo value)
+		{
+			throw new NotImplementedException();
+		}
+		public static explicit operator checked ulong(Octo value)
+		{
+			throw new NotImplementedException();
+		}
+		public static explicit operator UInt128(Octo value)
+		{
+			throw new NotImplementedException();
+		}
+		public static explicit operator checked UInt128(Octo value)
+		{
+			throw new NotImplementedException();
+		}
+		public static explicit operator UInt256(Octo value)
+		{
+			throw new NotImplementedException();
+		}
+		public static explicit operator checked UInt256(Octo value)
+		{
+			throw new NotImplementedException();
+		}
+		public static explicit operator UInt512(Octo value)
+		{
+			throw new NotImplementedException();
+		}
+		public static explicit operator checked UInt512(Octo value)
+		{
+			throw new NotImplementedException();
+		}
+		// Signed
+		public static explicit operator sbyte(Octo value)
+		{
+			throw new NotImplementedException();
+		}
+		public static explicit operator checked sbyte(Octo value)
+		{
+			throw new NotImplementedException();
+		}
+		public static explicit operator short(Octo value)
+		{
+			throw new NotImplementedException();
+		}
+		public static explicit operator checked short(Octo value)
+		{
+			throw new NotImplementedException();
+		}
+		public static explicit operator int(Octo value)
+		{
+			throw new NotImplementedException();
+		}
+		public static explicit operator checked int(Octo value)
+		{
+			throw new NotImplementedException();
+		}
+		public static explicit operator long(Octo value)
+		{
+			throw new NotImplementedException();
+		}
+		public static explicit operator checked long(Octo value)
+		{
+			throw new NotImplementedException();
+		}
+		public static explicit operator Int128(Octo value)
+		{
+			throw new NotImplementedException();
+		}
+		public static explicit operator checked Int128(Octo value)
+		{
+			throw new NotImplementedException();
+		}
+		public static explicit operator Int256(Octo value)
+		{
+			throw new NotImplementedException();
+		}
+		public static explicit operator checked Int256(Octo value)
+		{
+			throw new NotImplementedException();
+		}
+		public static explicit operator Int512(Octo value)
+		{
+			throw new NotImplementedException();
+		}
+		public static explicit operator checked Int512(Octo value)
+		{
+			throw new NotImplementedException();
+		}
+		// Floating
+		public static explicit operator decimal(Octo value)
+		{
+			return (decimal)(double)value;
+		}
+		public static explicit operator Quad(Octo value)
+		{
+			UInt256 octoInt = OctoToUInt256Bits(value);
+			bool sign = (octoInt & Octo.SignMask) >> Octo.SignShift != UInt256.Zero;
+			int exp = (int)((octoInt & Octo.BiasedExponentMask) >> Octo.BiasedExponentShift);
+			UInt256 sig = octoInt & Octo.TrailingSignificandMask;
 
+			if (exp == MaxBiasedExponent)
+			{
+				if (sig != 0) // NaN
+				{
+					return BitHelper.CreateQuadNaN(sign, (UInt128)(sig >> 108)); // Shift the significand bits to the x end
+				}
+				return sign ? Quad.NegativeInfinity : Quad.PositiveInfinity;
+			}
+
+			sig <<= 18;
+			UInt128 sigOcto = (sig.Upper) | ((UInt128)sig != UInt128.Zero ? UInt128.One : UInt128.Zero);
+
+			if (((uint)exp | sigOcto) == UInt128.Zero)
+			{
+				return new Quad(sign, 0, UInt128.Zero);
+			}
+
+			exp -= 0x3_C001;
+
+			exp = exp < -0x1_0000 ? -0x1_0000 : exp;
+
+			return Quad.UInt128BitsToQuad(BitHelper.RoundPackToQuad(sign, exp, sigOcto | new UInt128(0x4000_0000_0000_0000, 0x0000_0000_0000_0000), 0));
+		}
+		public static explicit operator double(Octo value)
+		{
+			throw new NotImplementedException();
+		}
+		public static explicit operator float(Octo value)
+		{
+			throw new NotImplementedException();
+		}
+		public static explicit operator Half(Octo value)
+		{
+			throw new NotImplementedException();
+		}
 		#endregion
 		#region To Octo
-
+		// Unsigned
+		public static implicit operator Octo(byte value)
+		{
+			return (Octo)(uint)value;
+		}
+		public static implicit operator Octo(ushort value)
+		{
+			return (Octo)(uint)value;
+		}
+		public static implicit operator Octo(uint value)
+		{
+			throw new NotImplementedException();
+		}
+		public static implicit operator Octo(ulong value)
+		{
+			throw new NotImplementedException();
+		}
+		public static implicit operator Octo(UInt128 value)
+		{
+			throw new NotImplementedException();
+		}
+		// Signed
+		public static implicit operator Octo(sbyte value)
+		{
+			return (Octo)(int)value;
+		}
+		public static implicit operator Octo(short value)
+		{
+			return (Octo)(int)value;
+		}
+		public static implicit operator Octo(int value)
+		{
+			throw new NotImplementedException();
+		}
+		public static implicit operator Octo(long value)
+		{
+			throw new NotImplementedException();
+		}
+		public static implicit operator Octo(Int128 value)
+		{
+			throw new NotImplementedException();
+		}
+		// Floating
+		public static implicit operator Octo(decimal value)
+		{
+			return (Octo)(double)value;
+		}
+		public static implicit operator Octo(double value)
+		{
+			throw new NotImplementedException();
+		}
+		public static implicit operator Octo(float value)
+		{
+			throw new NotImplementedException();
+		}
+		public static implicit operator Octo(Half value)
+		{
+			throw new NotImplementedException();
+		}
 		#endregion
 	}
 }
