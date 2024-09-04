@@ -1171,7 +1171,14 @@ namespace MissingValues
 					ulong up = Math.BigMul(left._p0, right._p0, out ulong low);
 					return new UInt256(0, 0, up, low);
 				}
-				return Calculator.Multiply(in left, right._p0, out _);
+				if (right._p0 <= uint.MaxValue)
+				{
+					return Calculator.Multiply(in left, unchecked((uint)right._p0), out _);
+				}
+				else
+				{
+					return Calculator.Multiply(in left, right._p0, out _);
+				}
 			}
 			UInt128 upper = Calculator.BigMul(left.Lower, right.Lower, out UInt128 lower);
 			upper += (left.Upper * right.Lower) + (left.Lower * right.Upper);
@@ -1184,14 +1191,28 @@ namespace MissingValues
 
 			if (right._p3 == 0 && right._p2 == 0 && right._p1 == 0)
 			{
-				lower = Calculator.Multiply(in left, right._p0, out ulong carry);
-
-				if (carry != 0)
+				if (right._p0 <= uint.MaxValue)
 				{
-					Thrower.ArithmethicOverflow(Thrower.ArithmethicOperation.Multiplication);
-				}
+					lower = Calculator.Multiply(in left, unchecked((uint)right._p0), out uint carry);
 
-				return lower;
+					if (carry != 0)
+					{
+						Thrower.ArithmethicOverflow(Thrower.ArithmethicOperation.Multiplication);
+					}
+
+					return lower;
+				}
+				else
+				{
+					lower = Calculator.Multiply(in left, right._p0, out ulong carry);
+
+					if (carry != 0)
+					{
+						Thrower.ArithmethicOverflow(Thrower.ArithmethicOperation.Multiplication);
+					}
+
+					return lower;
+				}
 			}
 
 			UInt256 upper = BigMul(left, right, out lower);

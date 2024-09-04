@@ -115,6 +115,8 @@ namespace MissingValues.Tests.Core
 		public static void op_DivisionTest()
 		{
 			Assert.Equal(new UInt(new(0x7FFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF), new(0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF)), MathOperatorsHelper.DivisionOperation<UInt, UInt, UInt>(MaxValue, Two));
+			Assert.Equal(new UInt(0x0000_0000_0000_0001, 0xD83C_94FB_6D2A_C34A, 0x5663_D3C7_A0D8_65CA, 0x3C4C_A40E_0EA7_CFE9), MathOperatorsHelper.DivisionOperation<UInt, UInt, UInt>(MaxValue, 0x8AC7_2304_89E8_0000));
+			Assert.Equal(new UInt(0x0000_0000_0000_0000, 0x0000_0000_0000_0003, 0x671F_73B5_4F1C_8956, 0x5B9E_F4D6_3241_2884), MathOperatorsHelper.DivisionOperation<UInt, UInt, UInt>(MaxValue, new UInt128(0x4B3B_4CA8_5A86_C47A, 0x098A_2240_0000_0000)));
 			Assert.Equal(One, MathOperatorsHelper.DivisionOperation<UInt, UInt, UInt>(MaxValue, MaxValue));
 
 			Assert.Throws<DivideByZeroException>(() => MathOperatorsHelper.DivisionOperation<UInt, UInt, UInt>(One, Zero));
@@ -123,6 +125,8 @@ namespace MissingValues.Tests.Core
 		public static void op_CheckedDivisionTest()
 		{
 			Assert.Equal(new UInt(new(0x7FFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF), new(0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF)), MathOperatorsHelper.CheckedDivisionOperation<UInt, UInt, UInt>(MaxValue, Two));
+			Assert.Equal(new UInt(0x0000_0000_0000_0001, 0xD83C_94FB_6D2A_C34A, 0x5663_D3C7_A0D8_65CA, 0x3C4C_A40E_0EA7_CFE9), MathOperatorsHelper.CheckedDivisionOperation<UInt, UInt, UInt>(MaxValue, 0x8AC7_2304_89E8_0000));
+			Assert.Equal(new UInt(0x0000_0000_0000_0000, 0x0000_0000_0000_0003, 0x671F_73B5_4F1C_8956, 0x5B9E_F4D6_3241_2884), MathOperatorsHelper.CheckedDivisionOperation<UInt, UInt, UInt>(MaxValue, new UInt128(0x4B3B_4CA8_5A86_C47A, 0x098A_2240_0000_0000)));
 			Assert.Equal(One, MathOperatorsHelper.CheckedDivisionOperation<UInt, UInt, UInt>(MaxValue, MaxValue));
 
 			Assert.Throws<DivideByZeroException>(() => MathOperatorsHelper.CheckedDivisionOperation<UInt, UInt, UInt>(One, Zero));

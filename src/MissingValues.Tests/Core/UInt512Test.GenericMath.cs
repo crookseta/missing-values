@@ -130,6 +130,7 @@ namespace MissingValues.Tests.Core
 		{
 			Assert.Equal(One, MathOperatorsHelper.MultiplicationOperation<UInt, UInt, UInt>(One, One));
 			Assert.Equal(Two, MathOperatorsHelper.MultiplicationOperation<UInt, UInt, UInt>(Two, One));
+			Assert.Equal(MaxValueMinusOne, MathOperatorsHelper.MultiplicationOperation<UInt, UInt, UInt>(Two, HalfMaxValue));
 		}
 		[Fact]
 		public static void op_CheckedMultiplyTest()

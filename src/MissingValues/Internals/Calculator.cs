@@ -67,24 +67,71 @@ internal static class Calculator
 		ulong p3, p2, p1, p0;
 
 		UInt128 c = 0UL;
-		
+
 		UInt128 digits = BigMul(left.Part0, right) + c;
 		p0 = unchecked((ulong)digits);
 		c = digits >> 64;
-		
+
 		digits = BigMul(left.Part1, right) + c;
 		p1 = unchecked((ulong)digits);
 		c = digits >> 64;
-		
+
 		digits = BigMul(left.Part2, right) + c;
 		p2 = unchecked((ulong)digits);
 		c = digits >> 64;
-		
+
 		digits = BigMul(left.Part3, right) + c;
 		p3 = unchecked((ulong)digits);
 		carry = (ulong)(digits >> 64);
 
 		return new UInt256(p3, p2, p1, p0);
+	}
+	public static UInt256 Multiply(in UInt256 left, uint right, out uint carry)
+	{
+		// Based on: https://github.com/dotnet/runtime/blob/main/src/libraries/System.Runtime.Numerics/src/System/Numerics/BigIntegerCalculator.SquMul.cs
+
+		// Executes the multiplication for one big and one 64-bit integer.
+		// Since every step holds the already slightly familiar equation
+		// a_i * b + c <= 2^64 - 1 + (2^64 - 1)^2 < 2^128 - 1,
+		// we are safe regarding to overflows.
+
+		uint p7, p6, p5, p4, p3, p2, p1, p0;
+
+		ulong c = 0UL;
+		
+		ulong digits = ((ulong)unchecked((uint)(left.Part0)) * right) + c;
+		p0 = unchecked((uint)digits);
+		c = digits >> 32;
+
+		digits = ((left.Part0 >> 32) * right) + c;
+		p1 = unchecked((uint)digits);
+		c = digits >> 32;
+		
+		digits = ((ulong)unchecked((uint)(left.Part1)) * right) + c;
+		p2 = unchecked((uint)digits);
+		c = digits >> 32;
+		
+		digits = ((left.Part1 >> 32) * right) + c;
+		p3 = unchecked((uint)digits);
+		c = digits >> 32;
+		
+		digits = ((ulong)unchecked((uint)(left.Part2)) * right) + c;
+		p4 = unchecked((uint)digits);
+		c = digits >> 32;
+		
+		digits = ((left.Part2 >> 32) * right) + c;
+		p5 = unchecked((uint)digits);
+		c = digits >> 32;
+		
+		digits = ((ulong)unchecked((uint)(left.Part3)) * right) + c;
+		p6 = unchecked((uint)digits);
+		c = digits >> 32;
+		
+		digits = ((left.Part3 >> 32) * right) + c;
+		p7 = unchecked((uint)digits);
+		carry = (uint)(digits >> 32);
+
+		return new UInt256(((ulong)p7 << 32) | p6, ((ulong)p5 << 32) | p4, ((ulong)p3 << 32) | p2, ((ulong)p1 << 32) | p0);
 	}
 	public static UInt512 Multiply(in UInt512 left, ulong right, out ulong carry)
 	{
@@ -95,15 +142,15 @@ internal static class Calculator
 		UInt128 digits = BigMul(left.Part0, right) + c;
 		p0 = unchecked((ulong)digits);
 		c = digits >> 64;
-		
+
 		digits = BigMul(left.Part1, right) + c;
 		p1 = unchecked((ulong)digits);
 		c = digits >> 64;
-		
+
 		digits = BigMul(left.Part2, right) + c;
 		p2 = unchecked((ulong)digits);
 		c = digits >> 64;
-		
+
 		digits = BigMul(left.Part3, right) + c;
 		p3 = unchecked((ulong)digits);
 		c = digits >> 64;
@@ -111,20 +158,127 @@ internal static class Calculator
 		digits = BigMul(left.Part4, right) + c;
 		p4 = unchecked((ulong)digits);
 		c = digits >> 64;
-		
+
 		digits = BigMul(left.Part5, right) + c;
 		p5 = unchecked((ulong)digits);
 		c = digits >> 64;
-		
+
 		digits = BigMul(left.Part6, right) + c;
 		p6 = unchecked((ulong)digits);
 		c = digits >> 64;
-		
+
 		digits = BigMul(left.Part7, right) + c;
 		p7 = unchecked((ulong)digits);
 		carry = (ulong)(digits >> 64);
 
 		return new UInt512(p7, p6, p5, p4, p3, p2, p1, p0);
+	}
+	public static UInt512 Multiply(in UInt512 left, uint right, out uint carry)
+	{
+		uint p07, p06, p05, p04, p03, p02, p01, p00;
+		uint p15, p14, p13, p12, p11, p10, p09, p08;
+
+		ulong c = 0UL;
+
+		ulong digits = ((ulong)unchecked((uint)left.Part0) * right) + c;
+		p00 = unchecked((uint)digits);
+		c = digits >> 32;
+		
+		digits = ((left.Part0 >> 32) * right) + c;
+		p01 = unchecked((uint)digits);
+		c = digits >> 32;
+		
+		digits = ((ulong)unchecked((uint)left.Part1) * right) + c;
+		p02 = unchecked((uint)digits);
+		c = digits >> 32;
+		
+		digits = ((left.Part1 >> 32) * right) + c;
+		p03 = unchecked((uint)digits);
+		c = digits >> 32;
+		
+		digits = ((ulong)unchecked((uint)left.Part2) * right) + c;
+		p04 = unchecked((uint)digits);
+		c = digits >> 32;
+		
+		digits = ((left.Part2 >> 32) * right) + c;
+		p05 = unchecked((uint)digits);
+		c = digits >> 32;
+		
+		digits = ((ulong)unchecked((uint)left.Part3) * right) + c;
+		p06 = unchecked((uint)digits);
+		c = digits >> 32;
+		
+		digits = ((left.Part3 >> 32) * right) + c;
+		p07 = unchecked((uint)digits);
+		c = digits >> 32;
+
+		digits = ((ulong)unchecked((uint)left.Part4) * right) + c;
+		p08 = unchecked((uint)digits);
+		c = digits >> 32;
+		
+		digits = ((left.Part4 >> 32) * right) + c;
+		p09 = unchecked((uint)digits);
+		c = digits >> 32;
+		
+		digits = ((ulong)unchecked((uint)left.Part5) * right) + c;
+		p10 = unchecked((uint)digits);
+		c = digits >> 32;
+		
+		digits = ((left.Part5 >> 32) * right) + c;
+		p11 = unchecked((uint)digits);
+		c = digits >> 32;
+		
+		digits = ((ulong)unchecked((uint)left.Part6) * right) + c;
+		p12 = unchecked((uint)digits);
+		c = digits >> 32;
+		
+		digits = ((left.Part6 >> 32) * right) + c;
+		p13 = unchecked((uint)digits);
+		c = digits >> 32;
+		
+		digits = ((ulong)unchecked((uint)left.Part7) * right) + c;
+		p14 = unchecked((uint)digits);
+		c = digits >> 32;
+
+		digits = ((left.Part7 >> 32) * right) + c;
+		p15 = unchecked((uint)digits);
+		carry = (uint)(digits >> 32);
+
+		return new UInt512(
+			((ulong)p15 << 32) | p14, ((ulong)p13 << 32) | p12, ((ulong)p11 << 32) | p10, ((ulong)p09 << 32) | p08,
+			((ulong)p07 << 32) | p06, ((ulong)p05 << 32) | p04, ((ulong)p03 << 32) | p02, ((ulong)p01 << 32) | p00
+			);
+	}
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public static void Multiply(ReadOnlySpan<uint> left, ReadOnlySpan<uint> right, Span<uint> bits)
+	{
+		// Based on: https://github.com/dotnet/runtime/blob/main/src/libraries/System.Runtime.Numerics/src/System/Numerics/BigIntegerCalculator.SquMul.cs
+		Debug.Assert(right.Length < 32);
+
+		// Switching to managed references helps eliminating
+		// index bounds check...
+		ref uint resultPtr = ref MemoryMarshal.GetReference(bits);
+
+		// Multiplies the bits using the "grammar-school" method.
+		// Envisioning the "rhombus" of a pen-and-paper calculation
+		// should help getting the idea of these two loops...
+		// The inner multiplication operations are safe, because
+		// z_i+j + a_j * b_i + c <= 2(2^32 - 1) + (2^32 - 1)^2 =
+		// = 2^64 - 1 (which perfectly matches with ulong!).
+
+		for (int i = 0; i < right.Length; i++)
+		{
+			uint rv = right[i];
+			ulong carry = 0UL;
+			for (int j = 0; j < left.Length; j++)
+			{
+				ref uint elementPtr = ref Unsafe.Add(ref resultPtr, i + j);
+				ulong digits = elementPtr + carry + (ulong)left[j] * rv;
+				elementPtr = unchecked((uint)digits);
+				carry = digits >> 32;
+			}
+			Unsafe.Add(ref resultPtr, i + left.Length) = (uint)carry;
+		}
 	}
 
 	public static void DivRem(ReadOnlySpan<ulong> left, ulong right, Span<ulong> quotient, out ulong remainder)
@@ -146,7 +300,7 @@ internal static class Calculator
 
 		for (int i = left.Length - 1; i >= 0; i--)
 		{
-			UInt128 value = (carry << 64) | left[i];
+			UInt128 value = new UInt128((ulong)carry, left[i]);
 			UInt128 digit = value / right;
 			quotient[i] = (ulong)digit;
 			carry = value - digit * right;
@@ -172,13 +326,6 @@ internal static class Calculator
 		}
 		remainder = (uint)carry;
 	}
-	public static void DivRem(ReadOnlySpan<ulong> left, ReadOnlySpan<ulong> right, Span<ulong> quotient, Span<ulong> remainder)
-	{
-		// Based on: https://github.com/dotnet/runtime/blob/main/src/libraries/System.Runtime.Numerics/src/System/Numerics/BigIntegerCalculator.DivRem.cs
-
-		left.CopyTo(remainder);
-		Divide(MemoryMarshal.Cast<ulong, uint>(remainder), MemoryMarshal.Cast<ulong, uint>(right), MemoryMarshal.Cast<ulong, uint>(quotient));
-	}
 	public static void DivRem(ReadOnlySpan<uint> left, ReadOnlySpan<uint> right, Span<uint> quotient, Span<uint> remainder)
 	{
 		// Based on: https://github.com/dotnet/runtime/blob/main/src/libraries/System.Runtime.Numerics/src/System/Numerics/BigIntegerCalculator.DivRem.cs
@@ -203,7 +350,7 @@ internal static class Calculator
 
 		for (int i = left.Length - 1; i >= 0; i--)
 		{
-			UInt128 value = (carry << 64) | left[i];
+			UInt128 value = new UInt128((ulong)carry, left[i]);
 			UInt128 digit = value / right;
 			quotient[i] = (ulong)digit;
 			carry = value - digit * right;
@@ -252,7 +399,6 @@ internal static class Calculator
 			int n = i - right.Length;
 			ulong t = ((ulong)(i) < (ulong)(left.Length)) ? left[i] : 0;
 
-			//UInt128 valHi = ((UInt128)(t) << 64) | left[i - 1];
 			UInt128 valHi = new UInt128(t, left[i - 1]);
 			ulong valLo = (i > 1) ? left[i - 2] : 0;
 
@@ -514,7 +660,6 @@ internal static class Calculator
 
 		for (int i = left.Length - 1; i >= 0; i--)
 		{
-			//UInt128 value = (carry << 64) | left[i];
 			UInt128 value = new UInt128((ulong)carry, left[i]);
 			carry = value % right;
 		}
@@ -536,19 +681,6 @@ internal static class Calculator
 		}
 
 		return (uint)carry;
-	}
-	public static void Remainder(ReadOnlySpan<ulong> left, ReadOnlySpan<ulong> right, Span<ulong> remainder)
-	{
-		// Based on: https://github.com/dotnet/runtime/blob/main/src/libraries/System.Runtime.Numerics/src/System/Numerics/BigIntegerCalculator.DivRem.cs
-		// Same as above, but only returning the remainder.
-
-		left.CopyTo(remainder);
-
-		var remainder32 = MemoryMarshal.Cast<ulong, uint>(remainder);
-		var left32 = MemoryMarshal.Cast<ulong, uint>(left);
-		var right32 = MemoryMarshal.Cast<ulong, uint>(right);
-
-		Divide(remainder32, right32, stackalloc uint[left32.Length - right32.Length + 1]);
 	}
 	public static void Remainder(ReadOnlySpan<uint> left, ReadOnlySpan<uint> right, Span<uint> remainder)
 	{
