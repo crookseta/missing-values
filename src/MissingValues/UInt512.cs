@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Json.Serialization;
@@ -157,25 +158,27 @@ namespace MissingValues
 		/// <returns>The high 512-bit of the product of the specified numbers.</returns>
 		public static UInt512 BigMul(UInt512 left, UInt512 right, out UInt512 lower)
 		{
-			// Adaptation of algorithm for multiplication
-			// of 32-bit unsigned integers described
-			// in Hacker's Delight by Henry S. Warren, Jr. (ISBN 0-201-91465-4), Chapter 8
-			// Basically, it's an optimized version of FOIL method applied to
-			// low and high dwords of each operand
+			ReadOnlySpan<uint> leftSpan = MemoryMarshal.CreateReadOnlySpan(in Unsafe.As<UInt512, uint>(ref left), (Size / sizeof(uint)) - (BitHelper.LeadingZeroCount(left) / 32));
 
-			UInt256 al = left.Lower;
-			UInt256 ah = left.Upper;
+			ReadOnlySpan<uint> rightSpan = MemoryMarshal.CreateReadOnlySpan(in Unsafe.As<UInt512, uint>(ref right), (Size / sizeof(uint)) - (BitHelper.LeadingZeroCount(right) / 32));
 
-			UInt256 bl = right.Lower;
-			UInt256 bh = right.Upper;
+			Span<uint> rawBits = stackalloc uint[(Size / sizeof(uint)) * 2];
+			rawBits.Clear();
 
-			UInt512 mull = Calculator.BigMul(al, bl);
-			UInt512 t = Calculator.BigMul(ah, bl) + mull.Upper;
-			UInt512 tl = Calculator.BigMul(al, bh) + t.Lower;
+			Calculator.Multiply(leftSpan, rightSpan, rawBits);
 
-			lower = new UInt512(tl.Lower, mull.Lower);
-
-			return Calculator.BigMul(ah, bh) + t.Upper + tl.Upper;
+			lower = new UInt512(
+				(((ulong)rawBits[15] << 32) | rawBits[14]), (((ulong)rawBits[13] << 32) | rawBits[12]),
+				(((ulong)rawBits[11] << 32) | rawBits[10]), (((ulong)rawBits[09] << 32) | rawBits[08]),
+				(((ulong)rawBits[07] << 32) | rawBits[06]), (((ulong)rawBits[05] << 32) | rawBits[04]),
+				(((ulong)rawBits[03] << 32) | rawBits[02]), (((ulong)rawBits[01] << 32) | rawBits[00])
+				);
+			return new UInt512(
+				(((ulong)rawBits[31] << 32) | rawBits[30]), (((ulong)rawBits[29] << 32) | rawBits[28]),
+				(((ulong)rawBits[27] << 32) | rawBits[26]), (((ulong)rawBits[25] << 32) | rawBits[24]),
+				(((ulong)rawBits[23] << 32) | rawBits[22]), (((ulong)rawBits[21] << 32) | rawBits[20]),
+				(((ulong)rawBits[19] << 32) | rawBits[18]), (((ulong)rawBits[17] << 32) | rawBits[16])
+				);
 		}
 
 		/// <summary>Parses a span of characters into a value.</summary>

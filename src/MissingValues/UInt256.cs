@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Numerics;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text.Json.Serialization;
 
@@ -102,25 +103,23 @@ namespace MissingValues
 		/// <returns>The high 256-bit of the product of the specified numbers.</returns>
 		public static UInt256 BigMul(UInt256 left, UInt256 right, out UInt256 lower)
 		{
-			// Adaptation of algorithm for multiplication
-			// of 32-bit unsigned integers described
-			// in Hacker's Delight by Henry S. Warren, Jr. (ISBN 0-201-91465-4), Chapter 8
-			// Basically, it's an optimized version of FOIL method applied to
-			// low and high dwords of each operand
+			ReadOnlySpan<uint> leftSpan = MemoryMarshal.CreateReadOnlySpan(in Unsafe.As<UInt256, uint>(ref left), (Size / sizeof(uint)) - (BitHelper.LeadingZeroCount(left) / 32));
 
-			UInt128 al = left.Lower;
-			UInt128 ah = left.Upper;
+			ReadOnlySpan<uint> rightSpan = MemoryMarshal.CreateReadOnlySpan(in Unsafe.As<UInt256, uint>(ref right), (Size / sizeof(uint)) - (BitHelper.LeadingZeroCount(right) / 32));
 
-			UInt128 bl = right.Lower;
-			UInt128 bh = right.Upper;
+			Span<uint> rawBits = stackalloc uint[(Size / sizeof(uint)) * 2];
+			rawBits.Clear();
 
-			UInt256 mull = Calculator.BigMul(al, bl);
-			UInt256 t = Calculator.BigMul(ah, bl) + mull.Upper;
-			UInt256 tl = Calculator.BigMul(al, bh) + t.Lower;
+			Calculator.Multiply(leftSpan, rightSpan, rawBits);
 
-			lower = new UInt256(tl.Lower, mull.Lower);
-
-			return Calculator.BigMul(ah, bh) + t.Upper + tl.Upper;
+			lower = new UInt256(
+				(((ulong)rawBits[07] << 32) | rawBits[06]), (((ulong)rawBits[05] << 32) | rawBits[04]),
+				(((ulong)rawBits[03] << 32) | rawBits[02]), (((ulong)rawBits[01] << 32) | rawBits[00])
+				);
+			return new UInt256(
+				(((ulong)rawBits[15] << 32) | rawBits[14]), (((ulong)rawBits[13] << 32) | rawBits[12]),
+				(((ulong)rawBits[11] << 32) | rawBits[10]), (((ulong)rawBits[09] << 32) | rawBits[08])
+				);
 		}
 
 		/// <summary>Parses a span of characters into a value.</summary>

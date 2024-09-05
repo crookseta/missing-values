@@ -1268,11 +1268,9 @@ namespace MissingValues
 				}
 			}
 
-			Span<uint> leftSpan = stackalloc uint[(Size / sizeof(uint)) - (BitHelper.LeadingZeroCount(left) / 32)];
-			MemoryMarshal.CreateReadOnlySpan(in Unsafe.As<UInt512, uint>(ref Unsafe.AsRef(in left)), leftSpan.Length).CopyTo(leftSpan);
+			ReadOnlySpan<uint> leftSpan = MemoryMarshal.CreateReadOnlySpan(in Unsafe.As<UInt512, uint>(ref Unsafe.AsRef(in left)), (Size / sizeof(uint)) - (BitHelper.LeadingZeroCount(left) / 32));
 
-			Span<uint> rightSpan = stackalloc uint[(Size / sizeof(uint)) - (BitHelper.LeadingZeroCount(right) / 32)];
-			MemoryMarshal.CreateReadOnlySpan(in Unsafe.As<UInt512, uint>(ref Unsafe.AsRef(in right)), rightSpan.Length).CopyTo(rightSpan);
+			ReadOnlySpan<uint> rightSpan = MemoryMarshal.CreateReadOnlySpan(in Unsafe.As<UInt512, uint>(ref Unsafe.AsRef(in right)), (Size / sizeof(uint)) - (BitHelper.LeadingZeroCount(right) / 32));
 
 			Span<uint> rawBits = stackalloc uint[(Size / sizeof(uint)) * 2];
 			rawBits.Clear();
