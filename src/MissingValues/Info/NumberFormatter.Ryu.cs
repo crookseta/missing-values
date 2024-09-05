@@ -724,14 +724,14 @@ internal static partial class NumberFormatter
 		{
 			Debug.Assert(result.Length == 4);
 
-			UInt128 b00 = ((UInt128)a[0]) * b[0];           // 0
-			UInt128 b01 = ((UInt128)a[0]) * b[1];           // 64
-			UInt128 b02 = ((UInt128)a[0]) * b[2];           // 128
-			UInt128 b03 = ((UInt128)a[0]) * b[3];           // 196
-			UInt128 b10 = ((UInt128)a[1]) * b[0];           // 64
-			UInt128 b11 = ((UInt128)a[1]) * b[1];           // 128
-			UInt128 b12 = ((UInt128)a[1]) * b[2];           // 196
-			UInt128 b13 = ((UInt128)a[1]) * b[3];           // 256
+			UInt128 b00 = Calculator.BigMul(a[0], b[0]);           // 0
+			UInt128 b01 = Calculator.BigMul(a[0], b[1]);           // 64
+			UInt128 b02 = Calculator.BigMul(a[0], b[2]);           // 128
+			UInt128 b03 = Calculator.BigMul(a[0], b[3]);           // 196
+			UInt128 b10 = Calculator.BigMul(a[1], b[0]);           // 64
+			UInt128 b11 = Calculator.BigMul(a[1], b[1]);           // 128
+			UInt128 b12 = Calculator.BigMul(a[1], b[2]);           // 196
+			UInt128 b13 = Calculator.BigMul(a[1], b[3]);           // 256
 
 			UInt128 s0 = b00;                                           // 0
 			UInt128 s1 = b01 + b10;                                     // 64
@@ -777,22 +777,22 @@ internal static partial class NumberFormatter
 			Debug.Assert(result.Length == 8);
 
 			// Multiply each combination of 64-bit segments of a and b
-			UInt128 b00 = ((UInt128)a[0]) * b[0];    // 0
-			UInt128 b01 = ((UInt128)a[0]) * b[1];    // 64
-			UInt128 b02 = ((UInt128)a[0]) * b[2];    // 128
-			UInt128 b03 = ((UInt128)a[0]) * b[3];    // 192
-			UInt128 b10 = ((UInt128)a[1]) * b[0];    // 64
-			UInt128 b11 = ((UInt128)a[1]) * b[1];    // 128
-			UInt128 b12 = ((UInt128)a[1]) * b[2];    // 192
-			UInt128 b13 = ((UInt128)a[1]) * b[3];    // 256
-			UInt128 b20 = ((UInt128)a[2]) * b[0];    // 128
-			UInt128 b21 = ((UInt128)a[2]) * b[1];    // 192
-			UInt128 b22 = ((UInt128)a[2]) * b[2];    // 256
-			UInt128 b23 = ((UInt128)a[2]) * b[3];    // 320
-			UInt128 b30 = ((UInt128)a[3]) * b[0];    // 192
-			UInt128 b31 = ((UInt128)a[3]) * b[1];    // 256
-			UInt128 b32 = ((UInt128)a[3]) * b[2];    // 320
-			UInt128 b33 = ((UInt128)a[3]) * b[3];    // 384
+			UInt128 b00 = Calculator.BigMul(a[0], b[0]);    // 0
+			UInt128 b01 = Calculator.BigMul(a[0], b[1]);    // 64
+			UInt128 b02 = Calculator.BigMul(a[0], b[2]);    // 128
+			UInt128 b03 = Calculator.BigMul(a[0], b[3]);    // 192
+			UInt128 b10 = Calculator.BigMul(a[1], b[0]);    // 64
+			UInt128 b11 = Calculator.BigMul(a[1], b[1]);    // 128
+			UInt128 b12 = Calculator.BigMul(a[1], b[2]);    // 192
+			UInt128 b13 = Calculator.BigMul(a[1], b[3]);    // 256
+			UInt128 b20 = Calculator.BigMul(a[2], b[0]);    // 128
+			UInt128 b21 = Calculator.BigMul(a[2], b[1]);    // 192
+			UInt128 b22 = Calculator.BigMul(a[2], b[2]);    // 256
+			UInt128 b23 = Calculator.BigMul(a[2], b[3]);    // 320
+			UInt128 b30 = Calculator.BigMul(a[3], b[0]);    // 192
+			UInt128 b31 = Calculator.BigMul(a[3], b[1]);    // 256
+			UInt128 b32 = Calculator.BigMul(a[3], b[2]);    // 320
+			UInt128 b33 = Calculator.BigMul(a[3], b[3]);    // 384
 
 			// Sum up the intermediate products
 			UInt128 s0 = b00;
