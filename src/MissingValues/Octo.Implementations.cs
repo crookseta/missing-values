@@ -898,34 +898,129 @@ namespace MissingValues
 
 		static UInt256 IBinaryFloatingPointInfo<Octo, UInt256>.FloatToBits(Octo value) => OctoToUInt256Bits(value);
 
-		static bool INumberBase<Octo>.TryConvertFromChecked<TOther>(TOther value, out Octo result)
-		{
-			throw new NotImplementedException();
-		}
+		static bool INumberBase<Octo>.TryConvertFromChecked<TOther>(TOther value, out Octo result) => TryConvertFrom(value, out result);
 
-		static bool INumberBase<Octo>.TryConvertFromSaturating<TOther>(TOther value, out Octo result)
-		{
-			throw new NotImplementedException();
-		}
+		static bool INumberBase<Octo>.TryConvertFromSaturating<TOther>(TOther value, out Octo result) => TryConvertFrom(value, out result);
 
-		static bool INumberBase<Octo>.TryConvertFromTruncating<TOther>(TOther value, out Octo result)
+		static bool INumberBase<Octo>.TryConvertFromTruncating<TOther>(TOther value, out Octo result) => TryConvertFrom(value, out result);
+
+		private static bool TryConvertFrom<TOther>(TOther value, out Octo result)
 		{
-			throw new NotImplementedException();
+			bool converted = true;
+
+			result = value switch
+			{
+				Half actual => (Octo)actual,
+				float actual => (Octo)actual,
+				double actual => (Octo)actual,
+				Quad actual => (Octo)actual,
+				Octo actual => actual,
+				decimal actual => (Octo)actual,
+				byte actual => (Octo)actual,
+				ushort actual => (Octo)actual,
+				uint actual => (Octo)actual,
+				ulong actual => (Octo)actual,
+				UInt128 actual => (Octo)actual,
+				UInt256 actual => (Octo)actual,
+				UInt512 actual => (Octo)actual,
+				nuint actual => (Octo)actual,
+				sbyte actual => (Octo)actual,
+				short actual => (Octo)actual,
+				int actual => (Octo)actual,
+				long actual => (Octo)actual,
+				Int128 actual => (Octo)actual,
+				Int256 actual => (Octo)actual,
+				Int512 actual => (Octo)actual,
+				_ => BitHelper.DefaultConvert<Octo>(out converted)
+			};
+
+			return converted;
 		}
 
 		static bool INumberBase<Octo>.TryConvertToChecked<TOther>(Octo value, out TOther result)
 		{
-			throw new NotImplementedException();
+			bool converted = true;
+			result = default;
+			checked
+			{
+				result = result switch
+				{
+					Half => (TOther)(object)(Half)value,
+					float => (TOther)(object)(float)value,
+					double => (TOther)(object)(double)value,
+					Quad => (TOther)(object)(Quad)value,
+					Octo => (TOther)(object)value,
+					decimal => (TOther)(object)(decimal)value,
+					byte => (TOther)(object)(byte)value,
+					ushort => (TOther)(object)(ushort)value,
+					uint => (TOther)(object)(uint)value,
+					ulong => (TOther)(object)(ulong)value,
+					UInt128 => (TOther)(object)(UInt128)value,
+					UInt256 => (TOther)(object)(UInt256)value,
+					UInt512 => (TOther)(object)(UInt512)value,
+					nuint => (TOther)(object)(nuint)value,
+					sbyte => (TOther)(object)(sbyte)value,
+					short => (TOther)(object)(short)value,
+					int => (TOther)(object)(int)value,
+					long => (TOther)(object)(long)value,
+					Int128 => (TOther)(object)(Int128)value,
+					Int256 => (TOther)(object)(Int256)value,
+					Int512 => (TOther)(object)(Int512)value,
+					nint => (TOther)(object)(nint)value,
+					_ => BitHelper.DefaultConvert<TOther>(out converted)
+				};
+			}
+
+			return converted;
 		}
 
 		static bool INumberBase<Octo>.TryConvertToSaturating<TOther>(Octo value, out TOther result)
 		{
-			throw new NotImplementedException();
+			return TryConvertTo(value, out result);
 		}
 
 		static bool INumberBase<Octo>.TryConvertToTruncating<TOther>(Octo value, out TOther result)
 		{
-			throw new NotImplementedException();
+			return TryConvertTo(value, out result);
+		}
+
+		private static bool TryConvertTo<TOther>(Octo value, out TOther result)
+		{
+			bool converted = true;
+			result = default;
+
+			result = result switch
+			{
+				Half => (TOther)(object)(Half)value,
+				float => (TOther)(object)(float)value,
+				double => (TOther)(object)(double)value,
+				Quad => (TOther)(object)(Quad)value,
+				Octo => (TOther)(object)value,
+				decimal => (TOther)(object)(decimal)value,
+				byte => (TOther)(object)((value >= byte.MaxValue) ? byte.MaxValue : (value <= Octo.Zero) ? byte.MinValue : (byte)value),
+				ushort => (TOther)(object)((value >= ushort.MaxValue) ? ushort.MaxValue : (value <= Octo.Zero) ? ushort.MinValue : (ushort)value),
+				uint => (TOther)(object)((value >= uint.MaxValue) ? uint.MaxValue : (value <= Octo.Zero) ? uint.MinValue : (uint)value),
+				ulong => (TOther)(object)((value >= ulong.MaxValue) ? ulong.MaxValue : (value <= Octo.Zero) ? ulong.MinValue : (ulong)value),
+				UInt128 => (TOther)(object)((value >= UInt128.MaxValue) ? UInt128.MaxValue : (value <= Octo.Zero) ? UInt128.MinValue : (UInt128)value),
+				UInt256 => (TOther)(object)((value >= new Octo(0x400F_F000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000)) ? UInt256.MaxValue 
+				: (value <= Quad.Zero) ? UInt256.MinValue : (UInt256)value),
+				UInt512 => (TOther)(object)((value >= new Octo(0x401F_F000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000)) ? UInt512.MaxValue 
+				: (value <= Quad.Zero) ? UInt512.MinValue : (UInt512)value),
+				nuint => (TOther)(object)((value >= nuint.MaxValue) ? nuint.MaxValue : (value <= nuint.MinValue) ? nuint.MinValue : (nuint)value),
+				sbyte => (TOther)(object)((value >= sbyte.MaxValue) ? sbyte.MaxValue : (value <= sbyte.MinValue) ? sbyte.MinValue : (sbyte)value),
+				short => (TOther)(object)((value >= short.MaxValue) ? short.MaxValue : (value <= short.MinValue) ? short.MinValue : (short)value),
+				int => (TOther)(object)((value >= int.MaxValue) ? int.MaxValue : (value <= int.MinValue) ? int.MinValue : (int)value),
+				long => (TOther)(object)((value >= long.MaxValue) ? long.MaxValue : (value <= long.MinValue) ? long.MinValue : (long)value),
+				Int128 => (TOther)(object)((value >= Int128.MaxValue) ? Int128.MaxValue : (value <= Int128.MinValue) ? Int128.MinValue : (Int128)value),
+				Int256 => (TOther)(object)((value >= new Octo(0x400F_E000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000)) ? Int256.MaxValue 
+				: (value <= new Octo(0xC00F_E000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000)) ? Int256.MinValue : (Int256)value),
+				Int512 => (TOther)(object)((value >= new Octo(0x401F_E000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000)) ? Int512.MaxValue 
+				: (value <= new Octo(0xC01F_E000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000)) ? Int512.MinValue : (Int512)value),
+				nint => (TOther)(object)((value >= nint.MaxValue) ? nint.MaxValue : (value <= nint.MinValue) ? nint.MinValue : (nint)value),
+				_ => BitHelper.DefaultConvert<TOther>(out converted)
+			};
+
+			return converted;
 		}
 
 		/// <inheritdoc/>
