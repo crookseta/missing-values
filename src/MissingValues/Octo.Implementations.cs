@@ -1,10 +1,13 @@
 ﻿using MissingValues.Info;
 using MissingValues.Internals;
 using System;
+using System.Buffers.Binary;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Numerics;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
 namespace MissingValues
 {
@@ -265,21 +268,51 @@ namespace MissingValues
 		public static Octo CreateChecked<TOther>(TOther value)
 			where TOther : INumberBase<TOther>
 		{
-			throw new NotImplementedException();
+			Octo result;
+			if (value is Octo v)
+			{
+				result = v;
+			}
+			else if (!TryConvertFrom(value, out result) && !TOther.TryConvertToChecked<Octo>(value, out result))
+			{
+				Thrower.NotSupported<Octo, TOther>();
+			}
+
+			return result;
 		}
 		
 		/// <inheritdoc/>
 		public static Octo CreateSaturating<TOther>(TOther value)
 			where TOther : INumberBase<TOther>
 		{
-			throw new NotImplementedException();
+			Octo result;
+			if (value is Octo v)
+			{
+				result = v;
+			}
+			else if (!TryConvertFrom(value, out result) && !TOther.TryConvertToSaturating<Octo>(value, out result))
+			{
+				Thrower.NotSupported<Octo, TOther>();
+			}
+
+			return result;
 		}
 		
 		/// <inheritdoc/>
 		public static Octo CreateTruncating<TOther>(TOther value)
 			where TOther : INumberBase<TOther>
 		{
-			throw new NotImplementedException();
+			Octo result;
+			if (value is Octo v)
+			{
+				result = v;
+			}
+			else if (!TryConvertFrom(value, out result) && !TOther.TryConvertToTruncating<Octo>(value, out result))
+			{
+				Thrower.NotSupported<Octo, TOther>();
+			}
+
+			return result;
 		}
 
 		/// <inheritdoc/>
@@ -1075,26 +1108,26 @@ namespace MissingValues
 				|| (IsNaN(this) && IsNaN(other));
 		}
 
-		int IFloatingPoint<Octo>.GetExponentByteCount()
-		{
-			throw new NotImplementedException();
-		}
+		int IFloatingPoint<Octo>.GetExponentByteCount() => sizeof(int);
 
 		int IFloatingPoint<Octo>.GetExponentShortestBitLength()
 		{
-			throw new NotImplementedException();
+			int exponent = Exponent;
+
+			if (exponent >= 0)
+			{
+				return (sizeof(int) * 8) - int.LeadingZeroCount(exponent);
+			}
+			else
+			{
+				return (sizeof(int) * 8) + 1 - int.LeadingZeroCount((~exponent));
+			}
 		}
 
-		int IFloatingPoint<Octo>.GetSignificandBitLength()
-		{
-			throw new NotImplementedException();
-		}
+		int IFloatingPoint<Octo>.GetSignificandBitLength() => 237;
 
-		int IFloatingPoint<Octo>.GetSignificandByteCount()
-		{
-			throw new NotImplementedException();
-		}
-		
+		int IFloatingPoint<Octo>.GetSignificandByteCount() => UInt256.Size;
+
 		/// <inheritdoc/>
 		public string ToString(string? format, IFormatProvider? formatProvider)
 		{
@@ -1115,22 +1148,94 @@ namespace MissingValues
 
 		bool IFloatingPoint<Octo>.TryWriteExponentBigEndian(Span<byte> destination, out int bytesWritten)
 		{
-			throw new NotImplementedException();
+			if (destination.Length >= sizeof(int))
+			{
+				int exponent = Exponent;
+
+				if (BitConverter.IsLittleEndian)
+				{
+					exponent = BinaryPrimitives.ReverseEndianness(exponent);
+				}
+
+				Unsafe.WriteUnaligned(ref MemoryMarshal.GetReference(destination), exponent);
+
+				bytesWritten = sizeof(int);
+				return true;
+			}
+			else
+			{
+				bytesWritten = 0;
+				return false;
+			}
 		}
 
 		bool IFloatingPoint<Octo>.TryWriteExponentLittleEndian(Span<byte> destination, out int bytesWritten)
 		{
-			throw new NotImplementedException();
+			if (destination.Length >= sizeof(int))
+			{
+				int exponent = Exponent;
+
+				if (!BitConverter.IsLittleEndian)
+				{
+					exponent = BinaryPrimitives.ReverseEndianness(exponent);
+				}
+
+				Unsafe.WriteUnaligned(ref MemoryMarshal.GetReference(destination), exponent);
+
+				bytesWritten = sizeof(int);
+				return true;
+			}
+			else
+			{
+				bytesWritten = 0;
+				return false;
+			}
 		}
 
 		bool IFloatingPoint<Octo>.TryWriteSignificandBigEndian(Span<byte> destination, out int bytesWritten)
 		{
-			throw new NotImplementedException();
+			if (destination.Length >= Unsafe.SizeOf<UInt256>())
+			{
+				UInt256 significand = Significand;
+
+				if (BitConverter.IsLittleEndian)
+				{
+					significand = BitHelper.ReverseEndianness(significand);
+				}
+
+				Unsafe.WriteUnaligned(ref MemoryMarshal.GetReference(destination), significand);
+
+				bytesWritten = Unsafe.SizeOf<UInt256>();
+				return true;
+			}
+			else
+			{
+				bytesWritten = 0;
+				return false;
+			}
 		}
 
 		bool IFloatingPoint<Octo>.TryWriteSignificandLittleEndian(Span<byte> destination, out int bytesWritten)
 		{
-			throw new NotImplementedException();
+			if (destination.Length >= Unsafe.SizeOf<UInt256>())
+			{
+				UInt256 significand = Significand;
+
+				if (!BitConverter.IsLittleEndian)
+				{
+					significand = BitHelper.ReverseEndianness(significand);
+				}
+
+				Unsafe.WriteUnaligned(ref MemoryMarshal.GetReference(destination), significand);
+
+				bytesWritten = Unsafe.SizeOf<UInt256>();
+				return true;
+			}
+			else
+			{
+				bytesWritten = 0;
+				return false;
+			}
 		}
 
 		/// <inheritdoc/>
