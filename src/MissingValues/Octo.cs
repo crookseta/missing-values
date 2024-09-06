@@ -1137,15 +1137,93 @@ namespace MissingValues
 		}
 		public static explicit operator double(Octo value)
 		{
-			throw new NotImplementedException();
+			UInt256 octoInt = OctoToUInt256Bits(value);
+			bool sign = (octoInt & Octo.SignMask) >> Octo.SignShift != UInt256.Zero;
+			int exp = (int)((octoInt & Octo.BiasedExponentMask) >> Octo.BiasedExponentShift);
+			UInt256 sig = octoInt & Octo.TrailingSignificandMask;
+
+			if (exp == MaxBiasedExponent)
+			{
+				if (sig != 0) // NaN
+				{
+					return BitHelper.CreateDoubleNaN(sign, (ulong)(sig >> 172)); // Shift the significand bits to the x end
+				}
+				return sign ? double.NegativeInfinity : double.PositiveInfinity;
+			}
+
+			sig <<= 18;
+			ulong sigOcto = sig.Part3 | (sig.Part2 != 0 && sig.Part1 != 0 && sig.Part0 != 0 ? 1UL : 0UL);
+
+			if (((uint)exp | sigOcto) == 0)
+			{
+				return BitHelper.CreateDouble(sign, 0, 0);
+			}
+
+			exp -= 0x3_EFDD;
+
+			exp = exp < -0x1_0000 ? -0x1_0000 : exp;
+
+			return BitConverter.UInt64BitsToDouble(BitHelper.RoundPackToDouble(sign, (short)(exp), (sigOcto | 0x4000_0000_0000_0000)));
 		}
 		public static explicit operator float(Octo value)
 		{
-			throw new NotImplementedException();
+			UInt256 octoInt = OctoToUInt256Bits(value);
+			bool sign = (octoInt & Octo.SignMask) >> Octo.SignShift != UInt256.Zero;
+			int exp = (int)((octoInt & Octo.BiasedExponentMask) >> Octo.BiasedExponentShift);
+			UInt256 sig = octoInt & Octo.TrailingSignificandMask;
+
+			if (exp == MaxBiasedExponent)
+			{
+				if (sig != 0) // NaN
+				{
+					return BitHelper.CreateSingleNaN(sign, (ulong)(sig >> 172)); // Shift the significand bits to the x end
+				}
+				return sign ? float.NegativeInfinity : float.PositiveInfinity;
+			}
+
+			sig <<= 18;
+			uint sigOcto = (uint)(sig.Part3 >> 64) | ((uint)sig.Part3 != 0 && sig.Part2 != 0 && sig.Part1 != 0 && sig.Part0 != 0 ? 1U : 0U);
+
+			if (((uint)exp | sigOcto) == 0)
+			{
+				return BitHelper.CreateSingle(sign, 0, 0);
+			}
+
+			exp -= 0x3_FF81;
+
+			exp = exp < -0x1_0000 ? -0x1_0000 : exp;
+
+			return BitConverter.UInt32BitsToSingle(BitHelper.RoundPackToSingle(sign, (short)(exp), (sigOcto | 0x4000_0000)));
 		}
 		public static explicit operator Half(Octo value)
 		{
-			throw new NotImplementedException();
+			UInt256 octoInt = OctoToUInt256Bits(value);
+			bool sign = (octoInt & Octo.SignMask) >> Octo.SignShift != UInt256.Zero;
+			int exp = (int)((octoInt & Octo.BiasedExponentMask) >> Octo.BiasedExponentShift);
+			UInt256 sig = octoInt & Octo.TrailingSignificandMask;
+
+			if (exp == MaxBiasedExponent)
+			{
+				if (sig != 0) // NaN
+				{
+					return BitHelper.CreateHalfNaN(sign, (ulong)(sig >> 172)); // Shift the significand bits to the x end
+				}
+				return sign ? Half.NegativeInfinity : Half.PositiveInfinity;
+			}
+
+			sig <<= 18;
+			ushort sigOcto = (ushort)((sig.Part3 >> (64 + 32)) | ((sig.Part3 & 0x0000_FFFF_FFFF_FFFF) != 0 && sig.Part2 != 0 && sig.Part1 != 0 && sig.Part0 != 0 ? 1U : 0U));
+
+			if (((uint)exp | sigOcto) == 0)
+			{
+				return BitHelper.CreateHalf(sign, 0, 0);
+			}
+
+			exp -= 0x3_FFEB;
+
+			exp = exp < -0x1_0000 ? -0x1_0000 : exp;
+
+			return BitConverter.UInt16BitsToHalf(BitHelper.RoundPackToHalf(sign, (short)(exp), (ushort)(sigOcto | 0x4000)));
 		}
 		#endregion
 		#region To Octo
@@ -1262,15 +1340,96 @@ namespace MissingValues
 		}
 		public static implicit operator Octo(double value)
 		{
-			throw new NotImplementedException();
+			const int MaxBiasedExponentDouble = 0x07FF;
+			const int DoubleExponentBias = 1023;
+
+			ulong bits = BitConverter.DoubleToUInt64Bits(value);
+			bool sign = double.IsNegative(value);
+			int exp = (ushort)((bits >> 52) & MaxBiasedExponentDouble);
+			ulong sig = bits & 0x000F_FFFF_FFFF_FFFF;
+
+			if (exp == MaxBiasedExponentDouble)
+			{
+				if (sig != 0)
+				{
+					return BitHelper.CreateOctoNaN(sign, (UInt256)sig << 204);
+				}
+				return sign ? Octo.NegativeInfinity : Octo.PositiveInfinity;
+			}
+
+			if (exp == 0)
+			{
+				if (sig == 0)
+				{
+					return Octo.UInt256BitsToOcto(sign ? Octo.SignMask : UInt256.Zero);
+				}
+				(exp, sig) = BitHelper.NormalizeSubnormalF64Sig(sig);
+				exp -= 1;
+			}
+
+			return new Octo(sign, (uint)(exp + (ExponentBias - DoubleExponentBias)), (UInt256)sig << 184);
 		}
 		public static implicit operator Octo(float value)
 		{
-			throw new NotImplementedException();
+			const int MaxBiasedExponentSingle = 0xFF;
+			const int SingleExponentBias = 127;
+
+			uint bits = BitConverter.SingleToUInt32Bits(value);
+			bool sign = float.IsNegative(value);
+			int exp = (ushort)((bits >> 23) & MaxBiasedExponentSingle);
+			uint sig = bits & 0x007F_FFFF;
+
+			if (exp == MaxBiasedExponentSingle)
+			{
+				if (sig != 0)
+				{
+					return BitHelper.CreateOctoNaN(sign, (UInt256)sig << 233);
+				}
+				return sign ? Octo.NegativeInfinity : Octo.PositiveInfinity;
+			}
+
+			if (exp == 0)
+			{
+				if (sig == 0)
+				{
+					return Octo.UInt256BitsToOcto(sign ? Octo.SignMask : UInt256.Zero);
+				}
+				(exp, sig) = BitHelper.NormalizeSubnormalF32Sig(sig);
+				exp -= 1;
+			}
+
+			return new Octo(sign, (uint)(exp + (ExponentBias - SingleExponentBias)), (UInt256)sig << 213);
 		}
 		public static implicit operator Octo(Half value)
 		{
-			throw new NotImplementedException();
+			const int MaxBiasedExponentHalf = 0x1F;
+			const int HalfExponentBias = 15;
+
+			ushort bits = BitConverter.HalfToUInt16Bits(value);
+			bool sign = Half.IsNegative(value);
+			int exp = (ushort)((bits >> 10) & MaxBiasedExponentHalf);
+			ushort sig = (ushort)(bits & 0x03FF);
+
+			if (exp == MaxBiasedExponentHalf)
+			{
+				if (sig != 0)
+				{
+					return BitHelper.CreateOctoNaN(sign, (UInt256)sig << 246);
+				}
+				return sign ? Octo.NegativeInfinity : Octo.PositiveInfinity;
+			}
+
+			if (exp == 0)
+			{
+				if (sig == 0)
+				{
+					return Octo.UInt256BitsToOcto(sign ? Octo.SignMask : UInt256.Zero);
+				}
+				(exp, sig) = BitHelper.NormalizeSubnormalF16Sig(sig);
+				exp -= 1;
+			}
+
+			return new Octo(sign, (uint)(exp + (ExponentBias - HalfExponentBias)), (UInt256)sig << 226);
 		}
 		#endregion
 	}

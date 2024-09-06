@@ -1376,7 +1376,7 @@ namespace MissingValues
 
 			ulong bits = BitConverter.DoubleToUInt64Bits(value);
 			bool sign = double.IsNegative(value);
-			int exp = (ushort)((bits >> 52) & 0x07FF);
+			int exp = (ushort)((bits >> 52) & MaxBiasedExponentDouble);
 			ulong sig = bits & 0x000F_FFFF_FFFF_FFFF;
 
 			if (exp == MaxBiasedExponentDouble)
@@ -1402,12 +1402,12 @@ namespace MissingValues
 		}
 		public static implicit operator Quad(float value)
 		{
-			const int MaxBiasedExponentSingle = 0xFFFF;
+			const int MaxBiasedExponentSingle = 0xFF;
 			const int SingleExponentBias = 127;
 
 			uint bits = BitConverter.SingleToUInt32Bits(value);
 			bool sign = float.IsNegative(value);
-			int exp = (ushort)((bits >> 23) & 0xFF);
+			int exp = (ushort)((bits >> 23) & MaxBiasedExponentSingle);
 			uint sig = bits & 0x007F_FFFF;
 
 			if (exp == MaxBiasedExponentSingle)
@@ -1438,7 +1438,7 @@ namespace MissingValues
 
 			ushort bits = BitConverter.HalfToUInt16Bits(value);
 			bool sign = Half.IsNegative(value);
-			int exp = (ushort)((bits >> 10) & 0x1F);
+			int exp = (ushort)((bits >> 10) & MaxBiasedExponentHalf);
 			uint sig = (uint)(bits & 0x03FF);
 
 			if (exp == MaxBiasedExponentHalf)
