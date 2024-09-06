@@ -594,27 +594,219 @@ namespace MissingValues
 		// Signed
 		public static explicit operator sbyte(Quad value)
 		{
-			return (sbyte)(long)value;
+			Quad twoPow7 = new Quad(0x4006_0000_0000_0000, 0x0000_0000_0000_0000);
+
+			if (value <= -twoPow7)
+			{
+				return sbyte.MinValue;
+			}
+			else if (Quad.IsNaN(value))
+			{
+				return 0;
+			}
+			else if (value >= +twoPow7)
+			{
+				return sbyte.MaxValue;
+			}
+
+			bool isNegative = Quad.IsNegative(value);
+
+			if (isNegative)
+			{
+				value = -value;
+			}
+			if (value >= Quad.One)
+			{
+				UInt128 bits = Quad.QuadToUInt128Bits(value);
+				// For some reason, sbyte and short dont perform logical shifts correctly, so we have to perform the shifting with byte and ushort.
+				sbyte result = (sbyte)(((byte)(bits >> 105) | 0x80) >>> (Quad.ExponentBias + 8 - 1 - (int)(bits >> 112)));
+
+				if (isNegative)
+				{
+					result = (sbyte)-result;
+				}
+				return result;
+			}
+			else
+			{
+				return 0;
+			}
 		}
 		public static explicit operator checked sbyte(Quad value)
 		{
-			return checked((sbyte)(long)value);
+			Quad twoPow7 = new Quad(0x4006_0000_0000_0000, 0x0000_0000_0000_0000);
+
+			if (value <= -twoPow7 || Quad.IsNaN(value) || value >= +twoPow7)
+			{
+				Thrower.IntegerOverflow();
+			}
+
+			bool isNegative = Quad.IsNegative(value);
+
+			if (isNegative)
+			{
+				value = -value;
+			}
+			if (value >= Quad.One)
+			{
+				UInt128 bits = Quad.QuadToUInt128Bits(value);
+				sbyte result = (sbyte)(((byte)(bits >> 105) | 0x80) >>> (Quad.ExponentBias + 8 - 1 - (int)(bits >> 112)));
+
+				if (isNegative)
+				{
+					result = (sbyte)-result;
+				}
+				return result;
+			}
+			else
+			{
+				return 0;
+			}
 		}
 		public static explicit operator short(Quad value)
 		{
-			return (short)(long)value;
+			Quad twoPow15 = new Quad(0x400E_0000_0000_0000, 0x0000_0000_0000_0000);
+
+			if (value <= -twoPow15)
+			{
+				return short.MinValue;
+			}
+			else if (Quad.IsNaN(value))
+			{
+				return 0;
+			}
+			else if (value >= +twoPow15)
+			{
+				return short.MaxValue;
+			}
+
+			bool isNegative = Quad.IsNegative(value);
+
+			if (isNegative)
+			{
+				value = -value;
+			}
+			if (value >= Quad.One)
+			{
+				UInt128 bits = Quad.QuadToUInt128Bits(value);
+				// For some reason, sbyte and short dont perform logical shifts correctly, so we have to perform the shifting with byte and ushort.
+				short result = (short)(((ushort)(bits >> 97) | 0x8000) >>> (Quad.ExponentBias + 16 - 1 - (int)(bits >> 112)));
+
+				if (isNegative)
+				{
+					result = (short)-result;
+				}
+				return result;
+			}
+			else
+			{
+				return 0;
+			}
 		}
 		public static explicit operator checked short(Quad value)
 		{
-			return checked((short)(long)value);
+			Quad twoPow15 = new Quad(0x400E_0000_0000_0000, 0x0000_0000_0000_0000);
+
+			if (value <= -twoPow15 || Quad.IsNaN(value) || value >= +twoPow15)
+			{
+				Thrower.IntegerOverflow();
+			}
+
+			bool isNegative = Quad.IsNegative(value);
+
+			if (isNegative)
+			{
+				value = -value;
+			}
+			if (value >= Quad.One)
+			{
+				UInt128 bits = Quad.QuadToUInt128Bits(value);
+				short result = (short)(((ushort)(bits >> 97) | 0x8000) >>> (Quad.ExponentBias + 16 - 1 - (int)(bits >> 112)));
+
+				if (isNegative)
+				{
+					result = (short)-result;
+				}
+				return result;
+			}
+			else
+			{
+				return 0;
+			}
 		}
 		public static explicit operator int(Quad value)
 		{
-			return (int)(long)value;
+			Quad twoPow31 = new Quad(0x401E_0000_0000_0000, 0x0000_0000_0000_0000);
+
+			if (value <= -twoPow31)
+			{
+				return int.MinValue;
+			}
+			else if (Quad.IsNaN(value))
+			{
+				return 0;
+			}
+			else if (value >= +twoPow31)
+			{
+				return int.MaxValue;
+			}
+
+			bool isNegative = Quad.IsNegative(value);
+
+			if (isNegative)
+			{
+				value = -value;
+			}
+			if (value >= Quad.One)
+			{
+				UInt128 bits = Quad.QuadToUInt128Bits(value);
+				int result = (int)((uint)(bits >> 81) | 0x8000_0000);
+
+				result >>>= Quad.ExponentBias + 32 - 1 - (int)(bits >> 112);
+
+				if (isNegative)
+				{
+					result = -result;
+				}
+				return result;
+			}
+			else
+			{
+				return 0;
+			}
 		}
 		public static explicit operator checked int(Quad value)
 		{
-			return checked((int)(long)value);
+			Quad twoPow31 = new Quad(0x401E_0000_0000_0000, 0x0000_0000_0000_0000);
+
+			if (value <= -twoPow31 || Quad.IsNaN(value) || value >= +twoPow31)
+			{
+				Thrower.IntegerOverflow();
+			}
+
+			bool isNegative = Quad.IsNegative(value);
+
+			if (isNegative)
+			{
+				value = -value;
+			}
+			if (value >= Quad.One)
+			{
+				UInt128 bits = Quad.QuadToUInt128Bits(value);
+				int result = (int)((uint)(bits >> 81) | 0x8000_0000);
+
+				result >>>= Quad.ExponentBias + 32 - 1 - (int)(bits >> 112);
+
+				if (isNegative)
+				{
+					result = -result;
+				}
+				return result;
+			}
+			else
+			{
+				return 0;
+			}
 		}
 		public static explicit operator long(Quad value)
 		{
@@ -878,7 +1070,7 @@ namespace MissingValues
 
 			if (value >= Quad.One)
 			{
-				// In order to convert from Quad to int512 we first need to extract the signficand,
+				// In order to convert from Quad to Int512 we first need to extract the signficand,
 				// including the implicit leading bit, as a full 512-bit significand. We can then adjust
 				// this down to the represented integer by y shifting by the unbiased exponent, taking
 				// into account the significand is now represented as 512-bits.
