@@ -7,6 +7,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
+using System.Numerics;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Json.Serialization;
@@ -202,116 +203,902 @@ namespace MissingValues
 		// Unsigned
 		public static explicit operator byte(Octo value)
 		{
-			throw new NotImplementedException();
+			Octo twoPow8 = new Octo(0x4007_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
+			bool isNegative = Octo.IsNegative(value);
+
+			if (Octo.IsNaN(value) || isNegative)
+			{
+				return byte.MinValue;
+			}
+			if ((value >= twoPow8))
+			{
+				return byte.MaxValue;
+			}
+
+			if (value >= Octo.One)
+			{
+				UInt256 bits = Octo.OctoToUInt256Bits(value);
+				byte result = (byte)((byte)(bits >> 229) | 0x80);
+
+				result >>>= (Octo.ExponentBias + 8 - 1 - (int)(bits >> 236));
+				return result;
+			}
+			else
+			{
+				return byte.MinValue;
+			}
 		}
 		public static explicit operator checked byte(Octo value)
 		{
-			throw new NotImplementedException();
+			Octo twoPow8 = new Octo(0x4007_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
+			bool isNegative = Octo.IsNegative(value);
+
+			if (Octo.IsNaN(value) || isNegative || (value >= twoPow8))
+			{
+				Thrower.IntegerOverflow();
+			}
+
+			if (value >= Octo.One)
+			{
+				UInt256 bits = Octo.OctoToUInt256Bits(value);
+				byte result = (byte)((byte)(bits >> 229) | 0x80);
+
+				result >>>= (Octo.ExponentBias + 8 - 1 - (int)(bits >> 236));
+				return result;
+			}
+			else
+			{
+				return byte.MinValue;
+			}
 		}
 		public static explicit operator ushort(Octo value)
 		{
-			throw new NotImplementedException();
+			Octo twoPow16 = new Octo(0x400F_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
+			bool isNegative = Octo.IsNegative(value);
+
+			if (Octo.IsNaN(value) || isNegative)
+			{
+				return ushort.MinValue;
+			}
+			if ((value >= twoPow16))
+			{
+				return ushort.MaxValue;
+			}
+
+			if (value >= Octo.One)
+			{
+				UInt256 bits = Octo.OctoToUInt256Bits(value);
+				ushort result = (ushort)((ushort)(bits >> 221) | 0x8000);
+
+				result >>>= (Octo.ExponentBias + 16 - 1 - (int)(bits >> 236));
+				return result;
+			}
+			else
+			{
+				return ushort.MinValue;
+			}
 		}
 		public static explicit operator checked ushort(Octo value)
 		{
-			throw new NotImplementedException();
+			Octo twoPow16 = new Octo(0x400F_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
+			bool isNegative = Octo.IsNegative(value);
+
+			if (Octo.IsNaN(value) || isNegative || (value >= twoPow16))
+			{
+				Thrower.IntegerOverflow();
+			}
+
+			if (value >= Octo.One)
+			{
+				UInt256 bits = Octo.OctoToUInt256Bits(value);
+				ushort result = (ushort)((ushort)(bits >> 221) | 0x8000);
+
+				result >>>= (Octo.ExponentBias + 16 - 1 - (int)(bits >> 236));
+				return result;
+			}
+			else
+			{
+				return ushort.MinValue;
+			}
 		}
 		public static explicit operator uint(Octo value)
 		{
-			throw new NotImplementedException();
+			Octo twoPow32 = new Octo(0x4001_F000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
+			bool isNegative = Octo.IsNegative(value);
+
+			if (Octo.IsNaN(value) || isNegative)
+			{
+				return uint.MinValue;
+			}
+			if ((value >= twoPow32))
+			{
+				return uint.MaxValue;
+			}
+
+			if (value >= Octo.One)
+			{
+				UInt256 bits = Octo.OctoToUInt256Bits(value);
+				uint result = ((uint)(bits >> 205) | 0x8000_0000);
+
+				result >>>= (Octo.ExponentBias + 32 - 1 - (int)(bits >> 236));
+				return result;
+			}
+			else
+			{
+				return uint.MinValue;
+			}
 		}
 		public static explicit operator checked uint(Octo value)
 		{
-			throw new NotImplementedException();
+			Octo twoPow32 = new Octo(0x4001_F000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
+			bool isNegative = Octo.IsNegative(value);
+
+			if (Octo.IsNaN(value) || isNegative || (value >= twoPow32))
+			{
+				Thrower.IntegerOverflow();
+			}
+
+			if (value >= Octo.One)
+			{
+				UInt256 bits = Octo.OctoToUInt256Bits(value);
+				uint result = ((uint)(bits >> 205) | 0x8000_0000);
+
+				result >>>= (Octo.ExponentBias + 32 - 1 - (int)(bits >> 236));
+				return result;
+			}
+			else
+			{
+				return uint.MinValue;
+			}
 		}
 		public static explicit operator ulong(Octo value)
 		{
-			throw new NotImplementedException();
+			Octo twoPow64 = new Octo(0x4003_F000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
+			bool isNegative = Octo.IsNegative(value);
+
+			if (Octo.IsNaN(value) || isNegative)
+			{
+				return ulong.MinValue;
+			}
+			if ((value >= twoPow64))
+			{
+				return ulong.MaxValue;
+			}
+
+			if (value >= Octo.One)
+			{
+				UInt256 bits = Octo.OctoToUInt256Bits(value);
+				ulong result = ((ulong)(bits >> 173) | 0x8000_0000_0000_0000);
+
+				result >>>= (Octo.ExponentBias + 64 - 1 - (int)(bits >> 236));
+				return result;
+			}
+			else
+			{
+				return ulong.MinValue;
+			}
 		}
 		public static explicit operator checked ulong(Octo value)
 		{
-			throw new NotImplementedException();
+			Octo twoPow64 = new Octo(0x4003_F000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
+			bool isNegative = Octo.IsNegative(value);
+
+			if (Octo.IsNaN(value) || isNegative || (value >= twoPow64))
+			{
+				Thrower.IntegerOverflow();
+			}
+
+			if (value >= Octo.One)
+			{
+				UInt256 bits = Octo.OctoToUInt256Bits(value);
+				ulong result = ((ulong)(bits >> 173) | 0x8000_0000_0000_0000);
+
+				result >>>= (Octo.ExponentBias + 64 - 1 - (int)(bits >> 236));
+				return result;
+			}
+			else
+			{
+				return ulong.MinValue;
+			}
 		}
 		public static explicit operator UInt128(Octo value)
 		{
-			throw new NotImplementedException();
+			Octo twoPow128 = new Octo(0x4007_F000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
+			bool isNegative = Octo.IsNegative(value);
+
+			if (Octo.IsNaN(value) || isNegative)
+			{
+				return UInt128.MinValue;
+			}
+			if ((value >= twoPow128))
+			{
+				return UInt128.MaxValue;
+			}
+
+			if (value >= Octo.One)
+			{
+				UInt256 bits = Octo.OctoToUInt256Bits(value);
+				UInt128 result = ((UInt128)(bits >> 109) | new UInt128(0x8000_0000_0000_0000, 0x0000_0000_0000_0000));
+
+				result >>>= (Octo.ExponentBias + 128 - 1 - (int)(bits >> 236));
+				return result;
+			}
+			else
+			{
+				return UInt128.MinValue;
+			}
 		}
 		public static explicit operator checked UInt128(Octo value)
 		{
-			throw new NotImplementedException();
+			Octo twoPow128 = new Octo(0x4007_F000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
+			bool isNegative = Octo.IsNegative(value);
+
+			if (Octo.IsNaN(value) || isNegative || (value >= twoPow128))
+			{
+				Thrower.IntegerOverflow();
+			}
+
+			if (value >= Octo.One)
+			{
+				UInt256 bits = Octo.OctoToUInt256Bits(value);
+				UInt128 result = ((UInt128)(bits >> 109) | new UInt128(0x8000_0000_0000_0000, 0x0000_0000_0000_0000));
+
+				result >>>= (Octo.ExponentBias + 128 - 1 - (int)(bits >> 236));
+				return result;
+			}
+			else
+			{
+				return UInt128.MinValue;
+			}
 		}
 		public static explicit operator UInt256(Octo value)
 		{
-			throw new NotImplementedException();
+			Octo twoPow256 = new Octo(0x400F_F000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
+			bool isNegative = Octo.IsNegative(value);
+
+			if (Octo.IsNaN(value) || isNegative)
+			{
+				return UInt256.MinValue;
+			}
+			if ((value >= twoPow256))
+			{
+				return UInt256.MaxValue;
+			}
+
+			if (value >= Octo.One)
+			{
+				UInt256 bits = Octo.OctoToUInt256Bits(value);
+				UInt256 result = ((bits << 20) >> 1 | Octo.SignMask);
+
+				result >>>= (Octo.ExponentBias + 256 - 1 - (int)(bits >> 236));
+				return result;
+			}
+			else
+			{
+				return UInt256.MinValue;
+			}
 		}
 		public static explicit operator checked UInt256(Octo value)
 		{
-			throw new NotImplementedException();
+			Octo twoPow256 = new Octo(0x400F_F000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
+			bool isNegative = Octo.IsNegative(value);
+
+			if (Octo.IsNaN(value) || isNegative || (value >= twoPow256))
+			{
+				Thrower.IntegerOverflow();
+			}
+
+			if (value >= Octo.One)
+			{
+				UInt256 bits = Octo.OctoToUInt256Bits(value);
+				UInt256 result = ((bits << 20) >> 1 | Octo.SignMask);
+
+				result >>>= (Octo.ExponentBias + 256 - 1 - (int)(bits >> 236));
+				return result;
+			}
+			else
+			{
+				return UInt256.MinValue;
+			}
 		}
 		public static explicit operator UInt512(Octo value)
 		{
-			throw new NotImplementedException();
+			Octo twoPow512 = new Octo(0x401F_F000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
+			bool isNegative = Octo.IsNegative(value);
+
+			if (Octo.IsNaN(value) || isNegative)
+			{
+				return UInt512.MinValue;
+			}
+			if ((value >= twoPow512))
+			{
+				return UInt512.MaxValue;
+			}
+
+			if (value >= Octo.One)
+			{
+				UInt256 bits = Octo.OctoToUInt256Bits(value);
+				UInt512 result = new UInt512((bits << 20) >> 1 | Octo.SignMask, UInt256.Zero);
+
+				result >>= Octo.ExponentBias + 512 - 1 - (int)(bits >> 236);
+				return result;
+			}
+			else
+			{
+				return UInt512.MinValue;
+			}
 		}
 		public static explicit operator checked UInt512(Octo value)
 		{
-			throw new NotImplementedException();
+			Octo twoPow512 = new Octo(0x401F_F000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
+			bool isNegative = Octo.IsNegative(value);
+
+			if (Octo.IsNaN(value) || isNegative || (value >= twoPow512))
+			{
+				Thrower.IntegerOverflow();
+			}
+
+			if (value >= Octo.One)
+			{
+				UInt256 bits = Octo.OctoToUInt256Bits(value);
+				UInt512 result = new UInt512((bits << 20) >> 1 | Octo.SignMask, UInt256.Zero);
+
+				result >>= Octo.ExponentBias + 512 - 1 - (int)(bits >> 236);
+				return result;
+			}
+			else
+			{
+				return UInt512.MinValue;
+			}
 		}
 		// Signed
 		public static explicit operator sbyte(Octo value)
 		{
-			throw new NotImplementedException();
+			Octo twoPow7 = new Octo(0x4000_6000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
+
+			if (value <= -twoPow7)
+			{
+				return sbyte.MinValue;
+			}
+			else if (Octo.IsNaN(value))
+			{
+				return 0;
+			}
+			else if (value >= +twoPow7)
+			{
+				return sbyte.MaxValue;
+			}
+
+			bool isNegative = Octo.IsNegative(value);
+
+			if (isNegative)
+			{
+				value = -value;
+			}
+
+			if (value >= Octo.One)
+			{
+				UInt256 bits = Octo.OctoToUInt256Bits(value);
+				sbyte result = (sbyte)(((byte)(bits >> 229) | 0x80) >>> (Octo.ExponentBias + 8 - 1 - (int)(bits >> 236)));
+
+				if (isNegative)
+				{
+					result = (sbyte)-result;
+				}
+
+				return result;
+			}
+			else
+			{
+				return 0;
+			}
 		}
 		public static explicit operator checked sbyte(Octo value)
 		{
-			throw new NotImplementedException();
+			Octo twoPow7 = new Octo(0x4000_6000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
+
+			if (value <= -twoPow7 || Octo.IsNaN(value) || value >= +twoPow7)
+			{
+				Thrower.IntegerOverflow();
+			}
+
+			bool isNegative = Octo.IsNegative(value);
+
+			if (isNegative)
+			{
+				value = -value;
+			}
+
+			if (value >= Octo.One)
+			{
+				UInt256 bits = Octo.OctoToUInt256Bits(value);
+				sbyte result = (sbyte)(((byte)(bits >> 229) | 0x80) >>> (Octo.ExponentBias + 8 - 1 - (int)(bits >> 236)));
+
+				if (isNegative)
+				{
+					result = (sbyte)-result;
+				}
+
+				return result;
+			}
+			else
+			{
+				return 0;
+			}
 		}
 		public static explicit operator short(Octo value)
 		{
-			throw new NotImplementedException();
+			Octo twoPow15 = new Octo(0x4000_E000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
+
+			if (value <= -twoPow15)
+			{
+				return short.MinValue;
+			}
+			else if (Octo.IsNaN(value))
+			{
+				return 0;
+			}
+			else if (value >= +twoPow15)
+			{
+				return short.MaxValue;
+			}
+
+			bool isNegative = Octo.IsNegative(value);
+
+			if (isNegative)
+			{
+				value = -value;
+			}
+
+			if (value >= Octo.One)
+			{
+				UInt256 bits = Octo.OctoToUInt256Bits(value);
+				short result = (short)(((ushort)(bits >> 221) | 0x8000) >>> (Octo.ExponentBias + 16 - 1 - (int)(bits >> 236)));
+
+				if (isNegative)
+				{
+					result = (short)-result;
+				}
+
+				return result;
+			}
+			else
+			{
+				return 0;
+			}
 		}
 		public static explicit operator checked short(Octo value)
 		{
-			throw new NotImplementedException();
+			Octo twoPow15 = new Octo(0x4000_E000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
+
+			if (value <= -twoPow15 || Octo.IsNaN(value) || value >= +twoPow15)
+			{
+				Thrower.IntegerOverflow();
+			}
+
+			bool isNegative = Octo.IsNegative(value);
+
+			if (isNegative)
+			{
+				value = -value;
+			}
+
+			if (value >= Octo.One)
+			{
+				UInt256 bits = Octo.OctoToUInt256Bits(value);
+				short result = (short)(((ushort)(bits >> 221) | 0x8000) >>> (Octo.ExponentBias + 16 - 1 - (int)(bits >> 236)));
+
+				if (isNegative)
+				{
+					result = (short)-result;
+				}
+
+				return result;
+			}
+			else
+			{
+				return 0;
+			}
 		}
 		public static explicit operator int(Octo value)
 		{
-			throw new NotImplementedException();
+			Octo twoPow31 = new Octo(0x4001_E000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
+
+			if (value <= -twoPow31)
+			{
+				return int.MinValue;
+			}
+			else if (Octo.IsNaN(value))
+			{
+				return 0;
+			}
+			else if (value >= +twoPow31)
+			{
+				return int.MaxValue;
+			}
+
+			bool isNegative = Octo.IsNegative(value);
+
+			if (isNegative)
+			{
+				value = -value;
+			}
+
+			if (value >= Octo.One)
+			{
+				UInt256 bits = Octo.OctoToUInt256Bits(value);
+				int result = (int)((uint)(bits >> 205) | 0x8000_0000_0000_0000);
+
+				result >>>= (Octo.ExponentBias + 32 - 1 - (int)(bits >> 236));
+
+				if (isNegative)
+				{
+					result = -result;
+				}
+
+				return result;
+			}
+			else
+			{
+				return 0;
+			}
 		}
 		public static explicit operator checked int(Octo value)
 		{
-			throw new NotImplementedException();
+			Octo twoPow31 = new Octo(0x4001_E000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
+
+			if (value <= -twoPow31 || Octo.IsNaN(value) || value >= +twoPow31)
+			{
+				Thrower.IntegerOverflow();
+			}
+
+			bool isNegative = Octo.IsNegative(value);
+
+			if (isNegative)
+			{
+				value = -value;
+			}
+
+			if (value >= Octo.One)
+			{
+				UInt256 bits = Octo.OctoToUInt256Bits(value);
+				int result = (int)((uint)(bits >> 205) | 0x8000_0000);
+
+				result >>>= (Octo.ExponentBias + 32 - 1 - (int)(bits >> 236));
+
+				if (isNegative)
+				{
+					result = -result;
+				}
+
+				return result;
+			}
+			else
+			{
+				return 0;
+			}
 		}
 		public static explicit operator long(Octo value)
 		{
-			throw new NotImplementedException();
+			Octo twoPow63 = new Octo(0x4003_E000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
+
+			if (value <= -twoPow63)
+			{
+				return long.MinValue;
+			}
+			else if (Octo.IsNaN(value))
+			{
+				return 0;
+			}
+			else if (value >= +twoPow63)
+			{
+				return long.MaxValue;
+			}
+
+			bool isNegative = Octo.IsNegative(value);
+
+			if (isNegative)
+			{
+				value = -value;
+			}
+
+			if (value >= Octo.One)
+			{
+				UInt256 bits = Octo.OctoToUInt256Bits(value);
+				long result = (long)((ulong)(bits >> 173) | 0x8000_0000_0000_0000);
+
+				result >>>= (Octo.ExponentBias + 64 - 1 - (int)(bits >> 236));
+
+				if (isNegative)
+				{
+					result = -result;
+				}
+
+				return result;
+			}
+			else
+			{
+				return 0;
+			}
 		}
 		public static explicit operator checked long(Octo value)
 		{
-			throw new NotImplementedException();
+			Octo twoPow63 = new Octo(0x4003_E000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
+
+			if (value <= -twoPow63 || Octo.IsNaN(value) || value >= +twoPow63)
+			{
+				Thrower.IntegerOverflow();
+			}
+
+			bool isNegative = Octo.IsNegative(value);
+
+			if (isNegative)
+			{
+				value = -value;
+			}
+
+			if (value >= Octo.One)
+			{
+				UInt256 bits = Octo.OctoToUInt256Bits(value);
+				long result = (long)((ulong)(bits >> 173) | 0x8000_0000_0000_0000);
+
+				result >>>= (Octo.ExponentBias + 64 - 1 - (int)(bits >> 236));
+
+				if (isNegative)
+				{
+					result = -result;
+				}
+
+				return result;
+			}
+			else
+			{
+				return 0;
+			}
 		}
 		public static explicit operator Int128(Octo value)
 		{
-			throw new NotImplementedException();
+			Octo twoPow127 = new Octo(0x4007_E000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
+
+			if (value <= -twoPow127)
+			{
+				return Int128.MinValue;
+			}
+			else if (Octo.IsNaN(value))
+			{
+				return Int128.Zero;
+			}
+			else if (value >= +twoPow127)
+			{
+				return Int128.MaxValue;
+			}
+
+			bool isNegative = Octo.IsNegative(value);
+
+			if (isNegative)
+			{
+				value = -value;
+			}
+
+			if (value >= Octo.One)
+			{
+				UInt256 bits = Octo.OctoToUInt256Bits(value);
+				Int128 result = (Int128)((UInt128)(bits >> 109) | new UInt128(0x8000_0000_0000_0000, 0x0000_0000_0000_0000));
+
+				result >>>= (Octo.ExponentBias + 128 - 1 - (int)(bits >> 236));
+
+				if (isNegative)
+				{
+					result = -result;
+				}
+
+				return result;
+			}
+			else
+			{
+				return Int128.Zero;
+			}
 		}
 		public static explicit operator checked Int128(Octo value)
 		{
-			throw new NotImplementedException();
+			Octo twoPow127 = new Octo(0x4007_E000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
+
+			if (value <= -twoPow127 || Octo.IsNaN(value) || value >= +twoPow127)
+			{
+				Thrower.IntegerOverflow();
+			}
+
+			bool isNegative = Octo.IsNegative(value);
+
+			if (isNegative)
+			{
+				value = -value;
+			}
+
+			if (value >= Octo.One)
+			{
+				UInt256 bits = Octo.OctoToUInt256Bits(value);
+				Int128 result = (Int128)((UInt128)(bits >> 109) | new UInt128(0x8000_0000_0000_0000, 0x0000_0000_0000_0000));
+
+				result >>>= (Octo.ExponentBias + 128 - 1 - (int)(bits >> 236));
+
+				if (isNegative)
+				{
+					result = -result;
+				}
+
+				return result;
+			}
+			else
+			{
+				return Int128.Zero;
+			}
 		}
 		public static explicit operator Int256(Octo value)
 		{
-			throw new NotImplementedException();
+			Octo twoPow255 = new Octo(0x400F_E000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
+
+			if (value <= -twoPow255)
+			{
+				return Int256.MinValue;
+			}
+			else if (Octo.IsNaN(value))
+			{
+				return Int256.Zero;
+			}
+			else if (value >= +twoPow255)
+			{
+				return Int256.MaxValue;
+			}
+
+			bool isNegative = Octo.IsNegative(value);
+
+			if (isNegative)
+			{
+				value = -value;
+			}
+
+			if (value >= Octo.One)
+			{
+				UInt256 bits = Octo.OctoToUInt256Bits(value);
+				Int256 result = (Int256)((bits << 20) >> 1 | Octo.SignMask);
+
+				result >>>= (Octo.ExponentBias + 256 - 1 - (int)(bits >> 236));
+
+				if (isNegative)
+				{
+					result = -result;
+				}
+
+				return result;
+			}
+			else
+			{
+				return Int256.Zero;
+			}
 		}
 		public static explicit operator checked Int256(Octo value)
 		{
-			throw new NotImplementedException();
+			Octo twoPow255 = new Octo(0x400F_E000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
+
+			if (value <= -twoPow255 || Octo.IsNaN(value) || value >= +twoPow255)
+			{
+				Thrower.IntegerOverflow();
+			}
+
+			bool isNegative = Octo.IsNegative(value);
+
+			if (isNegative)
+			{
+				value = -value;
+			}
+
+			if (value >= Octo.One)
+			{
+				UInt256 bits = Octo.OctoToUInt256Bits(value);
+				Int256 result = (Int256)((bits << 20) >> 1 | Octo.SignMask);
+
+				result >>>= (Octo.ExponentBias + 256 - 1 - (int)(bits >> 236));
+
+				if (isNegative)
+				{
+					result = -result;
+				}
+
+				return result;
+			}
+			else
+			{
+				return Int256.Zero;
+			}
 		}
 		public static explicit operator Int512(Octo value)
 		{
-			throw new NotImplementedException();
+			Octo twoPow511 = new Octo(0x401F_E000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
+
+			if (value <= -twoPow511)
+			{
+				return Int512.MinValue;
+			}
+			else if (Octo.IsNaN(value))
+			{
+				return Int512.Zero;
+			}
+			else if (value >= +twoPow511)
+			{
+				return Int512.MaxValue;
+			}
+
+			bool isNegative = Octo.IsNegative(value);
+
+			if (isNegative)
+			{
+				value = -value;
+			}
+
+			if (value >= Octo.One)
+			{
+				// In order to convert from Quad to Int512 we first need to extract the signficand,
+				// including the implicit leading bit, as a full 512-bit significand. We can then adjust
+				// this down to the represented integer by y shifting by the unbiased exponent, taking
+				// into account the significand is now represented as 512-bits.
+
+				UInt256 bits = Octo.OctoToUInt256Bits(value);
+				Int512 result = new Int512((bits << 20) >> 1 | Octo.SignMask, UInt256.Zero);
+
+				result >>>= (Octo.ExponentBias + 512 - 1 - (int)(bits >> 236));
+
+				if (isNegative)
+				{
+					result = -result;
+				}
+
+				return result;
+			}
+			else
+			{
+				return Int512.Zero;
+			}
 		}
 		public static explicit operator checked Int512(Octo value)
 		{
-			throw new NotImplementedException();
+			Octo twoPow511 = new Octo(0x401F_E000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
+
+			if (value <= -twoPow511 || Octo.IsNaN(value) || value >= +twoPow511)
+			{
+				Thrower.IntegerOverflow();
+			}
+
+			bool isNegative = Octo.IsNegative(value);
+
+			if (isNegative)
+			{
+				value = -value;
+			}
+
+			if (value >= Octo.One)
+			{
+				// In order to convert from Quad to Int512 we first need to extract the signficand,
+				// including the implicit leading bit, as a full 512-bit significand. We can then adjust
+				// this down to the represented integer by y shifting by the unbiased exponent, taking
+				// into account the significand is now represented as 512-bits.
+
+				UInt256 bits = Octo.OctoToUInt256Bits(value);
+				Int512 result = new Int512((bits << 20) >> 1 | Octo.SignMask, UInt256.Zero);
+
+				result >>>= (Octo.ExponentBias + 512 - 1 - (int)(bits >> 236));
+
+				if (isNegative)
+				{
+					result = -result;
+				}
+
+				return result;
+			}
+			else
+			{
+				return Int512.Zero;
+			}
 		}
 		// Floating
 		public static explicit operator decimal(Octo value)
@@ -373,36 +1160,100 @@ namespace MissingValues
 		}
 		public static implicit operator Octo(uint value)
 		{
-			throw new NotImplementedException();
+			UInt256 sig;
+			int shiftDist;
+
+			if (value == UInt128.Zero)
+			{
+				return Octo.Zero;
+			}
+			else
+			{
+				shiftDist = BitOperations.LeadingZeroCount(value) + 205;
+				sig = (UInt256)value << shiftDist;
+			}
+
+			return new Octo(false, (ushort)(0x401AD - shiftDist), sig);
 		}
 		public static implicit operator Octo(ulong value)
 		{
-			throw new NotImplementedException();
+			UInt256 sig;
+			int shiftDist;
+
+			if (value == UInt128.Zero)
+			{
+				return Octo.Zero;
+			}
+			else
+			{
+				shiftDist = BitOperations.LeadingZeroCount(value) + 173;
+				sig = (UInt256)value << shiftDist;
+			}
+
+			return new Octo(false, (ushort)(0x4016C - shiftDist), sig);
 		}
 		public static implicit operator Octo(UInt128 value)
 		{
-			throw new NotImplementedException();
+			UInt256 sig;
+			int shiftDist;
+
+			if (value == UInt128.Zero)
+			{
+				return Octo.Zero;
+			}
+			else
+			{
+				shiftDist = ((int)UInt128.LeadingZeroCount(value)) + 109;
+				sig = (UInt256)value << shiftDist;
+			}
+
+			return new Octo(false, (ushort)(0x400EB - shiftDist), sig);
 		}
 		// Signed
 		public static implicit operator Octo(sbyte value)
 		{
-			return (Octo)(int)value;
+			if (sbyte.IsNegative(value))
+			{
+				value = (sbyte)-value;
+				return -(Octo)(byte)value;
+			}
+			return (Octo)(byte)value;
 		}
 		public static implicit operator Octo(short value)
 		{
-			return (Octo)(int)value;
+			if (short.IsNegative(value))
+			{
+				value = (short)-value;
+				return -(Octo)(ushort)value;
+			}
+			return (Octo)(ushort)value;
 		}
 		public static implicit operator Octo(int value)
 		{
-			throw new NotImplementedException();
+			if (int.IsNegative(value))
+			{
+				value = -value;
+				return -(Octo)(uint)value;
+			}
+			return (Octo)(uint)value;
 		}
 		public static implicit operator Octo(long value)
 		{
-			throw new NotImplementedException();
+			if (long.IsNegative(value))
+			{
+				value = -value;
+				return -(Octo)(ulong)value;
+			}
+			return (Octo)(ulong)value;
 		}
 		public static implicit operator Octo(Int128 value)
 		{
-			throw new NotImplementedException();
+			if (Int128.IsNegative(value))
+			{
+				value = -value;
+				return -(Octo)(UInt128)value;
+			}
+			return (Octo)(UInt128)value;
 		}
 		// Floating
 		public static implicit operator Octo(decimal value)

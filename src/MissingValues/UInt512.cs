@@ -357,6 +357,46 @@ namespace MissingValues
 
 			return (decimal)value.Lower;
 		}
+		public static explicit operator Octo(UInt512 value)
+		{
+			if (value.Upper == 0)
+			{
+				return value._p1 != 0 ? (Quad)value.Lower : (Quad)value._p0;
+			}
+			else if ((value.Upper >> 32) == UInt128.Zero) // value < (2^472)
+			{
+				// For values greater than MaxValue but less than 2^472 this takes advantage
+				// that we can represent both "halves" of the uint256 within the 236-bit mantissa of
+				// a pair of octos.
+				Octo twoPow236 = new Octo(0x400E_B000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
+				Octo twoPow472 = new Octo(0x401D_7000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
+
+				UInt256 twoPow236bits = Octo.OctoToUInt256Bits(twoPow236);
+				UInt256 twoPow472bits = Octo.OctoToUInt256Bits(twoPow472);
+
+				Octo lower = Octo.UInt256BitsToOcto(twoPow236bits | ((value.Lower << 20) >> 20)) - twoPow236;
+				Octo upper = Octo.UInt256BitsToOcto(twoPow472bits | (UInt256)(value >> 236)) - twoPow472;
+
+				return lower + upper;
+			}
+			else
+			{
+				// For values greater than 2^472 we basically do the same as before but we need to account
+				// for the precision loss that octo will have. As such, the lower value effectively drops the
+				// lowest 40 bits and then or's them back to ensure rounding stays correct.
+
+				Octo twoPow276 = new Octo(0x4011_3000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
+				Octo twoPow512 = new Octo(0x401F_F000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
+
+				UInt256 twoPow276bits = Octo.OctoToUInt256Bits(twoPow276);
+				UInt256 twoPow512bits = Octo.OctoToUInt256Bits(twoPow512);
+
+				Octo lower = Octo.UInt256BitsToOcto(twoPow276bits | ((UInt256)(value >> 20) >> 20) | (value._p0 & 0xFF_FFFF_FFFF)) - twoPow276;
+				Octo upper = Octo.UInt256BitsToOcto(twoPow512bits | (UInt256)(value >> 276)) - twoPow512;
+
+				return lower + upper;
+			}
+		}
 		public static explicit operator Quad(UInt512 value)
 		{
 			if (value.Upper == UInt256.Zero)

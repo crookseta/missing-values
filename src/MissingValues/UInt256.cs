@@ -291,6 +291,19 @@ namespace MissingValues
 
 			return (decimal)value.Lower;
 		}
+		public static explicit operator Octo(UInt256 value)
+		{
+			if (value == UInt256.Zero)
+			{
+				return Octo.Zero;
+			}
+			int shiftDist = BitHelper.LeadingZeroCount(value);
+			UInt256 a = (value << shiftDist >> 19); // Significant bits, with bit 237 still intact
+			UInt256 b = (value << shiftDist << 237); // Insignificant bits, only relevant for rounding.
+			UInt256 m = a + ((b - (b >> 255 & (a == UInt128.Zero ? UInt128.One : UInt128.Zero))) >> 255); // Add one when we need to round up. Break ties to even.
+			UInt256 e = (UInt256)(0x400FD - shiftDist); // Exponent plus 262143, minus one, except for zero.
+			return Octo.UInt256BitsToOcto((e << 236) + m);
+		}
 		public static explicit operator Quad(UInt256 value)
 		{
 			if (value.Upper == 0)

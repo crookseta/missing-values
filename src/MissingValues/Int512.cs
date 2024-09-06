@@ -383,6 +383,15 @@ namespace MissingValues
 			}
 			return (decimal)(UInt512)(value);
 		}
+		public static explicit operator Octo(Int512 value)
+		{
+			if (IsNegative(value))
+			{
+				value = -value;
+				return -(Octo)(UInt512)(value);
+			}
+			return (Octo)(UInt512)(value);
+		}
 		public static explicit operator Quad(Int512 value)
 		{
 			if (IsNegative(value))

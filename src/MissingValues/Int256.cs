@@ -315,6 +315,15 @@ namespace MissingValues
 			}
 			return (decimal)(double)(UInt256)(value);
 		}
+		public static explicit operator Octo(Int256 value)
+		{
+			if (IsNegative(value))
+			{
+				value = -value;
+				return -(Octo)(UInt256)(value);
+			}
+			return (Octo)(UInt256)(value);
+		}
 		public static explicit operator Quad(Int256 value)
 		{
 			if (IsNegative(value))
