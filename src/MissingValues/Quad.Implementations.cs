@@ -15,50 +15,37 @@ namespace MissingValues
 		IBinaryFloatingPointInfo<Quad, UInt128>,
 		IMinMaxValue<Quad>
 	{
-		/// <inheritdoc/>
-		public static Quad Epsilon => Quad.UInt128BitsToQuad(EpsilonBits);
+		static Quad IFloatingPointIeee754<Quad>.Epsilon => Epsilon;
 
-		/// <inheritdoc/>
-		public static Quad NaN => Quad.UInt128BitsToQuad(NegativeQNaNBits);
+		static Quad IFloatingPointIeee754<Quad>.NaN => NaN;
 
-		/// <inheritdoc/>
-		public static Quad NegativeInfinity => Quad.UInt128BitsToQuad(NegativeInfinityBits);
+		static Quad IFloatingPointIeee754<Quad>.NegativeInfinity => NegativeInfinity;
 
-		/// <inheritdoc/>
-		public static Quad NegativeZero => Quad.UInt128BitsToQuad(NegativeZeroBits);
+		static Quad IFloatingPointIeee754<Quad>.NegativeZero => NegativeZero;
 
-		/// <inheritdoc/>
-		public static Quad PositiveInfinity => Quad.UInt128BitsToQuad(PositiveInfinityBits);
+		static Quad IFloatingPointIeee754<Quad>.PositiveInfinity => PositiveInfinity;
 
-		/// <inheritdoc/>
-		public static Quad NegativeOne => Quad.UInt128BitsToQuad(NegativeOneBits);
+		static Quad ISignedNumber<Quad>.NegativeOne => NegativeOne;
 
-		/// <inheritdoc/>
-		public static Quad E => Quad.UInt128BitsToQuad(EBits);
+		static Quad IFloatingPointConstants<Quad>.E => E;
 
-		/// <inheritdoc/>
-		public static Quad Pi => Quad.UInt128BitsToQuad(PiBits);
+		static Quad IFloatingPointConstants<Quad>.Pi => Pi;
 
-		/// <inheritdoc/>
-		public static Quad Tau => Quad.UInt128BitsToQuad(TauBits);
+		static Quad IFloatingPointConstants<Quad>.Tau => Tau;
 
-		/// <inheritdoc/>
-		public static Quad One => Quad.UInt128BitsToQuad(PositiveOneBits);
+		static Quad INumberBase<Quad>.One => One;
 
 		static int INumberBase<Quad>.Radix => 2;
 
-		/// <inheritdoc/>
-		public static Quad Zero => Quad.UInt128BitsToQuad(PositiveZeroBits);
+		static Quad INumberBase<Quad>.Zero => Zero;
 
-		static Quad IAdditiveIdentity<Quad, Quad>.AdditiveIdentity => Quad.UInt128BitsToQuad(PositiveZeroBits);
+		static Quad IAdditiveIdentity<Quad, Quad>.AdditiveIdentity => Zero;
 
-		static Quad IMultiplicativeIdentity<Quad, Quad>.MultiplicativeIdentity => Quad.UInt128BitsToQuad(PositiveOneBits);
+		static Quad IMultiplicativeIdentity<Quad, Quad>.MultiplicativeIdentity => One;
 
-		/// <inheritdoc/>
-		public static Quad MaxValue => Quad.UInt128BitsToQuad(MaxValueBits);
+		static Quad IMinMaxValue<Quad>.MaxValue => MaxValue;
 
-		/// <inheritdoc/>
-		public static Quad MinValue => Quad.UInt128BitsToQuad(MinValueBits);
+		static Quad IMinMaxValue<Quad>.MinValue => MinValue;
 
 		static Quad IBinaryNumber<Quad>.AllBitsSet => Quad.UInt128BitsToQuad(new UInt128(0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF));
 
@@ -741,7 +728,7 @@ namespace MissingValues
 
 				if (BitConverter.IsLittleEndian)
 				{
-					significand = BitHelper.ReverseEndianness(significand);
+					significand = BinaryPrimitives.ReverseEndianness(significand);
 				}
 
 				Unsafe.WriteUnaligned(ref MemoryMarshal.GetReference(destination), significand);
@@ -764,7 +751,7 @@ namespace MissingValues
 
 				if (!BitConverter.IsLittleEndian)
 				{
-					significand = BitHelper.ReverseEndianness(significand);
+					significand = BinaryPrimitives.ReverseEndianness(significand);
 				}
 
 				Unsafe.WriteUnaligned(ref MemoryMarshal.GetReference(destination), significand);

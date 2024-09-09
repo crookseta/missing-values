@@ -66,6 +66,59 @@ namespace MissingValues
 		internal static Quad Two => new(0x4000_0000_0000_0000, 0x0000_0000_0000_0000);
 		#endregion
 
+		/// <summary>
+		/// Represents the natural logarithmic base, specified by the constant, <c>e</c>.
+		/// </summary>
+		public static readonly Quad E = new Quad(0x4000_5BF0_A8B1_4576, 0x9535_5FB8_AC40_4E7A);
+		/// <summary>
+		/// Represents the smallest positive <see cref="Quad"/> value that is greater than zero.
+		/// </summary>
+		public static readonly Quad Epsilon = new Quad(0x0000_0000_0000_0000, 0x0000_0000_0000_0001);
+		/// <summary>
+		/// Represents the largest possible value of a <see cref="Quad"/>.
+		/// </summary>
+		public static readonly Quad MaxValue = new Quad(0x7FFE_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF);
+		/// <summary>
+		/// Represents the smallest possible value of a <see cref="Quad"/>.
+		/// </summary>
+		public static readonly Quad MinValue = new Quad(0xFFFE_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF);
+		/// <summary>
+		/// Represents a value that is not a number (<c>NaN</c>).
+		/// </summary>
+		public static readonly Quad NaN = new Quad(0xFFFF_8000_0000_0000, 0x0000_0000_0000_0000);
+		/// <summary>
+		/// Represents the value <c>-1</c> of the type.
+		/// </summary>
+		public static readonly Quad NegativeOne = new Quad(0xBFFF_0000_0000_0000, 0x0000_0000_0000_0000);
+		/// <summary>
+		/// Represents negative infinity.
+		/// </summary>
+		public static readonly Quad NegativeInfinity = new Quad(0xFFFF_0000_0000_0000, 0x0000_0000_0000_0000);
+		/// <summary>
+		/// Represents the value <c>-0</c> of the type.
+		/// </summary>
+		public static readonly Quad NegativeZero = new Quad(0x8000_0000_0000_0000, 0x0000_0000_0000_0000);
+		/// <summary>
+		/// Represents the value <c>1</c> of the type.
+		/// </summary>
+		public static readonly Quad One = new Quad(0x3FFF_0000_0000_0000, 0x0000_0000_0000_0000);
+		/// <summary>
+		/// Represents the ratio of the circumference of a circle to its diameter, specified by the constant, <c>pi</c>.
+		/// </summary>
+		public static readonly Quad Pi = new Quad(0x4000_921F_B544_42D1, 0x8469_898C_C517_01B8);
+		/// <summary>
+		/// Represents positive infinity.
+		/// </summary>
+		public static readonly Quad PositiveInfinity = new Quad(0x7FFF_0000_0000_0000, 0x0000_0000_0000_0000);
+		/// <summary>
+		/// Represents the number of radians in one turn, specified by the constant, <c>tau</c>.
+		/// </summary>
+		public static readonly Quad Tau = new Quad(0x4001_921F_B544_42D1, 0x8469_898C_C517_01B8);
+		/// <summary>
+		/// Represents the value <c>0</c> of the type.
+		/// </summary>
+		public static readonly Quad Zero = new Quad(0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
+
 		internal ushort BiasedExponent
 		{
 			get

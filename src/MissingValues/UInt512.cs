@@ -24,6 +24,25 @@ namespace MissingValues
 	{
 		internal const int Size = 64;
 
+		/// <summary>
+		/// Represents the value <c>1</c> of the type.
+		/// </summary>
+		public static readonly UInt512 One = new UInt512(0, 0, 0, 0, 0, 0, 0, 1);
+		/// <summary>
+		/// Represents the largest possible value of the type.
+		/// </summary>
+		public static readonly UInt512 MaxValue = new UInt512(
+			0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF,
+			0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF);
+		/// <summary>
+		/// Represents the smallest possible value of the type.
+		/// </summary>
+		public static readonly UInt512 MinValue = default;
+		/// <summary>
+		/// Represents the value <c>0</c> of the type.
+		/// </summary>
+		public static readonly UInt512 Zero = default;
+
 #if BIGENDIAN
 		private readonly ulong _p7;
 		private readonly ulong _p6;
@@ -158,9 +177,9 @@ namespace MissingValues
 		/// <returns>The high 512-bit of the product of the specified numbers.</returns>
 		public static UInt512 BigMul(UInt512 left, UInt512 right, out UInt512 lower)
 		{
-			ReadOnlySpan<uint> leftSpan = MemoryMarshal.CreateReadOnlySpan(in Unsafe.As<UInt512, uint>(ref left), (Size / sizeof(uint)) - (BitHelper.LeadingZeroCount(left) / 32));
+			ReadOnlySpan<uint> leftSpan = MemoryMarshal.CreateReadOnlySpan(in Unsafe.As<UInt512, uint>(ref left), (Size / sizeof(uint)) - (BitHelper.LeadingZeroCount(in left) / 32));
 
-			ReadOnlySpan<uint> rightSpan = MemoryMarshal.CreateReadOnlySpan(in Unsafe.As<UInt512, uint>(ref right), (Size / sizeof(uint)) - (BitHelper.LeadingZeroCount(right) / 32));
+			ReadOnlySpan<uint> rightSpan = MemoryMarshal.CreateReadOnlySpan(in Unsafe.As<UInt512, uint>(ref right), (Size / sizeof(uint)) - (BitHelper.LeadingZeroCount(in right) / 32));
 
 			Span<uint> rawBits = stackalloc uint[(Size / sizeof(uint)) * 2];
 			rawBits.Clear();

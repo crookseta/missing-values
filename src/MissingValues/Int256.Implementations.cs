@@ -32,24 +32,19 @@ namespace MissingValues
 
 		static Int256 IBinaryNumber<Int256>.AllBitsSet => new(_lowerMax, _lowerMax);
 		// MaxValue = 57896044618658097711785492504343953926634992332820282019728792003956564819967
-		/// <inheritdoc/>
-		public static Int256 MaxValue => new(_upperMax, _lowerMax);
+		static Int256 IMinMaxValue<Int256>.MaxValue => MaxValue;
 		// MinValue = -57896044618658097711785492504343953926634992332820282019728792003956564819968
-		/// <inheritdoc/>
-		public static Int256 MinValue => new(_upperMin, _lowerMin);
+		static Int256 IMinMaxValue<Int256>.MinValue => MinValue;
 
-		/// <inheritdoc/>
-		public static Int256 NegativeOne => new(_lowerMax, _lowerMax);
+		static Int256 ISignedNumber<Int256>.NegativeOne => NegativeOne;
 
-		/// <inheritdoc/>
-		public static Int256 One => new(0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0001);
+		static Int256 INumberBase<Int256>.One => One;
 
 		static int INumberBase<Int256>.Radix => 2;
 
-		/// <inheritdoc/>
-		public static Int256 Zero => default;
+		static Int256 INumberBase<Int256>.Zero => Zero;
 
-		static Int256 IAdditiveIdentity<Int256, Int256>.AdditiveIdentity => default;
+		static Int256 IAdditiveIdentity<Int256, Int256>.AdditiveIdentity => Zero;
 
 		static Int256 IMultiplicativeIdentity<Int256, Int256>.MultiplicativeIdentity => One;
 
@@ -134,7 +129,7 @@ namespace MissingValues
 		static bool INumberBase<Int256>.IsPositiveInfinity(Int256 value) => false;
 
 		/// <inheritdoc/>
-		public static bool IsPow2(Int256 value) => (PopCount(in value) == 1) && IsPositive(value);
+		public static bool IsPow2(Int256 value) => (BitHelper.PopCount(in value) == 1) && IsPositive(value);
 
 		static bool INumberBase<Int256>.IsRealNumber(Int256 value) => true;
 
@@ -186,26 +181,13 @@ namespace MissingValues
 		/// <inheritdoc/>
 		public static Int256 LeadingZeroCount(Int256 value)
 		{
-			if (value.Upper == 0)
-			{
-				return (Int256)(128 + UInt128.LeadingZeroCount(value.Lower));
-			}
-			return (Int256)UInt128.LeadingZeroCount(value.Upper);
+			return BitHelper.LeadingZeroCount(in value);
 		}
 
 		/// <inheritdoc/>
 		public static Int256 Log2(Int256 value)
 		{
-			if (IsNegative(value))
-			{
-				Thrower.NeedsNonNegative<Int256>();
-			}
-
-			if (value.Upper == 0)
-			{
-				return (Int256)UInt128.Log2(value.Lower);
-			}
-			return (Int256)(128 + UInt128.Log2(value.Upper));
+			return BitHelper.Log2(in value);
 		}
 
 		/// <inheritdoc/>
@@ -388,13 +370,10 @@ namespace MissingValues
 			return output;
 		}
 
-		private static int PopCount(in Int256 value) => 
-			BitOperations.PopCount(value._p0) + BitOperations.PopCount(value._p1) + BitOperations.PopCount(value._p2) + BitOperations.PopCount(value._p3);
-
 		/// <inheritdoc/>
 		public static Int256 PopCount(Int256 value)
 		{
-			return (Int256)(BitOperations.PopCount(value._p0) + BitOperations.PopCount(value._p1) + BitOperations.PopCount(value._p2) + BitOperations.PopCount(value._p3));
+			return BitHelper.PopCount(in value);
 		}
 
 		/// <inheritdoc/>
@@ -412,11 +391,7 @@ namespace MissingValues
 		/// <inheritdoc/>
 		public static Int256 TrailingZeroCount(Int256 value)
 		{
-			if (value.Lower == 0)
-			{
-				return (Int256)(128 + UInt128.TrailingZeroCount(value.Upper));
-			}
-			return (Int256)UInt128.TrailingZeroCount(value.Lower);
+			return BitHelper.TrailingZeroCount(in value);
 		}
 
 		/// <inheritdoc/>
@@ -545,7 +520,7 @@ namespace MissingValues
 
 					if (BitConverter.IsLittleEndian)
 					{
-						result = BitHelper.ReverseEndianness(result);
+						result = BitHelper.ReverseEndianness(in result);
 					}
 				}
 				else
@@ -624,7 +599,7 @@ namespace MissingValues
 
 					if (!BitConverter.IsLittleEndian)
 					{
-						result = BitHelper.ReverseEndianness(result);
+						result = BitHelper.ReverseEndianness(in result);
 					}
 				}
 				else
@@ -642,7 +617,7 @@ namespace MissingValues
 					}
 
 					result <<= ((Size - source.Length) * 8);
-					result = BitHelper.ReverseEndianness(result);
+					result = BitHelper.ReverseEndianness(in result);
 
 					if (!isUnsigned)
 					{
@@ -970,7 +945,7 @@ namespace MissingValues
 
 			if (IsPositive(value))
 			{
-				return (Size * 8) - BitHelper.LeadingZeroCount(value);
+				return (Size * 8) - BitHelper.LeadingZeroCount(in value);
 			}
 			else
 			{
@@ -1050,8 +1025,8 @@ namespace MissingValues
 
 			if (BitConverter.IsLittleEndian)
 			{
-				lower = BitHelper.ReverseEndianness(lower);
-				upper = BitHelper.ReverseEndianness(upper);
+				lower = BinaryPrimitives.ReverseEndianness(lower);
+				upper = BinaryPrimitives.ReverseEndianness(upper);
 			}
 
 			ref byte address = ref MemoryMarshal.GetReference(destination);
@@ -1068,8 +1043,8 @@ namespace MissingValues
 
 			if (!BitConverter.IsLittleEndian)
 			{
-				lower = BitHelper.ReverseEndianness(lower);
-				upper = BitHelper.ReverseEndianness(upper);
+				lower = BinaryPrimitives.ReverseEndianness(lower);
+				upper = BinaryPrimitives.ReverseEndianness(upper);
 			}
 
 			ref byte address = ref MemoryMarshal.GetReference(destination);

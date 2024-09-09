@@ -9,6 +9,7 @@ using System.Linq;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Runtime.Intrinsics;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -28,28 +29,21 @@ namespace MissingValues
 
 		static Int512 IBinaryNumber<Int512>.AllBitsSet => new Int512(_lowerMax, _lowerMax);
 
-		/// <inheritdoc/>
-		public static Int512 One => new Int512(
-			0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000,
-			0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0001);
+		static Int512 INumberBase<Int512>.One => One;
 
 		static int INumberBase<Int512>.Radix => 2;
 
-		/// <inheritdoc/>
-		public static Int512 Zero => default;
+		static Int512 INumberBase<Int512>.Zero => Zero;
 
-		static Int512 IAdditiveIdentity<Int512, Int512>.AdditiveIdentity => default;
+		static Int512 IAdditiveIdentity<Int512, Int512>.AdditiveIdentity => Zero;
 
 		static Int512 IMultiplicativeIdentity<Int512, Int512>.MultiplicativeIdentity => One;
 
-		/// <inheritdoc/>
-		public static Int512 MaxValue => new Int512(_upperMax, _lowerMax);
+		static Int512 IMinMaxValue<Int512>.MaxValue => MaxValue;
 
-		/// <inheritdoc/>
-		public static Int512 MinValue => new Int512(_upperMin, _lowerMin);
+		static Int512 IMinMaxValue<Int512>.MinValue => MinValue;
 
-		/// <inheritdoc/>
-		public static Int512 NegativeOne => new Int512(_lowerMax, _lowerMax);
+		static Int512 ISignedNumber<Int512>.NegativeOne => NegativeOne;
 
 		static Int512 IFormattableInteger<Int512>.Two => new Int512(0x2);
 
@@ -228,7 +222,7 @@ namespace MissingValues
 
 			if (IsPositive(value))
 			{
-				return (Size * 8) - BitHelper.LeadingZeroCount(value);
+				return (Size * 8) - BitHelper.LeadingZeroCount(in value);
 			}
 			else
 			{
@@ -269,7 +263,7 @@ namespace MissingValues
 		static bool INumberBase<Int512>.IsPositiveInfinity(Int512 value) => false;
 
 		/// <inheritdoc/>
-		public static bool IsPow2(Int512 value) => (PopCount(in value) == 1) && IsPositive(value);
+		public static bool IsPow2(Int512 value) => (BitHelper.PopCount(in value) == 1) && IsPositive(value);
 
 		static bool INumberBase<Int512>.IsRealNumber(Int512 value) => true;
 
@@ -280,26 +274,13 @@ namespace MissingValues
 		/// <inheritdoc/>
 		public static Int512 LeadingZeroCount(Int512 value)
 		{
-			if (value.Upper == 0)
-			{
-				return (Int512)(256 + UInt256.LeadingZeroCount(value.Lower));
-			}
-			return (Int512)UInt256.LeadingZeroCount(value.Upper);
+			return BitHelper.LeadingZeroCount(in value);
 		}
 
 		/// <inheritdoc/>
 		public static Int512 Log2(Int512 value)
 		{
-			if (IsNegative(value))
-			{
-				Thrower.NeedsNonNegative<Int512>();
-			}
-
-			if (value.Upper == 0)
-			{
-				return (Int512)UInt256.Log2(value.Lower);
-			}
-			return (Int512)(256 + UInt256.Log2(value.Upper));
+			return BitHelper.Log2(in value);
 		}
 
 		/// <inheritdoc/>
@@ -464,15 +445,10 @@ namespace MissingValues
 			return output;
 		}
 
-		private static int PopCount(in Int512 value) =>
-			BitOperations.PopCount(value._p0) + BitOperations.PopCount(value._p1) + BitOperations.PopCount(value._p2) + BitOperations.PopCount(value._p3)
-			+ BitOperations.PopCount(value._p4) + BitOperations.PopCount(value._p5) + BitOperations.PopCount(value._p6) + BitOperations.PopCount(value._p7);
-
 		/// <inheritdoc/>
 		public static Int512 PopCount(Int512 value)
 		{
-			return (Int512)(BitOperations.PopCount(value._p0) + BitOperations.PopCount(value._p1) + BitOperations.PopCount(value._p2) + BitOperations.PopCount(value._p3)
-			+ BitOperations.PopCount(value._p4) + BitOperations.PopCount(value._p5) + BitOperations.PopCount(value._p6) + BitOperations.PopCount(value._p7));
+			return (Int512)(BitHelper.PopCount(in value));
 		}
 
 		/// <inheritdoc/>
@@ -496,11 +472,7 @@ namespace MissingValues
 		/// <inheritdoc/>
 		public static Int512 TrailingZeroCount(Int512 value)
 		{
-			if (value.Lower == 0)
-			{
-				return (Int512)(256 + UInt256.TrailingZeroCount(value.Upper));
-			}
-			return (Int512)UInt256.TrailingZeroCount(value.Lower);
+			return BitHelper.TrailingZeroCount(in value);
 		}
 
 		/// <inheritdoc/>
@@ -641,7 +613,7 @@ namespace MissingValues
 
 					if (BitConverter.IsLittleEndian)
 					{
-						result = BitHelper.ReverseEndianness(result);
+						result = BitHelper.ReverseEndianness(in result);
 					}
 				}
 				else
@@ -720,7 +692,7 @@ namespace MissingValues
 
 					if (!BitConverter.IsLittleEndian)
 					{
-						result = BitHelper.ReverseEndianness(result);
+						result = BitHelper.ReverseEndianness(in result);
 					}
 				}
 				else
@@ -738,7 +710,7 @@ namespace MissingValues
 					}
 
 					result <<= ((Size - source.Length) * 8);
-					result = BitHelper.ReverseEndianness(result);
+					result = BitHelper.ReverseEndianness(in result);
 
 					if (!isUnsigned)
 					{
@@ -1023,8 +995,8 @@ namespace MissingValues
 
 			if (BitConverter.IsLittleEndian)
 			{
-				lower = BitHelper.ReverseEndianness(lower);
-				upper = BitHelper.ReverseEndianness(upper);
+				lower = BitHelper.ReverseEndianness(in lower);
+				upper = BitHelper.ReverseEndianness(in upper);
 			}
 
 			ref byte address = ref MemoryMarshal.GetReference(destination);
@@ -1066,8 +1038,8 @@ namespace MissingValues
 
 			if (!BitConverter.IsLittleEndian)
 			{
-				lower = BitHelper.ReverseEndianness(lower);
-				upper = BitHelper.ReverseEndianness(upper);
+				lower = BitHelper.ReverseEndianness(in lower);
+				upper = BitHelper.ReverseEndianness(in upper);
 			}
 
 			ref byte address = ref MemoryMarshal.GetReference(destination);
@@ -1205,7 +1177,16 @@ namespace MissingValues
 		/// <inheritdoc/>
 		public static Int512 operator ~(in Int512 value)
 		{
-			return new(~value._p7, ~value._p6, ~value._p5, ~value._p4, ~value._p3, ~value._p2, ~value._p1, ~value._p0);
+			if (Vector512.IsHardwareAccelerated)
+			{
+				var v = Unsafe.As<Int512, Vector512<ulong>>(ref Unsafe.AsRef(in value));
+				var result = ~v;
+				return Unsafe.As<Vector512<ulong>, Int512>(ref result);
+			}
+			else
+			{
+				return new(~value._p7, ~value._p6, ~value._p5, ~value._p4, ~value._p3, ~value._p2, ~value._p1, ~value._p0);
+			}
 		}
 
 		/// <inheritdoc/>
@@ -1309,19 +1290,49 @@ namespace MissingValues
 		/// <inheritdoc/>
 		public static Int512 operator &(in Int512 left, in Int512 right)
 		{
-			return new Int512(left._p7 & right._p7, left._p6 & right._p6, left._p5 & right._p5, left._p4 & right._p4, left._p3 & right._p3, left._p2 & right._p2, left._p1 & right._p1, left._p0 & right._p0);
+			if (Vector512.IsHardwareAccelerated)
+			{
+				var v1 = Unsafe.As<Int512, Vector512<ulong>>(ref Unsafe.AsRef(in left));
+				var v2 = Unsafe.As<Int512, Vector512<ulong>>(ref Unsafe.AsRef(in right));
+				var result = v1 & v2;
+				return Unsafe.As<Vector512<ulong>, Int512>(ref result);
+			}
+			else
+			{
+				return new(left._p7 & right._p7, left._p6 & right._p6, left._p5 & right._p5, left._p4 & right._p4, left._p3 & right._p3, left._p2 & right._p2, left._p1 & right._p1, left._p0 & right._p0);
+			}
 		}
 
 		/// <inheritdoc/>
 		public static Int512 operator |(in Int512 left, in Int512 right)
 		{
-			return new Int512(left._p7 | right._p7, left._p6 | right._p6, left._p5 | right._p5, left._p4 | right._p4, left._p3 | right._p3, left._p2 | right._p2, left._p1 | right._p1, left._p0 | right._p0);
+			if (Vector512.IsHardwareAccelerated)
+			{
+				var v1 = Unsafe.As<Int512, Vector512<ulong>>(ref Unsafe.AsRef(in left));
+				var v2 = Unsafe.As<Int512, Vector512<ulong>>(ref Unsafe.AsRef(in right));
+				var result = v1 | v2;
+				return Unsafe.As<Vector512<ulong>, Int512>(ref result);
+			}
+			else
+			{
+				return new(left._p7 | right._p7, left._p6 | right._p6, left._p5 | right._p5, left._p4 | right._p4, left._p3 | right._p3, left._p2 | right._p2, left._p1 | right._p1, left._p0 | right._p0);
+			}
 		}
 
 		/// <inheritdoc/>
 		public static Int512 operator ^(in Int512 left, in Int512 right)
 		{
-			return new Int512(left._p7 ^ right._p7, left._p6 ^ right._p6, left._p5 ^ right._p5, left._p4 ^ right._p4, left._p3 ^ right._p3, left._p2 ^ right._p2, left._p1 ^ right._p1, left._p0 ^ right._p0);
+			if (Vector512.IsHardwareAccelerated)
+			{
+				var v1 = Unsafe.As<Int512, Vector512<ulong>>(ref Unsafe.AsRef(in left));
+				var v2 = Unsafe.As<Int512, Vector512<ulong>>(ref Unsafe.AsRef(in right));
+				var result = v1 ^ v2;
+				return Unsafe.As<Vector512<ulong>, Int512>(ref result);
+			}
+			else
+			{
+				return new(left._p7 ^ right._p7, left._p6 ^ right._p6, left._p5 ^ right._p5, left._p4 ^ right._p4, left._p3 ^ right._p3, left._p2 ^ right._p2, left._p1 ^ right._p1, left._p0 ^ right._p0);
+			}
 		}
 
 		/// <inheritdoc/>

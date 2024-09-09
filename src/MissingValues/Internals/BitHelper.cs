@@ -16,54 +16,35 @@ namespace MissingValues
 {
 	internal static partial class BitHelper
 	{
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static void GetUpperAndLowerBits(UInt128 value, out ulong upper, out ulong lower)
 		{
 			lower = value.GetLowerBits();
 			upper = value.GetUpperBits();
 		}
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static void GetUpperAndLowerBits(Int128 value, out ulong upper, out ulong lower)
 		{
 			lower = value.GetLowerBits();
 			upper = value.GetUpperBits();
 		}
 
-
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static ulong GetUpperBits(this in UInt128 value)
 		{
 			return unchecked((ulong)(value >> 64));
 		}
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static ulong GetUpperBits(this in Int128 value)
 		{
 			return unchecked((ulong)(value >> 64));
 		}
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static ulong GetLowerBits(this in UInt128 value)
 		{
 			return unchecked((ulong)(value));
 		}
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static ulong GetLowerBits(this in Int128 value)
 		{
 			return unchecked((ulong)(value));
 		}
 
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		internal static int LeadingZeroCount(UInt128 value)
-		{
-			GetUpperAndLowerBits(value, out var upper, out var lower);
-
-			if (upper == 0)
-			{
-				return 64 + BitOperations.LeadingZeroCount(lower);
-			}
-			return BitOperations.LeadingZeroCount(upper);
-		}
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		internal static int LeadingZeroCount(UInt256 value)
+		internal static int LeadingZeroCount(in UInt256 value)
 		{
 			if (value.Part3 != 0)
 			{
@@ -79,19 +60,23 @@ namespace MissingValues
 			}
 			return 192 + BitOperations.LeadingZeroCount(value.Part0);
 		}
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		internal static int LeadingZeroCount(Int256 value)
+		internal static int LeadingZeroCount(in Int256 value)
 		{
-			UInt128 upper = value.Upper;
-
-			if (upper == 0)
+			if (value.Part3 != 0)
 			{
-				return 128 + LeadingZeroCount(value.Lower);
+				return BitOperations.LeadingZeroCount(value.Part3);
 			}
-			return LeadingZeroCount(upper);
+			if (value.Part2 != 0)
+			{
+				return 64 + BitOperations.LeadingZeroCount(value.Part2);
+			}
+			if (value.Part1 != 0)
+			{
+				return 128 + BitOperations.LeadingZeroCount(value.Part1);
+			}
+			return 192 + BitOperations.LeadingZeroCount(value.Part0);
 		}
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		internal static int LeadingZeroCount(UInt512 value)
+		internal static int LeadingZeroCount(in UInt512 value)
 		{
 			if (value.Part7 != 0)
 			{
@@ -123,51 +108,283 @@ namespace MissingValues
 			}
 			return 448 + BitOperations.LeadingZeroCount(value.Part0);
 		}
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		internal static int LeadingZeroCount(Int512 value)
+		internal static int LeadingZeroCount(in Int512 value)
 		{
-			UInt256 upper = value.Upper;
-
-			if (upper == 0)
+			if (value.Part7 != 0)
 			{
-				return 256 + LeadingZeroCount(value.Lower);
+				return BitOperations.LeadingZeroCount(value.Part7);
 			}
-			return LeadingZeroCount(upper);
+			if (value.Part6 != 0)
+			{
+				return 64 + BitOperations.LeadingZeroCount(value.Part6);
+			}
+			if (value.Part5 != 0)
+			{
+				return 128 + BitOperations.LeadingZeroCount(value.Part5);
+			}
+			if (value.Part4 != 0)
+			{
+				return 192 + BitOperations.LeadingZeroCount(value.Part4);
+			}
+			if (value.Part3 != 0)
+			{
+				return 256 + BitOperations.LeadingZeroCount(value.Part3);
+			}
+			if (value.Part2 != 0)
+			{
+				return 320 + BitOperations.LeadingZeroCount(value.Part2);
+			}
+			if (value.Part1 != 0)
+			{
+				return 384 + BitOperations.LeadingZeroCount(value.Part1);
+			}
+			return 448 + BitOperations.LeadingZeroCount(value.Part0);
 		}
 
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		internal static UInt128 ReverseEndianness(UInt128 value)
+		internal static int Log2(in UInt256 value)
 		{
-			GetUpperAndLowerBits(value, out var upper, out var lower);
+			if (value.Part3 != 0)
+			{
+				return 192 + BitOperations.Log2(value.Part3);
+			}
+			if (value.Part2 != 0)
+			{
+				return 128 + BitOperations.Log2(value.Part2);
+			}
+			if (value.Part1 != 0)
+			{
+				return 64 + BitOperations.Log2(value.Part1);
+			}
+			return BitOperations.Log2(value.Part0);
+		}
+		internal static int Log2(in Int256 value)
+		{
+			if ((long)value.Part3 < 0)
+			{
+				Thrower.NeedsNonNegative<Int256>();
+			}
 
-			return new UInt128(BinaryPrimitives.ReverseEndianness(lower), BinaryPrimitives.ReverseEndianness(upper));
+			if (value.Part3 != 0)
+			{
+				return 192 + BitOperations.Log2(value.Part3);
+			}
+			if (value.Part2 != 0)
+			{
+				return 128 + BitOperations.Log2(value.Part2);
+			}
+			if (value.Part1 != 0)
+			{
+				return 64 + BitOperations.Log2(value.Part1);
+			}
+			return BitOperations.Log2(value.Part0);
 		}
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		internal static Int128 ReverseEndianness(Int128 value)
+		internal static int Log2(in UInt512 value)
 		{
-			GetUpperAndLowerBits(value, out var upper, out var lower);
+			if (value.Part7 != 0)
+			{
+				return 448 + BitOperations.Log2(value.Part7);
+			}
+			if (value.Part6 != 0)
+			{
+				return 384 + BitOperations.Log2(value.Part6);
+			}
+			if (value.Part5 != 0)
+			{
+				return 320 + BitOperations.Log2(value.Part5);
+			}
+			if (value.Part4 != 0)
+			{
+				return 256 + BitOperations.Log2(value.Part4);
+			}
+			if (value.Part3 != 0)
+			{
+				return 192 + BitOperations.Log2(value.Part3);
+			}
+			if (value.Part2 != 0)
+			{
+				return 128 + BitOperations.Log2(value.Part2);
+			}
+			if (value.Part1 != 0)
+			{
+				return 64 + BitOperations.Log2(value.Part1);
+			}
+			return BitOperations.Log2(value.Part0);
+		}
+		internal static int Log2(in Int512 value)
+		{
+			if ((long)value.Part7 < 0)
+			{
+				Thrower.NeedsNonNegative<Int512>();
+			}
 
-			return new Int128(BinaryPrimitives.ReverseEndianness(lower), BinaryPrimitives.ReverseEndianness(upper));
-		}
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		internal static UInt256 ReverseEndianness(UInt256 value)
-		{
-			return new UInt256(ReverseEndianness(value.Lower), ReverseEndianness(value.Upper));
+			if (value.Part7 != 0)
+			{
+				return 448 + BitOperations.Log2(value.Part7);
+			}
+			if (value.Part6 != 0)
+			{
+				return 384 + BitOperations.Log2(value.Part6);
+			}
+			if (value.Part5 != 0)
+			{
+				return 320 + BitOperations.Log2(value.Part5);
+			}
+			if (value.Part4 != 0)
+			{
+				return 256 + BitOperations.Log2(value.Part4);
+			}
+			if (value.Part3 != 0)
+			{
+				return 192 + BitOperations.Log2(value.Part3);
+			}
+			if (value.Part2 != 0)
+			{
+				return 128 + BitOperations.Log2(value.Part2);
+			}
+			if (value.Part1 != 0)
+			{
+				return 64 + BitOperations.Log2(value.Part1);
+			}
+			return BitOperations.Log2(value.Part0);
 		}
 
-		internal static Int256 ReverseEndianness(Int256 value)
+		internal static int PopCount(in UInt256 value)
 		{
-			return new(ReverseEndianness(value.Lower), ReverseEndianness(value.Upper));
+			return BitOperations.PopCount(value.Part0) + BitOperations.PopCount(value.Part1) + BitOperations.PopCount(value.Part2) + BitOperations.PopCount(value.Part3);
 		}
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		internal static UInt512 ReverseEndianness(UInt512 value)
+		internal static int PopCount(in Int256 value)
 		{
-			return new UInt512(ReverseEndianness(value.Lower), ReverseEndianness(value.Upper));
+			return BitOperations.PopCount(value.Part0) + BitOperations.PopCount(value.Part1) + BitOperations.PopCount(value.Part2) + BitOperations.PopCount(value.Part3);
+		}
+		internal static int PopCount(in UInt512 value)
+		{
+			return BitOperations.PopCount(value.Part0) + BitOperations.PopCount(value.Part1) + BitOperations.PopCount(value.Part2) + BitOperations.PopCount(value.Part3)
+			+ BitOperations.PopCount(value.Part4) + BitOperations.PopCount(value.Part5) + BitOperations.PopCount(value.Part6) + BitOperations.PopCount(value.Part7);
+		}
+		internal static int PopCount(in Int512 value)
+		{
+			return BitOperations.PopCount(value.Part0) + BitOperations.PopCount(value.Part1) + BitOperations.PopCount(value.Part2) + BitOperations.PopCount(value.Part3)
+			+ BitOperations.PopCount(value.Part4) + BitOperations.PopCount(value.Part5) + BitOperations.PopCount(value.Part6) + BitOperations.PopCount(value.Part7);
 		}
 
-		internal static Int512 ReverseEndianness(Int512 value)
+		internal static UInt256 ReverseEndianness(in UInt256 value)
 		{
-			return new Int512(ReverseEndianness(value.Lower), ReverseEndianness(value.Upper));
+			return new(BinaryPrimitives.ReverseEndianness(value.Part0), BinaryPrimitives.ReverseEndianness(value.Part1), BinaryPrimitives.ReverseEndianness(value.Part2), BinaryPrimitives.ReverseEndianness(value.Part3));
+		}
+		internal static Int256 ReverseEndianness(in Int256 value)
+		{
+			return new(BinaryPrimitives.ReverseEndianness(value.Part0), BinaryPrimitives.ReverseEndianness(value.Part1), BinaryPrimitives.ReverseEndianness(value.Part2), BinaryPrimitives.ReverseEndianness(value.Part3));
+		}
+		internal static UInt512 ReverseEndianness(in UInt512 value)
+		{
+			return new(
+				BinaryPrimitives.ReverseEndianness(value.Part0), BinaryPrimitives.ReverseEndianness(value.Part1), BinaryPrimitives.ReverseEndianness(value.Part2), BinaryPrimitives.ReverseEndianness(value.Part3),
+				BinaryPrimitives.ReverseEndianness(value.Part4), BinaryPrimitives.ReverseEndianness(value.Part5), BinaryPrimitives.ReverseEndianness(value.Part6), BinaryPrimitives.ReverseEndianness(value.Part7)
+				);
+		}
+		internal static Int512 ReverseEndianness(in Int512 value)
+		{
+			return new(
+				BinaryPrimitives.ReverseEndianness(value.Part0), BinaryPrimitives.ReverseEndianness(value.Part1), BinaryPrimitives.ReverseEndianness(value.Part2), BinaryPrimitives.ReverseEndianness(value.Part3),
+				BinaryPrimitives.ReverseEndianness(value.Part4), BinaryPrimitives.ReverseEndianness(value.Part5), BinaryPrimitives.ReverseEndianness(value.Part6), BinaryPrimitives.ReverseEndianness(value.Part7)
+				);
+		}
+
+		internal static int TrailingZeroCount(in UInt256 value)
+		{
+			if (value.Part0 != 0)
+			{
+				return BitOperations.TrailingZeroCount(value.Part0);
+			}
+			if (value.Part1 != 0)
+			{
+				return 64 + BitOperations.TrailingZeroCount(value.Part1);
+			}
+			if (value.Part2 != 0)
+			{
+				return 128 + BitOperations.TrailingZeroCount(value.Part2);
+			}
+			return 192 + BitOperations.TrailingZeroCount(value.Part3);
+		}
+		internal static int TrailingZeroCount(in Int256 value)
+		{
+			if (value.Part0 != 0)
+			{
+				return BitOperations.TrailingZeroCount(value.Part0);
+			}
+			if (value.Part1 != 0)
+			{
+				return 64 + BitOperations.TrailingZeroCount(value.Part1);
+			}
+			if (value.Part2 != 0)
+			{
+				return 128 + BitOperations.TrailingZeroCount(value.Part2);
+			}
+			return 192 + BitOperations.TrailingZeroCount(value.Part3);
+		}
+		internal static int TrailingZeroCount(in UInt512 value)
+		{
+			if (value.Part0 != 0)
+			{
+				return BitOperations.TrailingZeroCount(value.Part0);
+			}
+			if (value.Part1 != 0)
+			{
+				return 64 + BitOperations.TrailingZeroCount(value.Part1);
+			}
+			if (value.Part2 != 0)
+			{
+				return 128 + BitOperations.TrailingZeroCount(value.Part2);
+			}
+			if (value.Part3 != 0)
+			{
+				return 192 + BitOperations.Log2(value.Part3);
+			}
+			if (value.Part4 != 0)
+			{
+				return 256 + BitOperations.Log2(value.Part4);
+			}
+			if (value.Part5 != 0)
+			{
+				return 320 + BitOperations.Log2(value.Part5);
+			}
+			if (value.Part6 != 0)
+			{
+				return 384 + BitOperations.Log2(value.Part6);
+			}
+			return 448 + BitOperations.TrailingZeroCount(value.Part7);
+		}
+		internal static int TrailingZeroCount(in Int512 value)
+		{
+			if (value.Part0 != 0)
+			{
+				return BitOperations.TrailingZeroCount(value.Part0);
+			}
+			if (value.Part1 != 0)
+			{
+				return 64 + BitOperations.TrailingZeroCount(value.Part1);
+			}
+			if (value.Part2 != 0)
+			{
+				return 128 + BitOperations.TrailingZeroCount(value.Part2);
+			}
+			if (value.Part3 != 0)
+			{
+				return 192 + BitOperations.Log2(value.Part3);
+			}
+			if (value.Part4 != 0)
+			{
+				return 256 + BitOperations.Log2(value.Part4);
+			}
+			if (value.Part5 != 0)
+			{
+				return 320 + BitOperations.Log2(value.Part5);
+			}
+			if (value.Part6 != 0)
+			{
+				return 384 + BitOperations.Log2(value.Part6);
+			}
+			return 448 + BitOperations.TrailingZeroCount(value.Part7);
 		}
 
 		internal static int CountDigits(UInt128 num)
@@ -267,7 +484,6 @@ namespace MissingValues
 			return count;
 		}
 
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		internal static T DefaultConvert<T>(out bool result)
 		{
 			result = false;

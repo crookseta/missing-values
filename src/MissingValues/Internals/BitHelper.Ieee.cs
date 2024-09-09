@@ -186,7 +186,7 @@ namespace MissingValues
 		{
 			int shiftDist;
 
-			shiftDist = BitHelper.LeadingZeroCount(sig) - 19;
+			shiftDist = LeadingZeroCount(in sig) - 19;
 
 			return ((uint)(1 - shiftDist), sig << shiftDist);
 		}
@@ -613,7 +613,7 @@ namespace MissingValues
 		{
 			UInt128 sigExtra;
 
-			int shiftDist = (LeadingZeroCount(sig) - 19);
+			int shiftDist = (LeadingZeroCount(in sig) - 19);
 			exp -= shiftDist;
 
 			if (0 <= shiftDist)

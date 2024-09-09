@@ -23,6 +23,27 @@ namespace MissingValues
 	{
 		internal const int Size = 64;
 
+		/// <summary>
+		/// Represents the value <c>1</c> of the type.
+		/// </summary>
+		public static readonly Int512 One = new Int512(0, 0, 0, 0, 0, 0, 0, 1);
+		/// <summary>
+		/// Represents the largest possible value of the type.
+		/// </summary>
+		public static readonly Int512 MaxValue = new Int512(_upperMax, _lowerMax);
+		/// <summary>
+		/// Represents the smallest possible value of the type.
+		/// </summary>
+		public static readonly Int512 MinValue = new Int512(_upperMin, _lowerMin);
+		/// <summary>
+		/// Represents the value <c>-1</c> of the type.
+		/// </summary>
+		public static readonly Int512 NegativeOne = new Int512(_lowerMax, _lowerMax);
+		/// <summary>
+		/// Represents the value <c>0</c> of the type.
+		/// </summary>
+		public static readonly Int512 Zero = default;
+
 #if BIGENDIAN
 		private readonly ulong _p7;
 		private readonly ulong _p6;
@@ -45,6 +66,14 @@ namespace MissingValues
 
 		internal UInt256 Lower => new UInt256(_p3, _p2, _p1, _p0);
 		internal UInt256 Upper => new UInt256(_p7, _p6, _p5, _p4);
+		internal ulong Part0 => _p0;
+		internal ulong Part1 => _p1;
+		internal ulong Part2 => _p2;
+		internal ulong Part3 => _p3;
+		internal ulong Part4 => _p4;
+		internal ulong Part5 => _p5;
+		internal ulong Part6 => _p6;
+		internal ulong Part7 => _p7;
 
 		internal Int512(ulong lower)
 		{

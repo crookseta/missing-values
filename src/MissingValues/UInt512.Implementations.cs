@@ -9,6 +9,7 @@ using System.Linq;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Runtime.Intrinsics;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -20,27 +21,19 @@ namespace MissingValues
 		IUnsignedNumber<UInt512>,
 		IFormattableUnsignedInteger<UInt512, Int512>
 	{
-		/// <inheritdoc/>
-		public static UInt512 One => new UInt512(0, 0, 0, 0, 0, 0, 0, 1);
+		static UInt512 INumberBase<UInt512>.One => One;
 
 		static int INumberBase<UInt512>.Radix => 2;
 
-		/// <inheritdoc/>
-		public static UInt512 Zero => default;
+		static UInt512 INumberBase<UInt512>.Zero => Zero;
 
-		/// <inheritdoc/>
-		public static UInt512 AdditiveIdentity => default;
+		static UInt512 IAdditiveIdentity<UInt512, UInt512>.AdditiveIdentity => Zero;
 
-		/// <inheritdoc/>
-		public static UInt512 MultiplicativeIdentity => One;
+		static UInt512 IMultiplicativeIdentity<UInt512, UInt512>.MultiplicativeIdentity => One;
 
-		/// <inheritdoc/>
-		public static UInt512 MaxValue => new UInt512(
-			   0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF,
-			   0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF);
+		static UInt512 IMinMaxValue<UInt512>.MaxValue => MaxValue;
 
-		/// <inheritdoc/>
-		public static UInt512 MinValue => default;
+		static UInt512 IMinMaxValue<UInt512>.MinValue => MinValue;
 
 		static UInt512 IFormattableUnsignedInteger<UInt512, Int512>.SignedMaxMagnitude => new UInt512(
 			   0x8000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000,
@@ -219,7 +212,7 @@ namespace MissingValues
 				Unsafe.WriteUnaligned(ref *(byte*)(pLeft + 6), (quotient._p6));
 				Unsafe.WriteUnaligned(ref *(byte*)(pLeft + 7), (quotient._p7));
 
-				Span<ulong> left = new Span<ulong>(pLeft, (UlongCount) - (BitHelper.LeadingZeroCount(quotient) / 64));
+				Span<ulong> left = new Span<ulong>(pLeft, (UlongCount) - (BitHelper.LeadingZeroCount(in quotient) / 64));
 
 				Span<ulong> rawBits = stackalloc ulong[UlongCount];
 				rawBits.Clear();
@@ -236,10 +229,10 @@ namespace MissingValues
 			{
 				const int UIntCount = Size / sizeof(uint);
 
-				Span<uint> left = stackalloc uint[(UIntCount) - (BitHelper.LeadingZeroCount(quotient) / 32)];
+				Span<uint> left = stackalloc uint[(UIntCount) - (BitHelper.LeadingZeroCount(in quotient) / 32)];
 				MemoryMarshal.CreateReadOnlySpan(in Unsafe.As<UInt512, uint>(ref Unsafe.AsRef(in quotient)), left.Length).CopyTo(left);
 
-				Span<uint> right = stackalloc uint[(UIntCount) - (BitHelper.LeadingZeroCount(divisor) / 32)];
+				Span<uint> right = stackalloc uint[(UIntCount) - (BitHelper.LeadingZeroCount(in divisor) / 32)];
 				MemoryMarshal.CreateReadOnlySpan(in Unsafe.As<UInt512, uint>(ref Unsafe.AsRef(in divisor)), right.Length).CopyTo(right);
 
 
@@ -276,7 +269,7 @@ namespace MissingValues
 		int IBinaryInteger<UInt512>.GetShortestBitLength()
 		{
 			UInt512 value = this;
-			return (Size * 8) - BitHelper.LeadingZeroCount(value);
+			return (Size * 8) - BitHelper.LeadingZeroCount(in value);
 		}
 
 		static bool INumberBase<UInt512>.IsCanonical(UInt512 value)
@@ -354,7 +347,7 @@ namespace MissingValues
 		/// <inheritdoc/>
 		public static bool IsPow2(UInt512 value)
 		{
-			return PopCount(in value) == 1;
+			return BitHelper.PopCount(in value) == 1;
 		}
 
 		static bool INumberBase<UInt512>.IsRealNumber(UInt512 value)
@@ -375,22 +368,13 @@ namespace MissingValues
 		/// <inheritdoc/>
 		public static UInt512 LeadingZeroCount(UInt512 value)
 		{
-			if (value.Upper == UInt256.Zero)
-			{
-				return 256 + UInt256.LeadingZeroCount(value.Lower);
-			}
-
-			return UInt256.LeadingZeroCount(value.Upper);
+			return (UInt512)BitHelper.LeadingZeroCount(in value);
 		}
 
 		/// <inheritdoc/>
 		public static UInt512 Log2(UInt512 value)
 		{
-			if (value.Upper == UInt256.Zero)
-			{
-				return UInt256.Log2(value.Lower);
-			}
-			return 256 + UInt256.Log2(value.Upper);
+			return (UInt512)BitHelper.Log2(in value);
 		}
 
 		/// <inheritdoc/>
@@ -480,15 +464,10 @@ namespace MissingValues
 			return output;
 		}
 
-		private static int PopCount(in UInt512 value) =>
-			BitOperations.PopCount(value._p0) + BitOperations.PopCount(value._p1) + BitOperations.PopCount(value._p2) + BitOperations.PopCount(value._p3)
-			+ BitOperations.PopCount(value._p4) + BitOperations.PopCount(value._p5) + BitOperations.PopCount(value._p6) + BitOperations.PopCount(value._p7);
-
 		/// <inheritdoc/>
 		public static UInt512 PopCount(UInt512 value)
 		{
-			return (UInt512)(BitOperations.PopCount(value._p0) + BitOperations.PopCount(value._p1) + BitOperations.PopCount(value._p2) + BitOperations.PopCount(value._p3)
-			+ BitOperations.PopCount(value._p4) + BitOperations.PopCount(value._p5) + BitOperations.PopCount(value._p6) + BitOperations.PopCount(value._p7));
+			return (UInt512)(BitHelper.PopCount(in value));
 		}
 
 		/// <inheritdoc/>
@@ -506,11 +485,7 @@ namespace MissingValues
 		/// <inheritdoc/>
 		public static UInt512 TrailingZeroCount(UInt512 value)
 		{
-			if (value.Lower == 0)
-			{
-				return 256 + UInt256.TrailingZeroCount(value.Upper);
-			}
-			return UInt256.TrailingZeroCount(value.Lower);
+			return (UInt512)BitHelper.TrailingZeroCount(in value);
 		}
 
 		/// <inheritdoc/>
@@ -619,7 +594,7 @@ namespace MissingValues
 
 					if (BitConverter.IsLittleEndian)
 					{
-						result = BitHelper.ReverseEndianness(result);
+						result = BitHelper.ReverseEndianness(in result);
 					}
 				}
 				else
@@ -673,7 +648,7 @@ namespace MissingValues
 
 					if (!BitConverter.IsLittleEndian)
 					{
-						result = BitHelper.ReverseEndianness(result);
+						result = BitHelper.ReverseEndianness(in result);
 					}
 				}
 				else
@@ -977,8 +952,8 @@ namespace MissingValues
 
 			if (BitConverter.IsLittleEndian)
 			{
-				lower = BitHelper.ReverseEndianness(lower);
-				upper = BitHelper.ReverseEndianness(upper);
+				lower = BitHelper.ReverseEndianness(in lower);
+				upper = BitHelper.ReverseEndianness(in upper);
 			}
 
 			ref byte address = ref MemoryMarshal.GetReference(destination);
@@ -1020,8 +995,8 @@ namespace MissingValues
 
 			if (!BitConverter.IsLittleEndian)
 			{
-				lower = BitHelper.ReverseEndianness(lower);
-				upper = BitHelper.ReverseEndianness(upper);
+				lower = BitHelper.ReverseEndianness(in lower);
+				upper = BitHelper.ReverseEndianness(in upper);
 			}
 
 			ref byte address = ref MemoryMarshal.GetReference(destination);
@@ -1223,7 +1198,16 @@ namespace MissingValues
 		/// <inheritdoc/>
 		public static UInt512 operator ~(in UInt512 value)
 		{
-			return new(~value._p7, ~value._p6, ~value._p5, ~value._p4, ~value._p3, ~value._p2, ~value._p1, ~value._p0);
+			if (Vector512.IsHardwareAccelerated)
+			{
+				var v = Unsafe.As<UInt512, Vector512<ulong>>(ref Unsafe.AsRef(in value));
+				var result = ~v;
+				return Unsafe.As<Vector512<ulong>, UInt512>(ref result);
+			}
+			else
+			{
+				return new(~value._p7, ~value._p6, ~value._p5, ~value._p4, ~value._p3, ~value._p2, ~value._p1, ~value._p0);
+			}
 		}
 
 		/// <inheritdoc/>
@@ -1270,9 +1254,9 @@ namespace MissingValues
 				}
 			}
 
-			ReadOnlySpan<uint> leftSpan = MemoryMarshal.CreateReadOnlySpan(in Unsafe.As<UInt512, uint>(ref Unsafe.AsRef(in left)), (Size / sizeof(uint)) - (BitHelper.LeadingZeroCount(left) / 32));
+			ReadOnlySpan<uint> leftSpan = MemoryMarshal.CreateReadOnlySpan(in Unsafe.As<UInt512, uint>(ref Unsafe.AsRef(in left)), (Size / sizeof(uint)) - (BitHelper.LeadingZeroCount(in left) / 32));
 
-			ReadOnlySpan<uint> rightSpan = MemoryMarshal.CreateReadOnlySpan(in Unsafe.As<UInt512, uint>(ref Unsafe.AsRef(in right)), (Size / sizeof(uint)) - (BitHelper.LeadingZeroCount(right) / 32));
+			ReadOnlySpan<uint> rightSpan = MemoryMarshal.CreateReadOnlySpan(in Unsafe.As<UInt512, uint>(ref Unsafe.AsRef(in right)), (Size / sizeof(uint)) - (BitHelper.LeadingZeroCount(in right) / 32));
 
 			Span<uint> rawBits = stackalloc uint[(Size / sizeof(uint)) * 2];
 			rawBits.Clear();
@@ -1318,10 +1302,10 @@ namespace MissingValues
 				}
 			}
 
-			Span<uint> leftSpan = stackalloc uint[(Size / sizeof(uint)) - (BitHelper.LeadingZeroCount(left) / 32)];
+			Span<uint> leftSpan = stackalloc uint[(Size / sizeof(uint)) - (BitHelper.LeadingZeroCount(in left) / 32)];
 			MemoryMarshal.CreateReadOnlySpan(in Unsafe.As<UInt512, uint>(ref Unsafe.AsRef(in left)), leftSpan.Length).CopyTo(leftSpan);
 
-			Span<uint> rightSpan = stackalloc uint[(Size / sizeof(uint)) - (BitHelper.LeadingZeroCount(right) / 32)];
+			Span<uint> rightSpan = stackalloc uint[(Size / sizeof(uint)) - (BitHelper.LeadingZeroCount(in right) / 32)];
 			MemoryMarshal.CreateReadOnlySpan(in Unsafe.As<UInt512, uint>(ref Unsafe.AsRef(in right)), rightSpan.Length).CopyTo(rightSpan);
 
 			Span<uint> rawBits = stackalloc uint[(Size / sizeof(uint)) * 2];
@@ -1389,7 +1373,7 @@ namespace MissingValues
 				Unsafe.WriteUnaligned(ref *(byte*)(pLeft + 6), (quotient._p6));
 				Unsafe.WriteUnaligned(ref *(byte*)(pLeft + 7), (quotient._p7));
 
-				Span<ulong> left = new Span<ulong>(pLeft, (UlongCount) - (BitHelper.LeadingZeroCount(quotient) / 64));
+				Span<ulong> left = new Span<ulong>(pLeft, (UlongCount) - (BitHelper.LeadingZeroCount(in quotient) / 64));
 
 				Span<ulong> rawBits = stackalloc ulong[UlongCount];
 				rawBits.Clear();
@@ -1405,10 +1389,10 @@ namespace MissingValues
 			{
 				const int UIntCount = Size / sizeof(uint);
 
-				Span<uint> left = stackalloc uint[(UIntCount) - (BitHelper.LeadingZeroCount(quotient) / 32)];
+				Span<uint> left = stackalloc uint[(UIntCount) - (BitHelper.LeadingZeroCount(in quotient) / 32)];
 				MemoryMarshal.CreateReadOnlySpan(in Unsafe.As<UInt512, uint>(ref Unsafe.AsRef(in quotient)), left.Length).CopyTo(left);
 
-				Span<uint> right = stackalloc uint[(UIntCount) - (BitHelper.LeadingZeroCount(divisor) / 32)];
+				Span<uint> right = stackalloc uint[(UIntCount) - (BitHelper.LeadingZeroCount(in divisor) / 32)];
 				MemoryMarshal.CreateReadOnlySpan(in Unsafe.As<UInt512, uint>(ref Unsafe.AsRef(in divisor)), right.Length).CopyTo(right);
 
 
@@ -1470,7 +1454,7 @@ namespace MissingValues
 				Unsafe.WriteUnaligned(ref *(byte*)(pLeft + 6), (quotient._p6));
 				Unsafe.WriteUnaligned(ref *(byte*)(pLeft + 7), (quotient._p7));
 
-				Span<ulong> left = new Span<ulong>(pLeft, (UlongCount) - (BitHelper.LeadingZeroCount(quotient) / 64));
+				Span<ulong> left = new Span<ulong>(pLeft, (UlongCount) - (BitHelper.LeadingZeroCount(in quotient) / 64));
 
 				return Calculator.Remainder(left, divisor);
 			}
@@ -1478,10 +1462,10 @@ namespace MissingValues
 			{
 				const int UIntCount = Size / sizeof(uint);
 
-				Span<uint> left = stackalloc uint[(UIntCount) - (BitHelper.LeadingZeroCount(quotient) / 32)];
+				Span<uint> left = stackalloc uint[(UIntCount) - (BitHelper.LeadingZeroCount(in quotient) / 32)];
 				MemoryMarshal.CreateReadOnlySpan(in Unsafe.As<UInt512, uint>(ref Unsafe.AsRef(in quotient)), left.Length).CopyTo(left);
 
-				Span<uint> right = stackalloc uint[(UIntCount) - (BitHelper.LeadingZeroCount(divisor) / 32)];
+				Span<uint> right = stackalloc uint[(UIntCount) - (BitHelper.LeadingZeroCount(in divisor) / 32)];
 				MemoryMarshal.CreateReadOnlySpan(in Unsafe.As<UInt512, uint>(ref Unsafe.AsRef(in divisor)), right.Length).CopyTo(right);
 
 
@@ -1502,19 +1486,49 @@ namespace MissingValues
 		/// <inheritdoc/>
 		public static UInt512 operator &(in UInt512 left, in UInt512 right)
 		{
-			return new(left._p7 & right._p7, left._p6 & right._p6, left._p5 & right._p5, left._p4 & right._p4, left._p3 & right._p3, left._p2 & right._p2, left._p1 & right._p1, left._p0 & right._p0);
+			if (Vector512.IsHardwareAccelerated)
+			{
+				var v1 = Unsafe.As<UInt512, Vector512<ulong>>(ref Unsafe.AsRef(in left));
+				var v2 = Unsafe.As<UInt512, Vector512<ulong>>(ref Unsafe.AsRef(in right));
+				var result = v1 & v2;
+				return Unsafe.As<Vector512<ulong>, UInt512>(ref result);
+			}
+			else
+			{
+				return new(left._p7 & right._p7, left._p6 & right._p6, left._p5 & right._p5, left._p4 & right._p4, left._p3 & right._p3, left._p2 & right._p2, left._p1 & right._p1, left._p0 & right._p0);
+			}
 		}
 
 		/// <inheritdoc/>
 		public static UInt512 operator |(in UInt512 left, in UInt512 right)
 		{
-			return new(left._p7 | right._p7, left._p6 | right._p6, left._p5 | right._p5, left._p4 | right._p4, left._p3 | right._p3, left._p2 | right._p2, left._p1 | right._p1, left._p0 | right._p0);
+			if (Vector512.IsHardwareAccelerated)
+			{
+				var v1 = Unsafe.As<UInt512, Vector512<ulong>>(ref Unsafe.AsRef(in left));
+				var v2 = Unsafe.As<UInt512, Vector512<ulong>>(ref Unsafe.AsRef(in right));
+				var result = v1 | v2;
+				return Unsafe.As<Vector512<ulong>, UInt512>(ref result);
+			}
+			else
+			{
+				return new(left._p7 | right._p7, left._p6 | right._p6, left._p5 | right._p5, left._p4 | right._p4, left._p3 | right._p3, left._p2 | right._p2, left._p1 | right._p1, left._p0 | right._p0);
+			}
 		}
 
 		/// <inheritdoc/>
 		public static UInt512 operator ^(in UInt512 left, in UInt512 right)
 		{
-			return new(left._p7 ^ right._p7, left._p6 ^ right._p6, left._p5 ^ right._p5, left._p4 ^ right._p4, left._p3 ^ right._p3, left._p2 ^ right._p2, left._p1 ^ right._p1, left._p0 ^ right._p0);
+			if (Vector512.IsHardwareAccelerated)
+			{
+				var v1 = Unsafe.As<UInt512, Vector512<ulong>>(ref Unsafe.AsRef(in left));
+				var v2 = Unsafe.As<UInt512, Vector512<ulong>>(ref Unsafe.AsRef(in right));
+				var result = v1 ^ v2;
+				return Unsafe.As<Vector512<ulong>, UInt512>(ref result);
+			}
+			else
+			{
+				return new(left._p7 ^ right._p7, left._p6 ^ right._p6, left._p5 ^ right._p5, left._p4 ^ right._p4, left._p3 ^ right._p3, left._p2 ^ right._p2, left._p1 ^ right._p1, left._p0 ^ right._p0);
+			}
 		}
 
 		/// <inheritdoc/>

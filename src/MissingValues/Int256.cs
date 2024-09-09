@@ -23,6 +23,27 @@ namespace MissingValues
 	{
 		internal const int Size = 32;
 
+		/// <summary>
+		/// Represents the value <c>1</c> of the type.
+		/// </summary>
+		public static readonly Int256 One = new Int256(0, 0, 0, 1);
+		/// <summary>
+		/// Represents the largest possible value of the type.
+		/// </summary>
+		public static readonly Int256 MaxValue = new Int256(_upperMax, _lowerMax);
+		/// <summary>
+		/// Represents the smallest possible value of the type.
+		/// </summary>
+		public static readonly Int256 MinValue = new Int256(_upperMin, _lowerMin);
+		/// <summary>
+		/// Represents the value <c>-1</c> of the type.
+		/// </summary>
+		public static readonly Int256 NegativeOne = new Int256(_lowerMax, _lowerMax);
+		/// <summary>
+		/// Represents the value <c>0</c> of the type.
+		/// </summary>
+		public static readonly Int256 Zero = default;
+
 #if BIGENDIAN
 		private readonly ulong _p3;
 		private readonly ulong _p2;
@@ -36,6 +57,11 @@ namespace MissingValues
 #endif
 		internal UInt128 Lower => new UInt128(_p1, _p0);
 		internal UInt128 Upper => new UInt128(_p3, _p2);
+
+		internal ulong Part0 => _p0;
+		internal ulong Part1 => _p1;
+		internal ulong Part2 => _p2;
+		internal ulong Part3 => _p3;
 
 		/// <summary>
 		/// Initializes a new instance of the <see cref="Int256" /> struct.

@@ -22,6 +22,24 @@ namespace MissingValues
 	{
 		internal const int Size = 32;
 
+		/// <summary>
+		/// Represents the value <c>1</c> of the type.
+		/// </summary>
+		public static readonly UInt256 One = new UInt256(0, 0, 0, 1);
+		/// <summary>
+		/// Represents the largest possible value of the type.
+		/// </summary>
+		public static readonly UInt256 MaxValue = new UInt256(
+			0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF);
+		/// <summary>
+		/// Represents the smallest possible value of the type.
+		/// </summary>
+		public static readonly UInt256 MinValue = default;
+		/// <summary>
+		/// Represents the value <c>0</c> of the type.
+		/// </summary>
+		public static readonly UInt256 Zero = default;
+
 #if BIGENDIAN
 		private readonly ulong _p3;
 		private readonly ulong _p2;
@@ -103,9 +121,9 @@ namespace MissingValues
 		/// <returns>The high 256-bit of the product of the specified numbers.</returns>
 		public static UInt256 BigMul(UInt256 left, UInt256 right, out UInt256 lower)
 		{
-			ReadOnlySpan<uint> leftSpan = MemoryMarshal.CreateReadOnlySpan(in Unsafe.As<UInt256, uint>(ref left), (Size / sizeof(uint)) - (BitHelper.LeadingZeroCount(left) / 32));
+			ReadOnlySpan<uint> leftSpan = MemoryMarshal.CreateReadOnlySpan(in Unsafe.As<UInt256, uint>(ref left), (Size / sizeof(uint)) - (BitHelper.LeadingZeroCount(in left) / 32));
 
-			ReadOnlySpan<uint> rightSpan = MemoryMarshal.CreateReadOnlySpan(in Unsafe.As<UInt256, uint>(ref right), (Size / sizeof(uint)) - (BitHelper.LeadingZeroCount(right) / 32));
+			ReadOnlySpan<uint> rightSpan = MemoryMarshal.CreateReadOnlySpan(in Unsafe.As<UInt256, uint>(ref right), (Size / sizeof(uint)) - (BitHelper.LeadingZeroCount(in right) / 32));
 
 			Span<uint> rawBits = stackalloc uint[(Size / sizeof(uint)) * 2];
 			rawBits.Clear();
@@ -297,7 +315,7 @@ namespace MissingValues
 			{
 				return Octo.Zero;
 			}
-			int shiftDist = BitHelper.LeadingZeroCount(value);
+			int shiftDist = BitHelper.LeadingZeroCount(in value);
 			UInt256 a = (value << shiftDist >> 19); // Significant bits, with bit 237 still intact
 			UInt256 b = (value << shiftDist << 237); // Insignificant bits, only relevant for rounding.
 			UInt256 m = a + ((b - (b >> 255 & (a == UInt128.Zero ? UInt128.One : UInt128.Zero))) >> 255); // Add one when we need to round up. Break ties to even.
