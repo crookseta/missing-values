@@ -29,25 +29,27 @@ Here is a chart comparing the existing binary integers to the MissingValues inte
 
 **Example Usage**
 
-	using MissingValues; // namespace
-	
-	// You can use the constructor:
-	Int256 num1 = new Int256(0x8000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0001);
-	// You can use Parse():
-	Int256 num2 = Int256.Parse("10000000000000000000000000000000000000000000000000000000000000000000000000000");
-	// Or you can convert any other number type:
-	Int256 num3 = long.MaxValue;
+```csharp
+using MissingValues; // namespace
 
-	// sum = -57896044618658097711785492504343953926634992332820282019728792003956564819967 + 10000000000000000000000000000000000000000000000000000000000000000000000000000 + 9223372036854775807
-	Int256 sum = num1 + num2 + num3;
+// You can use the constructor:
+Int256 num1 = new Int256(0x8000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0001);
+// You can use Parse():
+Int256 num2 = Int256.Parse("10000000000000000000000000000000000000000000000000000000000000000000000000000");
+// Or you can convert any other number type:
+Int256 num3 = long.MaxValue;
 
-	Console.WriteLine($"Sum: {sum}");
-	
-	// Prints: -47896044618658097711785492504343953926634992332820282019719568631919710044160
+// sum = -57896044618658097711785492504343953926634992332820282019728792003956564819967 + 10000000000000000000000000000000000000000000000000000000000000000000000000000 + 9223372036854775807
+Int256 sum = num1 + num2 + num3;
 
-### Quadruple-Precision Floating-Point Number
+Console.WriteLine($"Sum: {sum}");
 
-The library introduces the `Quad` struct, representing a quadruple-precision floating-point number. Quadruple-precision offers higher precision than standard `double` or `float` types, making it suitable for applications requiring extensive precision in numerical calculations.
+// Prints: -47896044618658097711785492504343953926634992332820282019719568631919710044160
+```
+### Quadruple-Precision and Octuple-Precision Floating-Point Number
+
+The library introduces the `Quad` and `Octo` struct, representing a quadruple-precision floating-point and a octuple-precision floating-point number respectively. 
+Quadruple-precision offers higher precision than standard `double` or `float` types, making it suitable for applications requiring extensive precision in numerical calculations.
 
 Here is a chart comparing the existing IEEE floating point numbers to `Quad`:
 
@@ -57,21 +59,23 @@ Here is a chart comparing the existing IEEE floating point numbers to `Quad`:
 | Single 	| 32 bits  	| 24                 	| 7.22           	| 127          	| -126         	| ~3.40e38   	| ~-3.40e38   	|
 | Double 	| 64 bits  	| 53                 	| 15.95          	| 1023         	| -1022        	| ~1.80e308  	| ~-1.79e308  	|
 | Quad   	| 128 bits 	| 113                	| 34.02          	| 16383        	| -16382       	| ~1.19e4932 	| ~-1.18e4932 	|
+| Octo   	| 256 bits 	| 237                	| 71.34          	| 262143        | −262142       | ~1.61e78913 	| ~-1.61e78913 	|
 
 **Example Usage**
+```csharp
+using MissingValues; // namespace
 
-	using MissingValues; // namespace
-	
-	// You can use the constructor:
-	Quad num1 = new Quad(sign: false, exp: 0x4004, sig: new UInt128(0x0000_9400_0000_0000, 0x0000_0000_0000_0000));
-	// You can use Parse():
-	Quad num2 = Quad.Parse("2e24");
-	// Or you can convert any other number type:
-	Quad num3 = 12.25d;
+// You can use the constructor:
+Quad num1 = new Quad(sign: false, exp: 0x4004, sig: new UInt128(0x0000_9400_0000_0000, 0x0000_0000_0000_0000));
+// You can use Parse():
+Quad num2 = Quad.Parse("2e24");
+// Or you can convert any other number type:
+Quad num3 = 12.25d;
 
-	// sum = 50,5 + 2000000000000000000000000 + 12,25
-	Quad sum = num1 + num2 + num3;
+// sum = 50,5 + 2000000000000000000000000 + 12,25
+Quad sum = num1 + num2 + num3;
 
-	Console.WriteLine($"Sum: {sum}");
-	
-	// Prints 2000000000000000000000062,75
+Console.WriteLine($"Sum: {sum}");
+
+// Prints 2000000000000000000000062,75
+```
