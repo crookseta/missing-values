@@ -2676,7 +2676,7 @@ namespace MissingValues
 			if ((q & 0xF) <= 2)
 			{
 				q &= ~3U;
-				sigZExtra = q << 59;
+				sigZExtra = (ulong)q << 59;
 				y = sigZ << 6;
 				y |= sigZExtra >> 58;
 				term = y - q;
