@@ -23,10 +23,10 @@ namespace MissingValues
 	[DebuggerDisplay($"{{{nameof(ToString)}(),nq}}")]
 	public readonly partial struct Quad
 	{ // Add documentation on missing members.
-		internal const int SignShift = 127;
 		internal static UInt128 SignMask => new UInt128(0x8000_0000_0000_0000, 0x0000_0000_0000_0000);
 		internal static UInt128 InvertedSignMask => new UInt128(0x7FFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF);
 
+		internal const int SignShift = 127;
 		internal const int MantissaDigits = 113;
 		internal const int ExponentBias = 16383;
 		internal const int BiasedExponentShift = 112;
@@ -283,8 +283,8 @@ namespace MissingValues
 		}
 		internal static UInt128 CreateQuadNaNBits(bool sign, UInt128 significand)
 		{
-			UInt128 signInt = (sign ? 1UL : 0UL) << 63;
-			UInt128 sigInt = significand >> 12;
+			UInt128 signInt = (sign ? UInt128.One : UInt128.Zero) << 127;
+			UInt128 sigInt = significand >> 16;
 
 			return signInt | (BiasedExponentMask | new UInt128(0x0000_8000_0000_0000, 0x0)) | sigInt;
 		}
