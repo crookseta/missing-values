@@ -3,7 +3,9 @@ using MissingValues.Internals;
 using System;
 using System.Buffers.Binary;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Dynamic;
 using System.Globalization;
 using System.Numerics;
 using System.Runtime.CompilerServices;
@@ -17,50 +19,38 @@ namespace MissingValues
 		IBinaryFloatingPointInfo<Octo, UInt256>,
 		IMinMaxValue<Octo>
 	{ // TODO: Implement interface methods.
-		/// <inheritdoc/>
-		public static Octo Epsilon => UInt256BitsToOcto(EpsilonBits);
+		static Octo IFloatingPointIeee754<Octo>.Epsilon => Epsilon;
+
+		static Octo IFloatingPointIeee754<Octo>.NaN => NaN;
+
+		static Octo IFloatingPointIeee754<Octo>.NegativeInfinity => NegativeInfinity;
 
 		/// <inheritdoc/>
-		public static Octo NaN => UInt256BitsToOcto(PositiveQNaNBits);
+		static Octo IFloatingPointIeee754<Octo>.NegativeZero => NegativeZero;
 
-		/// <inheritdoc/>
-		public static Octo NegativeInfinity => UInt256BitsToOcto(NegativeInfinityBits);
+		static Octo IFloatingPointIeee754<Octo>.PositiveInfinity => PositiveInfinity;
 
-		/// <inheritdoc/>
-		public static Octo NegativeZero => UInt256BitsToOcto(NegativeZeroBits);
+		static Octo ISignedNumber<Octo>.NegativeOne => NegativeOne;
 
-		/// <inheritdoc/>
-		public static Octo PositiveInfinity => UInt256BitsToOcto(PositiveInfinityBits);
+		static Octo IFloatingPointConstants<Octo>.E => E;
 
-		/// <inheritdoc/>
-		public static Octo NegativeOne => UInt256BitsToOcto(NegativeOneBits);
+		static Octo IFloatingPointConstants<Octo>.Pi => Pi;
 
-		/// <inheritdoc/>
-		public static Octo E => UInt256BitsToOcto(EBits);
+		static Octo IFloatingPointConstants<Octo>.Tau => Tau;
 
-		/// <inheritdoc/>
-		public static Octo Pi => UInt256BitsToOcto(PiBits);
-
-		/// <inheritdoc/>
-		public static Octo Tau => UInt256BitsToOcto(TauBits);
-
-		/// <inheritdoc/>
-		public static Octo One => UInt256BitsToOcto(PositiveOneBits);
+		static Octo INumberBase<Octo>.One => One;
 
 		static int INumberBase<Octo>.Radix => 2;
 
-		/// <inheritdoc/>
-		public static Octo Zero => UInt256BitsToOcto(PositiveZeroBits);
+		static Octo INumberBase<Octo>.Zero => Zero;
 
-		static Octo IAdditiveIdentity<Octo, Octo>.AdditiveIdentity => UInt256BitsToOcto(PositiveZeroBits);
+		static Octo IAdditiveIdentity<Octo, Octo>.AdditiveIdentity => Zero;
 
-		static Octo IMultiplicativeIdentity<Octo, Octo>.MultiplicativeIdentity => UInt256BitsToOcto(PositiveOneBits);
+		static Octo IMultiplicativeIdentity<Octo, Octo>.MultiplicativeIdentity => One;
 
-		/// <inheritdoc/>
-		public static Octo MaxValue => UInt256BitsToOcto(MaxValueBits);
+		static Octo IMinMaxValue<Octo>.MaxValue => MaxValue;
 
-		/// <inheritdoc/>
-		public static Octo MinValue => UInt256BitsToOcto(MinValueBits);
+		static Octo IMinMaxValue<Octo>.MinValue => MinValue;
 
 		static ReadOnlySpan<Octo> IFormattableFloatingPoint<Octo>.PowersOfTen => RoundPower10;
 
@@ -78,7 +68,7 @@ namespace MissingValues
 
 		static int IBinaryFloatingPointInfo<Octo, UInt256>.MaxBiasedExponent => MaxBiasedExponent;
 
-		static int IBinaryFloatingPointInfo<Octo, UInt256>.MaxSignificandPrecision => 70;
+		static int IBinaryFloatingPointInfo<Octo, UInt256>.MaxSignificandPrecision => 71;
 
 		static int IBinaryFloatingPointInfo<Octo, UInt256>.ExponentBits => 19;
 
@@ -107,67 +97,67 @@ namespace MissingValues
 		/// <inheritdoc/>
 		public static Octo Acos(Octo x)
 		{
-			throw new NotImplementedException();
+			return Quad.Acos((Quad)x);
 		}
 
 		/// <inheritdoc/>
 		public static Octo Acosh(Octo x)
 		{
-			throw new NotImplementedException();
+			return Quad.Acosh((Quad)x);
 		}
 
 		/// <inheritdoc/>
 		public static Octo AcosPi(Octo x)
 		{
-			throw new NotImplementedException();
+			return Quad.Acos((Quad)x) / Pi;
 		}
 
 		/// <inheritdoc/>
 		public static Octo Asin(Octo x)
 		{
-			throw new NotImplementedException();
+			return Quad.Asin((Quad)x);
 		}
 
 		/// <inheritdoc/>
 		public static Octo Asinh(Octo x)
 		{
-			throw new NotImplementedException();
+			return Quad.Asinh((Quad)x);
 		}
 
 		/// <inheritdoc/>
 		public static Octo AsinPi(Octo x)
 		{
-			throw new NotImplementedException();
+			return Quad.Asin((Quad)x) / Pi;
 		}
 
 		/// <inheritdoc/>
 		public static Octo Atan(Octo x)
 		{
-			throw new NotImplementedException();
+			return Quad.Atan((Quad)x);
 		}
 
 		/// <inheritdoc/>
 		public static Octo Atan2(Octo y, Octo x)
 		{
-			throw new NotImplementedException();
+			return Quad.Atan2((Quad)y, (Quad)x);
 		}
 
 		/// <inheritdoc/>
 		public static Octo Atan2Pi(Octo y, Octo x)
 		{
-			throw new NotImplementedException();
+			return Quad.Atan2((Quad)y, (Quad)x) / Pi;
 		}
 
 		/// <inheritdoc/>
 		public static Octo Atanh(Octo x)
 		{
-			throw new NotImplementedException();
+			return Quad.Atanh((Quad)x);
 		}
 
 		/// <inheritdoc/>
 		public static Octo AtanPi(Octo x)
 		{
-			throw new NotImplementedException();
+			return Quad.Atan((Quad)x) / Pi;
 		}
 
 		/// <inheritdoc/>
@@ -225,43 +215,94 @@ namespace MissingValues
 		/// <inheritdoc/>
 		public static Octo Cbrt(Octo x)
 		{
-			throw new NotImplementedException();
+			return Quad.Cbrt((Quad)x);
 		}
 
 		/// <inheritdoc/>
 		public static Octo Ceiling(Octo x)
 		{
-			throw new NotImplementedException();
+			var exponent = x.BiasedExponent;
+			bool sign = Octo.IsNegative(x);
+			Octo y;
+
+			if (exponent >= 0x3FFFF + Octo.MantissaDigits - 1 || x == Octo.Zero)
+			{
+				return x;
+			}
+			// newBase = int(x) - x, where int(x) is an integer neighbor of x
+			Octo toint = ToInt;
+			if (sign)
+			{
+				y = x - toint + toint - x;
+			}
+			else
+			{
+				y = x + toint - toint - x;
+			}
+			// special case because of non-nearest rounding modes
+			if (exponent <= 0x3FFFF - 1)
+			{
+				return sign ? Octo.NegativeZero : Octo.One;
+			}
+			if (y < Octo.Zero)
+			{
+				return x + y + Octo.One;
+			}
+			return x + y;
 		}
 
 		/// <inheritdoc/>
 		public static Octo Clamp(Octo value, Octo min, Octo max)
 		{
-			throw new NotImplementedException();
+			if (min > max)
+			{
+				Thrower.MinMaxError(min, max);
+			}
+
+			if (value < min)
+			{
+				return min;
+			}
+			else if (value > max)
+			{
+				return max;
+			}
+
+			return value;
 		}
 
 		/// <inheritdoc/>
 		public static Octo CopySign(Octo value, Octo sign)
 		{
-			throw new NotImplementedException();
+			// This method is required to work for all inputs,
+			// including NaN, so we operate on the raw bits.
+			UInt256 xbits = Octo.OctoToUInt256Bits(value);
+			UInt256 ybits = Octo.OctoToUInt256Bits(sign);
+
+			// Remove the sign from y, and remove everything but the sign from x
+			xbits &= Octo.InvertedSignMask;
+			ybits &= Octo.SignMask;
+
+			// Simply OR them to get the correct sign
+			return Octo.UInt256BitsToOcto(xbits | ybits);
 		}
 
 		/// <inheritdoc/>
 		public static Octo Cos(Octo x)
 		{
-			throw new NotImplementedException();
+			return Quad.Cos((Quad)x);
 		}
 
 		/// <inheritdoc/>
 		public static Octo Cosh(Octo x)
 		{
-			throw new NotImplementedException();
+			return Quad.Cosh((Quad)x);
 		}
 
 		/// <inheritdoc/>
 		public static Octo CosPi(Octo x)
 		{
-			throw new NotImplementedException();
+			return Quad.CosPi((Quad)x);
 		}
 
 		/// <inheritdoc/>
@@ -318,49 +359,77 @@ namespace MissingValues
 		/// <inheritdoc/>
 		public static Octo DegreesToRadians(Octo degrees)
 		{
-			throw new NotImplementedException();
+			// (degrees * Pi) / 180
+			return (degrees * Pi) / new Octo(0x4000_6680_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
 		}
 
 		/// <inheritdoc/>
 		public static Octo Exp(Octo x)
 		{
-			throw new NotImplementedException();
+			return Quad.Exp((Quad)x);
 		}
 		
 		/// <inheritdoc/>
 		public static Octo ExpM1(Octo x)
 		{
-			throw new NotImplementedException();
+			return Quad.Exp((Quad)x) - One;
 		}
 
 		/// <inheritdoc/>
 		public static Octo Exp10(Octo x)
 		{
-			throw new NotImplementedException();
+			return Quad.Exp10((Quad)x);
 		}
 		
 		/// <inheritdoc/>
 		public static Octo Exp10M1(Octo x)
 		{
-			throw new NotImplementedException();
+			return Quad.Exp10((Quad)x) - One;
 		}
 
 		/// <inheritdoc/>
 		public static Octo Exp2(Octo x)
 		{
-			throw new NotImplementedException();
+			return Quad.Exp2((Quad)x);
 		}
 		
 		/// <inheritdoc/>
 		public static Octo Exp2M1(Octo x)
 		{
-			throw new NotImplementedException();
+			return Quad.Exp2((Quad)x) - One;
 		}
 
 		/// <inheritdoc/>
 		public static Octo Floor(Octo x)
 		{
-			throw new NotImplementedException();
+			var exponent = x.BiasedExponent;
+			bool sign = Octo.IsNegative(x);
+			Octo y;
+
+			if (exponent >= 0x3FFFF + Octo.MantissaDigits - 1 || x == Octo.Zero)
+			{
+				return x;
+			}
+			// y = int(x) - x, where int(x) is an integer neighbor of x
+			Octo toint = ToInt;
+			if (sign)
+			{
+				y = x - toint + toint - x;
+			}
+			else
+			{
+				y = x + toint - toint - x;
+			}
+			// special case because of non-nearest rounding modes
+			if (exponent <= 0x3FFFF - 1)
+			{
+				return sign ? Octo.NegativeOne : Octo.Zero;
+			}
+			if (y > Octo.Zero)
+			{
+				return x + y - Octo.One;
+			}
+			return x + y;
 		}
 
 		/// <inheritdoc/>
@@ -374,19 +443,142 @@ namespace MissingValues
 		/// <inheritdoc/>
 		public static Octo Hypot(Octo x, Octo y)
 		{
-			throw new NotImplementedException();
+			return Quad.Hypot((Quad)x, (Quad)y);
 		}
 
 		/// <inheritdoc/>
 		public static Octo Ieee754Remainder(Octo left, Octo right)
 		{
-			throw new NotImplementedException();
+			UInt256 uiA = Octo.OctoToUInt256Bits(left);
+			bool signA = Octo.IsNegative(left);
+			int expA = (int)Octo.ExtractBiasedExponentFromBits(uiA);
+			UInt256 sigA = Octo.ExtractTrailingSignificandFromBits(uiA);
+
+			UInt256 uiB = Octo.OctoToUInt256Bits(right);
+			int expB = (int)Octo.ExtractBiasedExponentFromBits(uiB);
+			UInt256 sigB = Octo.ExtractTrailingSignificandFromBits(uiB);
+
+			if (expA == 0x7FFFF)
+			{
+				if ((sigA != UInt128.Zero) || ((expB == 0x7FFFF) && (sigB != UInt128.Zero)))
+				{
+					return BitHelper.CreateOctoNaN(Octo.IsNegative(right), sigB);
+				}
+				return Octo.NaN;
+			}
+			if (expB == 0x7FFFF)
+			{
+				if (sigB != UInt128.Zero)
+				{
+					return BitHelper.CreateOctoNaN(Octo.IsNegative(right), sigB);
+				}
+				return left;
+			}
+
+			if (expB == 0)
+			{
+				if (sigB == UInt128.Zero)
+				{
+					return Quad.NaN;
+				}
+				(var exp, sigA) = BitHelper.NormalizeSubnormalF256Sig(sigA);
+				expA = (int)exp;
+			}
+
+			sigA |= Octo.SignificandSignMask;
+			sigB |= Octo.SignificandSignMask;
+
+			UInt256 rem = sigA, altRem;
+			int expDiff = expA - expB;
+			uint q, recip32;
+
+			if (expDiff < 1)
+			{
+				if (expDiff < -1)
+				{
+					return left;
+				}
+				if (expDiff != 0)
+				{
+					--expB;
+					sigB += sigB;
+					q = 0;
+				}
+				else
+				{
+					q = sigB <= rem ? 1U : 0U;
+					if (q != 0)
+					{
+						rem -= sigB;
+					}
+				}
+			}
+			else
+			{
+				recip32 = BitHelper.ReciprocalApproximate((uint)(sigB >> 81));
+				expDiff -= 30;
+
+				UInt256 term;
+				ulong q64;
+				while (true)
+				{
+					q64 = (ulong)(rem >> 83) * recip32;
+					if (expDiff < 0)
+					{
+						break;
+					}
+					q = (uint)((q64 + 0x80000000) >> 32);
+					rem <<= 29;
+					term = sigB * q;
+					rem -= term;
+					if ((rem & SignMask) != UInt128.Zero)
+					{
+						rem += sigB;
+					}
+
+					expDiff -= 29;
+				}
+				// ('expDiff' cannot be less than -29 here.)
+				Debug.Assert(expDiff >= -29);
+
+				q = (uint)(q64 >> 32) >> (~expDiff & 31);
+				rem <<= expDiff + 30;
+				term = sigB * q;
+				rem -= term;
+				if ((rem & SignMask) != UInt128.Zero)
+				{
+					altRem = rem + sigB;
+					goto selectRem;
+				}
+			}
+
+			do
+			{
+				altRem = rem;
+				++q;
+				rem -= sigB;
+			} while ((rem & SignMask) == UInt256.Zero);
+		selectRem:
+			UInt256 meanRem = rem + altRem;
+			if (((meanRem & SignMask) != UInt256.Zero)
+				|| ((meanRem == UInt128.Zero) && ((q & 1) != 0)))
+			{
+				rem = altRem;
+			}
+			bool signRem = signA;
+			if ((rem & SignMask) != UInt256.Zero)
+			{
+				signRem = !signRem;
+				rem = -rem;
+			}
+			UInt256 resultBits = BitHelper.NormalizeRoundPackOcto(signRem, expB - 1, rem);
+			return Octo.UInt256BitsToOcto(resultBits);
 		}
 
 		/// <inheritdoc/>
 		public static int ILogB(Octo x)
 		{
-			throw new NotImplementedException();
+			return Quad.ILogB((Quad)x);
 		}
 
 		static bool INumberBase<Octo>.IsCanonical(Octo value)
@@ -528,91 +720,251 @@ namespace MissingValues
 		/// <inheritdoc/>
 		public static Octo Log(Octo x)
 		{
-			throw new NotImplementedException();
+			return Quad.Log((Quad)x);
 		}
 
 		/// <inheritdoc/>
 		public static Octo Log(Octo x, Octo newBase)
 		{
-			throw new NotImplementedException();
+			if (Octo.IsNaN(x))
+			{
+				return x; // IEEE 754-2008: NaN payload must be preserved
+			}
+
+			if (Octo.IsNaN(newBase))
+			{
+				return newBase; // IEEE 754-2008: NaN payload must be preserved
+			}
+
+			if (newBase == 1)
+			{
+				return Octo.NaN;
+			}
+
+			if ((x != 1) && ((newBase == 0) || Octo.IsPositiveInfinity(newBase)))
+			{
+				return Octo.NaN;
+			}
+
+			return Log(x) / Log(newBase);
 		}
 
 		/// <inheritdoc/>
 		public static Octo LogP1(Octo x)
 		{
-			throw new NotImplementedException();
+			return Quad.Log((Quad)x + Quad.One);
 		}
 
 		/// <inheritdoc/>
 		public static Octo Log10(Octo x)
 		{
-			throw new NotImplementedException();
+			return Quad.Log10((Quad)x);
 		}
 		
 		/// <inheritdoc/>
 		public static Octo Log10P1(Octo x)
 		{
-			throw new NotImplementedException();
+			return Quad.Log10((Quad)x + Quad.One);
 		}
 
 		/// <inheritdoc/>
-		public static Octo Log2(Octo value)
+		public static Octo Log2(Octo x)
 		{
-			throw new NotImplementedException();
+			return Quad.Log2((Quad)x);
 		}
 		
 		/// <inheritdoc/>
-		public static Octo Log2P1(Octo value)
+		public static Octo Log2P1(Octo x)
 		{
-			throw new NotImplementedException();
+			return Quad.Log2((Quad)x + Quad.One);
 		}
 
 		/// <inheritdoc/>
 		public static Octo Max(Octo x, Octo y)
 		{
-			throw new NotImplementedException();
+			// This matches the IEEE 754:2019 `maximum` function
+			//
+			// It propagates NaN inputs back to the caller and
+			// otherwise returns the greater of the inputs. It
+			// treats +0 as greater than -0 as per the specification.
+
+			if (x != y)
+			{
+				if (!Octo.IsNaN(x))
+				{
+					return y < x ? x : y;
+				}
+
+				return x;
+			}
+
+			return Octo.IsNegative(y) ? x : y;
 		}
 
 		/// <inheritdoc/>
 		public static Octo MaxNumber(Octo x, Octo y)
 		{
-			throw new NotImplementedException();
+			// This matches the IEEE 754:2019 `maximumNumber` function
+			//
+			// It does not propagate NaN inputs back to the caller and
+			// otherwise returns the larger of the inputs. It
+			// treats +0 as larger than -0 as per the specification.
+
+			if (x != y)
+			{
+				if (!IsNaN(y))
+				{
+					return y < x ? x : y;
+				}
+
+				return x;
+			}
+
+			return IsNegative(y) ? x : y;
 		}
 
 		/// <inheritdoc/>
 		public static Octo MaxMagnitude(Octo x, Octo y)
 		{
-			throw new NotImplementedException();
+			// This matches the IEEE 754:2019 `maximumMagnitude` function
+			//
+			// It propagates NaN inputs back to the caller and
+			// otherwise returns the input with a greater magnitude.
+			// It treats +0 as greater than -0 as per the specification.
+
+			Octo ax = Abs(x);
+			Octo ay = Abs(y);
+
+			if ((ax > ay) || Octo.IsNaN(ax))
+			{
+				return x;
+			}
+
+			if (ax == ay)
+			{
+				return Octo.IsNegative(x) ? y : x;
+			}
+
+			return y;
 		}
 
 		/// <inheritdoc/>
 		public static Octo MaxMagnitudeNumber(Octo x, Octo y)
 		{
-			throw new NotImplementedException();
+			// This matches the IEEE 754:2019 `maximumMagnitudeNumber` function
+			//
+			// It does not propagate NaN inputs back to the caller and
+			// otherwise returns the input with a larger magnitude.
+			// It treats +0 as larger than -0 as per the specification.
+
+			Octo ax = Abs(x);
+			Octo ay = Abs(y);
+
+			if ((ax > ay) || IsNaN(ay))
+			{
+				return x;
+			}
+
+			if (ax == ay)
+			{
+				return IsNegative(x) ? y : x;
+			}
+
+			return y;
 		}
 
 		/// <inheritdoc/>
 		public static Octo Min(Octo x, Octo y)
 		{
-			throw new NotImplementedException();
+			// This matches the IEEE 754:2019 `minimum` function
+			//
+			// It propagates NaN inputs back to the caller and
+			// otherwise returns the lesser of the inputs. It
+			// treats +0 as greater than -0 as per the specification.
+
+			if (x != y)
+			{
+				if (!Octo.IsNaN(x))
+				{
+					return x < y ? x : y;
+				}
+
+				return x;
+			}
+
+			return Octo.IsNegative(x) ? x : y;
 		}
 
 		/// <inheritdoc/>
 		public static Octo MinNumber(Octo x, Octo y)
 		{
-			throw new NotImplementedException();
+			// This matches the IEEE 754:2019 `minimumNumber` function
+			//
+			// It does not propagate NaN inputs back to the caller and
+			// otherwise returns the larger of the inputs. It
+			// treats +0 as larger than -0 as per the specification.
+
+			if (x != y)
+			{
+				if (!IsNaN(y))
+				{
+					return x < y ? x : y;
+				}
+
+				return x;
+			}
+
+			return IsNegative(x) ? x : y;
 		}
 
 		/// <inheritdoc/>
 		public static Octo MinMagnitude(Octo x, Octo y)
 		{
-			throw new NotImplementedException();
+			// This matches the IEEE 754:2019 `minimumMagnitude` function
+			//
+			// It propagates NaN inputs back to the caller and
+			// otherwise returns the input with a lesser magnitude.
+			// It treats +0 as greater than -0 as per the specification.
+
+			Octo ax = Abs(x);
+			Octo ay = Abs(y);
+
+			if ((ax < ay) || Octo.IsNaN(ax))
+			{
+				return x;
+			}
+
+			if (ax == ay)
+			{
+				return Octo.IsNegative(x) ? x : y;
+			}
+
+			return y;
 		}
 
 		/// <inheritdoc/>
 		public static Octo MinMagnitudeNumber(Octo x, Octo y)
 		{
-			throw new NotImplementedException();
+			// This matches the IEEE 754:2019 `minimumMagnitudeNumber` function
+			//
+			// It does not propagate NaN inputs back to the caller and
+			// otherwise returns the input with a larger magnitude.
+			// It treats +0 as larger than -0 as per the specification.
+
+			Octo ax = Abs(x);
+			Octo ay = Abs(y);
+
+			if ((ax < ay) || IsNaN(ay))
+			{
+				return x;
+			}
+
+			if (ax == ay)
+			{
+				return IsNegative(x) ? x : y;
+			}
+
+			return y;
 		}
 
 		/// <inheritdoc/>
@@ -678,13 +1030,14 @@ namespace MissingValues
 		/// <inheritdoc/>
 		public static Octo Pow(Octo x, Octo y)
 		{
-			throw new NotImplementedException();
+			return Quad.Pow((Quad)x, (Quad)y);
 		}
 
 		/// <inheritdoc/>
 		public static Octo RadiansToDegrees(Octo radians)
 		{
-			throw new NotImplementedException();
+			// (degrees * 180) / Pi
+			return (radians * new Octo(0x4000_6680_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000)) / Pi;
 		}
 
 		/// <inheritdoc/>
@@ -713,14 +1066,15 @@ namespace MissingValues
 
 			// Uses Newton Raphton Series to find 1/y
 			Octo x0;
+			var bits = Octo.ExtractFromBits(Octo.OctoToUInt256Bits(x));
 
 			// we save the original sign and exponent for later
-			bool sign = IsNegative(x);
-			uint exp = x.BiasedExponent;
+			bool sign = bits.sign;
+			uint exp = bits.exponent;
 
 			// Expresses D as M × 2e where 1 ≤ M < 2
 			// we also get the absolute value while we are at it.
-			Octo normalizedValue = new Octo(true, Octo.ExponentBias, x.TrailingSignificand);
+			Octo normalizedValue = new Octo(true, Octo.ExponentBias, bits.matissa);
 
 			x0 = Octo.One;
 			Octo two = Octo.Two;
@@ -744,46 +1098,203 @@ namespace MissingValues
 				x0 = x1;
 			}
 
-			var output = new Octo(sign, x0.BiasedExponent - (exp - Octo.ExponentBias), x0.TrailingSignificand);
+			bits = Octo.ExtractFromBits(Octo.OctoToUInt256Bits(x0));
+
+			bits.exponent -= (exp - Octo.ExponentBias);
+
+			var output = new Octo(sign, bits.exponent, bits.matissa);
 			return output;
 		}
 
 		/// <inheritdoc/>
 		public static Octo ReciprocalSqrtEstimate(Octo x)
 		{
-			throw new NotImplementedException();
+			return ReciprocalEstimate(Sqrt(x));
 		}
 
 		/// <inheritdoc/>
 		public static Octo RootN(Octo x, int n)
 		{
-			throw new NotImplementedException();
+			Octo result;
+
+			if (n > 0)
+			{
+				if (n == 2)
+				{
+					result = (x != Octo.Zero) ? Sqrt(x) : Octo.Zero;
+				}
+				else if (n == 3)
+				{
+					result = Cbrt(x);
+				}
+				else
+				{
+					result = PositiveN(x, n);
+				}
+			}
+			else if (n < 0)
+			{
+				result = NegativeN(x, n);
+			}
+			else
+			{
+				Debug.Assert(n == 0);
+				result = NaN;
+			}
+			return result;
+
+			static Octo PositiveN(Octo x, int n)
+			{
+				Octo result;
+
+				if (IsFinite(x))
+				{
+					if (x != Zero)
+					{
+						if ((x > Zero) || int.IsOddInteger(n))
+						{
+							result = Pow(Abs(x), ReciprocalEstimate(n));
+							result = CopySign(result, x);
+						}
+						else
+						{
+							result = NaN;
+						}
+					}
+					else if (int.IsEvenInteger(n))
+					{
+						result = Zero;
+					}
+					else
+					{
+						result = CopySign(Zero, x);
+					}
+				}
+				else if (IsNaN(x))
+				{
+					result = NaN;
+				}
+				else if (x > Octo.Zero)
+				{
+					Debug.Assert(IsPositiveInfinity(x));
+					result = PositiveInfinity;
+				}
+				else
+				{
+					Debug.Assert(IsNegativeInfinity(x));
+					result = int.IsOddInteger(n) ? NegativeInfinity : NaN;
+				}
+
+				return result;
+			}
+			static Octo NegativeN(Octo x, int n)
+			{
+				Octo result;
+
+				if (IsFinite(x))
+				{
+					if (x != Zero)
+					{
+						if ((x > Zero) || int.IsOddInteger(n))
+						{
+							result = Pow(Abs(x), ReciprocalEstimate(n));
+							result = CopySign(result, x);
+						}
+						else
+						{
+							result = NaN;
+						}
+					}
+					else if (int.IsEvenInteger(n))
+					{
+						result = PositiveInfinity;
+					}
+					else
+					{
+						result = CopySign(PositiveInfinity, x);
+					}
+				}
+				else if (IsNaN(x))
+				{
+					result = NaN;
+				}
+				else if (x > Zero)
+				{
+					Debug.Assert(IsPositiveInfinity(x));
+					result = Zero;
+				}
+				else
+				{
+					Debug.Assert(IsNegativeInfinity(x));
+					result = int.IsOddInteger(n) ? NegativeZero : NaN;
+				}
+
+				return result;
+			}
 		}
 
 		/// <inheritdoc/>
 		public static Octo Round(Octo x)
 		{
-			throw new NotImplementedException();
+			var exponent = x.BiasedExponent;
+
+			if (exponent >= 0x3FFFF + MantissaDigits - 1)
+			{
+				return x;
+			}
+
+			bool sign = Octo.IsNegative(x);
+
+			if (sign)
+			{
+				x = -x;
+			}
+			if (exponent < 0x3FFFF - 1)
+			{
+				return Zero * x;
+			}
+
+			Octo toint = ToInt;
+			Octo y = x + toint - toint - x;
+			if (y > HalfOne)
+			{
+				y = y + x - One;
+			}
+			else if (y <= -HalfOne)
+			{
+				y = y + x + One;
+			}
+			else
+			{
+				y += x;
+			}
+
+			if (sign)
+			{
+				y = -y;
+			}
+
+			return y;
 		}
 		/// <inheritdoc/>
 		public static Octo Round(Octo x, int digits)
 		{
-			throw new NotImplementedException();
+			return Round(x, digits, MidpointRounding.ToEven);
 		}
 		/// <inheritdoc/>
 		public static Octo Round(Octo x, MidpointRounding mode)
 		{
-			throw new NotImplementedException();
+			return Round(x, 0, mode);
 		}
 		/// <inheritdoc/>
 		public static Octo Round(Octo x, int digits, MidpointRounding mode)
 		{
-			if ((uint)digits > 70)
+			if ((uint)digits > 71)
 			{
 				Thrower.OutOfRange(nameof(digits));
 			}
 
-			if (Abs(x) < new Octo() /*1E70*/)
+			if (Abs(x) < new Octo(0x400E_E21C_81F7_DD43, 0xA749_5791_2ABD_28DF, 0xC639_B9EC_DEC6_9C20, 0x0000_0000_0000_0000) /*1E72*/)
 			{
 				Octo power10 = RoundPower10[digits];
 
@@ -808,7 +1319,54 @@ namespace MissingValues
 		/// <inheritdoc/>
 		public static Octo ScaleB(Octo x, int n)
 		{
-			throw new NotImplementedException();
+			const int MaxExponent = 262143;
+			const int MinExponent = -262142;
+
+			if (n > MaxExponent)
+			{
+				Octo maxExp = new Octo(0x7FFF_E000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
+
+				x *= maxExp;
+				n -= MaxExponent;
+				if (n > MaxExponent)
+				{
+					x *= maxExp;
+					n -= MaxExponent;
+
+					if (n > MaxExponent)
+					{
+						n = MaxExponent;
+					}
+				}
+			}
+			else if (n < MinExponent)
+			{
+				Octo minExp = new Octo(0x0000_1000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
+				Octo b237 = new Octo(0x400E_C000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
+
+				x *= minExp * b237;
+				n += -MinExponent - Octo.MantissaDigits;
+
+				if (n < MinExponent)
+				{
+					x *= minExp * b237;
+					n += -MinExponent - Octo.MantissaDigits;
+
+					if (n < MinExponent)
+					{
+						n = MinExponent;
+					}
+				}
+
+				Octo result = x * new Octo((ulong)(0x3FFFF + n) << 44, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
+				if (Octo.IsInfinity(result))
+				{
+					return Octo.Zero;
+				}
+				return result;
+			}
+
+			return x * new Octo((ulong)(0x3FFFF + n) << 44, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
 		}
 
 		/// <inheritdoc/>
@@ -834,61 +1392,86 @@ namespace MissingValues
 		/// <inheritdoc/>
 		public static Octo Sin(Octo x)
 		{
-			throw new NotImplementedException();
+			return Quad.Sin((Quad)x);
 		}
 
 		/// <inheritdoc/>
 		public static (Octo Sin, Octo Cos) SinCos(Octo x)
 		{
-			throw new NotImplementedException();
+			return Quad.SinCos((Quad)x);
 		}
 
 		/// <inheritdoc/>
 		public static (Octo SinPi, Octo CosPi) SinCosPi(Octo x)
 		{
-			throw new NotImplementedException();
+			return Quad.SinCosPi((Quad)x);
 		}
 
 		/// <inheritdoc/>
 		public static Octo Sinh(Octo x)
 		{
-			throw new NotImplementedException();
+			return Quad.Sinh((Quad)x);
 		}
 
 		/// <inheritdoc/>
 		public static Octo SinPi(Octo x)
 		{
-			throw new NotImplementedException();
+			return Quad.SinPi((Quad)x);
 		}
 
 		/// <inheritdoc/>
 		public static Octo Sqrt(Octo x)
 		{
-			throw new NotImplementedException();
+			return Quad.Sqrt((Quad)x);
 		}
 
 		/// <inheritdoc/>
 		public static Octo Tan(Octo x)
 		{
-			throw new NotImplementedException();
+			return Quad.Tan((Quad)x);
 		}
 
 		/// <inheritdoc/>
 		public static Octo Tanh(Octo x)
 		{
-			throw new NotImplementedException();
+			return Quad.Tanh((Quad)x);
 		}
 
 		/// <inheritdoc/>
 		public static Octo TanPi(Octo x)
 		{
-			throw new NotImplementedException();
+			return Quad.TanPi((Quad)x);
 		}
 
 		/// <inheritdoc/>
 		public static Octo Truncate(Octo x)
 		{
-			throw new NotImplementedException();
+			var exponent = x.BiasedExponent;
+			bool sign = Octo.IsNegative(x);
+
+			Octo y;
+
+			if (exponent >= 0x3FFFF + Octo.MantissaDigits - 1)
+			{
+				return x;
+			}
+			if (exponent <= 0x3FFFF - 1)
+			{
+				return sign ? Octo.NegativeZero : Octo.Zero;
+			}
+			// y = int(|x|) - |x|, where int(|x|) is an integer neighbor of |x|
+			if (sign)
+			{
+				x = -x;
+			}
+			Octo toint = ToInt;
+			y = x + toint - toint - x;
+			if (y > 0)
+			{
+				y--;
+			}
+			x += y;
+			return sign ? -x : x;
 		}
 
 		/// <inheritdoc/>
@@ -1460,7 +2043,7 @@ namespace MissingValues
 			uint recip32 = BitHelper.ReciprocalApproximate((uint)(sigB >> 205));
 
 			uint q;
-			const int Iterations = 5;
+			const int Iterations = 3;
 			Span<uint> qs = stackalloc uint[Iterations];
 			UInt256 term;
 			for (int ix = Iterations; ;)
@@ -1484,7 +2067,7 @@ namespace MissingValues
 
 			if (((q + 1) & 7) < 2)
 			{
-				rem <<= 29;
+				rem <<= 153;
 				term = sigB * q;
 				rem -= term;
 				if ((rem.Part3 & 0x8000_0000_0000_0000) != 0)
@@ -1504,8 +2087,8 @@ namespace MissingValues
 			}
 
 			UInt128 sigZExtra = ((UInt128)q << 120);
-			term = new UInt256(0, 0, 0, qs[3]) << 108;
-			UInt256 sigZ = new UInt256((UInt128)qs[4] << 83, ((UInt128)qs[1] << 89) + (q >> 4)) + term;
+			term = new UInt256(0, 0, 0, qs[1]) << 108;
+			UInt256 sigZ = new UInt256((ulong)qs[2] << 15, 0, 0, ((ulong)qs[0] << 25) + (q >> 4)) + term;
 			return Octo.UInt256BitsToOcto(BitHelper.RoundPackToOcto(signZ, expZ, sigZ, sigZExtra));
 		}
 

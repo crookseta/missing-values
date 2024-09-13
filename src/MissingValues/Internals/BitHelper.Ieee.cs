@@ -1216,6 +1216,9 @@ namespace MissingValues
 			sigB = Octo.ExtractTrailingSignificandFromBits(in uiB);
 
 			expDiff = expA - expB;
+
+			UInt256 sigMask = new UInt256(0x0000_2000_0000_0000, 0x0, 0x0, 0x0);
+
 			if (expDiff == 0)
 			{
 				if (expA == MaxExp)
@@ -1230,7 +1233,7 @@ namespace MissingValues
 					return PackToOcto(signZ, 0, sigZ);
 				}
 				expZ = expA;
-				sigZ |= new UInt256(0x0000_4000_0000_0000, 0x0, 0x0, 0x0);
+				sigZ |= sigMask;
 				sigZExtra = UInt128.Zero;
 				goto shiftRight1;
 			}
@@ -1250,7 +1253,7 @@ namespace MissingValues
 
 				if (expA != 0)
 				{
-					sigA |= Quad.SignificandSignMask;
+					sigA |= Octo.SignificandSignMask;
 				}
 				else
 				{
@@ -1297,7 +1300,7 @@ namespace MissingValues
 		newlyAligned:
 			sigZ = (sigA | Octo.SignificandSignMask) + sigB;
 			--expZ;
-			if (sigZ < new UInt256(0x0000_4000_0000_0000, 0x0, 0x0, 0x0))
+			if (sigZ < sigMask)
 			{
 				goto roundAndPack;
 			}
@@ -1346,7 +1349,7 @@ namespace MissingValues
 			}
 			if (expA == MaxExp)
 			{
-				return Quad.PositiveQNaNBits;
+				return Octo.PositiveQNaNBits;
 			}
 			expZ = expA;
 			if (expZ == 0)
@@ -1458,46 +1461,77 @@ namespace MissingValues
 			uint expC = Octo.ExtractBiasedExponentFromBits(uiC);
 			UInt256 sigC = Octo.ExtractTrailingSignificandFromBits(uiC);
 
-			UInt256 sigZ;
+			UInt256 uiZ;
 			uint expZ;
 			bool signZ = signA ^ signB;
 
-			UInt256 magBits, uiZ;
 
 			if (expA == MaxExp)
 			{
-				if ((sigA != UInt256.Zero) || ((expB == MaxExp) && (sigB != UInt256.Zero)))
+				if (sigA != UInt256.Zero || ((expB == MaxExp) && (sigB != UInt256.Zero)))
 				{
-					goto propagateNaN_ABC;
+					return Octo.CreateOctoNaNBits(signZ, sigA | sigB);
 				}
-				magBits = expB | sigB;
-				goto infProdArg;
+
+				if ((expB | sigB) != UInt256.Zero)
+				{
+					uiZ = PackToOcto(signZ, MaxExp, UInt256.Zero);
+					if (expC != MaxExp)
+					{
+						return uiZ;
+					}
+					if (sigC != UInt256.Zero)
+					{
+						return Octo.CreateOctoNaNBits(signZ, sigC);
+					}
+					if (signZ == signC)
+					{
+						return uiZ;
+					}
+				}
+
+				return Octo.PositiveQNaNBits;
 			}
 			if (expB == MaxExp)
 			{
 				if (sigB != UInt256.Zero)
 				{
-					goto propagateNaN_ABC;
+					return Octo.CreateOctoNaNBits(signZ, sigA | sigB);
 				}
-				magBits = expA | sigA;
-				goto infProdArg;
+
+				if ((expA | sigA) != UInt256.Zero)
+				{
+					uiZ = PackToOcto(signZ, MaxExp, UInt256.Zero);
+					if (expC != MaxExp)
+					{
+						return uiZ;
+					}
+					if (sigC != UInt256.Zero)
+					{
+						return Octo.CreateOctoNaNBits(signZ, sigC);
+					}
+					if (signZ == signC)
+					{
+						return uiZ;
+					}
+				}
+
+				return Octo.PositiveQNaNBits;
 			}
 			if (expC == MaxExp)
 			{
 				if (sigC != UInt256.Zero)
 				{
-					uiZ = default;
-					goto propagateNaN_ZC;
+					return Octo.CreateOctoNaNBits(signZ, sigC);
 				}
-				uiZ = uiC;
-				goto uiZ;
+				return uiC;
 			}
 
 			if (expA == 0)
 			{
 				if (sigA == UInt256.Zero)
 				{
-					goto zeroProd;
+					return uiC;
 				}
 				(expA, sigA) = NormalizeSubnormalF256Sig(sigA);
 			}
@@ -1505,71 +1539,97 @@ namespace MissingValues
 			{
 				if (sigB == UInt256.Zero)
 				{
-					goto zeroProd;
+					return uiC;
 				}
 				(expB, sigB) = NormalizeSubnormalF256Sig(sigB);
 			}
 
+			const int MinShiftDistance = 10;
+			const int MaxShiftDistance = 19;
+
 			expZ = expA + expB - 0x3FFFE;
-			sigA = (sigA | new UInt256(0x1000_0000_0000, 0, 0, 0)) << 18;
-			sigB = (sigB | new UInt256(0x1000_0000_0000, 0, 0, 0)) << 18;
-			UInt512 sig512Z = Calculator.BigMul(sigA, sigB), sig512C;
-			if (sig512Z.Part7 < 0x2000_0000_0000_0000)
+			sigA |= Octo.SignificandSignMask;
+			sigB |= Octo.SignificandSignMask;
+			sigA <<= MinShiftDistance;
+			sigB <<= MaxShiftDistance;
+			UInt512 sig512Z = Calculator.BigMul(sigA, sigB);
+			UInt256 sigZ = sig512Z.Upper;
+			int shiftDist = 0;
+			if ((sigZ.Part3 & 0x0100_0000_0000_0000) == 0)
 			{
 				--expZ;
-				sig512Z += sig512Z;
+				shiftDist = -1;
 			}
 			if (expC == 0)
 			{
 				if (sigC == UInt256.Zero)
 				{
-					--expZ;
-					sigZ = (sig512Z.Upper << 1) | (sig512Z.Lower != UInt256.Zero ? UInt256.One : UInt256.Zero);
-					goto roundPack;
+					shiftDist += MinShiftDistance;
+					goto sigZ;
 				}
 				(expC, sigC) = NormalizeSubnormalF256Sig(sigC);
 			}
-			sigC = (sigC | new UInt256(0x1000_0000_0000, 0, 0, 0)) << 17;
+			sigC = (sigC | Octo.SignificandSignMask) << MinShiftDistance;
 
 			int expDiff = (int)expZ - (int)expC;
-
+			UInt512 sig512C;
 			if (expDiff < 0)
 			{
 				expZ = expC;
 				if ((signZ == signC) || (expDiff < -1))
 				{
-					sig512Z = new UInt512(ShiftRightJam(sig512Z.Upper, -expDiff), sig512Z.Lower);
+					shiftDist -= expDiff;
+					if (shiftDist != 0)
+					{
+						sigZ = ShiftRightJam(sigZ, shiftDist);
+					}
 				}
 				else
 				{
-					sig512Z = ShortShiftRightJam(sig512Z, 1);
+					if (shiftDist == 0)
+					{
+						UInt256 x256 = sig512Z.Lower >> 1;
+						x256 = (sigZ << 255) | x256;
+						sigZ >>= 1;
+						sig512Z = new UInt512(sigZ, x256);
+					}
 				}
 				sig512C = default;
 			}
-			else if (expDiff != 0)
-			{
-				sig512C = ShiftRightJam(new UInt512(sigC, 0), expDiff);
-			}
 			else
 			{
-				sig512C = default;
+				if (shiftDist != 0)
+				{
+					sig512Z += sig512Z;
+				}
+				if (expDiff == 0)
+				{
+					sigZ = sig512Z.Upper;
+					sig512C = default;
+				}
+				else
+				{
+					sig512C = ShiftRightJam(new UInt512(sigC, UInt256.Zero), expDiff);
+				}
 			}
+			shiftDist = MinShiftDistance;
+			UInt128 sigZExtra;
 
 			if (signZ == signC)
 			{
 				if (expDiff <= 0)
 				{
-					sigZ = (sigC + sig512Z.Upper) | (sig512Z.Lower != UInt256.Zero ? UInt256.One : UInt256.Zero);
+					sigZ = sigC + sigZ;
 				}
 				else
 				{
 					sig512Z += sig512C;
-					sigZ = sig512Z.Upper | (sig512Z.Lower != UInt256.Zero ? UInt256.One : UInt256.Zero);
+					sigZ = sig512Z.Upper;
 				}
-				if (sigZ < new UInt256(0x4000000000000000, 0, 0, 0))
+				if ((sigZ.Part3 & 0x0080_0000_0000_0000) != 0)
 				{
-					--expZ;
-					sigZ <<= 1;
+					++expZ;
+					shiftDist = MinShiftDistance + 1;
 				}
 			}
 			else
@@ -1577,16 +1637,38 @@ namespace MissingValues
 				if (expDiff < 0)
 				{
 					signZ = signC;
-					sig512Z = new UInt512(sigC, UInt256.Zero) - sig512Z;
-				}
-				else if (expDiff == 0)
-				{
-					sig512Z = new UInt512(sig512Z.Upper - sigC, sig512Z.Lower);
-					if (sig512Z == UInt512.Zero)
+					if (expDiff < -1)
 					{
-						goto completeCancellation;
+						sigZ = sigC - sigZ;
+						sigZExtra = sig512Z.Lower.Upper | sig512Z.Upper.Lower;
+						if (sigZExtra != UInt128.Zero)
+						{
+							--sigZ;
+						}
+						if ((sigZ.Part3 & 0x0100_0000_0000_0000) == 0)
+						{
+							--expZ;
+							shiftDist = MinShiftDistance - 1;
+						}
+						goto shiftRightRoundPack;
 					}
-					if ((sig512Z.Part7 & 0x8000000000000000) != 0)
+					else
+					{
+						sig512C = new UInt512(sigC, UInt256.Zero);
+						sig512Z = sig512C - sig512Z;
+					}
+				}
+				else if (expDiff != 0)
+				{
+					sigZ -= sigC;
+
+					if (sigZ == UInt256.Zero && sig512Z.Part1 == 0 && sig512Z.Part0 == 0)
+					{
+						return Octo.PositiveZeroBits;
+					}
+
+					sig512Z = new UInt512(sigZ, sig512Z.Lower);
+					if ((sigZ.Part3 & 0x8000_0000_0000_0000) != 0)
 					{
 						signZ = !signZ;
 						sig512Z = -sig512Z;
@@ -1595,62 +1677,70 @@ namespace MissingValues
 				else
 				{
 					sig512Z -= sig512C;
+
+					if (1 < expDiff)
+					{
+						sigZ = sig512Z.Upper;
+						if ((sigZ.Part3 & 0x0100_0000_0000_0000) == 0)
+						{
+							--expZ;
+							shiftDist = MinShiftDistance - 1;
+						}
+						goto sigZ;
+					}
 				}
 
-				if (sig512Z.Upper == UInt256.Zero)
+				sigZ = sig512Z.Upper;
+				sigZExtra = sig512Z.Lower.Upper;
+				UInt128 sig512Z0 = sig512Z.Lower.Lower;
+				if (sigZ.Upper != UInt128.Zero)
 				{
-					expZ -= 256;
-					sig512Z = new UInt512(sig512Z.Lower, UInt256.Zero);
-				}
-				var shiftDist = BitHelper.LeadingZeroCount(sig512Z.Upper) - 1;
-				expZ -= (uint)shiftDist;
-				if (shiftDist < 0)
-				{
-					sigZ = ShiftRightJam(sig512Z.Upper, -shiftDist);
+					if (sig512Z0 != UInt128.Zero)
+					{
+						sigZExtra |= UInt128.One;
+					}
 				}
 				else
 				{
-					sig512Z <<= shiftDist;
-					sigZ = sig512Z.Upper;
+					expZ -= 128;
+					sigZ = new UInt256(sigZ.Lower, sigZExtra);
+					sigZExtra = sig512Z0;
+					if (sigZ.Upper == UInt128.Zero)
+					{
+						expZ -= 128;
+						sigZ = new UInt256(sigZ.Lower, sigZExtra);
+						sigZExtra = sig512Z0;
+						if (sigZ.Upper == UInt128.Zero)
+						{
+							expZ -= 128;
+							sigZ = new UInt256(sigZ.Lower, UInt128.Zero);
+						}
+					}
 				}
-				sigZ |= (sig512Z.Lower != UInt256.Zero ? UInt256.One : UInt256.Zero);
+				shiftDist = (int)UInt128.LeadingZeroCount(sigZ.Upper);
+				expZ += (uint)((MinShiftDistance - 1) - shiftDist);
+				shiftDist = MaxShiftDistance - shiftDist;
+				if (0 < shiftDist)
+				{
+					goto shiftRightRoundPack;
+				}
+				if (shiftDist != 0)
+				{
+					shiftDist = -shiftDist;
+					sigZ <<= shiftDist;
+					UInt256 temp = ((UInt256)sigZExtra << shiftDist);
+					sigZ |= temp.Upper;
+					sigZExtra = temp.Lower;
+				}
+				goto roundPack;
 			}
+		sigZ:
+			sigZExtra = sig512Z.Lower.Upper | sig512Z.Lower.Lower;
+		shiftRightRoundPack:
+			sigZExtra = ((sigZ.Lower << (128 - shiftDist)) | (sigZExtra != UInt128.Zero ? 1UL : 0UL));
+			sigZ = sigZ >> shiftDist;
 		roundPack:
-			return RoundPackToOcto(signZ, (int)expZ, sigZ, UInt128.Zero);
-		propagateNaN_ABC:
-			uiZ = Octo.PositiveQNaNBits;
-			goto uiZ;
-		infProdArg:
-			if (magBits != UInt256.Zero)
-			{
-				uiZ = PackToOcto(signZ, MaxExp, UInt256.Zero);
-				if (expC != MaxExp)
-				{
-					goto uiZ;
-				}
-				if (sigC != UInt256.Zero)
-				{
-					goto propagateNaN_ZC;
-				}
-				if (signZ == signC)
-				{
-					goto uiZ;
-				}
-			}
-		propagateNaN_ZC:
-			uiZ = Octo.PositiveQNaNBits;
-			goto uiZ;
-		zeroProd:
-			uiZ = uiC;
-			if (((expC | sigC) == UInt256.Zero) && (signZ != signC))
-			{
-				goto completeCancellation;
-			}
-		uiZ:
-			return uiZ;
-		completeCancellation:
-			uiZ = PackToOcto(false, 0, UInt256.Zero);
-			return uiZ;
+			return RoundPackToOcto(signZ, (int)expZ - 1, sigZ, sigZExtra);
 		}
 	}
 }
