@@ -1,6 +1,6 @@
-﻿# MissingValues numeric library for .Net 7+
+﻿# MissingValues numeric library for .Net 8+
 
-MissingValues is a C# numeric library for C# that introduces support for large integers and higher precision floating-point numbers. It supports .Net 7 Generic Math.
+MissingValues is a C# numeric library for C# that introduces support for large integers and higher precision floating-point numbers. It supports generic math.
 
 ## Features
 
