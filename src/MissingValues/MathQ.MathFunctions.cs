@@ -1370,8 +1370,8 @@ namespace MissingValues
 				expA = (short)exp;
 			}
 
-			sigA |= new UInt128(0x0001_0000_0000_0000, 0x0);
-			sigB |= new UInt128(0x0001_0000_0000_0000, 0x0);
+			sigA |= Quad.SignificandSignMask;
+			sigB |= Quad.SignificandSignMask;
 			UInt128 rem = sigA, altRem;
 			int expDiff = expA - expB;
 			uint q, recip32;
@@ -1414,7 +1414,7 @@ namespace MissingValues
 					rem <<= 29;
 					term = sigB * q;
 					rem -= term;
-					if ((rem & new UInt128(0x8000_0000_0000_0000, 0x0)) != UInt128.Zero)
+					if ((rem & Quad.SignMask) != UInt128.Zero)
 					{
 						rem += sigB;
 					}
@@ -1428,7 +1428,7 @@ namespace MissingValues
 				rem <<= expDiff + 30;
 				term = sigB * q;
 				rem -= term;
-				if ((rem & new UInt128(0x8000_0000_0000_0000, 0x0)) != UInt128.Zero)
+				if ((rem & Quad.SignMask) != UInt128.Zero)
 				{
 					altRem = rem + sigB;
 					goto selectRem;
@@ -1440,16 +1440,16 @@ namespace MissingValues
 				altRem = rem;
 				++q;
 				rem -= sigB;
-			} while ((rem & new UInt128(0x8000_0000_0000_0000, 0x0)) == UInt128.Zero);
+			} while ((rem & Quad.SignMask) == UInt128.Zero);
 		selectRem:
 			UInt128 meanRem = rem + altRem;
-			if (((meanRem & new UInt128(0x8000_0000_0000_0000, 0x0)) != UInt128.Zero)
+			if (((meanRem & Quad.SignMask) != UInt128.Zero)
 				|| ((meanRem == UInt128.Zero) && ((q & 1) != 0)))
 			{
 				rem = altRem;
 			}
 			bool signRem = signA;
-			if ((rem & new UInt128(0x8000_0000_0000_0000, 0x0)) != UInt128.Zero)
+			if ((rem & Quad.SignMask) != UInt128.Zero)
 			{
 				signRem = !signRem;
 				rem = -rem;
