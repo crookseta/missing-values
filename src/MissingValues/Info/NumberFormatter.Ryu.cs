@@ -300,7 +300,7 @@ internal static partial class NumberFormatter
 			}
 		}
 
-		private const int FD128ExceptionalExponent = 0x7FFF_FFFF;
+		private const int FDExceptionalExponent = 0x7FFF_FFFF;
 
 		public static void Format<TFloat, TSignificand, TChar>(in TFloat value, scoped Span<TChar> destination, out int charsWritten, ReadOnlySpan<char> format, out bool isExceptional, NumberFormatInfo? info, int? precision = null)
 			where TFloat : struct, IBinaryFloatingPointInfo<TFloat, TSignificand>
@@ -319,7 +319,7 @@ internal static partial class NumberFormatter
 			UIntToNumber<UInt256, Int256>(in significand, ref number);
 			number.Scale += fd.Exponent;
 			number.IsNegative = fd.Sign;
-			isExceptional = fd.Exponent == FD128ExceptionalExponent;
+			isExceptional = fd.Exponent == FDExceptionalExponent;
 		}
 
 		private static int ToCharSpan<TDecimal, TSignificand, TChar>(in TDecimal v, Span<TChar> destination, ReadOnlySpan<char> format, NumberFormatInfo info, out bool isExceptional)
@@ -327,7 +327,7 @@ internal static partial class NumberFormatter
 			where TSignificand : unmanaged, IBinaryInteger<TSignificand>, IUnsignedNumber<TSignificand>
 			where TChar : unmanaged, IUtfCharacter<TChar>
 		{
-			if (v.Exponent == FD128ExceptionalExponent)
+			if (v.Exponent == FDExceptionalExponent)
 			{
 				isExceptional = true;
 				if (v.Mantissa != TSignificand.Zero)
@@ -363,7 +363,7 @@ internal static partial class NumberFormatter
 			TSignificand output = v.Mantissa;
 			uint olength = (uint)(output switch
 			{
-				UInt128 temp => BitHelper.CountDigits(temp),
+				UInt128 temp => CountDigits(temp),
 				UInt256 temp => UInt256.CountDigits(in temp)
 			});
 
@@ -419,7 +419,7 @@ internal static partial class NumberFormatter
 				index += TChar.GetLength(info.PositiveSign);
 			}
 
-			uint elength = (uint)BitHelper.CountDigits((UInt128)exp);
+			uint elength = (uint)CountDigits((ulong)exp);
 
 			for (int i = 0; i < elength; ++i)
 			{
@@ -454,7 +454,7 @@ internal static partial class NumberFormatter
 			{
 				return TDecimal.Build(
 					   TFloat.ExplicitLeadingBit ? ieeeMantissa & ((TSignificand.One << (mantissaBits - 1)) - TSignificand.One) : ieeeMantissa,
-					   FD128ExceptionalExponent,
+					   FDExceptionalExponent,
 					   ieeeSign
 					   );
 			}
@@ -514,12 +514,13 @@ internal static partial class NumberFormatter
 				int i = -e2 + (int)q + k;
 				Span<ulong> pow5 = stackalloc ulong[typeof(TSignificand) == typeof(UInt128) ? 4 : 8];
 				GenericComputeInvPow5<TDecimal, TSignificand>(q, pow5);
-				vr = TDecimal.MulShift(four * m2, pow5, i);
-				vp = TDecimal.MulShift(four * m2 + TDecimal.Two, pow5, i);
-				vm = TDecimal.MulShift(four * m2 - TSignificand.One - TDecimal.FromUInt32(mmShift), pow5, i);
+				TSignificand m = four * m2;
+				vr = TDecimal.MulShift(m, pow5, i);
+				vp = TDecimal.MulShift(m + TDecimal.Two, pow5, i);
+				vm = TDecimal.MulShift(m - TSignificand.One - TDecimal.FromUInt32(mmShift), pow5, i);
 
 				// floor(log5(2^128)) = 55, this is very conservative
-				if (q <= 55)
+				if (q <= (typeof(TSignificand) == typeof(UInt128) ? 55 : 110))
 				{
 					// Only one of mp, mv, and mm can be a multiple of 5, if any.
 					if (mv % TDecimal.Five == TSignificand.Zero)
@@ -549,9 +550,10 @@ internal static partial class NumberFormatter
 				int j = (int)(q - k);
 				Span<ulong> pow5 = stackalloc ulong[typeof(TSignificand) == typeof(UInt128) ? 4 : 8];
 				GenericComputePow5<TDecimal, TSignificand>((uint)i, pow5);
-				vr = TDecimal.MulShift(four * m2, pow5, j);
-				vp = TDecimal.MulShift(four * m2 + TDecimal.Two, pow5, j);
-				vm = TDecimal.MulShift(four * m2 - TSignificand.One - TDecimal.FromUInt32(mmShift), pow5, j);
+				TSignificand m = four * m2;
+				vr = TDecimal.MulShift(m, pow5, j);
+				vp = TDecimal.MulShift(m + TDecimal.Two, pow5, j);
+				vm = TDecimal.MulShift(m - TSignificand.One - TDecimal.FromUInt32(mmShift), pow5, j);
 
 				if (q <= 1)
 				{
@@ -568,7 +570,7 @@ internal static partial class NumberFormatter
 						--vp;
 					}
 				}
-				else if (q < 127)
+				else if (q < (typeof(TSignificand) == typeof(UInt128) ? 127 : 255))
 				{
 					vrIsTrailingZeros = TDecimal.MultipleOfPowerOf2(in mv, q - 1);
 				}
@@ -622,33 +624,44 @@ internal static partial class NumberFormatter
 			return (fd.Mantissa, fd.Exponent, fd.Sign);
 		}
 
+		// Returns floor(log_10(2^e)).
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		private static uint Log10Pow2(int e)
 		{
-			// The first value this approximation fails for is 2^1651 which is just greater than 10^297.
 			Debug.Assert(e >= 0);
-			Debug.Assert(e <= 1 << 15);
+			if (e > 1 << 15)
+			{
+				return (uint)double.Floor(BigInteger.Log10(BigInteger.Pow(2, e)));
+			}
 
+			// The first value this approximation fails for is 2^1651 which is just greater than 10^297.
 			return (uint)((((ulong)e) * 169464822037455UL) >> 49);
 		}
+		// Returns floor(log_10(5^e)).
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		private static uint Log10Pow5(int e)
 		{
-			// The first value this approximation fails for is 2^1651 which is just greater than 10^297.
 			Debug.Assert(e >= 0);
-			Debug.Assert(e <= 1 << 15);
+			if (e > 1 << 15)
+			{
+				return (uint)double.Floor(BigInteger.Log10(BigInteger.Pow(5, e)));
+			}
 
+			// The first value this approximation fails for is 5^2621 which is just greater than 10^1832.
 			return (uint)((((ulong)e) * 196742565691928UL) >> 48);
 		}
+		// Returns e == 0 ? 1 : ceil(log_2(5^e)); requires 0 <= e <= 32768.
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		private static uint Pow5Bits(int e)
 		{
 			Debug.Assert(e >= 0);
-			Debug.Assert(e <= 1 << 15);
+			if (e > 1 << 15)
+			{
+				return ((uint)BigInteger.Log2(BigInteger.Pow(5, e))) + 1;
+			}
 
-			return (uint)(((((ulong)e * 163391164108059UL)) >> 46) + 1);
+			return (uint)(((((ulong)e) * 163391164108059UL) >> 46) + 1);
 		}
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		private static void GenericComputePow5<TDecimal, TSignificand>(uint i, Span<ulong> result)
 			where TDecimal : struct, IBinaryFloatingPointDecimalFormat<TDecimal, TSignificand>
 			where TSignificand : unmanaged, IBinaryInteger<TSignificand>, IUnsignedNumber<TSignificand>
@@ -659,32 +672,41 @@ internal static partial class NumberFormatter
 
 			if (i == ibase2)
 			{
-				result[0] = mul[0];
-				result[1] = mul[1];
-				result[2] = mul[2];
-				result[3] = mul[3];
+				if (typeof(TSignificand) == typeof(UInt128))
+				{
+					result[0] = mul[0];
+					result[1] = mul[1];
+					result[2] = mul[2];
+					result[3] = mul[3]; 
+				}
+				else
+				{
+					result[0] = mul[0];
+					result[1] = mul[1];
+					result[2] = mul[2];
+					result[3] = mul[3];
+					result[4] = mul[4];
+					result[5] = mul[5];
+					result[6] = mul[6];
+					result[7] = mul[7];
+				}
 			}
 			else
 			{
+				uint offset = i - ibase2;
+				var m = TDecimal.GenericPow5Table[(int)offset];
+				uint delta = Pow5Bits((int)i) - Pow5Bits((int)ibase2);
+				uint corr = (uint)((TDecimal.Pow5Errors[(int)i / 32] >> (2 * ((int)i % 32))) & 3);
 				if (typeof(TSignificand) == typeof(UInt128))
 				{
-					uint offset = i - ibase2;
-					var m = TDecimal.GenericPow5Table[(int)offset];
-					uint delta = Pow5Bits((int)i) - Pow5Bits((int)ibase2);
-					uint corr = (uint)((TDecimal.Pow5Errors[(int)i / 32] >> (2 * ((int)i % 32))) & 3);
 					Mul128To256Shift(m, mul, (int)delta, corr, result);
 				}
 				else
 				{
-					uint offset = i - ibase2;
-					var m = TDecimal.GenericPow5Table[(int)offset];
-					uint delta = Pow5Bits((int)i) - Pow5Bits((int)ibase2);
-					uint corr = (uint)((TDecimal.Pow5Errors[(int)i / 32] >> (2 * ((int)i % 32))) & 3);
 					Mul256To512Shift(m, mul, (int)delta, corr, result);
 				}
 			}
 		}
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		private static void GenericComputeInvPow5<TDecimal, TSignificand>(uint i, Span<ulong> result)
 			where TDecimal : struct, IBinaryFloatingPointDecimalFormat<TDecimal, TSignificand>
 			where TSignificand : unmanaged, IBinaryInteger<TSignificand>, IUnsignedNumber<TSignificand>
@@ -694,27 +716,37 @@ internal static partial class NumberFormatter
 			var mul = TDecimal.GenericPow5InvSplit[(int)ibase];
 			if (i == ibase2)
 			{
-				result[0] = mul[0] + 1;
-				result[1] = mul[1];
-				result[2] = mul[2];
-				result[3] = mul[3];
+				if (typeof(TSignificand) == typeof(UInt128))
+				{
+					result[0] = mul[0] + 1;
+					result[1] = mul[1];
+					result[2] = mul[2];
+					result[3] = mul[3]; 
+				}
+				else
+				{
+					result[0] = mul[0] + 1;
+					result[1] = mul[1];
+					result[2] = mul[2];
+					result[3] = mul[3];
+					result[4] = mul[4];
+					result[5] = mul[5];
+					result[6] = mul[6];
+					result[7] = mul[7];
+				}
 			}
 			else
 			{
+				uint offset = ibase2 - i;
+				var m = TDecimal.GenericPow5Table[(int)offset];
+				ulong delta = Pow5Bits((int)ibase2) - Pow5Bits((int)i);
+				uint corr = (uint)((TDecimal.Pow5InvErrors[(int)i / 32] >> (2 * ((int)i % 32))) & 3) + 1;
 				if (typeof(TSignificand) == typeof(UInt128))
 				{
-					uint offset = ibase2 - i;
-					var m = TDecimal.GenericPow5Table[(int)offset];
-					ulong delta = Pow5Bits((int)ibase2) - Pow5Bits((int)i);
-					uint corr = (uint)((TDecimal.Pow5InvErrors[(int)i / 32] >> (2 * ((int)i % 32))) & 3) + 1;
 					Mul128To256Shift(m, mul, (int)delta, corr, result);
 				}
 				else
 				{
-					uint offset = ibase2 - i;
-					var m = TDecimal.GenericPow5Table[(int)offset];
-					ulong delta = Pow5Bits((int)ibase2) - Pow5Bits((int)i);
-					uint corr = (uint)((TDecimal.Pow5InvErrors[(int)i / 32] >> (2 * ((int)i % 32))) & 3) + 1;
 					Mul256To512Shift(m, mul, (int)delta, corr, result);
 				}
 			}
@@ -722,6 +754,8 @@ internal static partial class NumberFormatter
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		private static void Mul128To256Shift(ReadOnlySpan<ulong> a, ReadOnlySpan<ulong> b, int shift, uint corr, Span<ulong> result)
 		{
+			Debug.Assert(a.Length == 2 || (a[2] == default && a[3] == default));
+			Debug.Assert(b.Length == 4 || (b[4] == default && b[5] == default && b[6] == default && b[7] == default));
 			Debug.Assert(result.Length == 4);
 
 			UInt128 b00 = Calculator.BigMul(a[0], b[0]);           // 0
@@ -774,93 +808,60 @@ internal static partial class NumberFormatter
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		private static void Mul256To512Shift(ReadOnlySpan<ulong> a, ReadOnlySpan<ulong> b, int shift, uint corr, Span<ulong> result)
 		{
+			Debug.Assert(a.Length == 4);
+			Debug.Assert(b.Length == 8);
 			Debug.Assert(result.Length == 8);
 
-			// Multiply each combination of 64-bit segments of a and b
-			UInt128 b00 = Calculator.BigMul(a[0], b[0]);    // 0
-			UInt128 b01 = Calculator.BigMul(a[0], b[1]);    // 64
-			UInt128 b02 = Calculator.BigMul(a[0], b[2]);    // 128
-			UInt128 b03 = Calculator.BigMul(a[0], b[3]);    // 192
-			UInt128 b10 = Calculator.BigMul(a[1], b[0]);    // 64
-			UInt128 b11 = Calculator.BigMul(a[1], b[1]);    // 128
-			UInt128 b12 = Calculator.BigMul(a[1], b[2]);    // 192
-			UInt128 b13 = Calculator.BigMul(a[1], b[3]);    // 256
-			UInt128 b20 = Calculator.BigMul(a[2], b[0]);    // 128
-			UInt128 b21 = Calculator.BigMul(a[2], b[1]);    // 192
-			UInt128 b22 = Calculator.BigMul(a[2], b[2]);    // 256
-			UInt128 b23 = Calculator.BigMul(a[2], b[3]);    // 320
-			UInt128 b30 = Calculator.BigMul(a[3], b[0]);    // 192
-			UInt128 b31 = Calculator.BigMul(a[3], b[1]);    // 256
-			UInt128 b32 = Calculator.BigMul(a[3], b[2]);    // 320
-			UInt128 b33 = Calculator.BigMul(a[3], b[3]);    // 384
+			ReadOnlySpan<UInt128> a128 = MemoryMarshal.Cast<ulong, UInt128>(a);
+			ReadOnlySpan<UInt128> b128 = MemoryMarshal.Cast<ulong, UInt128>(b);
 
-			// Sum up the intermediate products
-			UInt128 s0 = b00;
-			UInt128 s1 = b01 + b10;
-			UInt128 c1 = s1 < b01 ? UInt128.One : UInt128.Zero;
-			UInt128 s2 = b02 + b11 + b20;
-			UInt128 c2 = s2 < b02 ? UInt128.One : UInt128.Zero;
-			UInt128 s3 = b03 + b12 + b21 + b30;
-			UInt128 c3 = s3 < b03 ? UInt128.One : UInt128.Zero;
-			UInt128 s4 = b13 + b22 + b31 + c1;
-			UInt128 c4 = s4 < b13 ? UInt128.One : UInt128.Zero;
-			UInt128 s5 = b23 + b32 + c2 + c3;
-			UInt128 c5 = s5 < b23 ? UInt128.One : UInt128.Zero;
-			UInt128 s6 = b33 + c4 + c5;
+			UInt256 b00 = Calculator.BigMul(a128[0], b128[0]);           // 0
+			UInt256 b01 = Calculator.BigMul(a128[0], b128[1]);           // 128
+			UInt256 b02 = Calculator.BigMul(a128[0], b128[2]);           // 256
+			UInt256 b03 = Calculator.BigMul(a128[0], b128[3]);           // 384
+			UInt256 b10 = Calculator.BigMul(a128[1], b128[0]);           // 128
+			UInt256 b11 = Calculator.BigMul(a128[1], b128[1]);           // 256
+			UInt256 b12 = Calculator.BigMul(a128[1], b128[2]);           // 384
+			UInt256 b13 = Calculator.BigMul(a128[1], b128[3]);           // 512
 
-			// Combine sums into 512-bit result
-			UInt128 p0 = s0 + (s1 << 64);
-			UInt128 d0 = p0 < s0 ? UInt128.One : UInt128.Zero;
-			UInt128 q1 = s2 + (s1 >> 64) + (s3 << 64);
-			UInt128 d1 = q1 < s2 ? UInt128.One : UInt128.Zero;
-			UInt128 p1 = q1 + (d0 << 64);
-			UInt128 d2 = p1 < q1 ? UInt128.One : UInt128.Zero;
-			UInt128 q2 = s4 + (s3 >> 64) + (s5 << 64);
-			UInt128 d3 = q2 < s4 ? UInt128.One : UInt128.Zero;
-			UInt128 p2 = q2 + d1;
-			UInt128 d4 = p2 < q2 ? UInt128.One : UInt128.Zero;
-			UInt128 p3 = s6 + (s5 >> 64) + d2 + d3 + d4;
+			UInt256 s0 = b00;												// 0
+			UInt256 s1 = b01 + b10;											// 64
+			UInt256 c1 = s1 < b01 ? UInt256.One : UInt256.Zero;				// 196
+			UInt256 s2 = b02 + b11;											// 128
+			UInt256 c2 = s2 < b02 ? UInt256.One : UInt256.Zero;				// 256
+			UInt256 s3 = b03 + b12;											// 196
+			UInt256 c3 = s3 < b03 ? UInt256.One : UInt256.Zero;				// 324
 
-			// Apply shift and correction
-			UInt128 r0, r1, r2, r3;
-			if (shift < 128)
+			UInt256 p0 = s0 + (s1 << 128);									// 0
+			UInt256 d0 = p0 < b00 ? UInt256.One : UInt256.Zero;				// 128
+			UInt256 q1 = s2 + (s1 >> 128) + (s3 << 128);					// 128
+			UInt256 d1 = q1 < s2 ? UInt256.One : UInt256.Zero;				// 256
+			UInt256 p1 = q1 + (c1 << 128) + d0;								// 128
+			UInt256 d2 = p1 < q1 ? UInt256.One : UInt256.Zero;				// 256
+			UInt256 p2 = b13 + (s3 >> 128) + c2 + (c3 << 128) + d1 + d2;	// 256
+
+			UInt256 r0, r1;
+			if (shift < 256)
 			{
-				r0 = corr + ((p0 >> shift) | (p1 << (128 - shift)));
-				r1 = (p1 >> shift) | (p2 << (128 - shift)) + (r0 < corr ? UInt128.One : UInt128.Zero);
-				r2 = (p2 >> shift) | (p3 << (128 - shift)) + (r1 < corr ? UInt128.One : UInt128.Zero);
-				r3 = p3 >> shift;
+				r0 = corr + ((p0 >> shift) | (p1 << (256 - shift)));
+				r1 = ((p1 >> shift) | (p2 << (256 - shift))) + (r0 < corr ? UInt256.One : UInt256.Zero);
 			}
-			else if (shift < 256)
+			else if (shift == 256)
 			{
-				r0 = corr + ((p1 >> (shift - 128)) | (p2 << (256 - shift)));
-				r1 = (p2 >> (shift - 128)) | (p3 << (256 - shift)) + (r0 < corr ? UInt128.One : UInt128.Zero);
-				r2 = p3 >> (shift - 128);
-				r3 = UInt128.Zero;
-			}
-			else if (shift < 384)
-			{
-				r0 = corr + (p2 >> (shift - 256)) | (p3 << (384 - shift));
-				r1 = p3 >> (shift - 256) + (r0 < corr ? 1 : 0);
-				r2 = UInt128.Zero;
-				r3 = UInt128.Zero;
+				r0 = corr + p1;
+				r1 = p2 + (r0 < corr ? UInt256.One : UInt256.Zero);
 			}
 			else
 			{
-				r0 = corr + (p3 >> (shift - 384));
-				r1 = UInt128.Zero;
-				r2 = UInt128.Zero;
-				r3 = UInt128.Zero;
+				r0 = corr + ((p1 >> shift - 256) | (p2 << (512 - shift)));
+				r1 = (p2 >> (shift - 256)) + (r0 < corr ? UInt256.One : UInt256.Zero);
 			}
 
-			// Store the 512-bit result in the result span
-			result[0] = (ulong)r0;
-			result[1] = (ulong)(r0 >> 64);
-			result[2] = (ulong)r1;
-			result[3] = (ulong)(r1 >> 64);
-			result[4] = (ulong)r2;
-			result[5] = (ulong)(r2 >> 64);
-			result[6] = (ulong)r3;
-			result[7] = (ulong)(r3 >> 64);
+			Span<UInt128> r = MemoryMarshal.Cast<ulong, UInt128>(result);
+			r[0] = r0.Lower;
+			r[1] = r0.Upper;
+			r[2] = r1.Lower;
+			r[3] = r1.Upper;
 		}
 	}
 }
