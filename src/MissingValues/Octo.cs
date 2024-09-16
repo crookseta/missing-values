@@ -887,7 +887,7 @@ namespace MissingValues
 			if (value >= Octo.One)
 			{
 				UInt256 bits = Octo.OctoToUInt256Bits(value);
-				int result = (int)((uint)(bits >> 205) | 0x8000_0000_0000_0000);
+				int result = (int)((uint)(bits >> 205) | 0x8000_0000);
 
 				result >>>= (Octo.ExponentBias + 32 - 1 - (int)(bits >> 236));
 
@@ -1411,7 +1411,7 @@ namespace MissingValues
 				sig = (UInt256)value << shiftDist;
 			}
 
-			return new Octo(false, (ushort)(0x401AD - shiftDist), sig);
+			return new Octo(false, (uint)(0x400EB - shiftDist), sig);
 		}
 		public static implicit operator Octo(ulong value)
 		{
@@ -1428,7 +1428,7 @@ namespace MissingValues
 				sig = (UInt256)value << shiftDist;
 			}
 
-			return new Octo(false, (ushort)(0x4016C - shiftDist), sig);
+			return new Octo(false, (uint)(0x400EB - shiftDist), sig);
 		}
 		public static implicit operator Octo(UInt128 value)
 		{
@@ -1445,7 +1445,7 @@ namespace MissingValues
 				sig = (UInt256)value << shiftDist;
 			}
 
-			return new Octo(false, (ushort)(0x400EB - shiftDist), sig);
+			return new Octo(false, (uint)(0x400EB - shiftDist), sig);
 		}
 		// Signed
 		public static implicit operator Octo(sbyte value)

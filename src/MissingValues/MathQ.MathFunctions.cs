@@ -2669,7 +2669,7 @@ namespace MissingValues
 			qs[0] = q;
 
 			q = (uint)((((ulong)(rem >> 66) * recipSqrt32) >> 32) + 2);
-			ulong sigZExtra = q << 59;
+			ulong sigZExtra = (ulong)q << 59;
 			term = (UInt128)qs[1] << 53;
 			UInt128 sigZ = new UInt128((ulong)qs[2] << 18, ((ulong)qs[0] << 24) + (q >> 5)) + term;
 

@@ -380,7 +380,7 @@ namespace MissingValues
 		{
 			if (value.Upper == 0)
 			{
-				return value._p1 != 0 ? (Quad)value.Lower : (Quad)value._p0;
+				return value._p1 != 0 ? (Octo)value.Lower : (Octo)value._p0;
 			}
 			else if ((value.Upper >> 32) == UInt128.Zero) // value < (2^472)
 			{

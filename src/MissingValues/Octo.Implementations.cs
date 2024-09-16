@@ -515,14 +515,14 @@ namespace MissingValues
 			}
 			else
 			{
-				recip32 = BitHelper.ReciprocalApproximate((uint)(sigB >> 81));
+				recip32 = BitHelper.ReciprocalApproximate((uint)(sigB.Part3 >> 13));
 				expDiff -= 30;
 
 				UInt256 term;
 				ulong q64;
 				while (true)
 				{
-					q64 = (ulong)(rem >> 83) * recip32;
+					q64 = (rem.Part3 >> 15) * recip32;
 					if (expDiff < 0)
 					{
 						break;
@@ -531,7 +531,7 @@ namespace MissingValues
 					rem <<= 29;
 					term = sigB * q;
 					rem -= term;
-					if ((rem & SignMask) != UInt128.Zero)
+					if ((rem.Part3 & 0x8000_0000_0000_0000) != 0)
 					{
 						rem += sigB;
 					}
@@ -545,7 +545,7 @@ namespace MissingValues
 				rem <<= expDiff + 30;
 				term = sigB * q;
 				rem -= term;
-				if ((rem & SignMask) != UInt128.Zero)
+				if ((rem.Part3 & 0x8000_0000_0000_0000) != 0)
 				{
 					altRem = rem + sigB;
 					goto selectRem;
@@ -557,16 +557,16 @@ namespace MissingValues
 				altRem = rem;
 				++q;
 				rem -= sigB;
-			} while ((rem & SignMask) == UInt256.Zero);
+			} while ((rem.Part3 & 0x8000_0000_0000_0000) == 0);
 		selectRem:
 			UInt256 meanRem = rem + altRem;
-			if (((meanRem & SignMask) != UInt256.Zero)
-				|| ((meanRem == UInt128.Zero) && ((q & 1) != 0)))
+			if (((meanRem.Part3 & 0x8000_0000_0000_0000) != 0)
+				|| ((meanRem == UInt256.Zero) && ((q & 1) != 0)))
 			{
 				rem = altRem;
 			}
 			bool signRem = signA;
-			if ((rem & SignMask) != UInt256.Zero)
+			if ((rem.Part3 & 0x8000_0000_0000_0000) != 0)
 			{
 				signRem = !signRem;
 				rem = -rem;
@@ -1422,7 +1422,138 @@ namespace MissingValues
 		/// <inheritdoc/>
 		public static Octo Sqrt(Octo x)
 		{
-			return Quad.Sqrt((Quad)x);
+			UInt256 bits = Octo.OctoToUInt256Bits(x);
+			bool signA = Octo.IsNegative(x);
+			uint exp = Octo.ExtractBiasedExponentFromBits(bits);
+			UInt256 sig = Octo.ExtractTrailingSignificandFromBits(bits);
+
+			// Is x NaN?
+			if (exp == 0x7FFFF)
+			{
+				if (sig != UInt256.Zero)
+				{
+					return Quad.NaN;
+				}
+				if (!signA)
+				{
+					return x;
+				}
+				return Quad.NaN;
+			}
+			if (signA)
+			{
+				if (((UInt256)exp | sig) == UInt256.Zero)
+				{
+					return x;
+				}
+				return Quad.NaN;
+			}
+
+			if (exp == 0)
+			{
+				if (sig == UInt256.Zero)
+				{
+					return x;
+				}
+				(exp, sig) = BitHelper.NormalizeSubnormalF256Sig(sig);
+			}
+
+			uint expZ = ((exp - 0x3FFFF) >> 1) + 0x3FFFE;
+			exp &= 1;
+			sig |= new UInt256(0x0000_1000_0000_0000, 0, 0, 0);
+			uint sig32 = (uint)(sig.Part3 >> 13);
+			uint recipSqrt32 = BitHelper.SqrtReciprocalApproximate(exp, sig32);
+			uint sig32Z = (uint)(((ulong)sig32 * recipSqrt32) >> 32);
+			UInt256 rem;
+			if (exp != 0)
+			{
+				sig32Z >>= 1;
+				rem = sig << 16;
+			}
+			else
+			{
+				rem = sig << 17;
+			}
+			Span<uint> qs = stackalloc uint[3] { 0, 0, sig32Z };
+			rem -= new UInt256((ulong)sig32Z * sig32Z, 0x0, 0x0, 0x0);
+
+			uint q = (uint)(((uint)(rem.Part3 >> 2) * (ulong)recipSqrt32) >> 32);
+			ulong x64 = (ulong)sig32Z << 32;
+			ulong sig64Z = x64 + ((ulong)q << 3);
+			UInt256 y = rem << 29;
+
+			UInt256 term;
+			do
+			{
+				term = (UInt256)BitHelper.Mul64ByShifted32To128(x64 + sig64Z, q) << 128;
+				rem = y - term;
+				if (((rem.Part3) & 0x8000_0000_0000_0000) == 0)
+				{
+					break;
+				}
+				--q;
+				sig64Z -= 1 << 3;
+			} while (true);
+			qs[1] = q;
+
+			q = (uint)(((rem.Part3 >> 2) * recipSqrt32) >> 32);
+			y = rem << 29;
+			sig64Z <<= 1;
+
+			do
+			{
+				term = (UInt256)sig64Z << (32 + 128);
+				term += (ulong)q << 6;
+				term *= q;
+				rem = y - term;
+				if ((rem.Part3 & 0x8000_0000_0000_0000) == 0)
+				{
+					break;
+				}
+				--q;
+			} while (true);
+			qs[0] = q;
+
+			q = (uint)((((rem.Part3 >> 2) * recipSqrt32) >> 32) + 2);
+			UInt128 sigZExtra = (UInt128)q << (59 + 64);
+			term = (UInt256)qs[1] << (53 + 128);
+			UInt256 sigZ = (new UInt256((ulong)qs[2] << 18, (((ulong)qs[0] << 24) + (q >> 5)), 0, 0) + term) >> 4;
+
+			if ((q & 0xF) <= 2)
+			{
+				q &= ~3U;
+				sigZExtra = (UInt128)q << 123;
+				y = sigZ << 6;
+				y |= sigZExtra >> 122;
+				term = y - q;
+				y = (UInt256)BitHelper.Mul64ByShifted32To128(term.Part2, q) << 128;
+				term = (UInt256)BitHelper.Mul64ByShifted32To128(term.Part3, q) << 128;
+				term += y.Part3;
+				rem <<= 27;
+				term -= rem;
+
+				if ((term.Part3 & 0x8000_0000_0000_0000) != 0)
+				{
+					sigZExtra |= 1;
+				}
+				else
+				{
+					if ((term | y.Part0) != UInt256.Zero)
+					{
+						if (sigZExtra != 0)
+						{
+							--sigZExtra;
+						}
+						else
+						{
+							sigZ -= UInt256.One;
+							sigZExtra = UInt128.MaxValue;
+						}
+					}
+				}
+			}
+
+			return Octo.UInt256BitsToOcto(BitHelper.RoundPackToOcto(false, (int)expZ, sigZ, sigZExtra));
 		}
 
 		/// <inheritdoc/>
@@ -1783,7 +1914,7 @@ namespace MissingValues
 
 				if (BitConverter.IsLittleEndian)
 				{
-					significand = BitHelper.ReverseEndianness(significand);
+					significand = BitHelper.ReverseEndianness(in significand);
 				}
 
 				Unsafe.WriteUnaligned(ref MemoryMarshal.GetReference(destination), significand);
@@ -1806,7 +1937,7 @@ namespace MissingValues
 
 				if (!BitConverter.IsLittleEndian)
 				{
-					significand = BitHelper.ReverseEndianness(significand);
+					significand = BitHelper.ReverseEndianness(in significand);
 				}
 
 				Unsafe.WriteUnaligned(ref MemoryMarshal.GetReference(destination), significand);
@@ -2088,7 +2219,7 @@ namespace MissingValues
 
 			UInt128 sigZExtra = ((UInt128)q << 120);
 			term = new UInt256(0, 0, 0, qs[1]) << 108;
-			UInt256 sigZ = new UInt256((ulong)qs[2] << 15, 0, 0, ((ulong)qs[0] << 25) + (q >> 4)) + term;
+			UInt256 sigZ = new UInt256((ulong)qs[2] << 15, ((ulong)qs[0] << 25) + (q >> 4), 0, 0) + term;
 			return Octo.UInt256BitsToOcto(BitHelper.RoundPackToOcto(signZ, expZ, sigZ, sigZExtra));
 		}
 
