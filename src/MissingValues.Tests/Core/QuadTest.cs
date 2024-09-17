@@ -279,6 +279,12 @@ namespace MissingValues.Tests.Core
 		{
 			((double)from).Should().Be(to);
 		}
+		[Theory]
+		[MemberData(nameof(CastToOctoTheoryData))]
+		public void Cast_ToOcto(Quad from, Octo to)
+		{
+			((Octo)from).Should().Be(to);
+		}
 
 		[Fact]
 		public void ToGeneralStringTest()

@@ -1417,19 +1417,19 @@ namespace MissingValues
 				return sign ? Quad.NegativeInfinity : Quad.PositiveInfinity;
 			}
 
-			sig <<= 18;
-			UInt128 sigOcto = (sig.Upper) | ((UInt128)sig != UInt128.Zero ? UInt128.One : UInt128.Zero);
+			sig <<= 4;
+			UInt128 sigOcto = sig.Upper | (sig.Lower != UInt128.Zero ? UInt128.One : UInt128.Zero);
 
 			if (((uint)exp | sigOcto) == UInt128.Zero)
 			{
 				return new Quad(sign, 0, UInt128.Zero);
 			}
 
-			exp -= 0x3_C001;
+			exp -= 0x3_C000;
 
 			exp = exp < -0x1_0000 ? -0x1_0000 : exp;
 
-			return Quad.UInt128BitsToQuad(BitHelper.RoundPackToQuad(sign, exp, sigOcto | new UInt128(0x4000_0000_0000_0000, 0x0000_0000_0000_0000), 0));
+			return Quad.UInt128BitsToQuad(BitHelper.PackToQuad(sign, exp, sigOcto));
 		}
 		/// <summary>
 		/// Explicitly converts a <see cref="Octo" /> value to a <see cref="double"/>.
@@ -1459,9 +1459,9 @@ namespace MissingValues
 				return BitHelper.CreateDouble(sign, 0, 0);
 			}
 
-			exp -= 0x3_EFDD;
+			exp -= 0x3_FC01;
 
-			exp = exp < -0x1_0000 ? -0x1_0000 : exp;
+			exp = exp < -0x1000 ? -0x1000 : exp;
 
 			return BitConverter.UInt64BitsToDouble(BitHelper.RoundPackToDouble(sign, (short)(exp), (sigOcto | 0x4000_0000_0000_0000)));
 		}
@@ -1478,15 +1478,14 @@ namespace MissingValues
 
 			if (exp == MaxBiasedExponent)
 			{
-				if (sig != 0) // NaN
+				if (sig != UInt256.Zero) // NaN
 				{
 					return BitHelper.CreateSingleNaN(sign, (ulong)(sig >> 172)); // Shift the significand bits to the x end
 				}
 				return sign ? float.NegativeInfinity : float.PositiveInfinity;
 			}
 
-			sig <<= 18;
-			uint sigOcto = (uint)(sig.Part3 >> 64) | ((uint)sig.Part3 != 0 && sig.Part2 != 0 && sig.Part1 != 0 && sig.Part0 != 0 ? 1U : 0U);
+			uint sigOcto = (uint)BitHelper.ShiftRightJam(sig.Part3 | ((uint)sig.Part3 != 0 && sig.Part2 != 0 && sig.Part1 != 0 && sig.Part0 != 0 ? 1U : 0U), 14);
 
 			if (((uint)exp | sigOcto) == 0)
 			{
@@ -1495,7 +1494,7 @@ namespace MissingValues
 
 			exp -= 0x3_FF81;
 
-			exp = exp < -0x1_0000 ? -0x1_0000 : exp;
+			exp = exp < -0x1000 ? -0x1000 : exp;
 
 			return BitConverter.UInt32BitsToSingle(BitHelper.RoundPackToSingle(sign, (short)(exp), (sigOcto | 0x4000_0000)));
 		}
@@ -1512,26 +1511,25 @@ namespace MissingValues
 
 			if (exp == MaxBiasedExponent)
 			{
-				if (sig != 0) // NaN
+				if (sig != UInt256.Zero) // NaN
 				{
 					return BitHelper.CreateHalfNaN(sign, (ulong)(sig >> 172)); // Shift the significand bits to the x end
 				}
 				return sign ? Half.NegativeInfinity : Half.PositiveInfinity;
 			}
 
-			sig <<= 18;
-			ushort sigOcto = (ushort)((sig.Part3 >> (64 + 32)) | ((sig.Part3 & 0x0000_FFFF_FFFF_FFFF) != 0 && sig.Part2 != 0 && sig.Part1 != 0 && sig.Part0 != 0 ? 1U : 0U));
+			ushort sigHalf = (ushort)BitHelper.ShiftRightJam(sig.Part3 | ((sig.Part2 | sig.Part1 | sig.Part0) != 0 ? 1UL : 0UL), 30);
 
-			if (((uint)exp | sigOcto) == 0)
+			if (((uint)exp | sigHalf) == 0)
 			{
 				return BitHelper.CreateHalf(sign, 0, 0);
 			}
 
-			exp -= 0x3_FFEB;
+			exp -= 0x3FFF1;
 
-			exp = exp < -0x1_0000 ? -0x1_0000 : exp;
+			exp = exp < -0x40 ? -0x40 : exp;
 
-			return BitConverter.UInt16BitsToHalf(BitHelper.RoundPackToHalf(sign, (short)(exp), (ushort)(sigOcto | 0x4000)));
+			return BitConverter.UInt16BitsToHalf(BitHelper.RoundPackToHalf(sign, (short)exp, (ushort)(sigHalf | 0x4000)));
 		}
 		#endregion
 		#region To Octo

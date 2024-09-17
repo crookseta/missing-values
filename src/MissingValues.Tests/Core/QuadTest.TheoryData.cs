@@ -9,8 +9,8 @@ namespace MissingValues.Tests.Core
 	public partial class QuadTest
 	{
 #pragma warning disable S3263 // Static fields should appear in the order they must be initialized 
-		private static (string, bool, Quad)[] _tryParseData =
-		{
+		private static (string, bool, Quad)[] _tryParseData =>
+		[
 			("2,0", true, Two),
 			("-2", true, NegativeTwo),
 			("0", true, Zero),
@@ -26,34 +26,34 @@ namespace MissingValues.Tests.Core
 			("7,7E777", true, Values.CreateFloat<Quad>(0x4A17_0F28_5D1D_4C84, 0xA11F_6899_101B_A9A4)),
 			("-7,7E-777", true, Values.CreateFloat<Quad>(0xB5EC_BFCE_3AF6_4E08, 0x42C8_5750_BEBD_A572)),
 			("1A", false, default),
-		};
+		];
 
-		private static (Quad, Quad)[] _unaryNegationOperationData =
-		{
+		private static (Quad, Quad)[] _unaryNegationOperationData =>
+		[
 			(Zero, NegativeZero),
 			(One, NegativeOne),
 			(Two, NegativeTwo),
 			(Ten, NegativeTen),
 			(Hundred, NegativeHundred),
 			(Thousand, NegativeThousand)
-		};
-		private static (Quad, Quad)[] _incrementOperationData =
-		{
+		];
+		private static (Quad, Quad)[] _incrementOperationData =>
+		[
 			(NegativeTwo, NegativeOne),
 			(NegativeOne, Zero),
 			(Zero, One),
 			(One, Two),
-		};
-		private static (Quad, Quad)[] _decrementOperationData =
-		{
+		];
+		private static (Quad, Quad)[] _decrementOperationData =>
+		[
 			(NegativeOne, NegativeTwo),
 			(Zero, NegativeOne),
 			(One, Zero),
 			(Two, One),
-		};
+		];
 
-		private static (Quad, Quad, Quad)[] _additionOperationData =
-		{
+		private static (Quad, Quad, Quad)[] _additionOperationData =>
+		[
 			(One, One, Two),
 			(One, NegativeOne, Zero),
 			(One, NegativeTwo, NegativeOne),
@@ -64,18 +64,18 @@ namespace MissingValues.Tests.Core
 			(Quad.NegativeInfinity, Quad.One, Quad.NegativeInfinity),
 			(Quad.PositiveInfinity, Quad.PositiveInfinity, Quad.PositiveInfinity),
 			(Quad.NegativeInfinity, Quad.NegativeInfinity, Quad.NegativeInfinity),
-		};
-		private static (Quad, Quad, Quad)[] _subtractionOperationData =
-		{
+		];
+		private static (Quad, Quad, Quad)[] _subtractionOperationData =>
+		[
 			(One, One, Zero),
 			(One, NegativeOne, Two),
 			(One, Two, NegativeOne),
 			(SmallestSubnormal, GreatestSubnormal, Values.CreateFloat<Quad>(0x8000_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFE)),
 			(Quad.PositiveInfinity, Quad.PositiveInfinity, Quad.NaN),
 			(Quad.NegativeInfinity, Quad.NegativeInfinity, Quad.NaN),
-		};
-		private static (Quad, Quad, Quad)[] _multiplicationOperationData =
-		{
+		];
+		private static (Quad, Quad, Quad)[] _multiplicationOperationData =>
+		[
 			(One, One, One),
 			(One, NegativeOne, NegativeOne),
 			(Ten, Ten, Hundred),
@@ -86,9 +86,9 @@ namespace MissingValues.Tests.Core
 			(NegativeZero, Quad.NegativeInfinity, Quad.NaN),
 			(Quad.PositiveInfinity, Zero, Quad.NaN),
 			(Quad.NegativeInfinity, NegativeZero, Quad.NaN),
-		};
-		private static (Quad, Quad, Quad)[] _divisionOperationData =
-		{
+		];
+		private static (Quad, Quad, Quad)[] _divisionOperationData =>
+		[
 			(Ten, Ten, One),
 			(Hundred, Ten, Ten),
 			(NegativeThousand, Ten, NegativeHundred),
@@ -97,30 +97,19 @@ namespace MissingValues.Tests.Core
 			(NegativeOne, Zero, Quad.NegativeInfinity),
 			(Quad.PositiveInfinity, Quad.PositiveInfinity, Quad.NaN),
 			(Quad.NegativeInfinity, Quad.NegativeInfinity, Quad.NaN),
-		};
+		];
 
-		private static (byte, Quad)[] _castFromByteData = 
-		{
+		private static (byte, Quad)[] _castFromByteData =>
+		[
 			(0, Zero),
 			(1, One),
 			(2, Two),
 			(10, Ten),
 			(100, Hundred),
 			(byte.MaxValue, ByteMaxValue),
-		};
-		private static (ushort, Quad)[] _castFromUInt16Data = 
-		{
-			(0, Zero),
-			(1, One),
-			(2, Two),
-			(10, Ten),
-			(100, Hundred),
-			(1000, Thousand),
-			(byte.MaxValue, ByteMaxValue),
-			(ushort.MaxValue, UInt16MaxValue),
-		};
-		private static (uint, Quad)[] _castFromUInt32Data = 
-		{
+		];
+		private static (ushort, Quad)[] _castFromUInt16Data =>
+		[
 			(0, Zero),
 			(1, One),
 			(2, Two),
@@ -129,10 +118,9 @@ namespace MissingValues.Tests.Core
 			(1000, Thousand),
 			(byte.MaxValue, ByteMaxValue),
 			(ushort.MaxValue, UInt16MaxValue),
-			(uint.MaxValue, UInt32MaxValue),
-		};
-		private static (ulong, Quad)[] _castFromUInt64Data = 
-		{
+		];
+		private static (uint, Quad)[] _castFromUInt32Data =>
+		[
 			(0, Zero),
 			(1, One),
 			(2, Two),
@@ -142,10 +130,9 @@ namespace MissingValues.Tests.Core
 			(byte.MaxValue, ByteMaxValue),
 			(ushort.MaxValue, UInt16MaxValue),
 			(uint.MaxValue, UInt32MaxValue),
-			(ulong.MaxValue, UInt64MaxValue),
-		};
-		private static (UInt128, Quad)[] _castFromUInt128Data = 
-		{
+		];
+		private static (ulong, Quad)[] _castFromUInt64Data =>
+		[
 			(0, Zero),
 			(1, One),
 			(2, Two),
@@ -156,9 +143,9 @@ namespace MissingValues.Tests.Core
 			(ushort.MaxValue, UInt16MaxValue),
 			(uint.MaxValue, UInt32MaxValue),
 			(ulong.MaxValue, UInt64MaxValue),
-		};
-		private static (UInt256, Quad)[] _castFromUInt256Data = 
-		{
+		];
+		private static (UInt128, Quad)[] _castFromUInt128Data =>
+		[
 			(0, Zero),
 			(1, One),
 			(2, Two),
@@ -169,9 +156,9 @@ namespace MissingValues.Tests.Core
 			(ushort.MaxValue, UInt16MaxValue),
 			(uint.MaxValue, UInt32MaxValue),
 			(ulong.MaxValue, UInt64MaxValue),
-		};
-		private static (UInt512, Quad)[] _castFromUInt512Data = 
-		{
+		];
+		private static (UInt256, Quad)[] _castFromUInt256Data =>
+		[
 			(0, Zero),
 			(1, One),
 			(2, Two),
@@ -182,9 +169,22 @@ namespace MissingValues.Tests.Core
 			(ushort.MaxValue, UInt16MaxValue),
 			(uint.MaxValue, UInt32MaxValue),
 			(ulong.MaxValue, UInt64MaxValue),
-		};
-		private static (sbyte, Quad)[] _castFromSByteData = 
-		{
+		];
+		private static (UInt512, Quad)[] _castFromUInt512Data =>
+		[
+			(0, Zero),
+			(1, One),
+			(2, Two),
+			(10, Ten),
+			(100, Hundred),
+			(1000, Thousand),
+			(byte.MaxValue, ByteMaxValue),
+			(ushort.MaxValue, UInt16MaxValue),
+			(uint.MaxValue, UInt32MaxValue),
+			(ulong.MaxValue, UInt64MaxValue),
+		];
+		private static (sbyte, Quad)[] _castFromSByteData =>
+		[
 			(sbyte.MinValue, SByteMinValue),
 			(-100, NegativeHundred),
 			(-10, NegativeTen),
@@ -196,9 +196,9 @@ namespace MissingValues.Tests.Core
 			(10, Ten),
 			(100, Hundred),
 			(sbyte.MaxValue, SByteMaxValue),
-		};
-		private static (short, Quad)[] _castFromInt16Data = 
-		{
+		];
+		private static (short, Quad)[] _castFromInt16Data =>
+		[
 			(short.MinValue, Int16MinValue),
 			(sbyte.MinValue, SByteMinValue),
 			(-1000, NegativeThousand),
@@ -214,9 +214,9 @@ namespace MissingValues.Tests.Core
 			(1000, Thousand),
 			(sbyte.MaxValue, SByteMaxValue),
 			(short.MaxValue, Int16MaxValue),
-		};
-		private static (int, Quad)[] _castFromInt32Data = 
-		{
+		];
+		private static (int, Quad)[] _castFromInt32Data =>
+		[
 			(int.MinValue, Int32MinValue),
 			(short.MinValue, Int16MinValue),
 			(sbyte.MinValue, SByteMinValue),
@@ -234,9 +234,9 @@ namespace MissingValues.Tests.Core
 			(sbyte.MaxValue, SByteMaxValue),
 			(short.MaxValue, Int16MaxValue),
 			(int.MaxValue, Int32MaxValue),
-		};
-		private static (long, Quad)[] _castFromInt64Data = 
-		{
+		];
+		private static (long, Quad)[] _castFromInt64Data =>
+		[
 			(long.MinValue, Int64MinValue),
 			(int.MinValue, Int32MinValue),
 			(short.MinValue, Int16MinValue),
@@ -256,9 +256,9 @@ namespace MissingValues.Tests.Core
 			(short.MaxValue, Int16MaxValue),
 			(int.MaxValue, Int32MaxValue),
 			(long.MaxValue, Int64MaxValue),
-		};
-		private static (Int128, Quad)[] _castFromInt128Data = 
-		{
+		];
+		private static (Int128, Quad)[] _castFromInt128Data =>
+		[
 			(long.MinValue, Int64MinValue),
 			(int.MinValue, Int32MinValue),
 			(short.MinValue, Int16MinValue),
@@ -278,9 +278,9 @@ namespace MissingValues.Tests.Core
 			(short.MaxValue, Int16MaxValue),
 			(int.MaxValue, Int32MaxValue),
 			(long.MaxValue, Int64MaxValue),
-		};
-		private static (Int256, Quad)[] _castFromInt256Data = 
-		{
+		];
+		private static (Int256, Quad)[] _castFromInt256Data =>
+		[
 			(long.MinValue, Int64MinValue),
 			(int.MinValue, Int32MinValue),
 			(short.MinValue, Int16MinValue),
@@ -300,9 +300,9 @@ namespace MissingValues.Tests.Core
 			(short.MaxValue, Int16MaxValue),
 			(int.MaxValue, Int32MaxValue),
 			(long.MaxValue, Int64MaxValue),
-		};
-		private static (Int512, Quad)[] _castFromInt512Data = 
-		{
+		];
+		private static (Int512, Quad)[] _castFromInt512Data =>
+		[
 			(long.MinValue, Int64MinValue),
 			(int.MinValue, Int32MinValue),
 			(short.MinValue, Int16MinValue),
@@ -322,9 +322,9 @@ namespace MissingValues.Tests.Core
 			(short.MaxValue, Int16MaxValue),
 			(int.MaxValue, Int32MaxValue),
 			(long.MaxValue, Int64MaxValue),
-		};
-		private static (Half, Quad)[] _castFromHalfData = 
-		{
+		];
+		private static (Half, Quad)[] _castFromHalfData =>
+		[
 			(System.Half.NegativeOne, NegativeOne),
 			(System.Half.NegativeZero, NegativeZero),
 			(System.Half.Zero, Zero),
@@ -332,9 +332,10 @@ namespace MissingValues.Tests.Core
 			((Half)10, Ten),
 			((Half)100, Hundred),
 			((Half)1000, Thousand),
-		};
-		private static (float, Quad)[] _castFromSingleData = 
-		{
+		];
+		private static (float, Quad)[] _castFromSingleData =>
+		[
+			(-1000, NegativeThousand),
 			(-100, NegativeHundred),
 			(-10, NegativeTen),
 			(-2, NegativeTwo),
@@ -344,9 +345,11 @@ namespace MissingValues.Tests.Core
 			(2, Two),
 			(10, Ten),
 			(100, Hundred),
-		};
-		private static (double, Quad)[] _castFromDoubleData = 
-		{
+			(1000, Thousand),
+		];
+		private static (double, Quad)[] _castFromDoubleData =>
+		[
+			(-1000, NegativeThousand),
 			(-100, NegativeHundred),
 			(-10, NegativeTen),
 			(-2, NegativeTwo),
@@ -356,30 +359,20 @@ namespace MissingValues.Tests.Core
 			(2, Two),
 			(10, Ten),
 			(100, Hundred),
-		};
+			(1000, Thousand),
+		];
 		
-		private static (Quad, byte)[] _castToByteData = 
-		{
+		private static (Quad, byte)[] _castToByteData =>
+		[
 			(Half, 0),
 			(One, 1),
 			(Two, 2),
 			(Ten, 10),
 			(Hundred, 100),
 			(ByteMaxValue, byte.MaxValue),
-		};
-		private static (Quad, ushort)[] _castToUInt16Data = 
-		{
-			(Half, 0),
-			(One, 1),
-			(Two, 2),
-			(Ten, 10),
-			(Hundred, 100),
-			(Thousand, 1000),
-			(ByteMaxValue, byte.MaxValue),
-			(UInt16MaxValue, ushort.MaxValue),
-		};
-		private static (Quad, uint)[] _castToUInt32Data = 
-		{
+		];
+		private static (Quad, ushort)[] _castToUInt16Data =>
+		[
 			(Half, 0),
 			(One, 1),
 			(Two, 2),
@@ -388,35 +381,33 @@ namespace MissingValues.Tests.Core
 			(Thousand, 1000),
 			(ByteMaxValue, byte.MaxValue),
 			(UInt16MaxValue, ushort.MaxValue),
-			(UInt32MaxValue, uint.MaxValue),
-		};
-		private static (Quad, ulong)[] _castToUInt64Data = 
-		{
+		];
+		private static (Quad, uint)[] _castToUInt32Data =>
+		[
 			(Half, 0),
 			(One, 1),
 			(Two, 2),
 			(Ten, 10),
+			(Hundred, 100),
 			(Thousand, 1000),
 			(ByteMaxValue, byte.MaxValue),
 			(UInt16MaxValue, ushort.MaxValue),
 			(UInt32MaxValue, uint.MaxValue),
-			(UInt64MaxValue, ulong.MaxValue),
-		};
-		private static (Quad, UInt128)[] _castToUInt128Data = 
-		{
+		];
+		private static (Quad, ulong)[] _castToUInt64Data =>
+		[
 			(Half, 0),
 			(One, 1),
 			(Two, 2),
 			(Ten, 10),
-			(Hundred, 100),
 			(Thousand, 1000),
 			(ByteMaxValue, byte.MaxValue),
 			(UInt16MaxValue, ushort.MaxValue),
 			(UInt32MaxValue, uint.MaxValue),
 			(UInt64MaxValue, ulong.MaxValue),
-		};
-		private static (Quad, UInt256)[] _castToUInt256Data = 
-		{
+		];
+		private static (Quad, UInt128)[] _castToUInt128Data =>
+		[
 			(Half, 0),
 			(One, 1),
 			(Two, 2),
@@ -427,9 +418,9 @@ namespace MissingValues.Tests.Core
 			(UInt16MaxValue, ushort.MaxValue),
 			(UInt32MaxValue, uint.MaxValue),
 			(UInt64MaxValue, ulong.MaxValue),
-		};
-		private static (Quad, UInt512)[] _castToUInt512Data = 
-		{
+		];
+		private static (Quad, UInt256)[] _castToUInt256Data =>
+		[
 			(Half, 0),
 			(One, 1),
 			(Two, 2),
@@ -440,9 +431,22 @@ namespace MissingValues.Tests.Core
 			(UInt16MaxValue, ushort.MaxValue),
 			(UInt32MaxValue, uint.MaxValue),
 			(UInt64MaxValue, ulong.MaxValue),
-		};
-		private static (Quad, sbyte)[] _castToSByteData = 
-		{
+		];
+		private static (Quad, UInt512)[] _castToUInt512Data =>
+		[
+			(Half, 0),
+			(One, 1),
+			(Two, 2),
+			(Ten, 10),
+			(Hundred, 100),
+			(Thousand, 1000),
+			(ByteMaxValue, byte.MaxValue),
+			(UInt16MaxValue, ushort.MaxValue),
+			(UInt32MaxValue, uint.MaxValue),
+			(UInt64MaxValue, ulong.MaxValue),
+		];
+		private static (Quad, sbyte)[] _castToSByteData =>
+		[
 			(SByteMinValue, sbyte.MinValue),
 			(NegativeHundred, -100),
 			(NegativeTen, -10),
@@ -454,9 +458,9 @@ namespace MissingValues.Tests.Core
 			(Ten, 10),
 			(Hundred, 100),
 			(SByteMaxValue, sbyte.MaxValue),
-		};
-		private static (Quad, short)[] _castToInt16Data = 
-		{
+		];
+		private static (Quad, short)[] _castToInt16Data =>
+		[
 			(Int16MinValue, short.MinValue),
 			(SByteMinValue, sbyte.MinValue),
 			(NegativeHundred, -100),
@@ -470,9 +474,9 @@ namespace MissingValues.Tests.Core
 			(Hundred, 100),
 			(SByteMaxValue, sbyte.MaxValue),
 			(Int16MaxValue, short.MaxValue),
-		};
-		private static (Quad, int)[] _castToInt32Data = 
-		{
+		];
+		private static (Quad, int)[] _castToInt32Data =>
+		[
 			(Int32MinValue, int.MinValue),
 			(Int16MinValue, short.MinValue),
 			(SByteMinValue, sbyte.MinValue),
@@ -488,9 +492,9 @@ namespace MissingValues.Tests.Core
 			(SByteMaxValue, sbyte.MaxValue),
 			(Int16MaxValue, short.MaxValue),
 			(Int32MaxValue, int.MaxValue),
-		};
-		private static (Quad, long)[] _castToInt64Data = 
-		{
+		];
+		private static (Quad, long)[] _castToInt64Data =>
+		[
 			(Int64MinValue, long.MinValue),
 			(Int32MinValue, int.MinValue),
 			(Int16MinValue, short.MinValue),
@@ -508,9 +512,9 @@ namespace MissingValues.Tests.Core
 			(Int16MaxValue, short.MaxValue),
 			(Int32MaxValue, int.MaxValue),
 			(Int64MaxValue, long.MaxValue),
-		};
-		private static (Quad, Int128)[] _castToInt128Data = 
-		{
+		];
+		private static (Quad, Int128)[] _castToInt128Data =>
+		[
 			(Int64MinValue, long.MinValue),
 			(Int32MinValue, int.MinValue),
 			(Int16MinValue, short.MinValue),
@@ -528,9 +532,9 @@ namespace MissingValues.Tests.Core
 			(Int16MaxValue, short.MaxValue),
 			(Int32MaxValue, int.MaxValue),
 			(Int64MaxValue, long.MaxValue),
-		};
-		private static (Quad, Int256)[] _castToInt256Data = 
-		{
+		];
+		private static (Quad, Int256)[] _castToInt256Data =>
+		[
 			(Int64MinValue, long.MinValue),
 			(Int32MinValue, int.MinValue),
 			(Int16MinValue, short.MinValue),
@@ -548,9 +552,9 @@ namespace MissingValues.Tests.Core
 			(Int16MaxValue, short.MaxValue),
 			(Int32MaxValue, int.MaxValue),
 			(Int64MaxValue, long.MaxValue),
-		};
-		private static (Quad, Int512)[] _castToInt512Data = 
-		{
+		];
+		private static (Quad, Int512)[] _castToInt512Data =>
+		[
 			(Int64MinValue, long.MinValue),
 			(Int32MinValue, int.MinValue),
 			(Int16MinValue, short.MinValue),
@@ -568,9 +572,9 @@ namespace MissingValues.Tests.Core
 			(Int16MaxValue, short.MaxValue),
 			(Int32MaxValue, int.MaxValue),
 			(Int64MaxValue, long.MaxValue),
-		};
-		private static (Quad, Half)[] _castToHalfData = 
-		{
+		];
+		private static (Quad, Half)[] _castToHalfData =>
+		[
 			(NegativeHundred, -(Half)100.0f),
 			(NegativeTen, -(Half)10.0f),
 			(NegativeTwo, -(Half)2.0f),
@@ -581,9 +585,9 @@ namespace MissingValues.Tests.Core
 			(Two, (Half)2.0f),
 			(Ten, (Half)10.0f),
 			(Hundred, (Half)100.0f),
-		};
-		private static (Quad, float)[] _castToSingleData = 
-		{
+		];
+		private static (Quad, float)[] _castToSingleData =>
+		[
 			(NegativeThousand, -1000.0f),
 			(NegativeHundred, -100.0f),
 			(NegativeTen, -10.0f),
@@ -597,9 +601,9 @@ namespace MissingValues.Tests.Core
 			(Ten, 10.0f),
 			(Hundred, 100.0f),
 			(Thousand, 1000.0f),
-		};
-		private static (Quad, double)[] _castToDoubleData = 
-		{
+		];
+		private static (Quad, double)[] _castToDoubleData =>
+		[
 			(NegativeThousand, -1000.0d),
 			(NegativeHundred, -100.0d),
 			(NegativeTen, -10.0d),
@@ -613,10 +617,26 @@ namespace MissingValues.Tests.Core
 			(Ten, 10.0d),
 			(Hundred, 100.0d),
 			(Thousand, 1000.0d),
-		};
+		];
+		private static (Quad, Octo)[] _castToOctoData =>
+		[
+			(NegativeThousand, OctoTest.NegativeThousand),
+			(NegativeHundred, OctoTest.NegativeHundred),
+			(NegativeTen, OctoTest.NegativeTen),
+			(NegativeTwo, OctoTest.NegativeTwo),
+			(NegativeOne, OctoTest.NegativeOne),
+			(NegativeZero, OctoTest.NegativeZero),
+			(Zero, OctoTest.Zero),
+			(Half, OctoTest.Half),
+			(One, OctoTest.One),
+			(Two, OctoTest.Two),
+			(Ten, OctoTest.Ten),
+			(Hundred, OctoTest.Hundred),
+			(Thousand, OctoTest.Thousand),
+		];
 
-		private static (Quad, int, MidpointRounding, Quad)[] _roundAwayFromZeroData =
-		{
+		private static (Quad, int, MidpointRounding, Quad)[] _roundAwayFromZeroData =>
+		[
 			(Values.CreateFloat<Quad>(0x4000_C000_0000_0000, 0x0000_0000_0000_0000), 0, MidpointRounding.AwayFromZero, Four),
 			(Values.CreateFloat<Quad>(0x4000_6666_6666_6666, 0x6666_6666_6666_6666), 0, MidpointRounding.AwayFromZero, Three),
 			(Values.CreateFloat<Quad>(0x4000_4000_0000_0000, 0x0000_0000_0000_0000), 0, MidpointRounding.AwayFromZero, Three),
@@ -625,9 +645,9 @@ namespace MissingValues.Tests.Core
 			(Values.CreateFloat<Quad>(0xC000_4000_0000_0000, 0x0000_0000_0000_0000), 0, MidpointRounding.AwayFromZero, NegativeThree),
 			(Values.CreateFloat<Quad>(0xC000_6666_6666_6666, 0x6666_6666_6666_6666), 0, MidpointRounding.AwayFromZero, NegativeThree),
 			(Values.CreateFloat<Quad>(0xC000_C000_0000_0000, 0x0000_0000_0000_0000), 0, MidpointRounding.AwayFromZero, NegativeFour),
-		};
-		private static (Quad, int, MidpointRounding, Quad)[] _roundToEvenData =
-		{
+		];
+		private static (Quad, int, MidpointRounding, Quad)[] _roundToEvenData =>
+		[
 			(Values.CreateFloat<Quad>(0x4000_C000_0000_0000, 0x0000_0000_0000_0000), 0, MidpointRounding.ToEven, Four),
 			(Values.CreateFloat<Quad>(0x4000_6666_6666_6666, 0x6666_6666_6666_6666), 0, MidpointRounding.ToEven, Three),
 			(Values.CreateFloat<Quad>(0x4000_4000_0000_0000, 0x0000_0000_0000_0000), 0, MidpointRounding.ToEven, Two),
@@ -636,9 +656,9 @@ namespace MissingValues.Tests.Core
 			(Values.CreateFloat<Quad>(0xC000_4000_0000_0000, 0x0000_0000_0000_0000), 0, MidpointRounding.ToEven, NegativeTwo),
 			(Values.CreateFloat<Quad>(0xC000_6666_6666_6666, 0x6666_6666_6666_6666), 0, MidpointRounding.ToEven, NegativeThree),
 			(Values.CreateFloat<Quad>(0xC000_C000_0000_0000, 0x0000_0000_0000_0000), 0, MidpointRounding.ToEven, NegativeFour),
-		};
-		private static (Quad, int, MidpointRounding, Quad)[] _roundToNegativeInfinityData =
-		{
+		];
+		private static (Quad, int, MidpointRounding, Quad)[] _roundToNegativeInfinityData =>
+		[
 			(Values.CreateFloat<Quad>(0x4000_C000_0000_0000, 0x0000_0000_0000_0000), 0, MidpointRounding.ToNegativeInfinity, Three),
 			(Values.CreateFloat<Quad>(0x4000_6666_6666_6666, 0x6666_6666_6666_6666), 0, MidpointRounding.ToNegativeInfinity, Two),
 			(Values.CreateFloat<Quad>(0x4000_4000_0000_0000, 0x0000_0000_0000_0000), 0, MidpointRounding.ToNegativeInfinity, Two),
@@ -647,9 +667,9 @@ namespace MissingValues.Tests.Core
 			(Values.CreateFloat<Quad>(0xC000_4000_0000_0000, 0x0000_0000_0000_0000), 0, MidpointRounding.ToNegativeInfinity, NegativeThree),
 			(Values.CreateFloat<Quad>(0xC000_6666_6666_6666, 0x6666_6666_6666_6666), 0, MidpointRounding.ToNegativeInfinity, NegativeThree),
 			(Values.CreateFloat<Quad>(0xC000_C000_0000_0000, 0x0000_0000_0000_0000), 0, MidpointRounding.ToNegativeInfinity, NegativeFour),
-		};
-		private static (Quad, int, MidpointRounding, Quad)[] _roundToPositiveInfinityData =
-		{
+		];
+		private static (Quad, int, MidpointRounding, Quad)[] _roundToPositiveInfinityData =>
+		[
 			(Values.CreateFloat<Quad>(0x4000_C000_0000_0000, 0x0000_0000_0000_0000), 0, MidpointRounding.ToPositiveInfinity, Four),
 			(Values.CreateFloat<Quad>(0x4000_6666_6666_6666, 0x6666_6666_6666_6666), 0, MidpointRounding.ToPositiveInfinity, Three),
 			(Values.CreateFloat<Quad>(0x4000_4000_0000_0000, 0x0000_0000_0000_0000), 0, MidpointRounding.ToPositiveInfinity, Three),
@@ -658,9 +678,9 @@ namespace MissingValues.Tests.Core
 			(Values.CreateFloat<Quad>(0xC000_4000_0000_0000, 0x0000_0000_0000_0000), 0, MidpointRounding.ToPositiveInfinity, NegativeTwo),
 			(Values.CreateFloat<Quad>(0xC000_6666_6666_6666, 0x6666_6666_6666_6666), 0, MidpointRounding.ToPositiveInfinity, NegativeTwo),
 			(Values.CreateFloat<Quad>(0xC000_C000_0000_0000, 0x0000_0000_0000_0000), 0, MidpointRounding.ToPositiveInfinity, NegativeThree),
-		};
-		private static (Quad, int, MidpointRounding, Quad)[] _roundToZeroData =
-		{
+		];
+		private static (Quad, int, MidpointRounding, Quad)[] _roundToZeroData =>
+		[
 			(Values.CreateFloat<Quad>(0x4000_C000_0000_0000, 0x0000_0000_0000_0000), 0, MidpointRounding.ToZero, Three),
 			(Values.CreateFloat<Quad>(0x4000_6666_6666_6666, 0x6666_6666_6666_6666), 0, MidpointRounding.ToZero, Two),
 			(Values.CreateFloat<Quad>(0x4000_4000_0000_0000, 0x0000_0000_0000_0000), 0, MidpointRounding.ToZero, Two),
@@ -669,47 +689,48 @@ namespace MissingValues.Tests.Core
 			(Values.CreateFloat<Quad>(0xC000_4000_0000_0000, 0x0000_0000_0000_0000), 0, MidpointRounding.ToZero, NegativeTwo),
 			(Values.CreateFloat<Quad>(0xC000_6666_6666_6666, 0x6666_6666_6666_6666), 0, MidpointRounding.ToZero, NegativeTwo),
 			(Values.CreateFloat<Quad>(0xC000_C000_0000_0000, 0x0000_0000_0000_0000), 0, MidpointRounding.ToZero, NegativeThree),
-		};
+		];
 
-		private static (Quad, Quad, bool)[] _greaterThanData =
-		{
+		private static (Quad, Quad, bool)[] _greaterThanData =>
+		[
 			(Two, One, true),
 			(Thousand, NegativeThousand, true),
 			(NegativeQuarter, NegativeHalf, true),
 			(Quarter, Half, false),
 			(Ten, Hundred, false),
 			(GreaterThanOneSmallest, One, true),
-		};
-		private static (Quad, Quad, bool)[] _lessThanData =
-		{
+		];
+		private static (Quad, Quad, bool)[] _lessThanData =>
+		[
 			(Zero, One, true),
 			(Zero, Quarter, true),
 			(NegativeThousand, Thousand, true),
 			(NegativeOne, NegativeThree, false),
 			(Hundred, Two, false),
 			(LessThanOneLargest, One, true),
-		};
-		private static (Quad, Quad, bool)[] _equalToData =
-		{
+		];
+		private static (Quad, Quad, bool)[] _equalToData =>
+		[
 			(One, One, true), 
 			(Two, Two, true),
 			(Quad.NaN, Quad.NaN, false),
 			(GreatestSubnormal, GreatestSubnormal, true),
-		};
-		private static (Quad, Quad, bool)[] _notEqualToData =
-		{
+		];
+		private static (Quad, Quad, bool)[] _notEqualToData =>
+		[
 			(One, One, false),
 			(Quad.NaN, Quad.NaN, true),
 			(NegativeTwo, Two, true),
 			(SmallestSubnormal, GreatestSubnormal, true)
-		};
+		];
 
-		private static (Quad, Quad, Quad, Quad)[] _fmaData =
-		{
+		private static (Quad, Quad, Quad, Quad)[] _fmaData =>
+		[
 			(One, One, One, Two),
 			(Ten, Ten, Zero, Hundred),
 			(Five, Zero, Five, Five),
-		};
+			(Values.CreateFloat<Quad>(0xBFFF_4000_0000_0000, 0), One, Two, Values.CreateFloat<Quad>(0x3FFE_8000_0000_0000, 0))
+		];
 
 
 		public static TryParseTheoryData<Quad> TryParseTheoryData = new(_tryParseData);
@@ -758,6 +779,7 @@ namespace MissingValues.Tests.Core
 		public static CastingTheoryData<Quad, Half> CastToHalfTheoryData = new(_castToHalfData);
 		public static CastingTheoryData<Quad, float> CastToSingleTheoryData = new(_castToSingleData);
 		public static CastingTheoryData<Quad, double> CastToDoubleTheoryData = new(_castToDoubleData);
+		public static CastingTheoryData<Quad, Octo> CastToOctoTheoryData = new(_castToOctoData);
 
 		public static RoundTheoryData<Quad> RoundAwayFromZeroTheoryData = new(_roundAwayFromZeroData);
 		public static RoundTheoryData<Quad> RoundToEvenTheoryData = new(_roundToEvenData);
