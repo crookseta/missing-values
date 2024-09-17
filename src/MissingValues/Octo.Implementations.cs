@@ -18,14 +18,13 @@ namespace MissingValues
 		IBinaryFloatingPointIeee754<Octo>,
 		IBinaryFloatingPointInfo<Octo, UInt256>,
 		IMinMaxValue<Octo>
-	{ // TODO: Implement interface methods.
+	{
 		static Octo IFloatingPointIeee754<Octo>.Epsilon => Epsilon;
 
 		static Octo IFloatingPointIeee754<Octo>.NaN => NaN;
 
 		static Octo IFloatingPointIeee754<Octo>.NegativeInfinity => NegativeInfinity;
 
-		/// <inheritdoc/>
 		static Octo IFloatingPointIeee754<Octo>.NegativeZero => NegativeZero;
 
 		static Octo IFloatingPointIeee754<Octo>.PositiveInfinity => PositiveInfinity;
@@ -578,7 +577,26 @@ namespace MissingValues
 		/// <inheritdoc/>
 		public static int ILogB(Octo x)
 		{
-			return Quad.ILogB((Quad)x);
+			const int NaN = -1 - 0x7FFF_FFFF;
+			int exponent = (int)x.BiasedExponent;
+
+
+			if (exponent == 0)
+			{
+				if (x == Octo.Zero)
+				{
+					return NaN;
+				}
+				// subnormal x
+				Debug.Assert(Octo.IsSubnormal(x));
+				return Octo.MinExponent - (BitHelper.TrailingZeroCount(x.TrailingSignificand) - Octo.BiasedExponentLength);
+			}
+			if (exponent == Octo.MaxBiasedExponent)
+			{
+				return Octo.IsNaN(x) ? NaN : int.MaxValue;
+			}
+
+			return exponent - Octo.ExponentBias;
 		}
 
 		static bool INumberBase<Octo>.IsCanonical(Octo value)
@@ -1319,42 +1337,40 @@ namespace MissingValues
 		/// <inheritdoc/>
 		public static Octo ScaleB(Octo x, int n)
 		{
-			const int MaxExponent = 262143;
-			const int MinExponent = -262142;
-
-			if (n > MaxExponent)
+			if (n > Octo.MaxExponent)
 			{
 				Octo maxExp = new Octo(0x7FFF_E000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
 
 				x *= maxExp;
-				n -= MaxExponent;
-				if (n > MaxExponent)
+				n -= Octo.MaxExponent;
+				if (n > Octo.MaxExponent)
 				{
 					x *= maxExp;
-					n -= MaxExponent;
+					n -= Octo.MaxExponent;
 
-					if (n > MaxExponent)
+					if (n > Octo.MaxExponent)
 					{
-						n = MaxExponent;
+						n = Octo.MaxExponent;
 					}
 				}
 			}
-			else if (n < MinExponent)
+			else if (n < Octo.MinExponent)
 			{
 				Octo minExp = new Octo(0x0000_1000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
 				Octo b237 = new Octo(0x400E_C000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
 
-				x *= minExp * b237;
-				n += -MinExponent - Octo.MantissaDigits;
+				Octo scaleb = minExp * b237;
+				x *= scaleb;
+				n += -Octo.MinExponent - Octo.MantissaDigits;
 
-				if (n < MinExponent)
+				if (n < Octo.MinExponent)
 				{
-					x *= minExp * b237;
-					n += -MinExponent - Octo.MantissaDigits;
+					x *= scaleb;
+					n += -Octo.MinExponent - Octo.MantissaDigits;
 
-					if (n < MinExponent)
+					if (n < Octo.MinExponent)
 					{
-						n = MinExponent;
+						n = Octo.MinExponent;
 					}
 				}
 
@@ -1597,7 +1613,7 @@ namespace MissingValues
 			}
 			Octo toint = ToInt;
 			y = x + toint - toint - x;
-			if (y > 0)
+			if (y > Octo.Zero)
 			{
 				y--;
 			}
