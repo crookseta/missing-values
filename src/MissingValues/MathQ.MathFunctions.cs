@@ -1475,15 +1475,15 @@ namespace MissingValues
 					return NaN;
 				}
 				// subnormal x
-				x *= new Quad(0x4077_0000_0000_0000, 0x0000_0000_0000_0000);
-				return ILogB(x) - 120;
+				Debug.Assert(Quad.IsSubnormal(x));
+				return Quad.MinExponent - ((int)UInt128.TrailingZeroCount(x.TrailingSignificand) - Quad.BiasedExponentLength);
 			}
-			if (exponent == 0x7FFF)
+			if (exponent == Quad.MaxBiasedExponent)
 			{
 				return Quad.IsNaN(x) ? NaN : int.MaxValue;
 			}
 
-			return exponent - 0x3FFF;
+			return exponent - Quad.ExponentBias;
 		}
 		/// <summary>
 		/// Returns the natural (base <c>e</c>) logarithm of a specified number.
@@ -2355,42 +2355,40 @@ namespace MissingValues
 		/// <returns>x * 2^n computed efficiently.</returns>
 		public static Quad ScaleB(Quad x, int n)
 		{
-			const int MaxExponent = 16383;
-			const int MinExponent = -16382;
-
-			if (n > MaxExponent)
+			if (n > Quad.MaxExponent)
 			{
 				Quad maxExp = new Quad(0x7FFE_0000_0000_0000, 0x0000_0000_0000_0000);
 
 				x *= maxExp;
-				n -= MaxExponent;
-				if (n > MaxExponent)
+				n -= Quad.MaxExponent;
+				if (n > Quad.MaxExponent)
 				{
 					x *= maxExp;
-					n -= MaxExponent;
+					n -= Quad.MaxExponent;
 
-					if (n > MaxExponent)
+					if (n > Quad.MaxExponent)
 					{
-						n = MaxExponent;
+						n = Quad.MaxExponent;
 					}
 				}
 			}
-			else if(n < MinExponent)
+			else if(n < Quad.MinExponent)
 			{
 				Quad minExp = new Quad(0x0001_0000_0000_0000, 0x0000_0000_0000_0000);
 				Quad b113 = new Quad(0x4070_0000_0000_0000, 0x0000_0000_0000_0000);
 
-				x *= minExp * b113;
-				n += -MinExponent - Quad.MantissaDigits;
+				Quad scaleb = minExp * b113;
+				x *= scaleb;
+				n += -Quad.MinExponent - Quad.MantissaDigits;
 
-				if (n < MinExponent)
+				if (n < Quad.MinExponent)
 				{
-					x *= minExp * b113;
-					n += -MinExponent - Quad.MantissaDigits;
+					x *= scaleb;
+					n += -Quad.MinExponent - Quad.MantissaDigits;
 
-					if (n < MinExponent)
+					if (n < Quad.MinExponent)
 					{
-						n = MinExponent;
+						n = Quad.MinExponent;
 					}
 				}
 
@@ -2628,7 +2626,7 @@ namespace MissingValues
 			{
 				rem = sig << 13;
 			}
-			Span<uint> qs = stackalloc uint[3] { 0, 0, sig32Z };
+			Span<uint> qs = [0, 0, sig32Z];
 			rem -= new UInt128((ulong)sig32Z * sig32Z, 0x0);
 
 			uint q = (uint)(((uint)(rem >> 66) * (ulong)recipSqrt32) >> 32);
