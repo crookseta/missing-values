@@ -29,11 +29,14 @@ namespace MissingValues
 		internal const int SignShift = 255;
 		internal const int MantissaDigits = 237;
 		internal const int ExponentBias = 262143;
+		internal const int BiasedExponentLength = 19;
 		internal const int BiasedExponentShift = 236;
 		internal const ulong ShiftedBiasedExponentMask = 524_287;
 
 		internal const int MinBiasedExponent = 0x00000;
 		internal const int MaxBiasedExponent = 0x7FFFF;
+		internal const int MinExponent = -262142;
+		internal const int MaxExponent = 262143;
 		internal static UInt256 BiasedExponentMask => new UInt256(0x7FFF_F000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
 
 		internal static UInt256 TrailingSignificandMask => new UInt256(0x0000_0FFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF);
@@ -358,9 +361,12 @@ namespace MissingValues
 		{
 			return OctoToUInt256Bits(value) & ~SignMask;
 		}
-		// TODO: Add casting to other primitive types.
 		#region From Octo
 		// Unsigned
+		/// <summary>
+		/// Explicitly converts a <see cref="Octo" /> value to a <see cref="byte"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
 		public static explicit operator byte(Octo value)
 		{
 			Octo twoPow8 = new Octo(0x4007_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
@@ -388,6 +394,11 @@ namespace MissingValues
 				return byte.MinValue;
 			}
 		}
+		/// <summary>
+		/// Explicitly converts a <see cref="Octo" /> value to a <see cref="byte"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
+		/// <exception cref="OverflowException"><paramref name="value"/> is outside the range of <see cref="byte"/>.</exception>
 		public static explicit operator checked byte(Octo value)
 		{
 			Octo twoPow8 = new Octo(0x4007_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
@@ -411,6 +422,10 @@ namespace MissingValues
 				return byte.MinValue;
 			}
 		}
+		/// <summary>
+		/// Explicitly converts a <see cref="Octo" /> value to a <see cref="ushort"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
 		public static explicit operator ushort(Octo value)
 		{
 			Octo twoPow16 = new Octo(0x400F_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
@@ -438,6 +453,11 @@ namespace MissingValues
 				return ushort.MinValue;
 			}
 		}
+		/// <summary>
+		/// Explicitly converts a <see cref="Octo" /> value to a <see cref="ushort"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
+		/// <exception cref="OverflowException"><paramref name="value"/> is outside the range of <see cref="ushort"/>.</exception>
 		public static explicit operator checked ushort(Octo value)
 		{
 			Octo twoPow16 = new Octo(0x400F_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
@@ -461,6 +481,10 @@ namespace MissingValues
 				return ushort.MinValue;
 			}
 		}
+		/// <summary>
+		/// Explicitly converts a <see cref="Octo" /> value to a <see cref="uint"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
 		public static explicit operator uint(Octo value)
 		{
 			Octo twoPow32 = new Octo(0x4001_F000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
@@ -488,6 +512,11 @@ namespace MissingValues
 				return uint.MinValue;
 			}
 		}
+		/// <summary>
+		/// Explicitly converts a <see cref="Octo" /> value to a <see cref="uint"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
+		/// <exception cref="OverflowException"><paramref name="value"/> is outside the range of <see cref="uint"/>.</exception>
 		public static explicit operator checked uint(Octo value)
 		{
 			Octo twoPow32 = new Octo(0x4001_F000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
@@ -511,6 +540,10 @@ namespace MissingValues
 				return uint.MinValue;
 			}
 		}
+		/// <summary>
+		/// Explicitly converts a <see cref="Octo" /> value to a <see cref="ulong"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
 		public static explicit operator ulong(Octo value)
 		{
 			Octo twoPow64 = new Octo(0x4003_F000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
@@ -538,6 +571,11 @@ namespace MissingValues
 				return ulong.MinValue;
 			}
 		}
+		/// <summary>
+		/// Explicitly converts a <see cref="Octo" /> value to a <see cref="ulong"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
+		/// <exception cref="OverflowException"><paramref name="value"/> is outside the range of <see cref="ulong"/>.</exception>
 		public static explicit operator checked ulong(Octo value)
 		{
 			Octo twoPow64 = new Octo(0x4003_F000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
@@ -561,6 +599,10 @@ namespace MissingValues
 				return ulong.MinValue;
 			}
 		}
+		/// <summary>
+		/// Explicitly converts a <see cref="Octo" /> value to a <see cref="UInt128"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
 		public static explicit operator UInt128(Octo value)
 		{
 			Octo twoPow128 = new Octo(0x4007_F000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
@@ -588,6 +630,11 @@ namespace MissingValues
 				return UInt128.MinValue;
 			}
 		}
+		/// <summary>
+		/// Explicitly converts a <see cref="Octo" /> value to a <see cref="UInt128"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
+		/// <exception cref="OverflowException"><paramref name="value"/> is outside the range of <see cref="UInt128"/>.</exception>
 		public static explicit operator checked UInt128(Octo value)
 		{
 			Octo twoPow128 = new Octo(0x4007_F000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
@@ -611,6 +658,10 @@ namespace MissingValues
 				return UInt128.MinValue;
 			}
 		}
+		/// <summary>
+		/// Explicitly converts a <see cref="Octo" /> value to a <see cref="UInt256"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
 		public static explicit operator UInt256(Octo value)
 		{
 			Octo twoPow256 = new Octo(0x400F_F000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
@@ -638,6 +689,11 @@ namespace MissingValues
 				return UInt256.MinValue;
 			}
 		}
+		/// <summary>
+		/// Explicitly converts a <see cref="Octo" /> value to a <see cref="UInt256"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
+		/// <exception cref="OverflowException"><paramref name="value"/> is outside the range of <see cref="UInt256"/>.</exception>
 		public static explicit operator checked UInt256(Octo value)
 		{
 			Octo twoPow256 = new Octo(0x400F_F000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
@@ -661,6 +717,10 @@ namespace MissingValues
 				return UInt256.MinValue;
 			}
 		}
+		/// <summary>
+		/// Explicitly converts a <see cref="Octo" /> value to a <see cref="UInt512"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
 		public static explicit operator UInt512(Octo value)
 		{
 			Octo twoPow512 = new Octo(0x401F_F000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
@@ -688,6 +748,11 @@ namespace MissingValues
 				return UInt512.MinValue;
 			}
 		}
+		/// <summary>
+		/// Explicitly converts a <see cref="Octo" /> value to a <see cref="UInt512"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
+		/// <exception cref="OverflowException"><paramref name="value"/> is outside the range of <see cref="UInt512"/>.</exception>
 		public static explicit operator checked UInt512(Octo value)
 		{
 			Octo twoPow512 = new Octo(0x401F_F000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
@@ -712,6 +777,10 @@ namespace MissingValues
 			}
 		}
 		// Signed
+		/// <summary>
+		/// Explicitly converts a <see cref="Octo" /> value to a <see cref="sbyte"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
 		public static explicit operator sbyte(Octo value)
 		{
 			Octo twoPow7 = new Octo(0x4000_6000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
@@ -753,6 +822,11 @@ namespace MissingValues
 				return 0;
 			}
 		}
+		/// <summary>
+		/// Explicitly converts a <see cref="Octo" /> value to a <see cref="sbyte"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
+		/// <exception cref="OverflowException"><paramref name="value"/> is outside the range of <see cref="sbyte"/>.</exception>
 		public static explicit operator checked sbyte(Octo value)
 		{
 			Octo twoPow7 = new Octo(0x4000_6000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
@@ -786,6 +860,10 @@ namespace MissingValues
 				return 0;
 			}
 		}
+		/// <summary>
+		/// Explicitly converts a <see cref="Octo" /> value to a <see cref="short"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
 		public static explicit operator short(Octo value)
 		{
 			Octo twoPow15 = new Octo(0x4000_E000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
@@ -827,6 +905,11 @@ namespace MissingValues
 				return 0;
 			}
 		}
+		/// <summary>
+		/// Explicitly converts a <see cref="Octo" /> value to a <see cref="short"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
+		/// <exception cref="OverflowException"><paramref name="value"/> is outside the range of <see cref="short"/>.</exception>
 		public static explicit operator checked short(Octo value)
 		{
 			Octo twoPow15 = new Octo(0x4000_E000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
@@ -860,6 +943,10 @@ namespace MissingValues
 				return 0;
 			}
 		}
+		/// <summary>
+		/// Explicitly converts a <see cref="Octo" /> value to a <see cref="int"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
 		public static explicit operator int(Octo value)
 		{
 			Octo twoPow31 = new Octo(0x4001_E000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
@@ -903,6 +990,11 @@ namespace MissingValues
 				return 0;
 			}
 		}
+		/// <summary>
+		/// Explicitly converts a <see cref="Octo" /> value to a <see cref="int"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
+		/// <exception cref="OverflowException"><paramref name="value"/> is outside the range of <see cref="int"/>.</exception>
 		public static explicit operator checked int(Octo value)
 		{
 			Octo twoPow31 = new Octo(0x4001_E000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
@@ -938,6 +1030,10 @@ namespace MissingValues
 				return 0;
 			}
 		}
+		/// <summary>
+		/// Explicitly converts a <see cref="Octo" /> value to a <see cref="long"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
 		public static explicit operator long(Octo value)
 		{
 			Octo twoPow63 = new Octo(0x4003_E000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
@@ -981,6 +1077,11 @@ namespace MissingValues
 				return 0;
 			}
 		}
+		/// <summary>
+		/// Explicitly converts a <see cref="Octo" /> value to a <see cref="long"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
+		/// <exception cref="OverflowException"><paramref name="value"/> is outside the range of <see cref="long"/>.</exception>
 		public static explicit operator checked long(Octo value)
 		{
 			Octo twoPow63 = new Octo(0x4003_E000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
@@ -1016,6 +1117,10 @@ namespace MissingValues
 				return 0;
 			}
 		}
+		/// <summary>
+		/// Explicitly converts a <see cref="Octo" /> value to a <see cref="Int128"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
 		public static explicit operator Int128(Octo value)
 		{
 			Octo twoPow127 = new Octo(0x4007_E000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
@@ -1059,6 +1164,11 @@ namespace MissingValues
 				return Int128.Zero;
 			}
 		}
+		/// <summary>
+		/// Explicitly converts a <see cref="Octo" /> value to a <see cref="Int128"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
+		/// <exception cref="OverflowException"><paramref name="value"/> is outside the range of <see cref="Int128"/>.</exception>
 		public static explicit operator checked Int128(Octo value)
 		{
 			Octo twoPow127 = new Octo(0x4007_E000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
@@ -1094,6 +1204,10 @@ namespace MissingValues
 				return Int128.Zero;
 			}
 		}
+		/// <summary>
+		/// Explicitly converts a <see cref="Octo" /> value to a <see cref="Int256"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
 		public static explicit operator Int256(Octo value)
 		{
 			Octo twoPow255 = new Octo(0x400F_E000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
@@ -1137,6 +1251,11 @@ namespace MissingValues
 				return Int256.Zero;
 			}
 		}
+		/// <summary>
+		/// Explicitly converts a <see cref="Octo" /> value to a <see cref="Int256"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
+		/// <exception cref="OverflowException"><paramref name="value"/> is outside the range of <see cref="Int256"/>.</exception>
 		public static explicit operator checked Int256(Octo value)
 		{
 			Octo twoPow255 = new Octo(0x400F_E000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
@@ -1172,6 +1291,10 @@ namespace MissingValues
 				return Int256.Zero;
 			}
 		}
+		/// <summary>
+		/// Explicitly converts a <see cref="Octo" /> value to a <see cref="Int512"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
 		public static explicit operator Int512(Octo value)
 		{
 			Octo twoPow511 = new Octo(0x401F_E000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
@@ -1220,6 +1343,11 @@ namespace MissingValues
 				return Int512.Zero;
 			}
 		}
+		/// <summary>
+		/// Explicitly converts a <see cref="Octo" /> value to a <see cref="Int512"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
+		/// <exception cref="OverflowException"><paramref name="value"/> is outside the range of <see cref="Int512"/>.</exception>
 		public static explicit operator checked Int512(Octo value)
 		{
 			Octo twoPow511 = new Octo(0x401F_E000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
@@ -1261,10 +1389,18 @@ namespace MissingValues
 			}
 		}
 		// Floating
+		/// <summary>
+		/// Explicitly converts a <see cref="Octo" /> value to a <see cref="decimal"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
 		public static explicit operator decimal(Octo value)
 		{
 			return (decimal)(double)value;
 		}
+		/// <summary>
+		/// Explicitly converts a <see cref="Octo" /> value to a <see cref="Quad"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
 		public static explicit operator Quad(Octo value)
 		{
 			UInt256 octoInt = OctoToUInt256Bits(value);
@@ -1295,6 +1431,10 @@ namespace MissingValues
 
 			return Quad.UInt128BitsToQuad(BitHelper.RoundPackToQuad(sign, exp, sigOcto | new UInt128(0x4000_0000_0000_0000, 0x0000_0000_0000_0000), 0));
 		}
+		/// <summary>
+		/// Explicitly converts a <see cref="Octo" /> value to a <see cref="double"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
 		public static explicit operator double(Octo value)
 		{
 			UInt256 octoInt = OctoToUInt256Bits(value);
@@ -1325,6 +1465,10 @@ namespace MissingValues
 
 			return BitConverter.UInt64BitsToDouble(BitHelper.RoundPackToDouble(sign, (short)(exp), (sigOcto | 0x4000_0000_0000_0000)));
 		}
+		/// <summary>
+		/// Explicitly converts a <see cref="Octo" /> value to a <see cref="float"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
 		public static explicit operator float(Octo value)
 		{
 			UInt256 octoInt = OctoToUInt256Bits(value);
@@ -1355,6 +1499,10 @@ namespace MissingValues
 
 			return BitConverter.UInt32BitsToSingle(BitHelper.RoundPackToSingle(sign, (short)(exp), (sigOcto | 0x4000_0000)));
 		}
+		/// <summary>
+		/// Explicitly converts a <see cref="Octo" /> value to a <see cref="Half"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
 		public static explicit operator Half(Octo value)
 		{
 			UInt256 octoInt = OctoToUInt256Bits(value);
@@ -1388,14 +1536,26 @@ namespace MissingValues
 		#endregion
 		#region To Octo
 		// Unsigned
+		/// <summary>
+		/// Implicitly converts a <see cref="byte" /> value to a <see cref="Octo"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
 		public static implicit operator Octo(byte value)
 		{
 			return (Octo)(uint)value;
 		}
+		/// <summary>
+		/// Implicitly converts a <see cref="ushort" /> value to a <see cref="Octo"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
 		public static implicit operator Octo(ushort value)
 		{
 			return (Octo)(uint)value;
 		}
+		/// <summary>
+		/// Implicitly converts a <see cref="uint" /> value to a <see cref="Octo"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
 		public static implicit operator Octo(uint value)
 		{
 			UInt256 sig;
@@ -1413,6 +1573,10 @@ namespace MissingValues
 
 			return new Octo(false, (uint)(0x400EB - shiftDist), sig);
 		}
+		/// <summary>
+		/// Implicitly converts a <see cref="ulong" /> value to a <see cref="Octo"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
 		public static implicit operator Octo(ulong value)
 		{
 			UInt256 sig;
@@ -1430,6 +1594,10 @@ namespace MissingValues
 
 			return new Octo(false, (uint)(0x400EB - shiftDist), sig);
 		}
+		/// <summary>
+		/// Implicitly converts a <see cref="UInt128" /> value to a <see cref="Octo"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
 		public static implicit operator Octo(UInt128 value)
 		{
 			UInt256 sig;
@@ -1448,6 +1616,10 @@ namespace MissingValues
 			return new Octo(false, (uint)(0x400EB - shiftDist), sig);
 		}
 		// Signed
+		/// <summary>
+		/// Implicitly converts a <see cref="sbyte" /> value to a <see cref="Octo"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
 		public static implicit operator Octo(sbyte value)
 		{
 			if (sbyte.IsNegative(value))
@@ -1457,6 +1629,10 @@ namespace MissingValues
 			}
 			return (Octo)(byte)value;
 		}
+		/// <summary>
+		/// Implicitly converts a <see cref="short" /> value to a <see cref="Octo"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
 		public static implicit operator Octo(short value)
 		{
 			if (short.IsNegative(value))
@@ -1466,6 +1642,10 @@ namespace MissingValues
 			}
 			return (Octo)(ushort)value;
 		}
+		/// <summary>
+		/// Implicitly converts a <see cref="int" /> value to a <see cref="Octo"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
 		public static implicit operator Octo(int value)
 		{
 			if (int.IsNegative(value))
@@ -1475,6 +1655,10 @@ namespace MissingValues
 			}
 			return (Octo)(uint)value;
 		}
+		/// <summary>
+		/// Implicitly converts a <see cref="long" /> value to a <see cref="Octo"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
 		public static implicit operator Octo(long value)
 		{
 			if (long.IsNegative(value))
@@ -1484,6 +1668,10 @@ namespace MissingValues
 			}
 			return (Octo)(ulong)value;
 		}
+		/// <summary>
+		/// Implicitly converts a <see cref="Int128" /> value to a <see cref="Octo"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
 		public static implicit operator Octo(Int128 value)
 		{
 			if (Int128.IsNegative(value))
@@ -1494,10 +1682,18 @@ namespace MissingValues
 			return (Octo)(UInt128)value;
 		}
 		// Floating
+		/// <summary>
+		/// Implicitly converts a <see cref="decimal" /> value to a <see cref="Octo"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
 		public static implicit operator Octo(decimal value)
 		{
 			return (Octo)(double)value;
 		}
+		/// <summary>
+		/// Implicitly converts a <see cref="double" /> value to a <see cref="Octo"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
 		public static implicit operator Octo(double value)
 		{
 			const int MaxBiasedExponentDouble = 0x07FF;
@@ -1529,6 +1725,10 @@ namespace MissingValues
 
 			return new Octo(sign, (uint)(exp + (ExponentBias - DoubleExponentBias)), (UInt256)sig << 184);
 		}
+		/// <summary>
+		/// Implicitly converts a <see cref="float" /> value to a <see cref="Octo"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
 		public static implicit operator Octo(float value)
 		{
 			const int MaxBiasedExponentSingle = 0xFF;
@@ -1560,6 +1760,10 @@ namespace MissingValues
 
 			return new Octo(sign, (uint)(exp + (ExponentBias - SingleExponentBias)), (UInt256)sig << 213);
 		}
+		/// <summary>
+		/// Implicitly converts a <see cref="Half" /> value to a <see cref="Octo"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
 		public static implicit operator Octo(Half value)
 		{
 			const int MaxBiasedExponentHalf = 0x1F;

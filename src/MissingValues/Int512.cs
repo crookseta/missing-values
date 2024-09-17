@@ -199,210 +199,342 @@ namespace MissingValues
 		}
 
 		#region From Int512
+		/// <summary>
+		/// Explicitly converts a <see cref="Int512" /> value to a <see cref="char"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
 		public static explicit operator char(Int512 value) => (char)value._p0;
+		/// <summary>
+		/// Explicitly converts a <see cref="Int512" /> value to a <see cref="char"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
+		/// <exception cref="OverflowException"><paramref name="value"/> is outside the range of <see cref="char"/>.</exception>
 		public static explicit operator checked char(Int512 value)
 		{
-			if (value.Upper == UInt256.Zero)
+			if (value._p7 != 0 || value._p6 != 0 || value._p5 != 0 || value._p4 != 0 || value._p3 != 0 || value._p2 != 0 || value._p1 != 0)
 			{
-				throw new OverflowException();
+				Thrower.IntegerOverflow();
 			}
 			return checked((char)value._p0);
 		}
 		// Unsigned
+		/// <summary>
+		/// Explicitly converts a <see cref="Int512" /> value to a <see cref="byte"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
 		public static explicit operator byte(Int512 value) => (byte)value._p0;
+		/// <summary>
+		/// Explicitly converts a <see cref="Int512" /> value to a <see cref="byte"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
+		/// <exception cref="OverflowException"><paramref name="value"/> is outside the range of <see cref="byte"/>.</exception>
 		public static explicit operator checked byte(Int512 value)
 		{
-			if (value.Upper != UInt256.Zero)
+			if (value._p7 != 0 || value._p6 != 0 || value._p5 != 0 || value._p4 != 0 || value._p3 != 0 || value._p2 != 0 || value._p1 != 0)
 			{
 				Thrower.IntegerOverflow();
 			}
 			return checked((byte)value._p0);
 		}
-		[CLSCompliant(false)]
+		/// <summary>
+		/// Explicitly converts a <see cref="Int512" /> value to a <see cref="ushort"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
 		public static explicit operator ushort(Int512 value) => (ushort)value._p0;
-		[CLSCompliant(false)]
+		/// <summary>
+		/// Explicitly converts a <see cref="Int512" /> value to a <see cref="ushort"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
+		/// <exception cref="OverflowException"><paramref name="value"/> is outside the range of <see cref="ushort"/>.</exception>
 		public static explicit operator checked ushort(Int512 value)
 		{
-			if (value.Upper != UInt256.Zero)
+			if (value._p7 != 0 || value._p6 != 0 || value._p5 != 0 || value._p4 != 0 || value._p3 != 0 || value._p2 != 0 || value._p1 != 0)
 			{
 				Thrower.IntegerOverflow();
 			}
 			return checked((ushort)value._p0);
 		}
-		[CLSCompliant(false)]
+		/// <summary>
+		/// Explicitly converts a <see cref="Int512" /> value to a <see cref="uint"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
 		public static explicit operator uint(Int512 value) => (uint)value._p0;
-		[CLSCompliant(false)]
+		/// <summary>
+		/// Explicitly converts a <see cref="Int512" /> value to a <see cref="uint"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
+		/// <exception cref="OverflowException"><paramref name="value"/> is outside the range of <see cref="uint"/>.</exception>
 		public static explicit operator checked uint(Int512 value)
 		{
-			if (value.Upper != UInt256.Zero)
+			if (value._p7 != 0 || value._p6 != 0 || value._p5 != 0 || value._p4 != 0 || value._p3 != 0 || value._p2 != 0 || value._p1 != 0)
 			{
 				Thrower.IntegerOverflow();
 			}
 			return checked((uint)value._p0);
 		}
-		[CLSCompliant(false)]
-		public static explicit operator ulong(Int512 value) => (ulong)value._p0;
-		[CLSCompliant(false)]
+		/// <summary>
+		/// Explicitly converts a <see cref="Int512" /> value to a <see cref="ulong"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
+		public static explicit operator ulong(Int512 value) => value._p0;
+		/// <summary>
+		/// Explicitly converts a <see cref="Int512" /> value to a <see cref="ulong"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
+		/// <exception cref="OverflowException"><paramref name="value"/> is outside the range of <see cref="ulong"/>.</exception>
 		public static explicit operator checked ulong(Int512 value)
 		{
-			if (value.Upper != UInt256.Zero)
+			if (value._p7 != 0 || value._p6 != 0 || value._p5 != 0 || value._p4 != 0 || value._p3 != 0 || value._p2 != 0 || value._p1 != 0)
 			{
 				Thrower.IntegerOverflow();
 			}
-			return checked((ulong)value._p0);
+			return value._p0;
 		}
-		[CLSCompliant(false)]
-		public static explicit operator UInt128(Int512 value) => (UInt128)value.Lower;
-		[CLSCompliant(false)]
+		/// <summary>
+		/// Explicitly converts a <see cref="Int512" /> value to a <see cref="UInt128"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
+		public static explicit operator UInt128(Int512 value) => new UInt128(value._p1, value._p0);
+		/// <summary>
+		/// Explicitly converts a <see cref="Int512" /> value to a <see cref="UInt128"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
+		/// <exception cref="OverflowException"><paramref name="value"/> is outside the range of <see cref="UInt128"/>.</exception>
 		public static explicit operator checked UInt128(Int512 value)
 		{
-			if (value.Upper != UInt256.Zero)
+			if (value._p7 != 0 || value._p6 != 0 || value._p5 != 0 || value._p4 != 0 || value._p3 != 0 || value._p2 != 0)
 			{
 				Thrower.IntegerOverflow();
 			}
-			return checked((UInt128)value.Lower);
+			return new UInt128(value._p1, value._p0);
 		}
-		[CLSCompliant(false)]
+		/// <summary>
+		/// Explicitly converts a <see cref="Int512" /> value to a <see cref="UInt256"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
 		public static explicit operator UInt256(Int512 value) => value.Lower;
-		[CLSCompliant(false)]
+		/// <summary>
+		/// Explicitly converts a <see cref="Int512" /> value to a <see cref="UInt256"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
+		/// <exception cref="OverflowException"><paramref name="value"/> is outside the range of <see cref="UInt256"/>.</exception>
 		public static explicit operator checked UInt256(Int512 value)
 		{
-			if (value.Upper != UInt256.Zero)
+			if (value._p7 != 0 || value._p6 != 0 || value._p5 != 0 || value._p4 != 0)
 			{
 				Thrower.IntegerOverflow();
 			}
 			return value.Lower;
 		}
-		[CLSCompliant(false)]
+		/// <summary>
+		/// Explicitly converts a <see cref="Int512" /> value to a <see cref="UInt512"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
 		public static explicit operator UInt512(Int512 value) => new(value._p7, value._p6, value._p5, value._p4, value._p3, value._p2, value._p1, value._p0);
-		[CLSCompliant(false)]
+		/// <summary>
+		/// Explicitly converts a <see cref="Int512" /> value to a <see cref="UInt512"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
+		/// <exception cref="OverflowException"><paramref name="value"/> is outside the range of <see cref="UInt512"/>.</exception>
 		public static explicit operator checked UInt512(Int512 value)
 		{
-			if ((Int256)value.Upper < 0)
+			if ((long)value._p7 < 0)
 			{
 				Thrower.IntegerOverflow();
 			}
 			return new(value._p7, value._p6, value._p5, value._p4, value._p3, value._p2, value._p1, value._p0);
 		}
-		[CLSCompliant(false)]
+		/// <summary>
+		/// Explicitly converts a <see cref="Int512" /> value to a <see cref="nuint"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
 		public static explicit operator nuint(Int512 value) => (nuint)value._p0;
-		[CLSCompliant(false)]
+		/// <summary>
+		/// Explicitly converts a <see cref="Int512" /> value to a <see cref="nuint"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
+		/// <exception cref="OverflowException"><paramref name="value"/> is outside the range of <see cref="nuint"/>.</exception>
 		public static explicit operator checked nuint(Int512 value)
 		{
-			if (value.Upper != UInt256.Zero)
+			if (value._p7 != 0 || value._p6 != 0 || value._p5 != 0 || value._p4 != 0 || value._p3 != 0 || value._p2 != 0 || value._p1 != 0)
 			{
 				Thrower.IntegerOverflow();
 			}
-			return checked((nuint)value.Lower);
+			return checked((nuint)value._p0);
 		}
 		// Signed
-		[CLSCompliant(false)]
+		/// <summary>
+		/// Explicitly converts a <see cref="Int512" /> value to a <see cref="sbyte"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
 		public static explicit operator sbyte(Int512 value) => (sbyte)value._p0;
-		[CLSCompliant(false)]
+		/// <summary>
+		/// Explicitly converts a <see cref="Int512" /> value to a <see cref="sbyte"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
+		/// <exception cref="OverflowException"><paramref name="value"/> is outside the range of <see cref="sbyte"/>.</exception>
 		public static explicit operator checked sbyte(Int512 value)
 		{
-			if (~value.Upper == 0)
+			if (~(value._p7 | value._p6 | value._p5 | value._p4 | value._p3 | value._p2 | value._p1) == 0)
 			{
-				Int256 lower = (Int256)value.Lower;
+				long lower = (long)value._p0;
 				return checked((sbyte)lower);
 			}
 
-			if (value.Upper != 0)
+			if (value._p7 != 0 || value._p6 != 0 || value._p5 != 0 || value._p4 != 0 || value._p3 != 0 || value._p2 != 0 || value._p1 != 0)
 			{
 				Thrower.IntegerOverflow();
 			}
-			return checked((sbyte)value.Lower);
+			return checked((sbyte)value._p0);
 		}
+		/// <summary>
+		/// Explicitly converts a <see cref="Int512" /> value to a <see cref="short"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
 		public static explicit operator short(Int512 value) => (short)value._p0;
+		/// <summary>
+		/// Explicitly converts a <see cref="Int512" /> value to a <see cref="short"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
+		/// <exception cref="OverflowException"><paramref name="value"/> is outside the range of <see cref="short"/>.</exception>
 		public static explicit operator checked short(Int512 value)
 		{
-			if (~value.Upper == 0)
+			if (~(value._p7 | value._p6 | value._p5 | value._p4 | value._p3 | value._p2 | value._p1) == 0)
 			{
-				Int256 lower = (Int256)value.Lower;
+				long lower = (long)value._p0;
 				return checked((short)lower);
 			}
 
-			if (value.Upper != 0)
+			if (value._p7 != 0 || value._p6 != 0 || value._p5 != 0 || value._p4 != 0 || value._p3 != 0 || value._p2 != 0 || value._p1 != 0)
 			{
 				Thrower.IntegerOverflow();
 			}
-			return checked((short)value.Lower);
+			return checked((short)value._p0);
 		}
+		/// <summary>
+		/// Explicitly converts a <see cref="Int512" /> value to a <see cref="int"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
 		public static explicit operator int(Int512 value) => (int)value._p0;
+		/// <summary>
+		/// Explicitly converts a <see cref="Int512" /> value to a <see cref="int"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
+		/// <exception cref="OverflowException"><paramref name="value"/> is outside the range of <see cref="int"/>.</exception>
 		public static explicit operator checked int(Int512 value)
 		{
-			if (~value.Upper == 0)
+			if (~(value._p7 | value._p6 | value._p5 | value._p4 | value._p3 | value._p2 | value._p1) == 0)
 			{
-				Int256 lower = (Int256)value.Lower;
+				long lower = (long)value._p0;
 				return checked((int)lower);
 			}
 
-			if (value.Upper != 0)
+			if (value._p7 != 0 || value._p6 != 0 || value._p5 != 0 || value._p4 != 0 || value._p3 != 0 || value._p2 != 0 || value._p1 != 0)
 			{
 				Thrower.IntegerOverflow();
 			}
-			return checked((int)value.Lower);
+			return checked((int)value._p0);
 		}
+		/// <summary>
+		/// Explicitly converts a <see cref="Int512" /> value to a <see cref="long"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
 		public static explicit operator long(Int512 value) => (long)value._p0;
+		/// <summary>
+		/// Explicitly converts a <see cref="Int512" /> value to a <see cref="long"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
+		/// <exception cref="OverflowException"><paramref name="value"/> is outside the range of <see cref="long"/>.</exception>
 		public static explicit operator checked long(Int512 value)
 		{
-			if (~value.Upper == 0)
+			if (~(value._p7 | value._p6 | value._p5 | value._p4 | value._p3 | value._p2 | value._p1) == 0)
 			{
-				Int256 lower = (Int256)value.Lower;
-				return checked((long)lower);
+				long lower = (long)value._p0;
+				return lower;
 			}
 
-			if (value.Upper != 0)
+			if (value._p7 != 0 || value._p6 != 0 || value._p5 != 0 || value._p4 != 0 || value._p3 != 0 || value._p2 != 0 || value._p1 != 0)
 			{
 				Thrower.IntegerOverflow();
 			}
-			return checked((long)value.Lower);
+			return checked((long)value._p0);
 		}
+		/// <summary>
+		/// Explicitly converts a <see cref="Int512" /> value to a <see cref="Int128"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
 		public static explicit operator Int128(Int512 value) => (Int128)value.Lower;
+		/// <summary>
+		/// Explicitly converts a <see cref="Int512" /> value to a <see cref="Int128"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
+		/// <exception cref="OverflowException"><paramref name="value"/> is outside the range of <see cref="Int128"/>.</exception>
 		public static explicit operator checked Int128(Int512 value)
 		{
-			if (~value.Upper == 0)
+			if (~(value._p7 | value._p6 | value._p5 | value._p4 | value._p3 | value._p2) == 0)
 			{
-				Int256 lower = (Int256)value.Lower;
-				return checked((Int128)lower);
+				Int128 lower = new Int128(value._p1, value._p0);
+				return lower;
 			}
 
-			if (value.Upper != 0)
+			if (value._p7 != 0 || value._p6 != 0 || value._p5 != 0 || value._p4 != 0 || value._p3 != 0 || value._p2 != 0)
 			{
 				Thrower.IntegerOverflow();
 			}
-			return checked((Int128)value.Lower);
+			return checked((Int128)(new UInt128(value._p1, value._p0)));
 		}
+		/// <summary>
+		/// Explicitly converts a <see cref="Int512" /> value to a <see cref="Int256"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
 		public static explicit operator Int256(Int512 value) => (Int256)value.Lower;
+		/// <summary>
+		/// Explicitly converts a <see cref="Int512" /> value to a <see cref="Int256"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
+		/// <exception cref="OverflowException"><paramref name="value"/> is outside the range of <see cref="Int256"/>.</exception>
 		public static explicit operator checked Int256(Int512 value)
 		{
-			if (~value.Upper == 0)
+			if (~(value._p7 | value._p6 | value._p5 | value._p4) == 0)
 			{
 				return (Int256)value.Lower;
 			}
 
-			if (value.Upper != 0)
+			if (value._p7 != 0 || value._p6 != 0 || value._p5 != 0 || value._p4 != 0)
 			{
 				Thrower.IntegerOverflow();
 			}
 			return checked((Int256)value.Lower);
 		}
+		/// <summary>
+		/// Explicitly converts a <see cref="Int512" /> value to a <see cref="nint"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
 		public static explicit operator nint(Int512 value) => (nint)value._p0;
+		/// <summary>
+		/// Explicitly converts a <see cref="Int512" /> value to a <see cref="nint"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
+		/// <exception cref="OverflowException"><paramref name="value"/> is outside the range of <see cref="nint"/>.</exception>
 		public static explicit operator checked nint(Int512 value)
 		{
-			if (~value.Upper == 0)
+			if (~(value._p7 | value._p6 | value._p5 | value._p4 | value._p3 | value._p2 | value._p1) == 0)
 			{
-				Int256 lower = (Int256)value.Lower;
+				long lower = (long)value._p0;
 				return checked((nint)lower);
 			}
 
-			if (value.Upper != 0)
+			if (value._p7 != 0 || value._p6 != 0 || value._p5 != 0 || value._p4 != 0 || value._p3 != 0 || value._p2 != 0 || value._p1 != 0)
 			{
 				Thrower.IntegerOverflow();
 			}
-			return checked((nint)value.Lower);
+			return checked((nint)value._p0);
 		}
 		// Floating
+		/// <summary>
+		/// Explicitly converts a <see cref="Int512" /> value to a <see cref="decimal"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
 		public static explicit operator decimal(Int512 value)
 		{
 			if (IsNegative(value))
@@ -412,6 +544,10 @@ namespace MissingValues
 			}
 			return (decimal)(UInt512)(value);
 		}
+		/// <summary>
+		/// Explicitly converts a <see cref="Int512" /> value to a <see cref="Octo"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
 		public static explicit operator Octo(Int512 value)
 		{
 			if (IsNegative(value))
@@ -421,6 +557,10 @@ namespace MissingValues
 			}
 			return (Octo)(UInt512)(value);
 		}
+		/// <summary>
+		/// Explicitly converts a <see cref="Int512" /> value to a <see cref="Quad"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
 		public static explicit operator Quad(Int512 value)
 		{
 			if (IsNegative(value))
@@ -430,6 +570,10 @@ namespace MissingValues
 			}
 			return (Quad)(UInt512)(value);
 		}
+		/// <summary>
+		/// Explicitly converts a <see cref="Int512" /> value to a <see cref="double"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
 		public static explicit operator double(Int512 value)
 		{
 			if (IsNegative(value))
@@ -439,15 +583,10 @@ namespace MissingValues
 			}
 			return (double)(UInt512)(value);
 		}
-		public static explicit operator Half(Int512 value)
-		{
-			if (IsNegative(value))
-			{
-				value = -value;
-				return -(Half)(UInt512)(value);
-			}
-			return (Half)(UInt512)(value);
-		}
+		/// <summary>
+		/// Explicitly converts a <see cref="Int512" /> value to a <see cref="float"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
 		public static explicit operator float(Int512 value)
 		{
 			if (IsNegative(value))
@@ -457,94 +596,189 @@ namespace MissingValues
 			}
 			return (float)(UInt512)(value);
 		}
+		/// <summary>
+		/// Explicitly converts a <see cref="Int512" /> value to a <see cref="Half"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
+		public static explicit operator Half(Int512 value)
+		{
+			if (IsNegative(value))
+			{
+				value = -value;
+				return -(Half)(UInt512)(value);
+			}
+			return (Half)(UInt512)(value);
+		}
 		#endregion
 		#region To Int512
 		//Unsigned
-		[CLSCompliant(false)]
-		public static explicit operator Int512(byte v) => new Int512(v);
-		[CLSCompliant(false)]
-		public static explicit operator Int512(ushort v) => new Int512(v);
-		[CLSCompliant(false)]
-		public static explicit operator Int512(uint v) => new Int512(v);
-		[CLSCompliant(false)]
-		public static explicit operator Int512(nuint v) => new Int512(v);
-		[CLSCompliant(false)]
-		public static explicit operator Int512(ulong v) => new Int512(v);
-		[CLSCompliant(false)]
-		public static explicit operator Int512(UInt128 v) => new Int512(v);
+		/// <summary>
+		/// Explicitly converts a <see cref="byte" /> value to a <see cref="Int512"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
+		public static explicit operator Int512(byte value) => new Int512(value);
+		/// <summary>
+		/// Explicitly converts a <see cref="ushort" /> value to a <see cref="Int512"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
+		public static explicit operator Int512(ushort value) => new Int512(value);
+		/// <summary>
+		/// Explicitly converts a <see cref="uint" /> value to a <see cref="Int512"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
+		public static explicit operator Int512(uint value) => new Int512(value);
+		/// <summary>
+		/// Explicitly converts a <see cref="nuint" /> value to a <see cref="Int512"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
+		public static explicit operator Int512(nuint value) => new Int512(value);
+		/// <summary>
+		/// Explicitly converts a <see cref="ulong" /> value to a <see cref="Int512"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
+		public static explicit operator Int512(ulong value) => new Int512(value);
+		/// <summary>
+		/// Explicitly converts a <see cref="UInt128" /> value to a <see cref="Int512"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
+		public static explicit operator Int512(UInt128 value) => new Int512(UInt128.Zero, UInt128.Zero, UInt128.Zero, value);
 		//Signed
-		[CLSCompliant(false)]
-		public static implicit operator Int512(sbyte v)
+		/// <summary>
+		/// Implicitly converts a <see cref="sbyte" /> value to a <see cref="Int512"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
+		public static implicit operator Int512(sbyte value)
 		{
-			Int256 lower = v;
-			return new((UInt256)(lower >> 255), (UInt256)lower);
+			long lower = value;
+			long lowerShifted = lower >> 63;
+			return new((ulong)lowerShifted, (ulong)lowerShifted, (ulong)lowerShifted, (ulong)lowerShifted, (ulong)lowerShifted, (ulong)lowerShifted, (ulong)lowerShifted, (ulong)lower);
 		}
-		public static implicit operator Int512(short v)
+		/// <summary>
+		/// Implicitly converts a <see cref="short" /> value to a <see cref="Int512"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
+		public static implicit operator Int512(short value)
 		{
-			Int256 lower = v;
-			return new((UInt256)(lower >> 255), (UInt256)lower);
+			long lower = value;
+			long lowerShifted = lower >> 63;
+			return new((ulong)lowerShifted, (ulong)lowerShifted, (ulong)lowerShifted, (ulong)lowerShifted, (ulong)lowerShifted, (ulong)lowerShifted, (ulong)lowerShifted, (ulong)lower);
 		}
-		public static implicit operator Int512(int v)
+		/// <summary>
+		/// Implicitly converts a <see cref="int" /> value to a <see cref="Int512"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
+		public static implicit operator Int512(int value)
 		{
-			Int256 lower = v;
-			return new((UInt256)(lower >> 255), (UInt256)lower);
+			long lower = value;
+			long lowerShifted = lower >> 63;
+			return new((ulong)lowerShifted, (ulong)lowerShifted, (ulong)lowerShifted, (ulong)lowerShifted, (ulong)lowerShifted, (ulong)lowerShifted, (ulong)lowerShifted, (ulong)lower);
 		}
-		public static implicit operator Int512(nint v)
+		/// <summary>
+		/// Implicitly converts a <see cref="nint" /> value to a <see cref="Int512"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
+		public static implicit operator Int512(nint value)
 		{
-			Int256 lower = v;
-			return new((UInt256)(lower >> 255), (UInt256)lower);
+			long lower = value;
+			long lowerShifted = lower >> 63;
+			return new((ulong)lowerShifted, (ulong)lowerShifted, (ulong)lowerShifted, (ulong)lowerShifted, (ulong)lowerShifted, (ulong)lowerShifted, (ulong)lowerShifted, (ulong)lower);
 		}
-		public static implicit operator Int512(long v)
+		/// <summary>
+		/// Implicitly converts a <see cref="long" /> value to a <see cref="Int512"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
+		public static implicit operator Int512(long value)
 		{
-			Int256 lower = v;
-			return new((UInt256)(lower >> 255), (UInt256)lower);
+			long lower = value;
+			long lowerShifted = lower >> 63;
+			return new((ulong)lowerShifted, (ulong)lowerShifted, (ulong)lowerShifted, (ulong)lowerShifted, (ulong)lowerShifted, (ulong)lowerShifted, (ulong)lowerShifted, (ulong)lower);
 		}
-		public static implicit operator Int512(Int128 v)
+		/// <summary>
+		/// Implicitly converts a <see cref="Int128" /> value to a <see cref="Int512"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
+		public static implicit operator Int512(Int128 value)
 		{
-			Int256 lower = v;
+			Int256 lower = value;
 			return new((UInt256)(lower >> 255), (UInt256)lower);
 		}
 		//Floating
-		public static explicit operator Int512(decimal v) => (Int512)(double)v;
-		public static explicit operator checked Int512(decimal v) => checked((Int512)(double)v);
-		public static explicit operator Int512(double v)
+		/// <summary>
+		/// Explicitly converts a <see cref="decimal" /> value to a <see cref="Int512"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
+		public static explicit operator Int512(decimal value) => (Int512)(double)value;
+		/// <summary>
+		/// Explicitly converts a <see cref="decimal" /> value to a <see cref="Int512"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
+		/// <exception cref="OverflowException"><paramref name="value"/> is outside the range of <see cref="Int512"/>.</exception>
+		public static explicit operator checked Int512(decimal value) => checked((Int512)(double)value);
+		/// <summary>
+		/// Explicitly converts a <see cref="double" /> value to a <see cref="Int512"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
+		public static explicit operator Int512(double value)
 		{
 			const double TwoPow255 = 57896044618658097711785492504343953926634992332820282019728792003956564819968.0;
 
-			if (v <= -TwoPow255)
+			if (value <= -TwoPow255)
 			{
 				return MinValue;
 			}
-			else if (double.IsNaN(v))
+			else if (double.IsNaN(value))
 			{
 				return 0;
 			}
-			else if (v >= +TwoPow255)
+			else if (value >= +TwoPow255)
 			{
 				return MaxValue;
 			}
 
-			return ToInt512(v);
+			return ToInt512(value);
 		}
-		public static explicit operator checked Int512(double v)
+		/// <summary>
+		/// Explicitly converts a <see cref="double" /> value to a <see cref="Int512"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
+		/// <exception cref="OverflowException"><paramref name="value"/> is outside the range of <see cref="Int512"/>.</exception>
+		public static explicit operator checked Int512(double value)
 		{
 			const double TwoPow511 = 57896044618658097711785492504343953926634992332820282019728792003956564819968.0;
 
-			if ((0.0d > v + TwoPow511) || double.IsNaN(v) || (v > +TwoPow511))
+			if ((0.0d > value + TwoPow511) || double.IsNaN(value) || (value > +TwoPow511))
 			{
 				throw new OverflowException();
 			}
-			if (0.0 == TwoPow511 - v)
+			if (0.0 == TwoPow511 - value)
 			{
 				return MaxValue;
 			}
 
-			return ToInt512(v);
+			return ToInt512(value);
 		}
-		public static explicit operator Int512(float v) => (Int512)(double)v;
-		public static explicit operator checked Int512(float v) => checked((Int512)(double)v);
-		public static explicit operator Int512(Half v) => (Int512)(double)v;
-		public static explicit operator checked Int512(Half v) => checked((Int512)(double)v);
+		/// <summary>
+		/// Explicitly converts a <see cref="float" /> value to a <see cref="Int512"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
+		public static explicit operator Int512(float value) => (Int512)(double)value;
+		/// <summary>
+		/// Explicitly converts a <see cref="float" /> value to a <see cref="Int512"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
+		/// <exception cref="OverflowException"><paramref name="value"/> is outside the range of <see cref="Int512"/>.</exception>
+		public static explicit operator checked Int512(float value) => checked((Int512)(double)value);
+		/// <summary>
+		/// Explicitly converts a <see cref="Half" /> value to a <see cref="Int512"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
+		public static explicit operator Int512(Half value) => (Int512)(double)value;
+		/// <summary>
+		/// Explicitly converts a <see cref="Half" /> value to a <see cref="Int512"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
+		/// <exception cref="OverflowException"><paramref name="value"/> is outside the range of <see cref="Int512"/>.</exception>
+		public static explicit operator checked Int512(Half value) => checked((Int512)(double)value);
 		#endregion
 
 		private static Int512 ToInt512(double value)

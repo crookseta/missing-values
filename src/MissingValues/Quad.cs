@@ -29,11 +29,14 @@ namespace MissingValues
 		internal const int SignShift = 127;
 		internal const int MantissaDigits = 113;
 		internal const int ExponentBias = 16383;
+		internal const int BiasedExponentLength = 15;
 		internal const int BiasedExponentShift = 112;
 		internal const ulong ShiftedBiasedExponentMask = 32767;
 
 		internal const int MinBiasedExponent = 0x0000;
 		internal const int MaxBiasedExponent = 0x7FFF;
+		internal const int MinExponent = -16382;
+		internal const int MaxExponent = 16383;
 
 		internal static UInt128 BiasedExponentMask => new UInt128(0x7FFF_0000_0000_0000, 0x0000_0000_0000_0000);
 
@@ -291,6 +294,10 @@ namespace MissingValues
 
 		#region From Quad
 		// Unsigned
+		/// <summary>
+		/// Explicitly converts a <see cref="Quad" /> value to a <see cref="byte"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
 		public static explicit operator byte(Quad value)
 		{
 			Quad twoPow8 = new Quad(0x4007_0000_0000_0000, 0x0000_0000_0000_0000);
@@ -317,6 +324,11 @@ namespace MissingValues
 				return byte.MinValue;
 			}
 		}
+		/// <summary>
+		/// Explicitly converts a <see cref="Quad" /> value to a <see cref="byte"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
+		/// <exception cref="OverflowException"><paramref name="value"/> is outside the range of <see cref="byte"/>.</exception>
 		public static explicit operator checked byte(Quad value)
 		{
 			Quad twoPow8 = new Quad(0x4007_0000_0000_0000, 0x0000_0000_0000_0000);
@@ -339,7 +351,10 @@ namespace MissingValues
 				return byte.MinValue;
 			}
 		}
-		[CLSCompliant(false)]
+		/// <summary>
+		/// Explicitly converts a <see cref="Quad" /> value to a <see cref="ushort"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
 		public static explicit operator ushort(Quad value)
 		{
 			Quad twoPow16 = new Quad(0x400F_0000_0000_0000, 0x0000_0000_0000_0000);
@@ -366,7 +381,11 @@ namespace MissingValues
 				return ushort.MinValue;
 			}
 		}
-		[CLSCompliant(false)]
+		/// <summary>
+		/// Explicitly converts a <see cref="Quad" /> value to a <see cref="ushort"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
+		/// <exception cref="OverflowException"><paramref name="value"/> is outside the range of <see cref="ushort"/>.</exception>
 		public static explicit operator checked ushort(Quad value)
 		{
 			Quad twoPow16 = new Quad(0x400F_0000_0000_0000, 0x0000_0000_0000_0000);
@@ -389,7 +408,10 @@ namespace MissingValues
 				return ushort.MinValue;
 			}
 		}
-		[CLSCompliant(false)]
+		/// <summary>
+		/// Explicitly converts a <see cref="Quad" /> value to a <see cref="uint"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
 		public static explicit operator uint(Quad value)
 		{
 			Quad twoPow32 = new Quad(0x401F_0000_0000_0000, 0x0000_0000_0000_0000);
@@ -416,7 +438,11 @@ namespace MissingValues
 				return uint.MinValue;
 			}
 		}
-		[CLSCompliant(false)]
+		/// <summary>
+		/// Explicitly converts a <see cref="Quad" /> value to a <see cref="uint"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
+		/// <exception cref="OverflowException"><paramref name="value"/> is outside the range of <see cref="uint"/>.</exception>
 		public static explicit operator checked uint(Quad value)
 		{
 			Quad twoPow32 = new Quad(0x401F_0000_0000_0000, 0x0000_0000_0000_0000);
@@ -439,7 +465,10 @@ namespace MissingValues
 				return uint.MinValue;
 			}
 		}
-		[CLSCompliant(false)]
+		/// <summary>
+		/// Explicitly converts a <see cref="Quad" /> value to a <see cref="ulong"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
 		public static explicit operator ulong(Quad value)
 		{
 			Quad twoPow64 = new Quad(0x403F_0000_0000_0000, 0x0000_0000_0000_0000);
@@ -466,7 +495,11 @@ namespace MissingValues
 				return ulong.MinValue;
 			}
 		}
-		[CLSCompliant(false)]
+		/// <summary>
+		/// Explicitly converts a <see cref="Quad" /> value to a <see cref="ulong"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
+		/// <exception cref="OverflowException"><paramref name="value"/> is outside the range of <see cref="ulong"/>.</exception>
 		public static explicit operator checked ulong(Quad value)
 		{
 			Quad twoPow64 = new Quad(0x403F_0000_0000_0000, 0x0000_0000_0000_0000);
@@ -489,7 +522,10 @@ namespace MissingValues
 				return ulong.MinValue;
 			}
 		}
-		[CLSCompliant(false)]
+		/// <summary>
+		/// Explicitly converts a <see cref="Quad" /> value to a <see cref="UInt128"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
 		public static explicit operator UInt128(Quad value)
 		{
 			Quad twoPow128 = new Quad(0x407F_0000_0000_0000, 0x0000_0000_0000_0000);
@@ -516,7 +552,11 @@ namespace MissingValues
 				return UInt128.MinValue;
 			}
 		}
-		[CLSCompliant(false)]
+		/// <summary>
+		/// Explicitly converts a <see cref="Quad" /> value to a <see cref="UInt128"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
+		/// <exception cref="OverflowException"><paramref name="value"/> is outside the range of <see cref="UInt128"/>.</exception>
 		public static explicit operator checked UInt128(Quad value)
 		{
 			Quad twoPow128 = new Quad(0x407F_0000_0000_0000, 0x0000_0000_0000_0000);
@@ -540,7 +580,10 @@ namespace MissingValues
 				return UInt128.MinValue;
 			}
 		}
-		[CLSCompliant(false)]
+		/// <summary>
+		/// Explicitly converts a <see cref="Quad" /> value to a <see cref="UInt256"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
 		public static explicit operator UInt256(Quad value)
 		{
 			Quad twoPow256 = new Quad(0x40FF_0000_0000_0000, 0x0000_0000_0000_0000);
@@ -568,7 +611,11 @@ namespace MissingValues
 				return UInt256.MinValue;
 			}
 		}
-		[CLSCompliant(false)]
+		/// <summary>
+		/// Explicitly converts a <see cref="Quad" /> value to a <see cref="UInt256"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
+		/// <exception cref="OverflowException"><paramref name="value"/> is outside the range of <see cref="UInt256"/>.</exception>
 		public static explicit operator checked UInt256(Quad value)
 		{
 			Quad twoPow256 = new Quad(0x40FF_0000_0000_0000, 0x0000_0000_0000_0000);
@@ -592,7 +639,10 @@ namespace MissingValues
 				return UInt256.MinValue;
 			}
 		}
-		[CLSCompliant(false)]
+		/// <summary>
+		/// Explicitly converts a <see cref="Quad" /> value to a <see cref="UInt512"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
 		public static explicit operator UInt512(Quad value)
 		{
 			Quad twoPow512 = new Quad(0x41FF_0000_0000_0000, 0x0000_0000_0000_0000);
@@ -620,7 +670,11 @@ namespace MissingValues
 				return UInt512.MinValue;
 			}
 		}
-		[CLSCompliant(false)]
+		/// <summary>
+		/// Explicitly converts a <see cref="Quad" /> value to a <see cref="UInt512"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
+		/// <exception cref="OverflowException"><paramref name="value"/> is outside the range of <see cref="UInt512"/>.</exception>
 		public static explicit operator checked UInt512(Quad value)
 		{
 			Quad twoPow512 = new Quad(0x41FF_0000_0000_0000, 0x0000_0000_0000_0000);
@@ -645,6 +699,10 @@ namespace MissingValues
 			}
 		}
 		// Signed
+		/// <summary>
+		/// Explicitly converts a <see cref="Quad" /> value to a <see cref="sbyte"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
 		public static explicit operator sbyte(Quad value)
 		{
 			Quad twoPow7 = new Quad(0x4006_0000_0000_0000, 0x0000_0000_0000_0000);
@@ -685,6 +743,11 @@ namespace MissingValues
 				return 0;
 			}
 		}
+		/// <summary>
+		/// Explicitly converts a <see cref="Quad" /> value to a <see cref="sbyte"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
+		/// <exception cref="OverflowException"><paramref name="value"/> is outside the range of <see cref="sbyte"/>.</exception>
 		public static explicit operator checked sbyte(Quad value)
 		{
 			Quad twoPow7 = new Quad(0x4006_0000_0000_0000, 0x0000_0000_0000_0000);
@@ -716,6 +779,10 @@ namespace MissingValues
 				return 0;
 			}
 		}
+		/// <summary>
+		/// Explicitly converts a <see cref="Quad" /> value to a <see cref="short"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
 		public static explicit operator short(Quad value)
 		{
 			Quad twoPow15 = new Quad(0x400E_0000_0000_0000, 0x0000_0000_0000_0000);
@@ -756,6 +823,11 @@ namespace MissingValues
 				return 0;
 			}
 		}
+		/// <summary>
+		/// Explicitly converts a <see cref="Quad" /> value to a <see cref="short"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
+		/// <exception cref="OverflowException"><paramref name="value"/> is outside the range of <see cref="short"/>.</exception>
 		public static explicit operator checked short(Quad value)
 		{
 			Quad twoPow15 = new Quad(0x400E_0000_0000_0000, 0x0000_0000_0000_0000);
@@ -787,6 +859,10 @@ namespace MissingValues
 				return 0;
 			}
 		}
+		/// <summary>
+		/// Explicitly converts a <see cref="Quad" /> value to a <see cref="int"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
 		public static explicit operator int(Quad value)
 		{
 			Quad twoPow31 = new Quad(0x401E_0000_0000_0000, 0x0000_0000_0000_0000);
@@ -828,6 +904,11 @@ namespace MissingValues
 				return 0;
 			}
 		}
+		/// <summary>
+		/// Explicitly converts a <see cref="Quad" /> value to a <see cref="int"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
+		/// <exception cref="OverflowException"><paramref name="value"/> is outside the range of <see cref="int"/>.</exception>
 		public static explicit operator checked int(Quad value)
 		{
 			Quad twoPow31 = new Quad(0x401E_0000_0000_0000, 0x0000_0000_0000_0000);
@@ -861,6 +942,10 @@ namespace MissingValues
 				return 0;
 			}
 		}
+		/// <summary>
+		/// Explicitly converts a <see cref="Quad" /> value to a <see cref="long"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
 		public static explicit operator long(Quad value)
 		{
 			Quad twoPow63 = new Quad(0x403E_0000_0000_0000, 0x0000_0000_0000_0000);
@@ -902,6 +987,11 @@ namespace MissingValues
 				return 0L;
 			}
 		}
+		/// <summary>
+		/// Explicitly converts a <see cref="Quad" /> value to a <see cref="long"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
+		/// <exception cref="OverflowException"><paramref name="value"/> is outside the range of <see cref="long"/>.</exception>
 		public static explicit operator checked long(Quad value)
 		{
 			Quad twoPow63 = new Quad(0x403E_0000_0000_0000, 0x0000_0000_0000_0000);
@@ -935,6 +1025,10 @@ namespace MissingValues
 				return 0L;
 			}
 		}
+		/// <summary>
+		/// Explicitly converts a <see cref="Quad" /> value to a <see cref="Int128"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
 		public static explicit operator Int128(Quad value)
 		{
 			Quad twoPow127 = new Quad(0x407E_0000_0000_0000, 0x0000_0000_0000_0000);
@@ -976,6 +1070,11 @@ namespace MissingValues
 				return Int128.Zero;
 			}
 		}
+		/// <summary>
+		/// Explicitly converts a <see cref="Quad" /> value to a <see cref="Int128"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
+		/// <exception cref="OverflowException"><paramref name="value"/> is outside the range of <see cref="Int128"/>.</exception>
 		public static explicit operator checked Int128(Quad value)
 		{
 			Quad twoPow127 = new Quad(0x407E_0000_0000_0000, 0x0000_0000_0000_0000);
@@ -1009,6 +1108,10 @@ namespace MissingValues
 				return Int128.Zero;
 			}
 		}
+		/// <summary>
+		/// Explicitly converts a <see cref="Quad" /> value to a <see cref="Int256"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
 		public static explicit operator Int256(Quad value)
 		{
 			Quad twoPow255 = new Quad(0x40FE_0000_0000_0000, 0x0000_0000_0000_0000);
@@ -1057,6 +1160,11 @@ namespace MissingValues
 				return Int256.Zero;
 			}
 		}
+		/// <summary>
+		/// Explicitly converts a <see cref="Quad" /> value to a <see cref="Int256"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
+		/// <exception cref="OverflowException"><paramref name="value"/> is outside the range of <see cref="Int256"/>.</exception>
 		public static explicit operator checked Int256(Quad value)
 		{
 			Quad twoPow255 = new Quad(0x40FE_0000_0000_0000, 0x0000_0000_0000_0000);
@@ -1097,6 +1205,10 @@ namespace MissingValues
 				return Int256.Zero;
 			}
 		}
+		/// <summary>
+		/// Explicitly converts a <see cref="Quad" /> value to a <see cref="Int512"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
 		public static explicit operator Int512(Quad value)
 		{
 			Quad twoPow511 = new Quad(0x41FE_0000_0000_0000, 0x0000_0000_0000_0000);
@@ -1145,6 +1257,11 @@ namespace MissingValues
 				return Int512.Zero;
 			}
 		}
+		/// <summary>
+		/// Explicitly converts a <see cref="Quad" /> value to a <see cref="Int512"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
+		/// <exception cref="OverflowException"><paramref name="value"/> is outside the range of <see cref="Int512"/>.</exception>
 		public static explicit operator checked Int512(Quad value)
 		{
 			Quad twoPow511 = new Quad(0x41FE_0000_0000_0000, 0x0000_0000_0000_0000);
@@ -1186,10 +1303,18 @@ namespace MissingValues
 			}
 		}
 		// Floating
+		/// <summary>
+		/// Explicitly converts a <see cref="Quad" /> value to a <see cref="decimal"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
 		public static explicit operator decimal(Quad value)
 		{
 			return (decimal)(double)value;
 		}
+		/// <summary>
+		/// Implicitly converts a <see cref="Quad" /> value to a <see cref="Octo"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
 		public static implicit operator Octo(Quad value)
 		{
 			bool sign = IsNegative(value);
@@ -1217,6 +1342,10 @@ namespace MissingValues
 
 			return new Octo(sign, (uint)(exp + 0x3_C000), (UInt256)sig << 124);
         }
+		/// <summary>
+		/// Explicitly converts a <see cref="Quad" /> value to a <see cref="double"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
 		public static explicit operator double(Quad value)
 		{
 			UInt128 quadInt = QuadToUInt128Bits(value);
@@ -1247,6 +1376,10 @@ namespace MissingValues
 
 			return BitConverter.UInt64BitsToDouble(BitHelper.RoundPackToDouble(sign, (short)(exp), (sigQuad | 0x4000_0000_0000_0000)));
 		}
+		/// <summary>
+		/// Explicitly converts a <see cref="Quad" /> value to a <see cref="float"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
 		public static explicit operator float(Quad value)
 		{
 			UInt128 quadInt = QuadToUInt128Bits(value);
@@ -1274,8 +1407,12 @@ namespace MissingValues
 
 			exp = exp < -0x1000 ? -0x1000 : exp;
 
-			return BitConverter.UInt32BitsToSingle(BitHelper.RoundPackToSingle(sign, (short)(exp), (uint)(sigQuad | 0x4000_0000)));
+			return BitConverter.UInt32BitsToSingle(BitHelper.RoundPackToSingle(sign, (short)(exp), (sigQuad | 0x4000_0000)));
 		}
+		/// <summary>
+		/// Explicitly converts a <see cref="Quad" /> value to a <see cref="Half"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
 		public static explicit operator Half(Quad value)
 		{
 			UInt128 quadInt = QuadToUInt128Bits(value);
@@ -1308,16 +1445,26 @@ namespace MissingValues
 		#endregion
 		#region To Quad
 		// Unsigned
+		/// <summary>
+		/// Implicitly converts a <see cref="byte" /> value to a <see cref="Quad"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
 		public static implicit operator Quad(byte value)
 		{
 			return (Quad)(uint)value;
 		}
-		[CLSCompliant(false)]
+		/// <summary>
+		/// Implicitly converts a <see cref="ushort" /> value to a <see cref="Quad"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
 		public static implicit operator Quad(ushort value)
 		{
 			return (Quad)(uint)value;
 		}
-		[CLSCompliant(false)]
+		/// <summary>
+		/// Implicitly converts a <see cref="uint" /> value to a <see cref="Quad"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
 		public static implicit operator Quad(uint value)
 		{
 			int shiftDist;
@@ -1331,7 +1478,10 @@ namespace MissingValues
 
 			return new Quad(z, 0);
 		}
-		[CLSCompliant(false)]
+		/// <summary>
+		/// Implicitly converts a <see cref="ulong" /> value to a <see cref="Quad"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
 		public static implicit operator Quad(ulong value)
 		{
 			UInt128 sig;
@@ -1356,7 +1506,10 @@ namespace MissingValues
 
 			return new Quad(false, (ushort)(0x406F - shiftDist), sig);
 		}
-		[CLSCompliant(false)]
+		/// <summary>
+		/// Implicitly converts a <see cref="UInt128" /> value to a <see cref="Quad"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
 		public static implicit operator Quad(UInt128 value)
 		{
 			if (value == UInt128.Zero)
@@ -1371,7 +1524,10 @@ namespace MissingValues
 			return Quad.UInt128BitsToQuad((e << 112) + m);
 		}
 		// Signed
-		[CLSCompliant(false)]
+		/// <summary>
+		/// Implicitly converts a <see cref="sbyte" /> value to a <see cref="Quad"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
 		public static implicit operator Quad(sbyte value)
 		{
 			if (sbyte.IsNegative(value))
@@ -1381,6 +1537,10 @@ namespace MissingValues
 			}
 			return (Quad)(byte)value;
 		}
+		/// <summary>
+		/// Implicitly converts a <see cref="short" /> value to a <see cref="Quad"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
 		public static implicit operator Quad(short value)
 		{
 			if (short.IsNegative(value))
@@ -1390,6 +1550,10 @@ namespace MissingValues
 			}
 			return (Quad)(ushort)value;
 		}
+		/// <summary>
+		/// Implicitly converts a <see cref="int" /> value to a <see cref="Quad"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
 		public static implicit operator Quad(int value)
 		{
 			if (int.IsNegative(value))
@@ -1399,6 +1563,10 @@ namespace MissingValues
 			}
 			return (Quad)(uint)value;
 		}
+		/// <summary>
+		/// Implicitly converts a <see cref="long" /> value to a <see cref="Quad"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
 		public static implicit operator Quad(long value)
 		{
 			if (long.IsNegative(value))
@@ -1408,6 +1576,10 @@ namespace MissingValues
 			}
 			return (Quad)(ulong)value;
 		}
+		/// <summary>
+		/// Implicitly converts a <see cref="Int128" /> value to a <see cref="Quad"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
 		public static implicit operator Quad(Int128 value)
 		{
 			if (Int128.IsNegative(value))
@@ -1418,10 +1590,18 @@ namespace MissingValues
 			return (Quad)(UInt128)value;
 		}
 		// Floating
+		/// <summary>
+		/// Explicitly converts a <see cref="decimal" /> value to a <see cref="Quad"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
 		public static explicit operator Quad(decimal value)
 		{
 			return (Quad)(double)value;
 		}
+		/// <summary>
+		/// Implicitly converts a <see cref="double" /> value to a <see cref="Quad"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
 		public static implicit operator Quad(double value)
 		{
 			const int MaxBiasedExponentDouble = 0x07FF;
@@ -1453,6 +1633,10 @@ namespace MissingValues
 
 			return new Quad(sign, (ushort)(exp + (ExponentBias - DoubleExponentBias)), (UInt128)sig << 60);
 		}
+		/// <summary>
+		/// Implicitly converts a <see cref="float" /> value to a <see cref="Quad"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
 		public static implicit operator Quad(float value)
 		{
 			const int MaxBiasedExponentSingle = 0xFF;
@@ -1484,6 +1668,10 @@ namespace MissingValues
 
 			return new Quad(sign, (ushort)(exp + (ExponentBias - SingleExponentBias)), (UInt128)sig << 89);
 		}
+		/// <summary>
+		/// Implicitly converts a <see cref="Half" /> value to a <see cref="Quad"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
 		public static implicit operator Quad(Half value)
 		{
 			const int MaxBiasedExponentHalf = 0x1F;
