@@ -1399,7 +1399,8 @@ namespace MissingValues
 			{
 				var v1 = Unsafe.As<UInt256, Vector256<ulong>>(ref Unsafe.AsRef(in left));
 				var v2 = Unsafe.As<UInt256, Vector256<ulong>>(ref Unsafe.AsRef(in right));
-				return Unsafe.As<Vector256<ulong>, UInt256>(ref Unsafe.AsRef(v1 & v2));
+				var result = v1 & v2;
+				return Unsafe.As<Vector256<ulong>, UInt256>(ref result);
 			}
 			else if (Avx2.IsSupported)
 			{
@@ -1421,7 +1422,8 @@ namespace MissingValues
 			{
 				var v1 = Unsafe.As<UInt256, Vector256<ulong>>(ref Unsafe.AsRef(in left));
 				var v2 = Unsafe.As<UInt256, Vector256<ulong>>(ref Unsafe.AsRef(in right));
-				return Unsafe.As<Vector256<ulong>, UInt256>(ref Unsafe.AsRef(v1 | v2));
+				var result = v1 | v2;
+				return Unsafe.As<Vector256<ulong>, UInt256>(ref result);
 			}
 			else if (Avx2.IsSupported)
 			{
@@ -1443,7 +1445,8 @@ namespace MissingValues
 			{
 				var v1 = Unsafe.As<UInt256, Vector256<ulong>>(ref Unsafe.AsRef(in left));
 				var v2 = Unsafe.As<UInt256, Vector256<ulong>>(ref Unsafe.AsRef(in right));
-				return Unsafe.As<Vector256<ulong>, UInt256>(ref Unsafe.AsRef(v1 ^ v2));
+				var result = v1 ^ v2;
+				return Unsafe.As<Vector256<ulong>, UInt256>(ref result);
 			}
 			else if (Avx2.IsSupported)
 			{
