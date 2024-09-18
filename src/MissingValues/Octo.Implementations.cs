@@ -646,10 +646,7 @@ namespace MissingValues
 		}
 
 		/// <inheritdoc/>
-		public static bool IsNegative(Octo value)
-		{
-			return Int256.IsNegative(Octo.OctoToInt256Bits(value));
-		}
+		public static bool IsNegative(Octo value) => Int256.IsNegative(Octo.OctoToInt256Bits(value));
 
 		/// <inheritdoc/>
 		public static bool IsNegativeInfinity(Octo value)
@@ -1254,6 +1251,8 @@ namespace MissingValues
 		/// <inheritdoc/>
 		public static Octo Round(Octo x)
 		{
+			// Based on .Net Math.Round(): https://github.com/dotnet/runtime/blob/main/src/libraries/System.Private.CoreLib/src/System/Math.cs#L1273 
+
 			var exponent = x.BiasedExponent;
 
 			if (exponent >= 0x3FFFF + MantissaDigits - 1)
@@ -1261,38 +1260,13 @@ namespace MissingValues
 				return x;
 			}
 
-			bool sign = Octo.IsNegative(x);
-
-			if (sign)
-			{
-				x = -x;
-			}
 			if (exponent < 0x3FFFF - 1)
 			{
 				return Zero * x;
 			}
 
-			Octo toint = ToInt;
-			Octo y = x + toint - toint - x;
-			if (y > HalfOne)
-			{
-				y = y + x - One;
-			}
-			else if (y <= -HalfOne)
-			{
-				y = y + x + One;
-			}
-			else
-			{
-				y += x;
-			}
-
-			if (sign)
-			{
-				y = -y;
-			}
-
-			return y;
+			Octo temp = CopySign(ToInt, x);
+			return CopySign((x + temp) - temp, x);
 		}
 		/// <inheritdoc/>
 		public static Octo Round(Octo x, int digits)

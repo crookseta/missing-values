@@ -22,7 +22,20 @@ namespace MissingValues.Tests.Helpers
 			}
 			else
 			{
-				throw new InvalidOperationException();
+				throw new InvalidOperationException($"{typeof(TFloat)} does not match the bits({bits.Length}): {StringifyBits(bits)}");
+			}
+
+			static string StringifyBits(ReadOnlySpan<ulong> bits)
+			{
+				StringBuilder sb = new StringBuilder();
+
+				sb.Append($"0x{bits[0]:X16}");
+				for (int i = 1; i < bits.Length; i++)
+				{
+					sb.Append($"_{bits[i]:X16}");
+				}
+
+				return sb.ToString();
 			}
 		}
 	}

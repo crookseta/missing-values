@@ -652,6 +652,62 @@ namespace MissingValues.Tests.Core
 			(Thousand, QuadTest.Thousand),
 		];
 
+		private static (Octo, int, MidpointRounding, Octo)[] _roundAwayFromZeroData =>
+		[
+			(Values.CreateFloat<Octo>(0x4000_0C00_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000), 0, MidpointRounding.AwayFromZero, Four),
+			(Values.CreateFloat<Octo>(0x4000_0666_6666_6666, 0x6666_6666_6666_6666, 0x6666_6666_6666_6666, 0x6666_6666_6666_6666), 0, MidpointRounding.AwayFromZero, Three),
+			(Values.CreateFloat<Octo>(0x4000_0400_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000), 0, MidpointRounding.AwayFromZero, Three),
+			(Values.CreateFloat<Octo>(0x4000_00CC_CCCC_CCCC, 0xCCCC_CCCC_CCCC_CCCC, 0xCCCC_CCCC_CCCC_CCCC, 0xCCCC_CCCC_CCCC_CCCD), 0, MidpointRounding.AwayFromZero, Two),
+			(Values.CreateFloat<Octo>(0xC000_00CC_CCCC_CCCC, 0xCCCC_CCCC_CCCC_CCCC, 0xCCCC_CCCC_CCCC_CCCC, 0xCCCC_CCCC_CCCC_CCCD), 0, MidpointRounding.AwayFromZero, NegativeTwo),
+			(Values.CreateFloat<Octo>(0xC000_0400_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000), 0, MidpointRounding.AwayFromZero, NegativeThree),
+			(Values.CreateFloat<Octo>(0xC000_0666_6666_6666, 0x6666_6666_6666_6666, 0x6666_6666_6666_6666, 0x6666_6666_6666_6666), 0, MidpointRounding.AwayFromZero, NegativeThree),
+			(Values.CreateFloat<Octo>(0xC000_0C00_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000), 0, MidpointRounding.AwayFromZero, NegativeFour),
+		];
+		private static (Octo, int, MidpointRounding, Octo)[] _roundToEvenData =>
+		[
+			(Values.CreateFloat<Octo>(0x4000_0C00_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000), 0, MidpointRounding.ToEven, Four),
+			(Values.CreateFloat<Octo>(0x4000_0666_6666_6666, 0x6666_6666_6666_6666, 0x6666_6666_6666_6666, 0x6666_6666_6666_6666), 0, MidpointRounding.ToEven, Three),
+			(Values.CreateFloat<Octo>(0x4000_0400_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000), 0, MidpointRounding.ToEven, Two),
+			(Values.CreateFloat<Octo>(0x4000_00CC_CCCC_CCCC, 0xCCCC_CCCC_CCCC_CCCC, 0xCCCC_CCCC_CCCC_CCCC, 0xCCCC_CCCC_CCCC_CCCD), 0, MidpointRounding.ToEven, Two),
+			(Values.CreateFloat<Octo>(0xC000_00CC_CCCC_CCCC, 0xCCCC_CCCC_CCCC_CCCC, 0xCCCC_CCCC_CCCC_CCCC, 0xCCCC_CCCC_CCCC_CCCD), 0, MidpointRounding.ToEven, NegativeTwo),
+			(Values.CreateFloat<Octo>(0xC000_0400_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000), 0, MidpointRounding.ToEven, NegativeTwo),
+			(Values.CreateFloat<Octo>(0xC000_0666_6666_6666, 0x6666_6666_6666_6666, 0x6666_6666_6666_6666, 0x6666_6666_6666_6666), 0, MidpointRounding.ToEven, NegativeThree),
+			(Values.CreateFloat<Octo>(0xC000_0C00_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000), 0, MidpointRounding.ToEven, NegativeFour),
+		];
+		private static (Octo, int, MidpointRounding, Octo)[] _roundToNegativeInfinityData =>
+		[
+			(Values.CreateFloat<Octo>(0x4000_0C00_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000), 0, MidpointRounding.ToNegativeInfinity, Three),
+			(Values.CreateFloat<Octo>(0x4000_0666_6666_6666, 0x6666_6666_6666_6666, 0x6666_6666_6666_6666, 0x6666_6666_6666_6666), 0, MidpointRounding.ToNegativeInfinity, Two),
+			(Values.CreateFloat<Octo>(0x4000_0400_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000), 0, MidpointRounding.ToNegativeInfinity, Two),
+			(Values.CreateFloat<Octo>(0x4000_00CC_CCCC_CCCC, 0xCCCC_CCCC_CCCC_CCCC, 0xCCCC_CCCC_CCCC_CCCC, 0xCCCC_CCCC_CCCC_CCCD), 0, MidpointRounding.ToNegativeInfinity, Two),
+			(Values.CreateFloat<Octo>(0xC000_00CC_CCCC_CCCC, 0xCCCC_CCCC_CCCC_CCCC, 0xCCCC_CCCC_CCCC_CCCC, 0xCCCC_CCCC_CCCC_CCCD), 0, MidpointRounding.ToNegativeInfinity, NegativeThree),
+			(Values.CreateFloat<Octo>(0xC000_0400_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000), 0, MidpointRounding.ToNegativeInfinity, NegativeThree),
+			(Values.CreateFloat<Octo>(0xC000_0666_6666_6666, 0x6666_6666_6666_6666, 0x6666_6666_6666_6666, 0x6666_6666_6666_6666), 0, MidpointRounding.ToNegativeInfinity, NegativeThree),
+			(Values.CreateFloat<Octo>(0xC000_0C00_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000), 0, MidpointRounding.ToNegativeInfinity, NegativeFour),
+		];
+		private static (Octo, int, MidpointRounding, Octo)[] _roundToPositiveInfinityData =>
+		[
+			(Values.CreateFloat<Octo>(0x4000_0C00_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000), 0, MidpointRounding.ToPositiveInfinity, Four),
+			(Values.CreateFloat<Octo>(0x4000_0666_6666_6666, 0x6666_6666_6666_6666, 0x6666_6666_6666_6666, 0x6666_6666_6666_6666), 0, MidpointRounding.ToPositiveInfinity, Three),
+			(Values.CreateFloat<Octo>(0x4000_0400_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000), 0, MidpointRounding.ToPositiveInfinity, Three),
+			(Values.CreateFloat<Octo>(0x4000_00CC_CCCC_CCCC, 0xCCCC_CCCC_CCCC_CCCC, 0xCCCC_CCCC_CCCC_CCCC, 0xCCCC_CCCC_CCCC_CCCD), 0, MidpointRounding.ToPositiveInfinity, Three),
+			(Values.CreateFloat<Octo>(0xC000_00CC_CCCC_CCCC, 0xCCCC_CCCC_CCCC_CCCC, 0xCCCC_CCCC_CCCC_CCCC, 0xCCCC_CCCC_CCCC_CCCD), 0, MidpointRounding.ToPositiveInfinity, NegativeTwo),
+			(Values.CreateFloat<Octo>(0xC000_0400_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000), 0, MidpointRounding.ToPositiveInfinity, NegativeTwo),
+			(Values.CreateFloat<Octo>(0xC000_0666_6666_6666, 0x6666_6666_6666_6666, 0x6666_6666_6666_6666, 0x6666_6666_6666_6666), 0, MidpointRounding.ToPositiveInfinity, NegativeTwo),
+			(Values.CreateFloat<Octo>(0xC000_0C00_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000), 0, MidpointRounding.ToPositiveInfinity, NegativeThree),
+		];
+		private static (Octo, int, MidpointRounding, Octo)[] _roundToZeroData =>
+		[
+			(Values.CreateFloat<Octo>(0x4000_0C00_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000), 0, MidpointRounding.ToZero, Three),
+			(Values.CreateFloat<Octo>(0x4000_0666_6666_6666, 0x6666_6666_6666_6666, 0x6666_6666_6666_6666, 0x6666_6666_6666_6666), 0, MidpointRounding.ToZero, Two),
+			(Values.CreateFloat<Octo>(0x4000_0400_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000), 0, MidpointRounding.ToZero, Two),
+			(Values.CreateFloat<Octo>(0x4000_00CC_CCCC_CCCC, 0xCCCC_CCCC_CCCC_CCCC, 0xCCCC_CCCC_CCCC_CCCC, 0xCCCC_CCCC_CCCC_CCCD), 0, MidpointRounding.ToZero, Two),
+			(Values.CreateFloat<Octo>(0xC000_00CC_CCCC_CCCC, 0xCCCC_CCCC_CCCC_CCCC, 0xCCCC_CCCC_CCCC_CCCC, 0xCCCC_CCCC_CCCC_CCCD), 0, MidpointRounding.ToZero, NegativeTwo),
+			(Values.CreateFloat<Octo>(0xC000_0400_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000), 0, MidpointRounding.ToZero, NegativeTwo),
+			(Values.CreateFloat<Octo>(0xC000_0666_6666_6666, 0x6666_6666_6666_6666, 0x6666_6666_6666_6666, 0x6666_6666_6666_6666), 0, MidpointRounding.ToZero, NegativeTwo),
+			(Values.CreateFloat<Octo>(0xC000_0C00_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000), 0, MidpointRounding.ToZero, NegativeThree),
+		];
+
 		private static (Octo, Octo, Octo, Octo)[] _fmaData =>
 		[
 			(One, One, One, Two),
@@ -711,6 +767,12 @@ namespace MissingValues.Tests.Core
 		public static CastingTheoryData<Octo, float> CastToSingleTheoryData = new(_castToSingleData);
 		public static CastingTheoryData<Octo, double> CastToDoubleTheoryData = new(_castToDoubleData);
 		public static CastingTheoryData<Octo, Quad> CastToQuadTheoryData = new(_castToQuadData);
+
+		public static RoundTheoryData<Octo> RoundAwayFromZeroTheoryData = new(_roundAwayFromZeroData);
+		public static RoundTheoryData<Octo> RoundToEvenTheoryData = new(_roundToEvenData);
+		public static RoundTheoryData<Octo> RoundToNegativeInfinityTheoryData = new(_roundToNegativeInfinityData);
+		public static RoundTheoryData<Octo> RoundToPositiveInfinityTheoryData = new(_roundToPositiveInfinityData);
+		public static RoundTheoryData<Octo> RoundToZeroTheoryData = new(_roundToZeroData);
 
 		public static FusedMultiplyAddTheoryData<Octo> FMATheoryData = new(_fmaData);
 #pragma warning restore S3263 // Static fields should appear in the order they must be initialized 

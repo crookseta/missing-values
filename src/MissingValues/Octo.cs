@@ -165,7 +165,7 @@ namespace MissingValues
 		/// <summary>
 		/// Represents a value that is not a number (<c>NaN</c>).
 		/// </summary>
-		public static readonly Octo NaN = new Octo(0x7FFF_F800_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
+		public static readonly Octo NaN = new Octo(0xFFFF_F800_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
 		/// <summary>
 		/// Represents the value <c>-1</c> of the type.
 		/// </summary>

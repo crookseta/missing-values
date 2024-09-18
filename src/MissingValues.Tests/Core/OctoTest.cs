@@ -32,14 +32,23 @@ namespace MissingValues.Tests.Core
 		public static readonly Octo Hundred = Values.CreateFloat<Octo>(0x4000_5900_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
 		public static readonly Octo Thousand = Values.CreateFloat<Octo>(0x4000_8F40_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
 
+		public static readonly Octo GreaterThanOneSmallest = Values.CreateFloat<Octo>(0x3FFF_F000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0001);
+		public static readonly Octo LessThanOneLargest = Values.CreateFloat<Octo>(0x3FFF_EFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF);
+
 		public static readonly Octo SmallestSubnormal = Values.CreateFloat<Octo>(0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0001);
 		public static readonly Octo GreatestSubnormal = Values.CreateFloat<Octo>(0x0000_0FFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF);
+
+		public static readonly Octo MaxValue = Octo.MaxValue;
+		public static readonly Octo MinValue = Octo.MinValue;
 
 		public static readonly Octo ByteMaxValue = Values.CreateFloat<Octo>(0x4000_6FE0_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
 		public static readonly Octo UInt16MaxValue = Values.CreateFloat<Octo>(0x4000_EFFF_E000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
 		public static readonly Octo UInt32MaxValue = Values.CreateFloat<Octo>(0x4001_EFFF_FFFF_E000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
 		public static readonly Octo UInt64MaxValue = Values.CreateFloat<Octo>(0x4003_EFFF_FFFF_FFFF, 0xFFFF_E000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
 		public static readonly Octo UInt128MaxValue = Values.CreateFloat<Octo>(0x4007_EFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_E000_0000_0000, 0x0000_0000_0000_0000);
+		public static readonly Octo TwoOver255 = Values.CreateFloat<Octo>(0x400F_E000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
+		public static readonly Octo TwoOver511 = Values.CreateFloat<Octo>(0x401F_E000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
+
 		public static readonly Octo SByteMaxValue = Values.CreateFloat<Octo>(0x4000_5FC0_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
 		public static readonly Octo SByteMinValue = Values.CreateFloat<Octo>(0xC000_6000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
 		public static readonly Octo Int16MaxValue = Values.CreateFloat<Octo>(0x4000_DFFF_C000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
@@ -52,6 +61,8 @@ namespace MissingValues.Tests.Core
 		public static readonly Octo Int128MinValue = Values.CreateFloat<Octo>(0xC007_E000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
 
 		public static readonly Octo Delta = Values.CreateFloat<Octo>(0x400E_B000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
+
+		public static readonly int Radix = 2;
 
 		[Fact]
 		public void Ctor_Empty()
