@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using System.Text.Json;
 using System.Threading.Tasks;
 
 namespace MissingValues.Tests.Core
@@ -313,6 +314,24 @@ namespace MissingValues.Tests.Core
 		{
 			Octo.TryParse(s, out Octo actual).Should().Be(success);
 			actual.Should().Be(expected);
+		}
+
+
+		[Fact]
+		public void JsonWriteTest()
+		{
+			JsonSerializer.Serialize(new Octo[] { MaxValue, One, Half, Quarter, Zero })
+				.Should().Be($"[{MaxValue.ToString(null, CultureInfo.InvariantCulture)},1,0.5,0.25,0]");
+		}
+		[Fact]
+		public void JsonReadTest()
+		{
+			string toString = Quarter.ToString(null, CultureInfo.InvariantCulture);
+
+			JsonSerializer.Deserialize<Octo>(toString)
+				.Should().Be(Quarter);
+			JsonSerializer.Deserialize<Octo>(Encoding.UTF8.GetBytes(toString))
+				.Should().Be(Quarter);
 		}
 	}
 }

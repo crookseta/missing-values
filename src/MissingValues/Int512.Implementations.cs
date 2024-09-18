@@ -1253,7 +1253,7 @@ namespace MissingValues
 			// We simplify the logic here by just doing unsigned division on the
 			// two's complement representation and then taking the correct sign.
 
-			UInt256 sign = (left.Upper ^ right.Upper) & (UInt256.One << 255);
+			ulong sign = (left._p7 ^ right._p7) & (1UL << 63);
 
 			Int512 a = left, b = right;
 
@@ -1274,10 +1274,7 @@ namespace MissingValues
 				result = ~result + UInt512.One;
 			}
 
-			return new Int512(
-				result.Upper,
-				result.Lower
-			);
+			return unchecked((Int512)result);
 		}
 
 		/// <inheritdoc/>

@@ -22,7 +22,7 @@ namespace MissingValues
 	[JsonConverter(typeof(NumberConverter.QuadConverter))]
 	[DebuggerDisplay($"{{{nameof(ToString)}(),nq}}")]
 	public readonly partial struct Quad
-	{ // Add documentation on missing members.
+	{
 		internal static UInt128 SignMask => new UInt128(0x8000_0000_0000_0000, 0x0000_0000_0000_0000);
 		internal static UInt128 InvertedSignMask => new UInt128(0x7FFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF);
 
