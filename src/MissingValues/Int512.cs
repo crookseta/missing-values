@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Json.Serialization;
@@ -642,7 +643,14 @@ namespace MissingValues
 		/// Explicitly converts a <see cref="UInt128" /> value to a <see cref="Int512"/>.
 		/// </summary>
 		/// <param name="value">The value to convert.</param>
-		public static explicit operator Int512(UInt128 value) => new Int512(UInt128.Zero, UInt128.Zero, UInt128.Zero, value);
+		public static explicit operator Int512(UInt128 value)
+		{
+			return new Int512(
+				0, 0, 0, 0,
+				0, 0, Unsafe.Add(ref Unsafe.As<UInt128, ulong>(ref value), 1), (ulong)value
+				);
+		}
+
 		//Signed
 		/// <summary>
 		/// Implicitly converts a <see cref="sbyte" /> value to a <see cref="Int512"/>.
@@ -700,8 +708,12 @@ namespace MissingValues
 		/// <param name="value">The value to convert.</param>
 		public static implicit operator Int512(Int128 value)
 		{
-			Int256 lower = value;
-			return new((UInt256)(lower >> 255), (UInt256)lower);
+			ref long v = ref Unsafe.As<Int128, long>(ref value);
+			ulong lowerShifted = (ulong)(Unsafe.Add(ref v, 1) >> 63);
+			return new(
+				lowerShifted, lowerShifted, lowerShifted, lowerShifted,
+				lowerShifted, lowerShifted, (ulong)Unsafe.Add(ref v, 1), (ulong)v
+				);
 		}
 		//Floating
 		/// <summary>

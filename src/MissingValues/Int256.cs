@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Json.Serialization;
@@ -601,7 +602,9 @@ namespace MissingValues
 		/// <param name="value">The value to convert.</param>
 		public static implicit operator Int256(Int128 value)
 		{
-			return new((UInt128)(value >> 127), (UInt128)value);
+			ref long v = ref Unsafe.As<Int128, long>(ref value);
+			ulong lowerShifted = (ulong)(Unsafe.Add(ref v, 1) >> 63);
+			return new(lowerShifted, lowerShifted, (ulong)Unsafe.Add(ref v, 1), (ulong)v);
 		}
 		//Unsigned
 		/// <summary>
@@ -633,7 +636,11 @@ namespace MissingValues
 		/// Explicitly converts a <see cref="UInt128" /> value to a <see cref="Int256"/>.
 		/// </summary>
 		/// <param name="value">The value to convert.</param>
-		public static explicit operator Int256(UInt128 value) => new Int256(value);
+		public static explicit operator Int256(UInt128 value)
+		{
+			return new Int256(0, 0, Unsafe.Add(ref Unsafe.As<UInt128, ulong>(ref value), 1), (ulong)value);
+		}
+
 		//Floating
 		/// <summary>
 		/// Explicitly converts a <see cref="decimal" /> value to a <see cref="Int256"/>.

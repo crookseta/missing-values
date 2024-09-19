@@ -91,8 +91,10 @@ namespace MissingValues
 		/// <param name="lower">The lower 256-bits of the 512-bit value.</param>
 		public UInt512(UInt256 lower)
 		{
-			lower.GetLowerParts(out _p1, out _p0);
-			lower.GetUpperParts(out _p3, out _p2);
+			_p0 = lower.Part0;
+			_p1 = lower.Part1;
+			_p2 = lower.Part2;
+			_p3 = lower.Part3;
 			_p4 = 0;
 			_p5 = 0;
 			_p6 = 0;
@@ -105,10 +107,14 @@ namespace MissingValues
 		/// <param name="lower">The lower 256-bits of the 512-bit value.</param>
 		public UInt512(UInt256 upper, UInt256 lower)
 		{
-			lower.GetLowerParts(out _p1, out _p0);
-			lower.GetUpperParts(out _p3, out _p2);
-			upper.GetLowerParts(out _p5, out _p4);
-			upper.GetUpperParts(out _p7, out _p6);
+			_p0 = lower.Part0;
+			_p1 = lower.Part1;
+			_p2 = lower.Part2;
+			_p3 = lower.Part3;
+			_p4 = upper.Part0;
+			_p5 = upper.Part1;
+			_p6 = upper.Part2;
+			_p7 = upper.Part3;
 		}
 		/// <summary>
 		/// Initializes a new instance of the <see cref="UInt512" /> struct.
@@ -659,7 +665,14 @@ namespace MissingValues
 		/// Implicitly converts a <see cref="UInt128" /> value to a <see cref="UInt512"/>.
 		/// </summary>
 		/// <param name="value">The value to convert.</param>
-		public static implicit operator UInt512(UInt128 value) => new UInt512(value);
+		public static implicit operator UInt512(UInt128 value)
+		{
+			return new UInt512(
+				0, 0, 0, 0,
+				0, 0, Unsafe.Add(ref Unsafe.As<UInt128, ulong>(ref value), 1), (ulong)value
+				);
+		}
+
 		/// <summary>
 		/// Implicitly converts a <see cref="nuint" /> value to a <see cref="UInt512"/>.
 		/// </summary>
@@ -760,8 +773,12 @@ namespace MissingValues
 		/// <param name="value">The value to convert.</param>
 		public static explicit operator UInt512(Int128 value)
 		{
-			Int256 lower = value;
-			return new UInt512((UInt256)(lower >> 255), (UInt256)lower);
+			ref long v = ref Unsafe.As<Int128, long>(ref value);
+			ulong lowerShifted = (ulong)(Unsafe.Add(ref v, 1) >> 63);
+			return new(
+				lowerShifted, lowerShifted, lowerShifted, lowerShifted,
+				lowerShifted, lowerShifted, (ulong)Unsafe.Add(ref v, 1), (ulong)v
+				);
 		}
 		/// <summary>
 		/// Explicitly converts a <see cref="Int128" /> value to a <see cref="UInt512"/>.
@@ -770,11 +787,13 @@ namespace MissingValues
 		/// <exception cref="OverflowException"><paramref name="value"/> is outside the range of <see cref="UInt512"/>.</exception>
 		public static explicit operator checked UInt512(Int128 value)
 		{
-			if (value < 0)
+			if (value < Int128.Zero)
 			{
 				Thrower.IntegerOverflow();
 			}
-			return new UInt512((UInt128)value);
+			return new UInt512(
+				0, 0, 0, 0,
+				0, 0, Unsafe.Add(ref Unsafe.As<Int128, ulong>(ref value), 1), (ulong)value);
 		}
 		/// <summary>
 		/// Explicitly converts a <see cref="nint" /> value to a <see cref="UInt512"/>.

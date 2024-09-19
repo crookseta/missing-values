@@ -78,8 +78,12 @@ namespace MissingValues
 		/// Initializes a new instance of the <see cref="UInt256" /> struct.
 		/// </summary>
 		/// <param name="lower">The lower 128-bits of the 256-bit value.</param>
-		public UInt256(UInt128 lower) : this(UInt128.Zero, lower)
+		public UInt256(UInt128 lower)
 		{
+			_p0 = (ulong)lower;
+			_p1 = (ulong)(lower >> 64);
+			_p2 = 0;
+			_p3 = 0;
 		}
 		/// <summary>
 		/// Initializes a new instance of the <see cref="UInt256" /> struct.
@@ -659,7 +663,11 @@ namespace MissingValues
 		/// Implicitly converts a <see cref="UInt128" /> value to a <see cref="UInt256"/>.
 		/// </summary>
 		/// <param name="value">The value to convert.</param>
-		public static implicit operator UInt256(UInt128 value) => new UInt256(0, value);
+		public static implicit operator UInt256(UInt128 value)
+		{
+			return new UInt256(0, 0, Unsafe.Add(ref Unsafe.As<UInt128, ulong>(ref value), 1), (ulong)value);
+		}
+
 		/// <summary>
 		/// Implicitly converts a <see cref="nuint" /> value to a <see cref="UInt256"/>.
 		/// </summary>
@@ -760,8 +768,9 @@ namespace MissingValues
 		/// <param name="value">The value to convert.</param>
 		public static explicit operator UInt256(Int128 value)
 		{
-			Int128 lower = value;
-			return new((UInt128)(lower >> 127), (UInt128)lower);
+			ref long v = ref Unsafe.As<Int128, long>(ref value);
+			ulong lowerShifted = (ulong)(Unsafe.Add(ref v, 1) >> 63);
+			return new(lowerShifted, lowerShifted, (ulong)Unsafe.Add(ref v, 1), (ulong)v);
 		}
 		/// <summary>
 		/// Explicitly converts a <see cref="Int128" /> value to a <see cref="UInt256"/>.
@@ -770,11 +779,11 @@ namespace MissingValues
 		/// <exception cref="OverflowException"><paramref name="value"/> is outside the range of <see cref="UInt256"/>.</exception>
 		public static explicit operator checked UInt256(Int128 value)
 		{
-			if (value < 0)
+			if (value < Int128.Zero)
 			{
 				Thrower.IntegerOverflow();
 			}
-			return new(0, (UInt128)value);
+			return new(0, 0, Unsafe.Add(ref Unsafe.As<Int128, ulong>(ref value), 1), (ulong)value);
 		}
 		/// <summary>
 		/// Explicitly converts a <see cref="nint" /> value to a <see cref="UInt256"/>.
