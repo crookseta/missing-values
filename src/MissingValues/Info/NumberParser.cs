@@ -48,6 +48,33 @@ namespace MissingValues.Info
 				return value << 4;
 			}
 		}
+		private readonly struct OctalConverter<TInteger> : IIntegerRadixConverter<TInteger>
+			where TInteger : struct, IFormattableInteger<TInteger>
+		{
+			public static NumberStyles AllowedStyles => NumberStyles.None /* NumberStyles.OctalNumber */;
+
+			public static uint MaxDigitValue => 7;
+
+			public static int MaxDigitCount => (TInteger.MaxHexDigits / 8) * 11;
+
+			public static TInteger FromChar<TChar>(TChar ch)
+				where TChar : unmanaged, IUtfCharacter<TChar>
+			{
+				return TInteger.GetDecimalValue((char)ch);
+			}
+
+			public static bool IsValidChar<TChar>(TChar ch)
+				where TChar : unmanaged, IUtfCharacter<TChar>
+			{
+				uint c = (uint)ch;
+				return '0' <= c || c <= '7';
+			}
+
+			public static TInteger ShiftLeftForNextDigit(in TInteger value)
+			{
+				return value << 3;
+			}
+		}
 		private readonly struct BinConverter<TInteger> : IIntegerRadixConverter<TInteger>
 			where TInteger : struct, IFormattableInteger<TInteger>
 		{
