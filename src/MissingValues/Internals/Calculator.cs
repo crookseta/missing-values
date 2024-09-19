@@ -280,32 +280,6 @@ internal static class Calculator
 		}
 	}
 
-	public static void DivRem(ReadOnlySpan<ulong> left, ulong right, Span<ulong> quotient, out ulong remainder)
-	{
-		// Based on: https://github.com/dotnet/runtime/blob/main/src/libraries/System.Runtime.Numerics/src/System/Numerics/BigIntegerCalculator.DivRem.cs
-
-		// Executes the division for one big and one 64-bit integer.
-		// Thus, we've similar code than below, but there is no loop for
-		// processing the 64-bit integer, since it's a single element.
-
-		if (right <= uint.MaxValue)
-		{
-			DivRem(MemoryMarshal.Cast<ulong, uint>(left), unchecked((uint)right), MemoryMarshal.Cast<ulong, uint>(quotient), out uint rem);
-			remainder = rem;
-			return;
-		}
-
-		UInt128 carry = default;
-
-		for (int i = left.Length - 1; i >= 0; i--)
-		{
-			UInt128 value = new UInt128((ulong)carry, left[i]);
-			UInt128 digit = value / right;
-			quotient[i] = (ulong)digit;
-			carry = value - digit * right;
-		}
-		remainder = (ulong)carry;
-	}
 	public static void DivRem(ReadOnlySpan<uint> left, uint right, Span<uint> quotient, out uint remainder)
 	{
 		// Based on: https://github.com/dotnet/runtime/blob/main/src/libraries/System.Runtime.Numerics/src/System/Numerics/BigIntegerCalculator.DivRem.cs
@@ -333,28 +307,6 @@ internal static class Calculator
 		Divide(remainder, right, quotient);
 	}
 
-	public static void Divide(ReadOnlySpan<ulong> left, ulong right, Span<ulong> quotient)
-	{
-        // Based on: https://github.com/dotnet/runtime/blob/main/src/libraries/System.Runtime.Numerics/src/System/Numerics/BigIntegerCalculator.DivRem.cs
-
-        // Same as above, but only computing the quotient.
-
-        if (right <= uint.MaxValue)
-        {
-			Divide(MemoryMarshal.Cast<ulong, uint>(left), unchecked((uint)right), MemoryMarshal.Cast<ulong, uint>(quotient));
-            return;
-        }
-
-        UInt128 carry = default;
-
-		for (int i = left.Length - 1; i >= 0; i--)
-		{
-			UInt128 value = new UInt128((ulong)carry, left[i]);
-			UInt128 digit = value / right;
-			quotient[i] = (ulong)digit;
-			carry = value - digit * right;
-		}
-	}
 	public static void Divide(ReadOnlySpan<uint> left, uint right, Span<uint> quotient)
 	{
 		// Based on: https://github.com/dotnet/runtime/blob/main/src/libraries/System.Runtime.Numerics/src/System/Numerics/BigIntegerCalculator.DivRem.cs
@@ -371,154 +323,25 @@ internal static class Calculator
 			carry = value - digit * right;
 		}
 	}
-	public static void Divide(Span<ulong> left, ReadOnlySpan<ulong> right, Span<ulong> quotient)
-	{
-		// Based on: https://github.com/dotnet/runtime/blob/main/src/libraries/System.Runtime.Numerics/src/System/Numerics/BigIntegerCalculator.DivRem.cs
-
-		Span<ulong> bits = quotient.Slice(0, left.Length - right.Length + 1);
-
-		ulong divHi = right[right.Length - 1];
-		ulong divLo = right.Length > 1 ? right[right.Length - 2] : 0;
-
-		int shift = BitOperations.LeadingZeroCount(divHi);
-		int backShift = 64 - shift;
-
-		if (shift > 0)
-		{
-			ulong divNx = right.Length > 2 ? right[right.Length - 3] : 0;
-
-			divHi = (divHi << shift) | (divLo >> backShift);
-			divLo = (divLo << shift) | (divNx >> backShift);
-		}
-
-		// Then, we divide all of the bits as we would do it using
-		// pen and paper: guessing the next digit, subtracting, ...
-		for (int i = left.Length; i >= right.Length; i--)
-		{
-			int n = i - right.Length;
-			ulong t = ((ulong)(i) < (ulong)(left.Length)) ? left[i] : 0;
-
-			UInt128 valHi = new UInt128(t, left[i - 1]);
-			ulong valLo = (i > 1) ? left[i - 2] : 0;
-
-			// We shifted the divisor, we shift the dividend too
-			if (shift > 0)
-			{
-				ulong valNx = i > 2 ? left[i - 3] : 0;
-
-				valHi = (valHi << shift) | (valLo >> backShift);
-				valLo = (valLo << shift) | (valNx >> backShift);
-			}
-
-			// First guess for the current digit of the quotient,
-			// which naturally must have only 64 bits...
-			UInt128 digit = valHi / divHi;
-
-			if (digit > 0xFFFF_FFFF_FFFF_FFFF)
-			{
-				digit = 0xFFFF_FFFF_FFFF_FFFF;
-			}
-
-			// Our first guess may be a little bit to big
-			while (DivideGuessTooBig(digit, valHi, valLo, divHi, divLo))
-			{
-				--digit;
-			}
-
-			if (digit > 0)
-			{
-				// Now it's time to subtract our current quotient
-				ulong carry = SubtractDivisor(left.Slice(n), right, digit);
-
-				if (carry != t)
-				{
-					Debug.Assert(carry == (t + 1));
-
-					// Our guess was still exactly one too high
-					carry = AddDivisor(left.Slice(n), right);
-
-					--digit;
-					Debug.Assert(carry == 1);
-				}
-			}
-
-			// We have the digit!
-			if ((uint)(n) < (uint)(bits.Length))
-			{
-				bits[n] = (ulong)(digit);
-			}
-
-			if ((uint)(i) < (uint)(left.Length))
-			{
-				left[i] = 0;
-			}
-		}
-
-		static ulong AddDivisor(Span<ulong> left, ReadOnlySpan<ulong> right)
-		{
-			UInt128 carry = UInt128.Zero;
-
-			for (int i = 0; i < right.Length; i++)
-			{
-				ref ulong leftElement = ref left[i];
-				UInt128 digit = (leftElement + carry) + right[i];
-
-				leftElement = unchecked((ulong)digit);
-				carry = digit >> 64;
-			}
-
-			return (ulong)carry;
-		}
-
-		static bool DivideGuessTooBig(UInt128 q, UInt128 valHi, ulong valLo, ulong divHi, ulong divLo)
-		{
-			UInt128 chkHi = divHi * q;
-			UInt128 chkLo = divLo * q;
-
-			chkHi += (chkLo >> 64);
-			chkLo = (ulong)(chkLo);
-
-			return (chkHi > valHi) || ((chkHi == valHi) && (chkLo > valLo));
-		}
-
-		static ulong SubtractDivisor(Span<ulong> left, ReadOnlySpan<ulong> right, UInt128 q)
-		{
-			// Combines a subtract and a multiply operation, which is naturally
-			// more efficient than multiplying and then subtracting...
-
-			UInt128 carry = UInt128.Zero;
-
-			for (int i = 0; i < right.Length; i++)
-			{
-				carry += right[i] * q;
-
-				ulong digit = (ulong)(carry);
-				carry >>= 64;
-
-				ref ulong leftElement = ref left[i];
-
-				if (leftElement < digit)
-				{
-					++carry;
-				}
-				leftElement -= digit;
-			}
-
-			return (ulong)(carry);
-		}
-	}
 	public static void Divide(Span<uint> left, ReadOnlySpan<uint> right, Span<uint> quotient)
 	{
 		// Based on: https://github.com/dotnet/runtime/blob/main/src/libraries/System.Runtime.Numerics/src/System/Numerics/BigIntegerCalculator.DivRem.cs
 
 		Span<uint> bits = quotient.Slice(0, left.Length - right.Length + 1);
 
+		// Executes the "grammar-school" algorithm for computing q = a / b.
+		// Before calculating q_i, we get more bits into the highest bit
+		// block of the divisor. Thus, guessing digits of the quotient
+		// will be more precise. Additionally we'll get r = a % b.
+
 		uint divHi = right[right.Length - 1];
 		uint divLo = right.Length > 1 ? right[right.Length - 2] : 0;
 
+		// We measure the leading zeros of the divisor
 		int shift = BitOperations.LeadingZeroCount(divHi);
 		int backShift = 32 - shift;
 
+		// And, we make sure the most significant bit is set
 		if (shift > 0)
 		{
 			uint divNx = right.Length > 2 ? right[right.Length - 3] : 0;
@@ -594,6 +417,8 @@ internal static class Calculator
 		{
 			ulong carry = 0;
 
+			// Repairs the dividend, if the last subtract was too much
+
 			for (int i = 0; i < right.Length; i++)
 			{
 				ref uint leftElement = ref left[i];
@@ -608,6 +433,13 @@ internal static class Calculator
 
 		static bool DivideGuessTooBig(ulong q, ulong valHi, uint valLo, uint divHi, uint divLo)
 		{
+			Debug.Assert(q <= 0xFFFFFFFF);
+
+			// We multiply the two most significant limbs of the divisor
+			// with the current guess for the quotient. If those are bigger
+			// than the three most significant limbs of the current dividend
+			// we return true, which means the current guess is still too big.
+
 			ulong chkHi = divHi * q;
 			ulong chkLo = divLo * q;
 
@@ -628,7 +460,7 @@ internal static class Calculator
 			{
 				carry += right[i] * q;
 
-				uint digit = (uint)(carry);
+				uint digit = unchecked((uint)(carry));
 				carry >>= 32;
 
 				ref uint leftElement = ref left[i];
@@ -637,34 +469,13 @@ internal static class Calculator
 				{
 					++carry;
 				}
-				leftElement -= digit;
+				leftElement = unchecked(leftElement - digit);
 			}
 
 			return (uint)(carry);
 		}
 	}
 
-	public static ulong Remainder(ReadOnlySpan<ulong> left, ulong right)
-	{
-		// Based on: https://github.com/dotnet/runtime/blob/main/src/libraries/System.Runtime.Numerics/src/System/Numerics/BigIntegerCalculator.DivRem.cs
-
-		// Same as above, but only computing the remainder.
-
-		if (right <= uint.MaxValue)
-		{
-			return Remainder(MemoryMarshal.Cast<ulong, uint>(left), unchecked((uint)right));
-		}
-
-		UInt128 carry = default;
-
-		for (int i = left.Length - 1; i >= 0; i--)
-		{
-			UInt128 value = new UInt128((ulong)carry, left[i]);
-			carry = value % right;
-		}
-
-		return (ulong)carry;
-	}
 	public static uint Remainder(ReadOnlySpan<uint> left, uint right)
 	{
 		// Based on: https://github.com/dotnet/runtime/blob/main/src/libraries/System.Runtime.Numerics/src/System/Numerics/BigIntegerCalculator.DivRem.cs

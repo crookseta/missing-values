@@ -171,13 +171,13 @@ namespace MissingValues
 
 			if (right._p7 == 0 && right._p6 == 0 && right._p5 == 0 && right._p4 == 0)
 			{
-				if (right._p3 == 0 && right._p2 == 0 && right._p1 == 0)
+				if (right._p3 == 0 && right._p2 == 0 && right._p1 == 0 && right._p0 <= uint.MaxValue)
 				{
 					if (right._p0 == 0)
 					{
 						Thrower.DivideByZero();
 					}
-					DivRemFast(in left, right._p0, out quotient, out remainder);
+					DivRemFast(in left, (uint)right._p0, out quotient, out remainder);
 					return (quotient, remainder);
 				}
 
@@ -196,20 +196,20 @@ namespace MissingValues
 			DivRemSlow(in left, in right, out quotient, out remainder);
 			return (quotient, remainder);
 
-			unsafe static void DivRemFast(in UInt512 quotient, ulong divisor, out UInt512 quo, out UInt512 rem)
+			unsafe static void DivRemFast(in UInt512 quotient, uint divisor, out UInt512 quo, out UInt512 rem)
 			{
-				const int UlongCount = Size / sizeof(ulong);
+				const int UIntCount = Size / sizeof(uint);
 
-				ulong* pLeft = stackalloc ulong[UlongCount];
+				uint* pLeft = stackalloc uint[UIntCount];
 				Unsafe.WriteUnaligned(ref *(byte*)(pLeft), quotient);
-				Span<ulong> left = new Span<ulong>(pLeft, (UlongCount) - (BitHelper.LeadingZeroCount(in quotient) / 64));
+				Span<uint> left = new Span<uint>(pLeft, (UIntCount) - (BitHelper.LeadingZeroCount(in quotient) / 32));
 
-				Span<ulong> rawBits = stackalloc ulong[UlongCount];
+				Span<uint> rawBits = stackalloc uint[UIntCount];
 				rawBits.Clear();
 				
-				Calculator.DivRem(left, divisor, rawBits, out ulong remainder);
+				Calculator.DivRem(left, divisor, rawBits, out uint remainder);
 
-				quo = Unsafe.ReadUnaligned<UInt512>(ref Unsafe.As<ulong, byte>(ref MemoryMarshal.GetReference(rawBits)));
+				quo = Unsafe.ReadUnaligned<UInt512>(ref Unsafe.As<uint, byte>(ref MemoryMarshal.GetReference(rawBits)));
 				rem = remainder;
 			}
 			unsafe static void DivRemSlow(in UInt512 quotient, in UInt512 divisor, out UInt512 quo, out UInt512 rem)
@@ -1321,13 +1321,13 @@ namespace MissingValues
 		{
 			if (right._p7 == 0 && right._p6 == 0 && right._p5 == 0 && right._p4 == 0)
 			{
-				if (right._p3 == 0 && right._p2 == 0 && right._p1 == 0)
+				if (right._p3 == 0 && right._p2 == 0 && right._p1 == 0 && right._p0 <= uint.MaxValue)
 				{
 					if (right._p0 == 0)
 					{
 						Thrower.DivideByZero();
 					}
-					return DivideFast(in left, right._p0);
+					return DivideFast(in left, (uint)right._p0);
 				}
 
 				if (left._p7 == 0 && left._p6 == 0 && left._p5 == 0 && left._p4 == 0)
@@ -1343,20 +1343,20 @@ namespace MissingValues
 
 			return DivideSlow(left, right);
 
-			unsafe static UInt512 DivideFast(in UInt512 quotient, ulong divisor)
+			unsafe static UInt512 DivideFast(in UInt512 quotient, uint divisor)
 			{
-				const int UlongCount = Size / sizeof(ulong);
+				const int UIntCount = Size / sizeof(uint);
 
-				ulong* pLeft = stackalloc ulong[UlongCount];
+				uint* pLeft = stackalloc uint[UIntCount];
 				Unsafe.WriteUnaligned(ref *(byte*)(pLeft), quotient);
-				Span<ulong> left = new Span<ulong>(pLeft, (UlongCount) - (BitHelper.LeadingZeroCount(in quotient) / 64));
+				Span<uint> left = new Span<uint>(pLeft, (UIntCount) - (BitHelper.LeadingZeroCount(in quotient) / 64));
 
-				Span<ulong> rawBits = stackalloc ulong[UlongCount];
+				Span<uint> rawBits = stackalloc uint[UIntCount];
 				rawBits.Clear();
 
 				Calculator.Divide(left, divisor, rawBits);
 
-				return Unsafe.ReadUnaligned<UInt512>(ref Unsafe.As<ulong, byte>(ref MemoryMarshal.GetReference(rawBits)));
+				return Unsafe.ReadUnaligned<UInt512>(ref Unsafe.As<uint, byte>(ref MemoryMarshal.GetReference(rawBits)));
 			}
 			unsafe static UInt512 DivideSlow(in UInt512 quotient, in UInt512 divisor)
 			{
@@ -1386,13 +1386,13 @@ namespace MissingValues
 		{
 			if (right._p7 == 0 && right._p6 == 0 && right._p5 == 0 && right._p4 == 0)
 			{
-				if (right._p3 == 0 && right._p2 == 0 && right._p1 == 0)
+				if (right._p3 == 0 && right._p2 == 0 && right._p1 == 0 && right._p0 <= uint.MaxValue)
 				{
 					if (right._p0 == 0)
 					{
 						Thrower.DivideByZero();
 					}
-					return RemainderFast(in left, right._p0);
+					return RemainderFast(in left, (uint)right._p0);
 				}
 
 				if (left._p7 == 0 && left._p6 == 0 && left._p5 == 0 && left._p4 == 0)
@@ -1409,13 +1409,13 @@ namespace MissingValues
 
 			return RemainderSlow(in left, in right);
 
-			unsafe static UInt512 RemainderFast(in UInt512 quotient, ulong divisor)
+			unsafe static UInt512 RemainderFast(in UInt512 quotient, uint divisor)
 			{
-				const int UlongCount = Size / sizeof(ulong);
+				const int UIntCount = Size / sizeof(uint);
 
-				ulong* pLeft = stackalloc ulong[UlongCount];
+				uint* pLeft = stackalloc uint[UIntCount];
 				Unsafe.WriteUnaligned(ref *(byte*)(pLeft), quotient);
-				Span<ulong> left = new Span<ulong>(pLeft, (UlongCount) - (BitHelper.LeadingZeroCount(in quotient) / 64));
+				Span<uint> left = new Span<uint>(pLeft, (UIntCount) - (BitHelper.LeadingZeroCount(in quotient) / 64));
 
 				return Calculator.Remainder(left, divisor);
 			}
