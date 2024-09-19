@@ -338,19 +338,19 @@ namespace MissingValues
 			}
 			if (value.Part3 != 0)
 			{
-				return 192 + BitOperations.Log2(value.Part3);
+				return 192 + BitOperations.TrailingZeroCount(value.Part3);
 			}
 			if (value.Part4 != 0)
 			{
-				return 256 + BitOperations.Log2(value.Part4);
+				return 256 + BitOperations.TrailingZeroCount(value.Part4);
 			}
 			if (value.Part5 != 0)
 			{
-				return 320 + BitOperations.Log2(value.Part5);
+				return 320 + BitOperations.TrailingZeroCount(value.Part5);
 			}
 			if (value.Part6 != 0)
 			{
-				return 384 + BitOperations.Log2(value.Part6);
+				return 384 + BitOperations.TrailingZeroCount(value.Part6);
 			}
 			return 448 + BitOperations.TrailingZeroCount(value.Part7);
 		}
@@ -370,19 +370,19 @@ namespace MissingValues
 			}
 			if (value.Part3 != 0)
 			{
-				return 192 + BitOperations.Log2(value.Part3);
+				return 192 + BitOperations.TrailingZeroCount(value.Part3);
 			}
 			if (value.Part4 != 0)
 			{
-				return 256 + BitOperations.Log2(value.Part4);
+				return 256 + BitOperations.TrailingZeroCount(value.Part4);
 			}
 			if (value.Part5 != 0)
 			{
-				return 320 + BitOperations.Log2(value.Part5);
+				return 320 + BitOperations.TrailingZeroCount(value.Part5);
 			}
 			if (value.Part6 != 0)
 			{
-				return 384 + BitOperations.Log2(value.Part6);
+				return 384 + BitOperations.TrailingZeroCount(value.Part6);
 			}
 			return 448 + BitOperations.TrailingZeroCount(value.Part7);
 		}
