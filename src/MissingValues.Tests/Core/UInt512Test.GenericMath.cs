@@ -55,6 +55,10 @@ namespace MissingValues.Tests.Core
 		private static readonly UInt HalfMaxValue = new(
 			0x7FFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF,
 			0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF);
+
+		private static readonly UInt E40 = new(
+			0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000,
+			0x0000_0000_0000_0000, 0x0000_0000_0000_001D, 0x6329_F1C3_5CA4_BFAB, 0xB9F5_6100_0000_0000);
 		#endregion
 
 		#region Generic Math Operators
@@ -154,6 +158,10 @@ namespace MissingValues.Tests.Core
 				  new(0x0006_8DB8_BAC7_10CB, 0x295E_9E1B_089A_0275, 0x2546_0AA6_4C2F_837B, 0x4A23_39C0_EBED_FA43,
 				  0xFE5C_91D1_4E3B_CD35, 0xA858_793D_D97F_62B6, 0xAE7D_566C_F41F_212D, 0x7731_8FC5_0481_6F00),
 				  (MaxValue / 100) / 100);
+			Assert.Equal(
+				new UInt(0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x08B6_1313_BBAB_CE2C, 0x6232_3AC4_B3B3_DA01, 
+				0x53B6_2BE7_BC1A_0042, 0xB443_E18A_C4E7_0AFD, 0xB897_7684_D802_7110, 0x5B47_424E_B16F_CC18), 
+				MathOperatorsHelper.DivisionOperation<UInt, UInt, UInt>(MaxValue, E40));
 			Assert.Equal(One, MathOperatorsHelper.DivisionOperation<UInt, UInt, UInt>(MaxValue, MaxValue));
 
 			Assert.Throws<DivideByZeroException>(() => MathOperatorsHelper.DivisionOperation<UInt, UInt, UInt>(One, Zero));
@@ -165,6 +173,10 @@ namespace MissingValues.Tests.Core
 				  HalfMaxValue,
 				  MathOperatorsHelper.CheckedDivisionOperation<UInt, UInt, UInt>(MaxValue, Two));
 			Assert.Equal(One, MathOperatorsHelper.CheckedDivisionOperation<UInt, UInt, UInt>(MaxValue, MaxValue));
+			Assert.Equal(
+				new UInt(0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x08B6_1313_BBAB_CE2C, 0x6232_3AC4_B3B3_DA01,
+				0x53B6_2BE7_BC1A_0042, 0xB443_E18A_C4E7_0AFD, 0xB897_7684_D802_7110, 0x5B47_424E_B16F_CC18),
+				MathOperatorsHelper.CheckedDivisionOperation<UInt, UInt, UInt>(MaxValue, E40));
 
 			Assert.Throws<DivideByZeroException>(() => MathOperatorsHelper.CheckedDivisionOperation<UInt, UInt, UInt>(One, Zero));
 		}
@@ -174,6 +186,10 @@ namespace MissingValues.Tests.Core
 			MathOperatorsHelper.ModulusOperation<UInt, UInt, UInt>(Two, Two).Should().Be(Zero);
 			MathOperatorsHelper.ModulusOperation<UInt, UInt, UInt>(One, Two).Should().NotBe(Zero);
 			MathOperatorsHelper.ModulusOperation<UInt, UInt, UInt>(MaxValue, new(10U)).Should().Be(5U);
+			MathOperatorsHelper.ModulusOperation<UInt, UInt, UInt>(MaxValue, E40)
+				.Should().Be(
+				new UInt(0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000,
+					0x0000_0000_0000_0000, 0x0000_0000_0000_0011, 0xC828_0B1A_5E03_5840, 0xF8B2_E7FF_FFFF_FFFF));
 
 			Assert.Throws<DivideByZeroException>(() => MathOperatorsHelper.ModulusOperation<UInt, UInt, UInt>(One, Zero));
 		}
@@ -428,6 +444,12 @@ namespace MissingValues.Tests.Core
 			Assert.Equal((Zero, Zero), BinaryIntegerHelper<UInt>.DivRem(Zero, Two));
 			Assert.Equal((Zero, One), BinaryIntegerHelper<UInt>.DivRem(One, Two));
 			Assert.Equal((HalfMaxValue, One), BinaryIntegerHelper<UInt>.DivRem(MaxValue, 2));
+			Assert.Equal((
+				new UInt(0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x08B6_1313_BBAB_CE2C, 0x6232_3AC4_B3B3_DA01,
+				0x53B6_2BE7_BC1A_0042, 0xB443_E18A_C4E7_0AFD, 0xB897_7684_D802_7110, 0x5B47_424E_B16F_CC18),
+				new UInt(0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000,
+					0x0000_0000_0000_0000, 0x0000_0000_0000_0011, 0xC828_0B1A_5E03_5840, 0xF8B2_E7FF_FFFF_FFFF)),
+				BinaryIntegerHelper<UInt>.DivRem(MaxValue, E40));
 		}
 
 		[Fact]
