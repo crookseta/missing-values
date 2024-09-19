@@ -413,21 +413,21 @@ namespace MissingValues.Tests.Core
 		[Fact]
 		public static void LeadingZeroCountTest()
 		{
-			Assert.Equal(0x200, BinaryIntegerHelper<Int>.LeadingZeroCount(Zero));
-			Assert.Equal(0x1FF, BinaryIntegerHelper<Int>.LeadingZeroCount(One));
-			Assert.Equal(0x01, BinaryIntegerHelper<Int>.LeadingZeroCount(MaxValue));
-			Assert.Equal(0x00, BinaryIntegerHelper<Int>.LeadingZeroCount(MinValue));
-			Assert.Equal(0x00, BinaryIntegerHelper<Int>.LeadingZeroCount(NegativeOne));
+			Assert.Equal(512, BinaryIntegerHelper<Int>.LeadingZeroCount(Zero));
+			Assert.Equal(511, BinaryIntegerHelper<Int>.LeadingZeroCount(One));
+			Assert.Equal(1, BinaryIntegerHelper<Int>.LeadingZeroCount(MaxValue));
+			Assert.Equal(0, BinaryIntegerHelper<Int>.LeadingZeroCount(MinValue));
+			Assert.Equal(0, BinaryIntegerHelper<Int>.LeadingZeroCount(NegativeOne));
 		}
 
 		[Fact]
 		public static void PopCountTest()
 		{
-			Assert.Equal(0x00, BinaryIntegerHelper<Int>.PopCount(Zero));
-			Assert.Equal(0x01, BinaryIntegerHelper<Int>.PopCount(One));
-			Assert.Equal(0x1FF, BinaryIntegerHelper<Int>.PopCount(MaxValue));
-			Assert.Equal(0x01, BinaryIntegerHelper<Int>.PopCount(MinValue));
-			Assert.Equal(0x200, BinaryIntegerHelper<Int>.PopCount(NegativeOne));
+			Assert.Equal(0, BinaryIntegerHelper<Int>.PopCount(Zero));
+			Assert.Equal(1, BinaryIntegerHelper<Int>.PopCount(One));
+			Assert.Equal(511, BinaryIntegerHelper<Int>.PopCount(MaxValue));
+			Assert.Equal(1, BinaryIntegerHelper<Int>.PopCount(MinValue));
+			Assert.Equal(512, BinaryIntegerHelper<Int>.PopCount(NegativeOne));
 		}
 
 		[Fact]
@@ -453,11 +453,11 @@ namespace MissingValues.Tests.Core
 		[Fact]
 		public static void TrailingZeroCountTest()
 		{
-			Assert.Equal(0x200, BinaryIntegerHelper<Int>.TrailingZeroCount(Zero));
-			Assert.Equal(0x00, BinaryIntegerHelper<Int>.TrailingZeroCount(One));
-			Assert.Equal(0x00, BinaryIntegerHelper<Int>.TrailingZeroCount(MaxValue));
-			Assert.Equal(0x1FF, BinaryIntegerHelper<Int>.TrailingZeroCount(MinValue));
-			Assert.Equal(0x00, BinaryIntegerHelper<Int>.TrailingZeroCount(NegativeOne));
+			Assert.Equal(512, BinaryIntegerHelper<Int>.TrailingZeroCount(Zero));
+			Assert.Equal(0, BinaryIntegerHelper<Int>.TrailingZeroCount(One));
+			Assert.Equal(0, BinaryIntegerHelper<Int>.TrailingZeroCount(MaxValue));
+			Assert.Equal(511, BinaryIntegerHelper<Int>.TrailingZeroCount(MinValue));
+			Assert.Equal(0, BinaryIntegerHelper<Int>.TrailingZeroCount(NegativeOne));
 		}
 
 		[Fact]

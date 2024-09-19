@@ -325,17 +325,20 @@ namespace MissingValues.Tests.Core
 		[Fact]
 		public static void LeadingZeroCountTest()
 		{
-			Assert.Equal(0x100U, BinaryIntegerHelper<UInt>.LeadingZeroCount(Zero));
-			Assert.Equal(0xFFU, BinaryIntegerHelper<UInt>.LeadingZeroCount(One));
-			Assert.Equal(0x0U, BinaryIntegerHelper<UInt>.LeadingZeroCount(MaxValue));
+			Assert.Equal(256U, BinaryIntegerHelper<UInt>.LeadingZeroCount(Zero));
+			Assert.Equal(255U, BinaryIntegerHelper<UInt>.LeadingZeroCount(One));
+			Assert.Equal(192U, BinaryIntegerHelper<UInt>.LeadingZeroCount(ulong.MaxValue));
+			Assert.Equal(128U, BinaryIntegerHelper<UInt>.LeadingZeroCount(UInt128.MaxValue));
+			Assert.Equal(64U, BinaryIntegerHelper<UInt>.LeadingZeroCount(MaxValue >>> 64));
+			Assert.Equal(0U, BinaryIntegerHelper<UInt>.LeadingZeroCount(MaxValue));
 		}
 
 		[Fact]
 		public static void PopCountTest()
 		{
-			Assert.Equal(0x00U, BinaryIntegerHelper<UInt>.PopCount(Zero));
-			Assert.Equal(0x01U, BinaryIntegerHelper<UInt>.PopCount(One));
-			Assert.Equal(0x100U, BinaryIntegerHelper<UInt>.PopCount(MaxValue));
+			Assert.Equal(0U, BinaryIntegerHelper<UInt>.PopCount(Zero));
+			Assert.Equal(1U, BinaryIntegerHelper<UInt>.PopCount(One));
+			Assert.Equal(256U, BinaryIntegerHelper<UInt>.PopCount(MaxValue));
 		}
 
 		[Fact]
@@ -357,9 +360,13 @@ namespace MissingValues.Tests.Core
 		[Fact]
 		public static void TrailingZeroCountTest()
 		{
-			Assert.Equal(0x100U, BinaryIntegerHelper<UInt>.TrailingZeroCount(Zero));
-			Assert.Equal(0x00U, BinaryIntegerHelper<UInt>.TrailingZeroCount(One));
-			Assert.Equal(0x00U, BinaryIntegerHelper<UInt>.TrailingZeroCount(MaxValue));
+			Assert.Equal(256U, BinaryIntegerHelper<UInt>.TrailingZeroCount(Zero));
+			Assert.Equal(0U, BinaryIntegerHelper<UInt>.TrailingZeroCount(One));
+			Assert.Equal(1U, BinaryIntegerHelper<UInt>.TrailingZeroCount(Two));
+			Assert.Equal(64U, BinaryIntegerHelper<UInt>.TrailingZeroCount(new UInt(0,0,1,0)));
+			Assert.Equal(128U, BinaryIntegerHelper<UInt>.TrailingZeroCount(new UInt(0,1,0,0)));
+			Assert.Equal(192U, BinaryIntegerHelper<UInt>.TrailingZeroCount(new UInt(1,0,0,0)));
+			Assert.Equal(0U, BinaryIntegerHelper<UInt>.TrailingZeroCount(MaxValue));
 		}
 
 		[Fact]
