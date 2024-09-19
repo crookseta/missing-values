@@ -21,6 +21,7 @@ namespace MissingValues
 	[StructLayout(LayoutKind.Sequential)]
 	[JsonConverter(typeof(NumberConverter.QuadConverter))]
 	[DebuggerDisplay($"{{{nameof(ToString)}(),nq}}")]
+	[DebuggerTypeProxy(typeof(FloatDebugView<Quad>))]
 	public readonly partial struct Quad
 	{
 		internal static UInt128 SignMask => new UInt128(0x8000_0000_0000_0000, 0x0000_0000_0000_0000);

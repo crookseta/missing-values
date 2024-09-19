@@ -18,6 +18,7 @@ namespace MissingValues
 	[StructLayout(LayoutKind.Sequential)]
 	[JsonConverter(typeof(NumberConverter.UInt256Converter))]
 	[DebuggerDisplay($"{{{nameof(ToString)}(),nq}}")]
+	[DebuggerTypeProxy(typeof(IntDebugView<UInt256>))]
 	public readonly partial struct UInt256
 	{
 		internal const int Size = 32;
