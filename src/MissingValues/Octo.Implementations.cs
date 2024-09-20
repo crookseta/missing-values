@@ -1927,7 +1927,7 @@ namespace MissingValues
 			expZ = expA + expB - (Octo.ExponentBias + 1);
 			sigA |= new UInt256(0x0000_1000_0000_0000, 0, 0, 0);
 			sigB <<= 20;
-			sig512 = Calculator.BigMul(sigA, sigB);
+			sig512 = MathQ.BigMul(sigA, sigB);
 			UInt128 sigZExtra = Convert.ToUInt64(sig512 != UInt512.Zero);
 			sigZ = sig512.Upper + sigA;
 			if (0x0000_2000_0000_0000 <= sigZ.Part3)

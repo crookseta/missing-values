@@ -1552,7 +1552,7 @@ namespace MissingValues
 			sigB |= Octo.SignificandSignMask;
 			sigA <<= MinShiftDistance;
 			sigB <<= MaxShiftDistance;
-			UInt512 sig512Z = Calculator.BigMul(sigA, sigB);
+			UInt512 sig512Z = MathQ.BigMul(sigA, sigB);
 			UInt256 sigZ = sig512Z.Upper;
 			int shiftDist = 0;
 			if ((sigZ.Part3 & 0x0100_0000_0000_0000) == 0)

@@ -13,18 +13,6 @@ internal static class Calculator
 		ulong high = Math.BigMul(a, b, out ulong low);
 		return new UInt128(high, low);
 	}
-	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public static UInt256 BigMul(UInt128 a, UInt128 b)
-	{
-		UInt128 high = BigMul(a, b, out var low);
-		return new UInt256(high, low);
-	}
-	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public static UInt512 BigMul(UInt256 a, UInt256 b)
-	{
-		UInt256 high = UInt256.BigMul(a, b, out var low);
-		return new UInt512(high, low);
-	}
 	/// <summary>
 	/// Produces the full product of two unsigned 128-bit numbers.
 	/// </summary>
@@ -62,37 +50,6 @@ internal static class Calculator
 		return (quotient, (uint)left - ((uint)quotient * right));
 	}
 
-	public static UInt256 Multiply(in UInt256 left, ulong right, out ulong carry)
-	{
-		// Based on: https://github.com/dotnet/runtime/blob/main/src/libraries/System.Runtime.Numerics/src/System/Numerics/BigIntegerCalculator.SquMul.cs
-
-		// Executes the multiplication for one big and one 64-bit integer.
-		// Since every step holds the already slightly familiar equation
-		// a_i * b + c <= 2^64 - 1 + (2^64 - 1)^2 < 2^128 - 1,
-		// we are safe regarding to overflows.
-
-		ulong p3, p2, p1, p0;
-
-		UInt128 c = 0UL;
-
-		UInt128 digits = BigMul(left.Part0, right) + c;
-		p0 = unchecked((ulong)digits);
-		c = digits >> 64;
-
-		digits = BigMul(left.Part1, right) + c;
-		p1 = unchecked((ulong)digits);
-		c = digits >> 64;
-
-		digits = BigMul(left.Part2, right) + c;
-		p2 = unchecked((ulong)digits);
-		c = digits >> 64;
-
-		digits = BigMul(left.Part3, right) + c;
-		p3 = unchecked((ulong)digits);
-		carry = (ulong)(digits >> 64);
-
-		return new UInt256(p3, p2, p1, p0);
-	}
 	public static UInt256 Multiply(in UInt256 left, uint right, out uint carry)
 	{
 		// Based on: https://github.com/dotnet/runtime/blob/main/src/libraries/System.Runtime.Numerics/src/System/Numerics/BigIntegerCalculator.SquMul.cs
@@ -139,46 +96,6 @@ internal static class Calculator
 		carry = (uint)(digits >> 32);
 
 		return new UInt256(((ulong)p7 << 32) | p6, ((ulong)p5 << 32) | p4, ((ulong)p3 << 32) | p2, ((ulong)p1 << 32) | p0);
-	}
-	public static UInt512 Multiply(in UInt512 left, ulong right, out ulong carry)
-	{
-		ulong p7, p6, p5, p4, p3, p2, p1, p0;
-
-		UInt128 c = 0UL;
-
-		UInt128 digits = BigMul(left.Part0, right) + c;
-		p0 = unchecked((ulong)digits);
-		c = digits >> 64;
-
-		digits = BigMul(left.Part1, right) + c;
-		p1 = unchecked((ulong)digits);
-		c = digits >> 64;
-
-		digits = BigMul(left.Part2, right) + c;
-		p2 = unchecked((ulong)digits);
-		c = digits >> 64;
-
-		digits = BigMul(left.Part3, right) + c;
-		p3 = unchecked((ulong)digits);
-		c = digits >> 64;
-
-		digits = BigMul(left.Part4, right) + c;
-		p4 = unchecked((ulong)digits);
-		c = digits >> 64;
-
-		digits = BigMul(left.Part5, right) + c;
-		p5 = unchecked((ulong)digits);
-		c = digits >> 64;
-
-		digits = BigMul(left.Part6, right) + c;
-		p6 = unchecked((ulong)digits);
-		c = digits >> 64;
-
-		digits = BigMul(left.Part7, right) + c;
-		p7 = unchecked((ulong)digits);
-		carry = (ulong)(digits >> 64);
-
-		return new UInt512(p7, p6, p5, p4, p3, p2, p1, p0);
 	}
 	public static UInt512 Multiply(in UInt512 left, uint right, out uint carry)
 	{

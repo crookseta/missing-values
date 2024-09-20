@@ -815,14 +815,14 @@ internal static partial class NumberFormatter
 			ReadOnlySpan<UInt128> a128 = MemoryMarshal.Cast<ulong, UInt128>(a);
 			ReadOnlySpan<UInt128> b128 = MemoryMarshal.Cast<ulong, UInt128>(b);
 
-			UInt256 b00 = Calculator.BigMul(a128[0], b128[0]);           // 0
-			UInt256 b01 = Calculator.BigMul(a128[0], b128[1]);           // 128
-			UInt256 b02 = Calculator.BigMul(a128[0], b128[2]);           // 256
-			UInt256 b03 = Calculator.BigMul(a128[0], b128[3]);           // 384
-			UInt256 b10 = Calculator.BigMul(a128[1], b128[0]);           // 128
-			UInt256 b11 = Calculator.BigMul(a128[1], b128[1]);           // 256
-			UInt256 b12 = Calculator.BigMul(a128[1], b128[2]);           // 384
-			UInt256 b13 = Calculator.BigMul(a128[1], b128[3]);           // 512
+			UInt256 b00 = MathQ.BigMul(a128[0], b128[0]);           // 0
+			UInt256 b01 = MathQ.BigMul(a128[0], b128[1]);           // 128
+			UInt256 b02 = MathQ.BigMul(a128[0], b128[2]);           // 256
+			UInt256 b03 = MathQ.BigMul(a128[0], b128[3]);           // 384
+			UInt256 b10 = MathQ.BigMul(a128[1], b128[0]);           // 128
+			UInt256 b11 = MathQ.BigMul(a128[1], b128[1]);           // 256
+			UInt256 b12 = MathQ.BigMul(a128[1], b128[2]);           // 384
+			UInt256 b13 = MathQ.BigMul(a128[1], b128[3]);           // 512
 
 			UInt256 s0 = b00;												// 0
 			UInt256 s1 = b01 + b10;											// 64
