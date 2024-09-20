@@ -1118,10 +1118,6 @@ namespace MissingValues
 				{
 					return Calculator.Multiply(in left, unchecked((uint)right._p0), out _);
 				}
-				else
-				{
-					return Calculator.Multiply(in left, right._p0, out _);
-				}
 			}
 
 			const int UIntCount = Size / sizeof(uint);
@@ -1152,20 +1148,14 @@ namespace MissingValues
 
 			if (right._p7 == 0 && right._p6 == 0 && right._p5 == 0 && right._p4 == 0 && right._p3 == 0 && right._p2 == 0 && right._p1 == 0)
 			{
+				if (left._p7 == 0 && left._p6 == 0 && left._p5 == 0 && left._p4 == 0 && left._p3 == 0 && left._p2 == 0 && left._p1 == 0)
+				{
+					ulong up = Math.BigMul(left._p0, right._p0, out ulong low);
+					return new UInt512(0, 0, 0, 0, 0, 0, up, low);
+				}
 				if (right._p0 <= uint.MaxValue)
 				{
 					lower = Calculator.Multiply(in left, unchecked((uint)right._p0), out uint carry);
-
-					if (carry != 0)
-					{
-						Thrower.ArithmethicOverflow(Thrower.ArithmethicOperation.Multiplication);
-					}
-
-					return lower;
-				}
-				else
-				{
-					lower = Calculator.Multiply(in left, right._p0, out ulong carry);
 
 					if (carry != 0)
 					{
