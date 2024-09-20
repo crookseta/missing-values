@@ -10,6 +10,8 @@ using System.Globalization;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Runtime.Intrinsics.X86;
+using System.Runtime.Intrinsics;
 
 namespace MissingValues
 {
@@ -88,76 +90,40 @@ namespace MissingValues
 		static UInt256 IBinaryFloatingPointInfo<Octo, UInt256>.NegativeInfinityBits => NegativeInfinityBits;
 
 		/// <inheritdoc/>
-		public static Octo Abs(Octo value)
-		{
-			return Octo.UInt256BitsToOcto(Octo.OctoToUInt256Bits(value) & Octo.InvertedSignMask);
-		}
+		public static Octo Abs(Octo value) => Octo.UInt256BitsToOcto(Octo.OctoToUInt256Bits(value) & Octo.InvertedSignMask);
 
 		/// <inheritdoc/>
-		public static Octo Acos(Octo x)
-		{
-			return Quad.Acos((Quad)x);
-		}
+		public static Octo Acos(Octo x) => Quad.Acos((Quad)x);
 
 		/// <inheritdoc/>
-		public static Octo Acosh(Octo x)
-		{
-			return Quad.Acosh((Quad)x);
-		}
+		public static Octo Acosh(Octo x) => Quad.Acosh((Quad)x);
 
 		/// <inheritdoc/>
-		public static Octo AcosPi(Octo x)
-		{
-			return Quad.Acos((Quad)x) / Pi;
-		}
+		public static Octo AcosPi(Octo x) => Quad.Acos((Quad)x) / Pi;
 
 		/// <inheritdoc/>
-		public static Octo Asin(Octo x)
-		{
-			return Quad.Asin((Quad)x);
-		}
+		public static Octo Asin(Octo x) => Quad.Asin((Quad)x);
 
 		/// <inheritdoc/>
-		public static Octo Asinh(Octo x)
-		{
-			return Quad.Asinh((Quad)x);
-		}
+		public static Octo Asinh(Octo x) => Quad.Asinh((Quad)x);
 
 		/// <inheritdoc/>
-		public static Octo AsinPi(Octo x)
-		{
-			return Quad.Asin((Quad)x) / Pi;
-		}
+		public static Octo AsinPi(Octo x) => Quad.Asin((Quad)x) / Pi;
 
 		/// <inheritdoc/>
-		public static Octo Atan(Octo x)
-		{
-			return Quad.Atan((Quad)x);
-		}
+		public static Octo Atan(Octo x) => Quad.Atan((Quad)x);
 
 		/// <inheritdoc/>
-		public static Octo Atan2(Octo y, Octo x)
-		{
-			return Quad.Atan2((Quad)y, (Quad)x);
-		}
+		public static Octo Atan2(Octo y, Octo x) => Quad.Atan2((Quad)y, (Quad)x);
 
 		/// <inheritdoc/>
-		public static Octo Atan2Pi(Octo y, Octo x)
-		{
-			return Quad.Atan2((Quad)y, (Quad)x) / Pi;
-		}
+		public static Octo Atan2Pi(Octo y, Octo x) => Quad.Atan2((Quad)y, (Quad)x) / Pi;
 
 		/// <inheritdoc/>
-		public static Octo Atanh(Octo x)
-		{
-			return Quad.Atanh((Quad)x);
-		}
+		public static Octo Atanh(Octo x) => Quad.Atanh((Quad)x);
 
 		/// <inheritdoc/>
-		public static Octo AtanPi(Octo x)
-		{
-			return Quad.Atan((Quad)x) / Pi;
-		}
+		public static Octo AtanPi(Octo x) => Quad.Atan((Quad)x) / Pi;
 
 		/// <inheritdoc/>
 		public static Octo BitDecrement(Octo x)
@@ -212,10 +178,7 @@ namespace MissingValues
 		}
 
 		/// <inheritdoc/>
-		public static Octo Cbrt(Octo x)
-		{
-			return Quad.Cbrt((Quad)x);
-		}
+		public static Octo Cbrt(Octo x) => Quad.Cbrt((Quad)x);
 
 		/// <inheritdoc/>
 		public static Octo Ceiling(Octo x)
@@ -287,22 +250,13 @@ namespace MissingValues
 		}
 
 		/// <inheritdoc/>
-		public static Octo Cos(Octo x)
-		{
-			return Quad.Cos((Quad)x);
-		}
+		public static Octo Cos(Octo x) => Quad.Cos((Quad)x);
 
 		/// <inheritdoc/>
-		public static Octo Cosh(Octo x)
-		{
-			return Quad.Cosh((Quad)x);
-		}
+		public static Octo Cosh(Octo x) => Quad.Cosh((Quad)x);
 
 		/// <inheritdoc/>
-		public static Octo CosPi(Octo x)
-		{
-			return Quad.CosPi((Quad)x);
-		}
+		public static Octo CosPi(Octo x) => Quad.CosPi((Quad)x);
 
 		/// <inheritdoc/>
 		public static Octo CreateChecked<TOther>(TOther value)
@@ -363,40 +317,22 @@ namespace MissingValues
 		}
 
 		/// <inheritdoc/>
-		public static Octo Exp(Octo x)
-		{
-			return Quad.Exp((Quad)x);
-		}
-		
-		/// <inheritdoc/>
-		public static Octo ExpM1(Octo x)
-		{
-			return Quad.Exp((Quad)x) - One;
-		}
+		public static Octo Exp(Octo x) => Quad.Exp((Quad)x);
 
 		/// <inheritdoc/>
-		public static Octo Exp10(Octo x)
-		{
-			return Quad.Exp10((Quad)x);
-		}
-		
-		/// <inheritdoc/>
-		public static Octo Exp10M1(Octo x)
-		{
-			return Quad.Exp10((Quad)x) - One;
-		}
+		public static Octo ExpM1(Octo x) => Quad.Exp((Quad)x) - One;
 
 		/// <inheritdoc/>
-		public static Octo Exp2(Octo x)
-		{
-			return Quad.Exp2((Quad)x);
-		}
-		
+		public static Octo Exp10(Octo x) => Quad.Exp10((Quad)x);
+
 		/// <inheritdoc/>
-		public static Octo Exp2M1(Octo x)
-		{
-			return Quad.Exp2((Quad)x) - One;
-		}
+		public static Octo Exp10M1(Octo x) => Quad.Exp10((Quad)x) - One;
+
+		/// <inheritdoc/>
+		public static Octo Exp2(Octo x) => Quad.Exp2((Quad)x);
+
+		/// <inheritdoc/>
+		public static Octo Exp2M1(Octo x) => Quad.Exp2((Quad)x) - One;
 
 		/// <inheritdoc/>
 		public static Octo Floor(Octo x)
@@ -432,18 +368,10 @@ namespace MissingValues
 		}
 
 		/// <inheritdoc/>
-		public static Octo FusedMultiplyAdd(Octo left, Octo right, Octo addend)
-		{
-			UInt256 result = BitHelper.MulAddOctoBits(Octo.OctoToUInt256Bits(left), Octo.OctoToUInt256Bits(right), Octo.OctoToUInt256Bits(addend));
-
-			return Octo.UInt256BitsToOcto(result);
-		}
+		public static Octo FusedMultiplyAdd(Octo left, Octo right, Octo addend) => Octo.UInt256BitsToOcto(BitHelper.MulAddOctoBits(Octo.OctoToUInt256Bits(left), Octo.OctoToUInt256Bits(right), Octo.OctoToUInt256Bits(addend)));
 
 		/// <inheritdoc/>
-		public static Octo Hypot(Octo x, Octo y)
-		{
-			return Quad.Hypot((Quad)x, (Quad)y);
-		}
+		public static Octo Hypot(Octo x, Octo y) => Quad.Hypot((Quad)x, (Quad)y);
 
 		/// <inheritdoc/>
 		public static Octo Ieee754Remainder(Octo left, Octo right)
@@ -599,21 +527,12 @@ namespace MissingValues
 			return exponent - Octo.ExponentBias;
 		}
 
-		static bool INumberBase<Octo>.IsCanonical(Octo value)
-		{
-			return true;
-		}
+		static bool INumberBase<Octo>.IsCanonical(Octo value) => true;
 
-		static bool INumberBase<Octo>.IsComplexNumber(Octo value)
-		{
-			return false;
-		}
+		static bool INumberBase<Octo>.IsComplexNumber(Octo value) => false;
 
 		/// <inheritdoc/>
-		public static bool IsEvenInteger(Octo value)
-		{
-			return IsInteger(value) && (Abs(value % Two) == Zero);
-		}
+		public static bool IsEvenInteger(Octo value) => IsInteger(value) && (Abs(value % Two) == Zero);
 
 		/// <inheritdoc/>
 		public static bool IsFinite(Octo value)
@@ -634,25 +553,16 @@ namespace MissingValues
 		}
 
 		/// <inheritdoc/>
-		public static bool IsInteger(Octo value)
-		{
-			return IsFinite(value) && (value == Truncate(value));
-		}
+		public static bool IsInteger(Octo value) => IsFinite(value) && (value == Truncate(value));
 
 		/// <inheritdoc/>
-		public static bool IsNaN(Octo value)
-		{
-			return StripSign(value) > PositiveInfinityBits;
-		}
+		public static bool IsNaN(Octo value) => StripSign(value) > PositiveInfinityBits;
 
 		/// <inheritdoc/>
 		public static bool IsNegative(Octo value) => Int256.IsNegative(Octo.OctoToInt256Bits(value));
 
 		/// <inheritdoc/>
-		public static bool IsNegativeInfinity(Octo value)
-		{
-			return value == NegativeInfinity;
-		}
+		public static bool IsNegativeInfinity(Octo value) => value == NegativeInfinity;
 
 		/// <inheritdoc/>
 		public static bool IsNormal(Octo value)
@@ -664,22 +574,13 @@ namespace MissingValues
 		}
 
 		/// <inheritdoc/>
-		public static bool IsOddInteger(Octo value)
-		{
-			return IsInteger(value) && (Abs(value % Two) == One);
-		}
+		public static bool IsOddInteger(Octo value) => IsInteger(value) && (Abs(value % Two) == One);
 
 		/// <inheritdoc/>
-		public static bool IsPositive(Octo value)
-		{
-			return Int256.IsPositive(Octo.OctoToInt256Bits(value));
-		}
+		public static bool IsPositive(Octo value) => Int256.IsPositive(Octo.OctoToInt256Bits(value));
 
 		/// <inheritdoc/>
-		public static bool IsPositiveInfinity(Octo value)
-		{
-			return value == PositiveInfinity;
-		}
+		public static bool IsPositiveInfinity(Octo value) => value == PositiveInfinity;
 
 		/// <inheritdoc/>
 		public static bool IsPow2(Octo value)
@@ -710,10 +611,7 @@ namespace MissingValues
 		}
 
 		/// <inheritdoc/>
-		public static bool IsRealNumber(Octo value)
-		{
-			return !IsNaN(value);
-		}
+		public static bool IsRealNumber(Octo value) => !IsNaN(value);
 
 		/// <inheritdoc/>
 		public static bool IsSubnormal(Octo value)
@@ -727,16 +625,10 @@ namespace MissingValues
 		static bool INumberBase<Octo>.IsZero(Octo value) => value == Zero;
 
 		/// <inheritdoc/>
-		public static Octo Lerp(Octo value1, Octo value2, Octo amount)
-		{
-			return (value1 * (One - amount)) + (value2 * amount);
-		}
+		public static Octo Lerp(Octo value1, Octo value2, Octo amount) => (value1 * (One - amount)) + (value2 * amount);
 
 		/// <inheritdoc/>
-		public static Octo Log(Octo x)
-		{
-			return Quad.Log((Quad)x);
-		}
+		public static Octo Log(Octo x) => Quad.Log((Quad)x);
 
 		/// <inheritdoc/>
 		public static Octo Log(Octo x, Octo newBase)
@@ -765,34 +657,19 @@ namespace MissingValues
 		}
 
 		/// <inheritdoc/>
-		public static Octo LogP1(Octo x)
-		{
-			return Quad.Log((Quad)x + Quad.One);
-		}
+		public static Octo LogP1(Octo x) => Quad.Log((Quad)x + Quad.One);
 
 		/// <inheritdoc/>
-		public static Octo Log10(Octo x)
-		{
-			return Quad.Log10((Quad)x);
-		}
-		
-		/// <inheritdoc/>
-		public static Octo Log10P1(Octo x)
-		{
-			return Quad.Log10((Quad)x + Quad.One);
-		}
+		public static Octo Log10(Octo x) => Quad.Log10((Quad)x);
 
 		/// <inheritdoc/>
-		public static Octo Log2(Octo x)
-		{
-			return Quad.Log2((Quad)x);
-		}
-		
+		public static Octo Log10P1(Octo x) => Quad.Log10((Quad)x + Quad.One);
+
 		/// <inheritdoc/>
-		public static Octo Log2P1(Octo x)
-		{
-			return Quad.Log2((Quad)x + Quad.One);
-		}
+		public static Octo Log2(Octo x) => Quad.Log2((Quad)x);
+
+		/// <inheritdoc/>
+		public static Octo Log2P1(Octo x) => Quad.Log2((Quad)x + Quad.One);
 
 		/// <inheritdoc/>
 		public static Octo Max(Octo x, Octo y)
@@ -1043,10 +920,7 @@ namespace MissingValues
 		}
 
 		/// <inheritdoc/>
-		public static Octo Pow(Octo x, Octo y)
-		{
-			return Quad.Pow((Quad)x, (Quad)y);
-		}
+		public static Octo Pow(Octo x, Octo y) => Quad.Pow((Quad)x, (Quad)y);
 
 		/// <inheritdoc/>
 		public static Octo RadiansToDegrees(Octo radians)
@@ -1122,10 +996,7 @@ namespace MissingValues
 		}
 
 		/// <inheritdoc/>
-		public static Octo ReciprocalSqrtEstimate(Octo x)
-		{
-			return ReciprocalEstimate(Sqrt(x));
-		}
+		public static Octo ReciprocalSqrtEstimate(Octo x) => ReciprocalEstimate(Sqrt(x));
 
 		/// <inheritdoc/>
 		public static Octo RootN(Octo x, int n)
@@ -1269,15 +1140,9 @@ namespace MissingValues
 			return CopySign((x + temp) - temp, x);
 		}
 		/// <inheritdoc/>
-		public static Octo Round(Octo x, int digits)
-		{
-			return Round(x, digits, MidpointRounding.ToEven);
-		}
+		public static Octo Round(Octo x, int digits) => Round(x, digits, MidpointRounding.ToEven);
 		/// <inheritdoc/>
-		public static Octo Round(Octo x, MidpointRounding mode)
-		{
-			return Round(x, 0, mode);
-		}
+		public static Octo Round(Octo x, MidpointRounding mode) => Round(x, 0, mode);
 		/// <inheritdoc/>
 		public static Octo Round(Octo x, int digits, MidpointRounding mode)
 		{
@@ -1380,34 +1245,19 @@ namespace MissingValues
 		}
 
 		/// <inheritdoc/>
-		public static Octo Sin(Octo x)
-		{
-			return Quad.Sin((Quad)x);
-		}
+		public static Octo Sin(Octo x) => Quad.Sin((Quad)x);
 
 		/// <inheritdoc/>
-		public static (Octo Sin, Octo Cos) SinCos(Octo x)
-		{
-			return Quad.SinCos((Quad)x);
-		}
+		public static (Octo Sin, Octo Cos) SinCos(Octo x) => Quad.SinCos((Quad)x);
 
 		/// <inheritdoc/>
-		public static (Octo SinPi, Octo CosPi) SinCosPi(Octo x)
-		{
-			return Quad.SinCosPi((Quad)x);
-		}
+		public static (Octo SinPi, Octo CosPi) SinCosPi(Octo x) => Quad.SinCosPi((Quad)x);
 
 		/// <inheritdoc/>
-		public static Octo Sinh(Octo x)
-		{
-			return Quad.Sinh((Quad)x);
-		}
+		public static Octo Sinh(Octo x) => Quad.Sinh((Quad)x);
 
 		/// <inheritdoc/>
-		public static Octo SinPi(Octo x)
-		{
-			return Quad.SinPi((Quad)x);
-		}
+		public static Octo SinPi(Octo x) => Quad.SinPi((Quad)x);
 
 		/// <inheritdoc/>
 		public static Octo Sqrt(Octo x)
@@ -1464,7 +1314,7 @@ namespace MissingValues
 			{
 				rem = sig << 17;
 			}
-			Span<uint> qs = stackalloc uint[3] { 0, 0, sig32Z };
+			Span<uint> qs = [0, 0, sig32Z];
 			rem -= new UInt256((ulong)sig32Z * sig32Z, 0x0, 0x0, 0x0);
 
 			uint q = (uint)(((uint)(rem.Part3 >> 2) * (ulong)recipSqrt32) >> 32);
@@ -1547,22 +1397,13 @@ namespace MissingValues
 		}
 
 		/// <inheritdoc/>
-		public static Octo Tan(Octo x)
-		{
-			return Quad.Tan((Quad)x);
-		}
+		public static Octo Tan(Octo x) => Quad.Tan((Quad)x);
 
 		/// <inheritdoc/>
-		public static Octo Tanh(Octo x)
-		{
-			return Quad.Tanh((Quad)x);
-		}
+		public static Octo Tanh(Octo x) => Quad.Tanh((Quad)x);
 
 		/// <inheritdoc/>
-		public static Octo TanPi(Octo x)
-		{
-			return Quad.TanPi((Quad)x);
-		}
+		public static Octo TanPi(Octo x) => Quad.TanPi((Quad)x);
 
 		/// <inheritdoc/>
 		public static Octo Truncate(Octo x)
@@ -1943,10 +1784,7 @@ namespace MissingValues
 		}
 
 		/// <inheritdoc/>
-		public static Octo operator +(in Octo value)
-		{
-			return value;
-		}
+		public static Octo operator +(in Octo value) => value;
 
 		/// <inheritdoc/>
 		public static Octo operator +(in Octo left, in Octo right)
@@ -1974,7 +1812,7 @@ namespace MissingValues
 		public static Octo operator -(in Octo value)
 		{
 			// Invert the sign bit
-			return value ^ new Octo(0x8000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
+			return UInt256BitsToOcto(OctoToUInt256Bits(value) ^ new UInt256(0x8000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000));
 		}
 
 		/// <inheritdoc/>
@@ -2000,19 +1838,25 @@ namespace MissingValues
 		}
 
 		/// <inheritdoc/>
-		public static Octo operator ~(in Octo value) => new(~value._bits3, ~value._bits2, ~value._bits1, ~value._bits0);
-
-		/// <inheritdoc/>
-		public static Octo operator ++(in Octo value)
+		static Octo IBigBinaryNumber<Octo>.operator ~(in Octo value)
 		{
-			return value + One;
+			if (Vector256.IsHardwareAccelerated)
+			{
+				var v = Unsafe.As<Octo, Vector256<ulong>>(ref Unsafe.AsRef(in value));
+				var result = ~v;
+				return Unsafe.As<Vector256<ulong>, Octo>(ref result);
+			}
+			else
+			{
+				return new Octo(~value._bits3, ~value._bits2, ~value._bits1, ~value._bits0);
+			}
 		}
 
 		/// <inheritdoc/>
-		public static Octo operator --(in Octo value)
-		{
-			return value - One;
-		}
+		public static Octo operator ++(in Octo value) => value + One;
+
+		/// <inheritdoc/>
+		public static Octo operator --(in Octo value) => value - One;
 
 		/// <inheritdoc/>
 		public static Octo operator *(in Octo left, in Octo right)
@@ -2220,13 +2064,73 @@ namespace MissingValues
 		}
 
 		/// <inheritdoc/>
-		public static Octo operator &(in Octo left, in Octo right) => new(left._bits3 & right._bits3, left._bits2 & right._bits2, left._bits1 & right._bits1, left._bits0 & right._bits0);
+		static Octo IBigBinaryNumber<Octo>.operator &(in Octo left, in Octo right)
+		{
+			if (Vector256.IsHardwareAccelerated)
+			{
+				var v1 = Unsafe.As<Octo, Vector256<ulong>>(ref Unsafe.AsRef(in left));
+				var v2 = Unsafe.As<Octo, Vector256<ulong>>(ref Unsafe.AsRef(in right));
+				var result = v1 & v2;
+				return Unsafe.As<Vector256<ulong>, Octo>(ref result);
+			}
+			else if (Avx2.IsSupported)
+			{
+				var v1 = Unsafe.As<Octo, Vector256<ulong>>(ref Unsafe.AsRef(in left));
+				var v2 = Unsafe.As<Octo, Vector256<ulong>>(ref Unsafe.AsRef(in right));
+				var result = Avx2.And(v1, v2);
+				return Unsafe.As<Vector256<ulong>, Octo>(ref result);
+			}
+			else
+			{
+				return new Octo(left._bits3 & right._bits3, left._bits2 & right._bits2, left._bits1 & right._bits1, left._bits0 & right._bits0);
+			}
+		}
 
 		/// <inheritdoc/>
-		public static Octo operator |(in Octo left, in Octo right) => new(left._bits3 | right._bits3, left._bits2 | right._bits2, left._bits1 | right._bits1, left._bits0 | right._bits0);
+		static Octo IBigBinaryNumber<Octo>.operator |(in Octo left, in Octo right)
+		{
+			if (Vector256.IsHardwareAccelerated)
+			{
+				var v1 = Unsafe.As<Octo, Vector256<ulong>>(ref Unsafe.AsRef(in left));
+				var v2 = Unsafe.As<Octo, Vector256<ulong>>(ref Unsafe.AsRef(in right));
+				var result = v1 | v2;
+				return Unsafe.As<Vector256<ulong>, Octo>(ref result);
+			}
+			else if (Avx2.IsSupported)
+			{
+				var v1 = Unsafe.As<Octo, Vector256<ulong>>(ref Unsafe.AsRef(in left));
+				var v2 = Unsafe.As<Octo, Vector256<ulong>>(ref Unsafe.AsRef(in right));
+				var result = Avx2.Or(v1, v2);
+				return Unsafe.As<Vector256<ulong>, Octo>(ref result);
+			}
+			else
+			{
+				return new Octo(left._bits3 | right._bits3, left._bits2 | right._bits2, left._bits1 | right._bits1, left._bits0 | right._bits0);
+			}
+		}
 
 		/// <inheritdoc/>
-		public static Octo operator ^(in Octo left, in Octo right) => new(left._bits3 ^ right._bits3, left._bits2 ^ right._bits2, left._bits1 ^ right._bits1, left._bits0 ^ right._bits0);
+		static Octo IBigBinaryNumber<Octo>.operator ^(in Octo left, in Octo right)
+		{
+			if (Vector256.IsHardwareAccelerated)
+			{
+				var v1 = Unsafe.As<Octo, Vector256<ulong>>(ref Unsafe.AsRef(in left));
+				var v2 = Unsafe.As<Octo, Vector256<ulong>>(ref Unsafe.AsRef(in right));
+				var result = v1 ^ v2;
+				return Unsafe.As<Vector256<ulong>, Octo>(ref result);
+			}
+			else if (Avx2.IsSupported)
+			{
+				var v1 = Unsafe.As<Octo, Vector256<ulong>>(ref Unsafe.AsRef(in left));
+				var v2 = Unsafe.As<Octo, Vector256<ulong>>(ref Unsafe.AsRef(in right));
+				var result = Avx2.Xor(v1, v2);
+				return Unsafe.As<Vector256<ulong>, Octo>(ref result);
+			}
+			else
+			{
+				return new Octo(left._bits3 ^ right._bits3, left._bits2 ^ right._bits2, left._bits1 ^ right._bits1, left._bits0 ^ right._bits0);
+			}
+		}
 
 		/// <inheritdoc/>
 		public static bool operator ==(in Octo left, in Octo right)
@@ -2245,10 +2149,7 @@ namespace MissingValues
 		}
 
 		/// <inheritdoc/>
-		public static bool operator !=(in Octo left, in Octo right)
-		{
-			return !(left == right);
-		}
+		public static bool operator !=(in Octo left, in Octo right) => !(left == right);
 
 		/// <inheritdoc/>
 		public static bool operator <(in Octo left, in Octo right)
@@ -2276,10 +2177,7 @@ namespace MissingValues
 		}
 
 		/// <inheritdoc/>
-		public static bool operator >(in Octo left, in Octo right)
-		{
-			return right < left;
-		}
+		public static bool operator >(in Octo left, in Octo right) => right < left;
 
 		/// <inheritdoc/>
 		public static bool operator <=(in Octo left, in Octo right)
@@ -2307,9 +2205,6 @@ namespace MissingValues
 		}
 
 		/// <inheritdoc/>
-		public static bool operator >=(in Octo left, in Octo right)
-		{
-			return right <= left;
-		}
+		public static bool operator >=(in Octo left, in Octo right) => right <= left;
 	}
 }

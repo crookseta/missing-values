@@ -1053,20 +1053,11 @@ namespace MissingValues
 			Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref address, Unsafe.SizeOf<UInt128>()), upper);
 		}
 
-		UInt256 IFormattableSignedInteger<Int256, UInt256>.ToUnsigned()
-		{
-			return (UInt256)this;
-		}
+		UInt256 IFormattableSignedInteger<Int256, UInt256>.ToUnsigned() => (UInt256)this;
 
-		char IFormattableInteger<Int256>.ToChar()
-		{
-			return (char)this;
-		}
+		char IFormattableInteger<Int256>.ToChar() => (char)_p0;
 
-		int IFormattableInteger<Int256>.ToInt32()
-		{
-			return (int)this;
-		}
+		int IFormattableInteger<Int256>.ToInt32() => (int)_p0;
 
 		static Int256 IFormattableNumber<Int256>.GetDecimalValue(char value)
 		{
@@ -1091,10 +1082,7 @@ namespace MissingValues
 		}
 
 		/// <inheritdoc/>
-		public static Int256 operator +(in Int256 value)
-		{
-			return value;
-		}
+		public static Int256 operator +(in Int256 value) => value;
 
 		/// <inheritdoc/>
 		public static Int256 operator +(in Int256 left, in Int256 right)
@@ -1135,15 +1123,9 @@ namespace MissingValues
 		}
 
 		/// <inheritdoc/>
-		public static Int256 operator -(in Int256 value)
-		{
-			return Zero - value;
-		}
+		public static Int256 operator -(in Int256 value) => Zero - value;
 		/// <inheritdoc/>
-		public static Int256 operator checked -(in Int256 value)
-		{
-			return checked(Zero - value);
-		}
+		public static Int256 operator checked -(in Int256 value) => checked(Zero - value);
 
 		/// <inheritdoc/>
 		public static Int256 operator -(in Int256 left, in Int256 right)
@@ -1198,32 +1180,17 @@ namespace MissingValues
 		}
 
 		/// <inheritdoc/>
-		public static Int256 operator ++(in Int256 value)
-		{
-			return value + One;
-		}
+		public static Int256 operator ++(in Int256 value) => value + One;
 		/// <inheritdoc/>
-		public static Int256 operator checked ++(in Int256 value)
-		{
-			return checked(value + One);
-		}
+		public static Int256 operator checked ++(in Int256 value) => checked(value + One);
 
 		/// <inheritdoc/>
-		public static Int256 operator --(in Int256 value)
-		{
-			return value - One;
-		}
+		public static Int256 operator --(in Int256 value) => value - One;
 		/// <inheritdoc/>
-		public static Int256 operator checked --(in Int256 value)
-		{
-			return checked(value - One);
-		}
+		public static Int256 operator checked --(in Int256 value) => checked(value - One);
 
 		/// <inheritdoc/>
-		public static Int256 operator *(in Int256 left, in Int256 right)
-		{
-			return (Int256)((UInt256)(left) * (UInt256)(right));
-		}
+		public static Int256 operator *(in Int256 left, in Int256 right) => (Int256)((UInt256)(left) * (UInt256)(right));
 		/// <inheritdoc/>
 		public static Int256 operator checked *(in Int256 left, in Int256 right)
 		{

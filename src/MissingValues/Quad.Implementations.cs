@@ -1742,14 +1742,14 @@ namespace MissingValues
 		public static Quad operator -(Quad value)
 		{
 			// Invert the sign bit
-			return value ^ new Quad(0x8000_0000_0000_0000, 0x0000_0000_0000_0000);
+			return Quad.UInt128BitsToQuad(Quad.QuadToUInt128Bits(value) ^ new UInt128(0x8000_0000_0000_0000, 0x0000_0000_0000_0000));
 		}
 
 		/// <inheritdoc/>
 		public static Quad operator -(Quad left, Quad right) => MathQ.Sub(left, right);
 
 		/// <inheritdoc/>
-		public static Quad operator ~(Quad value) => new Quad(~value._upper, ~value._lower);
+		static Quad IBitwiseOperators<Quad, Quad, Quad>.operator ~(Quad value) => new Quad(~value._upper, ~value._lower);
 
 		/// <inheritdoc/>
 		public static Quad operator ++(Quad value) => MathQ.Add(value, One);
@@ -1770,13 +1770,13 @@ namespace MissingValues
 		}
 
 		/// <inheritdoc/>
-		public static Quad operator &(Quad left, Quad right) => new Quad(left._upper & right._upper, left._lower & right._lower);
+		static Quad IBitwiseOperators<Quad, Quad, Quad>.operator &(Quad left, Quad right) => new Quad(left._upper & right._upper, left._lower & right._lower);
 
 		/// <inheritdoc/>
-		public static Quad operator |(Quad left, Quad right) => new Quad(left._upper | right._upper, left._lower | right._lower);
+		static Quad IBitwiseOperators<Quad, Quad, Quad>.operator |(Quad left, Quad right) => new Quad(left._upper | right._upper, left._lower | right._lower);
 
 		/// <inheritdoc/>
-		public static Quad operator ^(Quad left, Quad right) => new Quad(left._upper ^ right._upper, left._lower ^ right._lower);
+		static Quad IBitwiseOperators<Quad, Quad, Quad>.operator ^(Quad left, Quad right) => new Quad(left._upper ^ right._upper, left._lower ^ right._lower);
 
 		/// <inheritdoc/>
 		public static bool operator ==(Quad left, Quad right)
@@ -1919,14 +1919,8 @@ namespace MissingValues
 			return MathQ.__sin(hi, lo, 1);
 		}
 
-		static Quad IBinaryFloatingPointInfo<Quad, UInt128>.BitsToFloat(UInt128 bits)
-		{
-			return UInt128BitsToQuad(bits);
-		}
+		static Quad IBinaryFloatingPointInfo<Quad, UInt128>.BitsToFloat(UInt128 bits) => UInt128BitsToQuad(bits);
 
-		static UInt128 IBinaryFloatingPointInfo<Quad, UInt128>.FloatToBits(Quad value)
-		{
-			return QuadToUInt128Bits(value);
-		}
+		static UInt128 IBinaryFloatingPointInfo<Quad, UInt128>.FloatToBits(Quad value) => QuadToUInt128Bits(value);
 	}
 }

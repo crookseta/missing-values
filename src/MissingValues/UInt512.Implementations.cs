@@ -241,10 +241,7 @@ namespace MissingValues
 		/// <inheritdoc/>
 		public bool Equals(UInt512 other) => this == other;
 
-		int IBinaryInteger<UInt512>.GetByteCount()
-		{
-			return Size;
-		}
+		int IBinaryInteger<UInt512>.GetByteCount() => Size;
 
 		int IBinaryInteger<UInt512>.GetShortestBitLength()
 		{
@@ -252,118 +249,57 @@ namespace MissingValues
 			return (Size * 8) - BitHelper.LeadingZeroCount(in value);
 		}
 
-		static bool INumberBase<UInt512>.IsCanonical(UInt512 value)
-		{
-			return true;
-		}
+		static bool INumberBase<UInt512>.IsCanonical(UInt512 value) => true;
 
-		static bool INumberBase<UInt512>.IsComplexNumber(UInt512 value)
-		{
-			return false;
-		}
+		static bool INumberBase<UInt512>.IsComplexNumber(UInt512 value) => false;
 
 		/// <inheritdoc/>
-		public static bool IsEvenInteger(UInt512 value)
-		{
-			return (value._p0 & 1) == 0;
-		}
+		public static bool IsEvenInteger(UInt512 value) => (value._p0 & 1) == 0;
 
-		static bool INumberBase<UInt512>.IsFinite(UInt512 value)
-		{
-			return true;
-		}
+		static bool INumberBase<UInt512>.IsFinite(UInt512 value) => true;
 
-		static bool INumberBase<UInt512>.IsImaginaryNumber(UInt512 value)
-		{
-			return false;
-		}
+		static bool INumberBase<UInt512>.IsImaginaryNumber(UInt512 value) => false;
 
-		static bool INumberBase<UInt512>.IsInfinity(UInt512 value)
-		{
-			return false;
-		}
+		static bool INumberBase<UInt512>.IsInfinity(UInt512 value) => false;
 
-		static bool INumberBase<UInt512>.IsInteger(UInt512 value)
-		{
-			return true;
-		}
+		static bool INumberBase<UInt512>.IsInteger(UInt512 value) => true;
 
-		static bool INumberBase<UInt512>.IsNaN(UInt512 value)
-		{
-			return false;
-		}
+		static bool INumberBase<UInt512>.IsNaN(UInt512 value) => false;
 
-		static bool INumberBase<UInt512>.IsNegative(UInt512 value)
-		{
-			return false;
-		}
+		static bool INumberBase<UInt512>.IsNegative(UInt512 value) => false;
 
-		static bool INumberBase<UInt512>.IsNegativeInfinity(UInt512 value)
-		{
-			return false;
-		}
+		static bool INumberBase<UInt512>.IsNegativeInfinity(UInt512 value) => false;
 
-		static bool INumberBase<UInt512>.IsNormal(UInt512 value)
-		{
-			return value != Zero;
-		}
+		static bool INumberBase<UInt512>.IsNormal(UInt512 value) => value != Zero;
 
 		/// <inheritdoc/>
-		public static bool IsOddInteger(UInt512 value)
-		{
-			return (value._p0 & 1) != 0;
-		}
+		public static bool IsOddInteger(UInt512 value) => (value._p0 & 1) != 0;
 
-		static bool INumberBase<UInt512>.IsPositive(UInt512 value)
-		{
-			return true;
-		}
+		static bool INumberBase<UInt512>.IsPositive(UInt512 value) => true;
 
-		static bool INumberBase<UInt512>.IsPositiveInfinity(UInt512 value)
-		{
-			return false;
-		}
+		static bool INumberBase<UInt512>.IsPositiveInfinity(UInt512 value) => false;
 
 		/// <inheritdoc/>
-		public static bool IsPow2(UInt512 value)
-		{
-			return BitHelper.PopCount(in value) == 1;
-		}
+		public static bool IsPow2(UInt512 value) => BitHelper.PopCount(in value) == 1;
 
-		static bool INumberBase<UInt512>.IsRealNumber(UInt512 value)
-		{
-			return true;
-		}
+		static bool INumberBase<UInt512>.IsRealNumber(UInt512 value) => true;
 
-		static bool INumberBase<UInt512>.IsSubnormal(UInt512 value)
-		{
-			return false;
-		}
+		static bool INumberBase<UInt512>.IsSubnormal(UInt512 value) => false;
 
-		static bool INumberBase<UInt512>.IsZero(UInt512 value)
-		{
-			return value == Zero;
-		}
+		static bool INumberBase<UInt512>.IsZero(UInt512 value) => value == Zero;
 
 		/// <inheritdoc/>
-		public static UInt512 LeadingZeroCount(UInt512 value)
-		{
-			return (UInt512)BitHelper.LeadingZeroCount(in value);
-		}
+		public static UInt512 LeadingZeroCount(UInt512 value) => (UInt512)BitHelper.LeadingZeroCount(in value);
 
 		/// <inheritdoc/>
-		public static UInt512 Log2(UInt512 value)
-		{
-			return (UInt512)BitHelper.Log2(in value);
-		}
+		public static UInt512 Log2(UInt512 value) => (UInt512)BitHelper.Log2(in value);
 
 		/// <inheritdoc/>
 		public static UInt512 Max(UInt512 x, UInt512 y) => (x >= y) ? x : y;
 
 		static UInt512 INumber<UInt512>.MaxNumber(UInt512 x, UInt512 y) => Max(x, y);
 
-		/// <inheritdoc/>
-		public static UInt512 MaxMagnitude(UInt512 x, UInt512 y) => Max(x, y);
+		static UInt512 INumberBase<UInt512>.MaxMagnitude(UInt512 x, UInt512 y) => Max(x, y);
 
 		static UInt512 INumberBase<UInt512>.MaxMagnitudeNumber(UInt512 x, UInt512 y) => Max(x, y);
 
@@ -372,8 +308,7 @@ namespace MissingValues
 
 		static UInt512 INumber<UInt512>.MinNumber(UInt512 x, UInt512 y) => Min(x, y);
 
-		/// <inheritdoc/>
-		public static UInt512 MinMagnitude(UInt512 x, UInt512 y) => Min(x, y);
+		static UInt512 INumberBase<UInt512>.MinMagnitude(UInt512 x, UInt512 y) => Min(x, y);
 
 		static UInt512 INumberBase<UInt512>.MinMagnitudeNumber(UInt512 x, UInt512 y) => Min(x, y);
 
@@ -445,28 +380,16 @@ namespace MissingValues
 		}
 
 		/// <inheritdoc/>
-		public static UInt512 PopCount(UInt512 value)
-		{
-			return (UInt512)(BitHelper.PopCount(in value));
-		}
+		public static UInt512 PopCount(UInt512 value) => (UInt512)(BitHelper.PopCount(in value));
 
 		/// <inheritdoc/>
-		public static UInt512 RotateLeft(UInt512 value, int rotateAmount)
-		{
-			return (value << rotateAmount) | (value >>> (512 - rotateAmount));
-		}
+		public static UInt512 RotateLeft(UInt512 value, int rotateAmount) => (value << rotateAmount) | (value >>> (512 - rotateAmount));
 
 		/// <inheritdoc/>
-		public static UInt512 RotateRight(UInt512 value, int rotateAmount)
-		{
-			return (value >>> rotateAmount) | (value << (512 - rotateAmount));
-		}
+		public static UInt512 RotateRight(UInt512 value, int rotateAmount) => (value >>> rotateAmount) | (value << (512 - rotateAmount));
 
 		/// <inheritdoc/>
-		public static UInt512 TrailingZeroCount(UInt512 value)
-		{
-			return (UInt512)BitHelper.TrailingZeroCount(in value);
-		}
+		public static UInt512 TrailingZeroCount(UInt512 value) => (UInt512)BitHelper.TrailingZeroCount(in value);
 
 		/// <inheritdoc/>
 		public static bool TryParse(ReadOnlySpan<char> s, NumberStyles style, IFormatProvider? provider, [MaybeNullWhen(false)] out UInt512 result)
@@ -985,25 +908,13 @@ namespace MissingValues
 			Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref address, Unsafe.SizeOf<UInt256>()), upper);
 		}
 
-		char IFormattableInteger<UInt512>.ToChar()
-		{
-			return (char)this._p0;
-		}
+		char IFormattableInteger<UInt512>.ToChar() => (char)_p0;
 
-		int IFormattableInteger<UInt512>.ToInt32()
-		{
-			return (int)this._p0;
-		}
+		int IFormattableInteger<UInt512>.ToInt32() => (int)_p0;
 
-		Int512 IFormattableUnsignedInteger<UInt512, Int512>.ToSigned()
-		{
-			return (Int512)this;
-		}
+		Int512 IFormattableUnsignedInteger<UInt512, Int512>.ToSigned() => (Int512)this;
 
-		static int IFormattableUnsignedInteger<UInt512, Int512>.CountDigits(in UInt512 value)
-		{
-			return CountDigits(in value);
-		}
+		static int IFormattableUnsignedInteger<UInt512, Int512>.CountDigits(in UInt512 value) => CountDigits(in value);
 
 		internal static int CountDigits(in UInt512 value)
 		{
@@ -1033,10 +944,7 @@ namespace MissingValues
 		}
 
 		/// <inheritdoc/>
-		public static UInt512 operator +(in UInt512 value)
-		{
-			return value;
-		}
+		public static UInt512 operator +(in UInt512 value) => value;
 
 		/// <inheritdoc/>
 		public static UInt512 operator +(in UInt512 left, in UInt512 right)
@@ -1100,16 +1008,10 @@ namespace MissingValues
 		}
 
 		/// <inheritdoc/>
-		public static UInt512 operator -(in UInt512 value)
-		{
-			return Zero - value;
-		}
-		
+		public static UInt512 operator -(in UInt512 value) => Zero - value;
+
 		/// <inheritdoc/>
-		public static UInt512 operator checked -(in UInt512 value)
-		{
-			return checked(Zero - value);
-		}
+		public static UInt512 operator checked -(in UInt512 value) => checked(Zero - value);
 
 		/// <inheritdoc/>
 		public static UInt512 operator -(in UInt512 left, in UInt512 right)
@@ -1191,28 +1093,16 @@ namespace MissingValues
 		}
 
 		/// <inheritdoc/>
-		public static UInt512 operator ++(in UInt512 value)
-		{
-			return value + One;
-		}
-		
-		/// <inheritdoc/>
-		public static UInt512 operator checked ++(in UInt512 value)
-		{
-			return checked(value + One);
-		}
+		public static UInt512 operator ++(in UInt512 value) => value + One;
 
 		/// <inheritdoc/>
-		public static UInt512 operator --(in UInt512 value)
-		{
-			return value - One;
-		}
-		
+		public static UInt512 operator checked ++(in UInt512 value) => checked(value + One);
+
 		/// <inheritdoc/>
-		public static UInt512 operator checked --(in UInt512 value)
-		{
-			return checked(value - One);
-		}
+		public static UInt512 operator --(in UInt512 value) => value - One;
+
+		/// <inheritdoc/>
+		public static UInt512 operator checked --(in UInt512 value) => checked(value - One);
 
 		/// <inheritdoc/>
 		public static UInt512 operator *(in UInt512 left, in UInt512 right)
@@ -1403,8 +1293,7 @@ namespace MissingValues
 
 			if (right >= left)
 			{
-				UInt512 quotient = (right == left) ? One : Zero;
-				return left - (quotient * right);
+				return left - (((right == left) ? One : Zero) * right);
 			}
 
 			return RemainderSlow(in left, in right);
@@ -1631,23 +1520,38 @@ namespace MissingValues
 		}
 
 		/// <inheritdoc/>
-		public static UInt512 operator >>(in UInt512 value, int shiftAmount)
-		{
-			return value >>> shiftAmount;
-		}
+		public static UInt512 operator >>(in UInt512 value, int shiftAmount) => value >>> shiftAmount;
 
 		/// <inheritdoc/>
 		public static bool operator ==(in UInt512 left, in UInt512 right)
 		{
-			return (left._p7 == right._p7) && (left._p6 == right._p6) && (left._p5 == right._p5) && (left._p4 == right._p4)
-				&& (left._p3 == right._p3) && (left._p2 == right._p2) && (left._p1 == right._p1) && (left._p0 == right._p0);
+			if (Vector512.IsHardwareAccelerated)
+			{
+				var v1 = Unsafe.As<UInt512, Vector512<ulong>>(ref Unsafe.AsRef(in left));
+				var v2 = Unsafe.As<UInt512, Vector512<ulong>>(ref Unsafe.AsRef(in right));
+				return v1 == v2;
+			}
+			else
+			{
+				return (left._p7 == right._p7) && (left._p6 == right._p6) && (left._p5 == right._p5) && (left._p4 == right._p4)
+					&& (left._p3 == right._p3) && (left._p2 == right._p2) && (left._p1 == right._p1) && (left._p0 == right._p0);
+			}
 		}
 
 		/// <inheritdoc/>
 		public static bool operator !=(in UInt512 left, in UInt512 right)
 		{
-			return (left._p7 != right._p7) || (left._p6 != right._p6) || (left._p5 != right._p5) || (left._p4 != right._p4)
-				|| (left._p3 != right._p3) || (left._p2 != right._p2) || (left._p1 != right._p1) || (left._p0 != right._p0);
+			if (Vector512.IsHardwareAccelerated)
+			{
+				var v1 = Unsafe.As<UInt512, Vector512<ulong>>(ref Unsafe.AsRef(in left));
+				var v2 = Unsafe.As<UInt512, Vector512<ulong>>(ref Unsafe.AsRef(in right));
+				return v1 != v2;
+			}
+			else
+			{
+				return (left._p7 != right._p7) || (left._p6 != right._p6) || (left._p5 != right._p5) || (left._p4 != right._p4)
+					|| (left._p3 != right._p3) || (left._p2 != right._p2) || (left._p1 != right._p1) || (left._p0 != right._p0);
+			}
 		}
 
 		/// <inheritdoc/>

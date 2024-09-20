@@ -272,16 +272,10 @@ namespace MissingValues
 		static bool INumberBase<Int512>.IsZero(Int512 value) => (value == Zero);
 
 		/// <inheritdoc/>
-		public static Int512 LeadingZeroCount(Int512 value)
-		{
-			return BitHelper.LeadingZeroCount(in value);
-		}
+		public static Int512 LeadingZeroCount(Int512 value) => BitHelper.LeadingZeroCount(in value);
 
 		/// <inheritdoc/>
-		public static Int512 Log2(Int512 value)
-		{
-			return BitHelper.Log2(in value);
-		}
+		public static Int512 Log2(Int512 value) => BitHelper.Log2(in value);
 
 		/// <inheritdoc/>
 		public static Int512 Max(Int512 x, Int512 y) => (x >= y) ? x : y;
@@ -446,22 +440,13 @@ namespace MissingValues
 		}
 
 		/// <inheritdoc/>
-		public static Int512 PopCount(Int512 value)
-		{
-			return (Int512)(BitHelper.PopCount(in value));
-		}
+		public static Int512 PopCount(Int512 value) => (Int512)(BitHelper.PopCount(in value));
 
 		/// <inheritdoc/>
-		public static Int512 RotateLeft(Int512 value, int rotateAmount)
-		{
-			return (value << rotateAmount) | (value >>> (512 - rotateAmount));
-		}
+		public static Int512 RotateLeft(Int512 value, int rotateAmount) => (value << rotateAmount) | (value >>> (512 - rotateAmount));
 
 		/// <inheritdoc/>
-		public static Int512 RotateRight(Int512 value, int rotateAmount)
-		{
-			return (value >>> rotateAmount) | (value << (512 - rotateAmount));
-		}
+		public static Int512 RotateRight(Int512 value, int rotateAmount) => (value >>> rotateAmount) | (value << (512 - rotateAmount));
 
 		/// <inheritdoc/>
 		public string ToString(string? format, IFormatProvider? formatProvider)
@@ -470,10 +455,7 @@ namespace MissingValues
 		}
 
 		/// <inheritdoc/>
-		public static Int512 TrailingZeroCount(Int512 value)
-		{
-			return BitHelper.TrailingZeroCount(in value);
-		}
+		public static Int512 TrailingZeroCount(Int512 value) => BitHelper.TrailingZeroCount(in value);
 
 		/// <inheritdoc/>
 		public bool TryFormat(Span<char> destination, out int charsWritten, ReadOnlySpan<char> format, IFormatProvider? provider)
@@ -1048,26 +1030,14 @@ namespace MissingValues
 			Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref address, Unsafe.SizeOf<UInt256>()), upper);
 		}
 
-		char IFormattableInteger<Int512>.ToChar()
-		{
-			return (char)this;
-		}
+		char IFormattableInteger<Int512>.ToChar() => (char)_p0;
 
-		int IFormattableInteger<Int512>.ToInt32()
-		{
-			return (int)this;
-		}
+		int IFormattableInteger<Int512>.ToInt32() => (int)_p0;
 
-		UInt512 IFormattableSignedInteger<Int512, UInt512>.ToUnsigned()
-		{
-			return (UInt512)this;
-		}
+		UInt512 IFormattableSignedInteger<Int512, UInt512>.ToUnsigned() => (UInt512)this;
 
 		/// <inheritdoc/>
-		public static Int512 operator +(in Int512 value)
-		{
-			return value;
-		}
+		public static Int512 operator +(in Int512 value) => value;
 
 		/// <inheritdoc/>
 		public static Int512 operator +(in Int512 left, in Int512 right)
@@ -1115,15 +1085,9 @@ namespace MissingValues
 		}
 
 		/// <inheritdoc/>
-		public static Int512 operator -(in Int512 value)
-		{
-			return Zero - value;
-		}
+		public static Int512 operator -(in Int512 value) => Zero - value;
 		/// <inheritdoc/>
-		public static Int512 operator checked -(in Int512 value)
-		{
-			return checked(Zero - value);
-		}
+		public static Int512 operator checked -(in Int512 value) => checked(Zero - value);
 
 		/// <inheritdoc/>
 		public static Int512 operator -(in Int512 left, in Int512 right)
@@ -1190,32 +1154,17 @@ namespace MissingValues
 		}
 
 		/// <inheritdoc/>
-		public static Int512 operator ++(in Int512 value)
-		{
-			return value + One;
-		}
+		public static Int512 operator ++(in Int512 value) => value + One;
 		/// <inheritdoc/>
-		public static Int512 operator checked ++(in Int512 value)
-		{
-			return checked(value + One);
-		}
+		public static Int512 operator checked ++(in Int512 value) => checked(value + One);
 
 		/// <inheritdoc/>
-		public static Int512 operator --(in Int512 value)
-		{
-			return value - One;
-		}
+		public static Int512 operator --(in Int512 value) => value - One;
 		/// <inheritdoc/>
-		public static Int512 operator checked --(in Int512 value)
-		{
-			return checked(value - One);
-		}
+		public static Int512 operator checked --(in Int512 value) => checked(value - One);
 
 		/// <inheritdoc/>
-		public static Int512 operator *(in Int512 left, in Int512 right)
-		{
-			return (Int512)((UInt512)left * (UInt512)right);
-		}
+		public static Int512 operator *(in Int512 left, in Int512 right) => (Int512)((UInt512)left * (UInt512)right);
 		/// <inheritdoc/>
 		public static Int512 operator checked *(in Int512 left, in Int512 right)
 		{
@@ -1613,15 +1562,33 @@ namespace MissingValues
 		/// <inheritdoc/>
 		public static bool operator ==(in Int512 left, in Int512 right)
 		{
-			return (left._p7 == right._p7) && (left._p6 == right._p6) && (left._p5 == right._p5) && (left._p4 == right._p4)
-				&& (left._p3 == right._p3) && (left._p2 == right._p2) && (left._p1 == right._p1) && (left._p0 == right._p0);
+			if (Vector512.IsHardwareAccelerated)
+			{
+				var v1 = Unsafe.As<Int512, Vector512<ulong>>(ref Unsafe.AsRef(in left));
+				var v2 = Unsafe.As<Int512, Vector512<ulong>>(ref Unsafe.AsRef(in right));
+				return v1 == v2;
+			}
+			else
+			{
+				return (left._p7 == right._p7) && (left._p6 == right._p6) && (left._p5 == right._p5) && (left._p4 == right._p4)
+					&& (left._p3 == right._p3) && (left._p2 == right._p2) && (left._p1 == right._p1) && (left._p0 == right._p0);
+			}
 		}
 
 		/// <inheritdoc/>
 		public static bool operator !=(in Int512 left, in Int512 right)
 		{
-			return (left._p7 != right._p7) || (left._p6 != right._p6) || (left._p5 != right._p5) || (left._p4 != right._p4)
-				|| (left._p3 != right._p3) || (left._p2 != right._p2) || (left._p1 != right._p1) || (left._p0 != right._p0);
+			if (Vector512.IsHardwareAccelerated)
+			{
+				var v1 = Unsafe.As<Int512, Vector512<ulong>>(ref Unsafe.AsRef(in left));
+				var v2 = Unsafe.As<Int512, Vector512<ulong>>(ref Unsafe.AsRef(in right));
+				return v1 != v2;
+			}
+			else
+			{
+				return (left._p7 != right._p7) || (left._p6 != right._p6) || (left._p5 != right._p5) || (left._p4 != right._p4)
+					|| (left._p3 != right._p3) || (left._p2 != right._p2) || (left._p1 != right._p1) || (left._p0 != right._p0);
+			}
 		}
 
 		/// <inheritdoc/>

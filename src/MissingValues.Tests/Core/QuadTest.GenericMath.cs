@@ -172,7 +172,7 @@ namespace MissingValues.Tests.Core
 		[Fact]
 		public static void AllBitsSetTest()
 		{
-			BinaryNumberHelper<Float>.AllBitsSet.Should().Be(~Zero);
+			BinaryNumberHelper<Float>.AllBitsSet.Should().Be(BitwiseOperatorsHelper<Float, Float, Float>.OnesComplementOperation(Zero));
 		}
 		[Fact]
 		public static void IsPow2Test()

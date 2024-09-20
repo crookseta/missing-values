@@ -282,16 +282,10 @@ namespace MissingValues
 		static bool INumberBase<UInt256>.IsZero(UInt256 value) => value == Zero;
 
 		/// <inheritdoc/>
-		public static UInt256 LeadingZeroCount(UInt256 value)
-		{
-			return (UInt256)BitHelper.LeadingZeroCount(in value);
-		}
+		public static UInt256 LeadingZeroCount(UInt256 value) => (UInt256)BitHelper.LeadingZeroCount(in value);
 
 		/// <inheritdoc/>
-		public static UInt256 Log2(UInt256 value)
-		{
-			return (UInt256)BitHelper.Log2(in value);
-		}
+		public static UInt256 Log2(UInt256 value) => (UInt256)BitHelper.Log2(in value);
 
 		/// <inheritdoc/>
 		public static UInt256 Max(UInt256 x, UInt256 y) => (x >= y) ? x : y;
@@ -379,28 +373,16 @@ namespace MissingValues
 		}
 
 		/// <inheritdoc/>
-		public static UInt256 PopCount(UInt256 value)
-		{
-			return (UInt256)BitHelper.PopCount(in value);
-		}
+		public static UInt256 PopCount(UInt256 value) => (UInt256)BitHelper.PopCount(in value);
 
 		/// <inheritdoc/>
-		public static UInt256 RotateLeft(UInt256 value, int rotateAmount)
-		{
-			return (value << rotateAmount) | (value >>> (256 - rotateAmount));
-		}
+		public static UInt256 RotateLeft(UInt256 value, int rotateAmount) => (value << rotateAmount) | (value >>> (256 - rotateAmount));
 
 		/// <inheritdoc/>
-		public static UInt256 RotateRight(UInt256 value, int rotateAmount)
-		{
-			return (value >>> rotateAmount) | (value << (256 - rotateAmount));
-		}
+		public static UInt256 RotateRight(UInt256 value, int rotateAmount) => (value >>> rotateAmount) | (value << (256 - rotateAmount));
 
 		/// <inheritdoc/>
-		public static UInt256 TrailingZeroCount(UInt256 value)
-		{
-			return (UInt256)BitHelper.TrailingZeroCount(in value);
-		}
+		public static UInt256 TrailingZeroCount(UInt256 value) => (UInt256)BitHelper.TrailingZeroCount(in value);
 
 		/// <inheritdoc/>
 		public static bool TryParse(ReadOnlySpan<char> s, NumberStyles style, IFormatProvider? provider, [MaybeNullWhen(false)] out UInt256 result)
@@ -797,10 +779,7 @@ namespace MissingValues
 			return converted;
 		}
 
-		int IBinaryInteger<UInt256>.GetByteCount()
-		{
-			return Size;
-		}
+		int IBinaryInteger<UInt256>.GetByteCount() => Size;
 
 		int IBinaryInteger<UInt256>.GetShortestBitLength()
 		{
@@ -909,15 +888,9 @@ namespace MissingValues
 			Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref address, Unsafe.SizeOf<UInt128>()), upper);
 		}
 
-		char IFormattableInteger<UInt256>.ToChar()
-		{
-			return (char)this._p0;
-		}
+		char IFormattableInteger<UInt256>.ToChar() => (char)_p0;
 
-		int IFormattableInteger<UInt256>.ToInt32()
-		{
-			return (int)this._p0;
-		}
+		int IFormattableInteger<UInt256>.ToInt32() => (int)_p0;
 
 		static UInt256 IFormattableNumber<UInt256>.GetDecimalValue(char value)
 		{
@@ -971,16 +944,10 @@ namespace MissingValues
 
 			return digits;
 		}
-		static int IFormattableUnsignedInteger<UInt256, Int256>.CountDigits(in UInt256 value)
-		{
-			return CountDigits(in value);
-		}
+		static int IFormattableUnsignedInteger<UInt256, Int256>.CountDigits(in UInt256 value) => CountDigits(in value);
 
 		/// <inheritdoc/>
-		public static UInt256 operator +(in UInt256 value)
-		{
-			return value;
-		}
+		public static UInt256 operator +(in UInt256 value) => value;
 
 		/// <inheritdoc/>
 		public static UInt256 operator +(in UInt256 left, in UInt256 right)
@@ -1019,15 +986,9 @@ namespace MissingValues
 		}
 
 		/// <inheritdoc/>
-		public static UInt256 operator -(in UInt256 value)
-		{
-			return Zero - value;
-		}
+		public static UInt256 operator -(in UInt256 value) => Zero - value;
 		/// <inheritdoc/>
-		public static UInt256 operator checked -(in UInt256 value)
-		{
-			return checked(Zero - value);
-		}
+		public static UInt256 operator checked -(in UInt256 value) => checked(Zero - value);
 
 		/// <inheritdoc/>
 		public static UInt256 operator -(in UInt256 left, in UInt256 right)
@@ -1084,26 +1045,14 @@ namespace MissingValues
 		}
 
 		/// <inheritdoc/>
-		public static UInt256 operator ++(in UInt256 value)
-		{
-			return value + One;
-		}
+		public static UInt256 operator ++(in UInt256 value) => value + One;
 		/// <inheritdoc/>
-		public static UInt256 operator checked ++(in UInt256 value)
-		{
-			return checked(value + One);
-		}
+		public static UInt256 operator checked ++(in UInt256 value) => checked(value + One);
 
 		/// <inheritdoc/>
-		public static UInt256 operator --(in UInt256 value)
-		{
-			return value - One;
-		}
+		public static UInt256 operator --(in UInt256 value) => value - One;
 		/// <inheritdoc/>
-		public static UInt256 operator checked --(in UInt256 value)
-		{
-			return checked(value - One);
-		}
+		public static UInt256 operator checked --(in UInt256 value) => checked(value - One);
 
 		/// <inheritdoc/>
 		public static UInt256 operator *(in UInt256 left, in UInt256 right)
