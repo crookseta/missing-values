@@ -55,6 +55,13 @@ internal static class Calculator
 		return BigMul(ah, bh) + t.GetUpperBits() + tl.GetUpperBits();
 	}
 
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public static (ulong Quotient, uint Remainder) DivRemByUInt32(ulong left, uint right)
+	{
+		ulong quotient = left / right;
+		return (quotient, (uint)left - ((uint)quotient * right));
+	}
+
 	public static UInt256 Multiply(in UInt256 left, ulong right, out ulong carry)
 	{
 		// Based on: https://github.com/dotnet/runtime/blob/main/src/libraries/System.Runtime.Numerics/src/System/Numerics/BigIntegerCalculator.SquMul.cs
@@ -293,9 +300,8 @@ internal static class Calculator
 		for (int i = left.Length - 1; i >= 0; i--)
 		{
 			ulong value = (carry << 32) | left[i];
-			ulong digit = value / right;
+			(ulong digit, carry) = DivRemByUInt32(value, right);
 			quotient[i] = (uint)digit;
-			carry = value - digit * right;
 		}
 		remainder = (uint)carry;
 	}
@@ -318,16 +324,13 @@ internal static class Calculator
 		for (int i = left.Length - 1; i >= 0; i--)
 		{
 			ulong value = (carry << 32) | left[i];
-			ulong digit = value / right;
+			(ulong digit, carry) = DivRemByUInt32(value, right);
 			quotient[i] = (uint)digit;
-			carry = value - digit * right;
 		}
 	}
-	public static void Divide(Span<uint> left, ReadOnlySpan<uint> right, Span<uint> quotient)
+	public static void Divide(Span<uint> left, ReadOnlySpan<uint> right, Span<uint> bits)
 	{
 		// Based on: https://github.com/dotnet/runtime/blob/main/src/libraries/System.Runtime.Numerics/src/System/Numerics/BigIntegerCalculator.DivRem.cs
-
-		Span<uint> bits = quotient.Slice(0, left.Length - right.Length + 1);
 
 		// Executes the "grammar-school" algorithm for computing q = a / b.
 		// Before calculating q_i, we get more bits into the highest bit
@@ -499,6 +502,6 @@ internal static class Calculator
 
 		left.CopyTo(remainder);
 
-		Divide(remainder, right, stackalloc uint[left.Length - right.Length + 1]);
+		Divide(remainder, right, default);
 	}
 }
