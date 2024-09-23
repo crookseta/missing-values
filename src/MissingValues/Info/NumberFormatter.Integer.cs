@@ -272,7 +272,7 @@ internal static partial class NumberFormatter
 	private static ulong UInt256DivMod1E19(ref UInt256 value)
 	{
 		UInt256 divisor = new UInt256(0, 0, 0, 10_000_000_000_000_000_000);
-		(value, UInt256 remainder) = UInt256.DivRem(value, divisor);
+		UInt256.DivRem(value, in divisor, out value, out UInt256 remainder);
 		return remainder.Part0;
 	}
 	private static void UInt256ToDecChars<TChar>(UInt256 value, Span<TChar> destination)
@@ -302,7 +302,7 @@ internal static partial class NumberFormatter
 	private static ulong UInt512DivMod1E19(ref UInt512 value)
 	{
 		UInt512 divisor = new UInt512(0, 0, 0, 0, 0, 0, 0, 10_000_000_000_000_000_000);
-		(value, UInt512 remainder) = UInt512.DivRem(value, divisor);
+		UInt512.DivRem(value, in divisor, out value, out UInt512 remainder);
 		return remainder.Part0;
 	}
 	private static void UInt512ToDecChars<TChar>(UInt512 value, Span<TChar> destination)

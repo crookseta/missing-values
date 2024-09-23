@@ -167,8 +167,12 @@ namespace MissingValues
 		/// <inheritdoc/>
 		public static (UInt512 Quotient, UInt512 Remainder) DivRem(UInt512 left, UInt512 right)
 		{
-			UInt512 quotient, remainder;
+			DivRem(in left, in right, out UInt512 quotient, out UInt512 remainder);
 
+			return (quotient, remainder);
+		}
+		internal static void DivRem(in UInt512 left, in UInt512 right, out UInt512 quotient, out UInt512 remainder)
+		{
 			if (right._p7 == 0 && right._p6 == 0 && right._p5 == 0 && right._p4 == 0)
 			{
 				if (right._p3 == 0 && right._p2 == 0 && right._p1 == 0 && right._p0 <= uint.MaxValue)
@@ -178,23 +182,16 @@ namespace MissingValues
 						Thrower.DivideByZero();
 					}
 					DivRemFast(in left, (uint)right._p0, out quotient, out remainder);
-					return (quotient, remainder);
-				}
-
-				if (left._p7 == 0 && left._p6 == 0 && left._p5 == 0 && left._p4 == 0)
-				{
-					return UInt256.DivRem(left.Lower, right.Lower);
 				}
 			}
 
 			if (right >= left)
 			{
 				quotient = (right == left) ? One : Zero;
-				return (quotient, (left - (quotient * right)));
+				remainder = (left - (quotient * right));
 			}
 
 			DivRemSlow(in left, in right, out quotient, out remainder);
-			return (quotient, remainder);
 
 			unsafe static void DivRemFast(in UInt512 quotient, uint divisor, out UInt512 quo, out UInt512 rem)
 			{
@@ -206,7 +203,7 @@ namespace MissingValues
 
 				Span<uint> rawBits = stackalloc uint[UIntCount];
 				rawBits.Clear();
-				
+
 				Calculator.DivRem(left, divisor, rawBits, out uint remainder);
 
 				quo = Unsafe.ReadUnaligned<UInt512>(ref Unsafe.As<uint, byte>(ref MemoryMarshal.GetReference(rawBits)));
@@ -1109,14 +1106,14 @@ namespace MissingValues
 		{
 			if (right._p7 == 0 && right._p6 == 0 && right._p5 == 0 && right._p4 == 0 && right._p3 == 0 && right._p2 == 0 && right._p1 == 0)
 			{
+				if (right._p0 <= uint.MaxValue)
+				{
+					return Calculator.Multiply(in left, unchecked((uint)right._p0), out _);
+				}
 				if (left._p7 == 0 && left._p6 == 0 && left._p5 == 0 && left._p4 == 0 && left._p3 == 0 && left._p2 == 0 && left._p1 == 0)
 				{
 					ulong up = Math.BigMul(left._p0, right._p0, out ulong low);
 					return new UInt512(0, 0, 0, 0, 0, 0, up, low);
-				}
-				if (right._p0 <= uint.MaxValue)
-				{
-					return Calculator.Multiply(in left, unchecked((uint)right._p0), out _);
 				}
 			}
 
@@ -1148,11 +1145,6 @@ namespace MissingValues
 
 			if (right._p7 == 0 && right._p6 == 0 && right._p5 == 0 && right._p4 == 0 && right._p3 == 0 && right._p2 == 0 && right._p1 == 0)
 			{
-				if (left._p7 == 0 && left._p6 == 0 && left._p5 == 0 && left._p4 == 0 && left._p3 == 0 && left._p2 == 0 && left._p1 == 0)
-				{
-					ulong up = Math.BigMul(left._p0, right._p0, out ulong low);
-					return new UInt512(0, 0, 0, 0, 0, 0, up, low);
-				}
 				if (right._p0 <= uint.MaxValue)
 				{
 					lower = Calculator.Multiply(in left, unchecked((uint)right._p0), out uint carry);
@@ -1163,6 +1155,11 @@ namespace MissingValues
 					}
 
 					return lower;
+				}
+				if (left._p7 == 0 && left._p6 == 0 && left._p5 == 0 && left._p4 == 0 && left._p3 == 0 && left._p2 == 0 && left._p1 == 0)
+				{
+					ulong up = Math.BigMul(left._p0, right._p0, out ulong low);
+					return new UInt512(0, 0, 0, 0, 0, 0, up, low);
 				}
 			}
 
@@ -1209,11 +1206,6 @@ namespace MissingValues
 					}
 					return DivideFast(in left, (uint)right._p0);
 				}
-
-				if (left._p7 == 0 && left._p6 == 0 && left._p5 == 0 && left._p4 == 0)
-				{
-					return left.Lower / right.Lower;
-				}
 			}
 			
 			if (right >= left)
@@ -1229,7 +1221,7 @@ namespace MissingValues
 
 				uint* pLeft = stackalloc uint[UIntCount];
 				Unsafe.WriteUnaligned(ref *(byte*)(pLeft), quotient);
-				Span<uint> left = new Span<uint>(pLeft, (UIntCount) - (BitHelper.LeadingZeroCount(in quotient) / 64));
+				Span<uint> left = new Span<uint>(pLeft, (UIntCount) - (BitHelper.LeadingZeroCount(in quotient) / 32));
 
 				Span<uint> rawBits = stackalloc uint[UIntCount];
 				rawBits.Clear();
@@ -1274,11 +1266,6 @@ namespace MissingValues
 					}
 					return RemainderFast(in left, (uint)right._p0);
 				}
-
-				if (left._p7 == 0 && left._p6 == 0 && left._p5 == 0 && left._p4 == 0)
-				{
-					return left.Lower % right.Lower;
-				}
 			}
 
 			if (right >= left)
@@ -1294,7 +1281,7 @@ namespace MissingValues
 
 				uint* pLeft = stackalloc uint[UIntCount];
 				Unsafe.WriteUnaligned(ref *(byte*)(pLeft), quotient);
-				Span<uint> left = new Span<uint>(pLeft, (UIntCount) - (BitHelper.LeadingZeroCount(in quotient) / 64));
+				Span<uint> left = new Span<uint>(pLeft, (UIntCount) - (BitHelper.LeadingZeroCount(in quotient) / 32));
 
 				return Calculator.Remainder(left, divisor);
 			}
