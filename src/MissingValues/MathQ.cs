@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -19,6 +20,7 @@ namespace MissingValues
 		/// <param name="a">The first number to multiply.</param>
 		/// <param name="b">The second number to multiply.</param>
 		/// <returns>The full product of the specified numbers.</returns>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static UInt256 BigMul(UInt128 a, UInt128 b)
 		{
 			UInt128 high = Calculator.BigMul(a, b, out var low);
@@ -31,6 +33,7 @@ namespace MissingValues
 		/// <param name="a">The first number to multiply.</param>
 		/// <param name="b">The second number to multiply.</param>
 		/// <returns>The full product of the specified numbers.</returns>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static Int256 BigMul(Int128 a, Int128 b)
 		{
 			UInt128 high = Calculator.BigMul((UInt128)a, (UInt128)b, out var low);
@@ -43,6 +46,7 @@ namespace MissingValues
 		/// <param name="a">The first number to multiply.</param>
 		/// <param name="b">The second number to multiply.</param>
 		/// <returns>The full product of the specified numbers.</returns>
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static UInt512 BigMul(UInt256 a, UInt256 b)
 		{
 			UInt256 high = UInt256.BigMul(a, b, out var low);
@@ -55,6 +59,8 @@ namespace MissingValues
 		/// <param name="a">The first number to multiply.</param>
 		/// <param name="b">The second number to multiply.</param>
 		/// <returns>The full product of the specified numbers.</returns>
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static Int512 BigMul(Int256 a, Int256 b)
 		{
 			UInt256 high = UInt256.BigMul((UInt256)a, (UInt256)b, out var low);
