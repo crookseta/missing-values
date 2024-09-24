@@ -1450,16 +1450,16 @@ namespace MissingValues
 			UInt256 signBit = new UInt256(0x8000_0000_0000_0000, 0x0, 0x0, 0x0);
 
 			bool signA = (uiA & signBit) != UInt256.Zero;
-			uint expA = Octo.ExtractBiasedExponentFromBits(uiA);
-			UInt256 sigA = Octo.ExtractTrailingSignificandFromBits(uiA);
+			uint expA = Octo.ExtractBiasedExponentFromBits(in uiA);
+			UInt256 sigA = Octo.ExtractTrailingSignificandFromBits(in uiA);
 
 			bool signB = (uiB & signBit) != UInt256.Zero;
-			uint expB = Octo.ExtractBiasedExponentFromBits(uiB);
-			UInt256 sigB = Octo.ExtractTrailingSignificandFromBits(uiB);
+			uint expB = Octo.ExtractBiasedExponentFromBits(in uiB);
+			UInt256 sigB = Octo.ExtractTrailingSignificandFromBits(in uiB);
 
 			bool signC = (uiC & signBit) != UInt256.Zero;
-			uint expC = Octo.ExtractBiasedExponentFromBits(uiC);
-			UInt256 sigC = Octo.ExtractTrailingSignificandFromBits(uiC);
+			uint expC = Octo.ExtractBiasedExponentFromBits(in uiC);
+			UInt256 sigC = Octo.ExtractTrailingSignificandFromBits(in uiC);
 
 			UInt256 uiZ;
 			uint expZ;

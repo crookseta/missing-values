@@ -378,12 +378,12 @@ namespace MissingValues
 		{
 			UInt256 uiA = Octo.OctoToUInt256Bits(left);
 			bool signA = Octo.IsNegative(left);
-			int expA = (int)Octo.ExtractBiasedExponentFromBits(uiA);
-			UInt256 sigA = Octo.ExtractTrailingSignificandFromBits(uiA);
+			int expA = (int)Octo.ExtractBiasedExponentFromBits(in uiA);
+			UInt256 sigA = Octo.ExtractTrailingSignificandFromBits(in uiA);
 
 			UInt256 uiB = Octo.OctoToUInt256Bits(right);
-			int expB = (int)Octo.ExtractBiasedExponentFromBits(uiB);
-			UInt256 sigB = Octo.ExtractTrailingSignificandFromBits(uiB);
+			int expB = (int)Octo.ExtractBiasedExponentFromBits(in uiB);
+			UInt256 sigB = Octo.ExtractTrailingSignificandFromBits(in uiB);
 
 			if (expA == 0x7FFFF)
 			{
@@ -593,8 +593,8 @@ namespace MissingValues
 				return false;
 			}
 
-			uint biasedExponent = ExtractBiasedExponentFromBits(bits); ;
-			UInt256 trailingSignificand = ExtractTrailingSignificandFromBits(bits);
+			uint biasedExponent = ExtractBiasedExponentFromBits(in bits);
+			UInt256 trailingSignificand = ExtractTrailingSignificandFromBits(in bits);
 
 			if (biasedExponent == MinBiasedExponent)
 			{
@@ -1264,8 +1264,8 @@ namespace MissingValues
 		{
 			UInt256 bits = Octo.OctoToUInt256Bits(x);
 			bool signA = Octo.IsNegative(x);
-			uint exp = Octo.ExtractBiasedExponentFromBits(bits);
-			UInt256 sig = Octo.ExtractTrailingSignificandFromBits(bits);
+			uint exp = Octo.ExtractBiasedExponentFromBits(in bits);
+			UInt256 sig = Octo.ExtractTrailingSignificandFromBits(in bits);
 
 			// Is x NaN?
 			if (exp == 0x7FFFF)
@@ -1649,7 +1649,7 @@ namespace MissingValues
 		public bool Equals(Octo other)
 		{
 			return (_bits3 == other._bits3 && _bits2 == other._bits2 && _bits1 == other._bits1 && _bits0 == other._bits0)
-				|| AreZero(this, other)
+				|| AreZero(in this, in other)
 				|| (IsNaN(this) && IsNaN(other));
 		}
 
@@ -2145,7 +2145,7 @@ namespace MissingValues
 			var lvalue = OctoToUInt256Bits(left);
 			var rvalue = OctoToUInt256Bits(right);
 
-			return (lvalue == rvalue) || AreZero(left, right);
+			return (lvalue == rvalue) || AreZero(in left, in right);
 		}
 
 		/// <inheritdoc/>
@@ -2167,7 +2167,7 @@ namespace MissingValues
 				// When the signs of left and right differ, we know that left is less than right if it is
 				// the negative value. The exception to this is if both values are zero, in which case IEEE
 				// says they should be equal, even if the signs differ.
-				return leftIsNegative && !AreZero(left, right);
+				return leftIsNegative && !AreZero(in left, in right);
 			}
 
 			var lvalue = OctoToUInt256Bits(left);
@@ -2195,7 +2195,7 @@ namespace MissingValues
 				// When the signs of left and right differ, we know that left is less than right if it is
 				// the negative value. The exception to this is if both values are zero, in which case IEEE
 				// says they should be equal, even if the signs differ.
-				return leftIsNegative || AreZero(left, right);
+				return leftIsNegative || AreZero(in left, in right);
 			}
 
 			var lvalue = OctoToUInt256Bits(left);

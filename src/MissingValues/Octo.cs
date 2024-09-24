@@ -205,7 +205,7 @@ namespace MissingValues
 			get
 			{
 				UInt256 bits = OctoToUInt256Bits(this);
-				return ExtractBiasedExponentFromBits(bits);
+				return ExtractBiasedExponentFromBits(in bits);
 			}
 		}
 		internal int Exponent
@@ -227,7 +227,7 @@ namespace MissingValues
 			get
 			{
 				UInt256 bits = OctoToUInt256Bits(this);
-				return ExtractTrailingSignificandFromBits(bits);
+				return ExtractTrailingSignificandFromBits(in bits);
 			}
 		}
 
