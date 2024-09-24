@@ -55,15 +55,6 @@ namespace MissingValues.Benchmarks
 		}
 
 		[Benchmark]
-		public ulong[][] SlowDivision_UInt64()
-		{
-			for (int i = 0; i < Length; i++)
-			{
-				Calculator.Divide(a64[i], b64[i], c64[i]);
-			}
-			return c64;
-		}
-		[Benchmark]
 		public uint[][] SlowDivision_UInt32()
 		{
 			for (int i = 0; i < Length; i++)
