@@ -368,7 +368,7 @@ namespace MissingValues
 		/// Explicitly converts a <see cref="Octo" /> value to a <see cref="byte"/>.
 		/// </summary>
 		/// <param name="value">The value to convert.</param>
-		public static explicit operator byte(Octo value)
+		public static explicit operator byte(in Octo value)
 		{
 			Octo twoPow8 = new Octo(0x4007_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
 			bool isNegative = Octo.IsNegative(value);
@@ -400,7 +400,7 @@ namespace MissingValues
 		/// </summary>
 		/// <param name="value">The value to convert.</param>
 		/// <exception cref="OverflowException"><paramref name="value"/> is outside the range of <see cref="byte"/>.</exception>
-		public static explicit operator checked byte(Octo value)
+		public static explicit operator checked byte(in Octo value)
 		{
 			Octo twoPow8 = new Octo(0x4007_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
 			bool isNegative = Octo.IsNegative(value);
@@ -427,7 +427,7 @@ namespace MissingValues
 		/// Explicitly converts a <see cref="Octo" /> value to a <see cref="ushort"/>.
 		/// </summary>
 		/// <param name="value">The value to convert.</param>
-		public static explicit operator ushort(Octo value)
+		public static explicit operator ushort(in Octo value)
 		{
 			Octo twoPow16 = new Octo(0x400F_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
 			bool isNegative = Octo.IsNegative(value);
@@ -459,7 +459,7 @@ namespace MissingValues
 		/// </summary>
 		/// <param name="value">The value to convert.</param>
 		/// <exception cref="OverflowException"><paramref name="value"/> is outside the range of <see cref="ushort"/>.</exception>
-		public static explicit operator checked ushort(Octo value)
+		public static explicit operator checked ushort(in Octo value)
 		{
 			Octo twoPow16 = new Octo(0x400F_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
 			bool isNegative = Octo.IsNegative(value);
@@ -486,7 +486,7 @@ namespace MissingValues
 		/// Explicitly converts a <see cref="Octo" /> value to a <see cref="uint"/>.
 		/// </summary>
 		/// <param name="value">The value to convert.</param>
-		public static explicit operator uint(Octo value)
+		public static explicit operator uint(in Octo value)
 		{
 			Octo twoPow32 = new Octo(0x4001_F000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
 			bool isNegative = Octo.IsNegative(value);
@@ -518,7 +518,7 @@ namespace MissingValues
 		/// </summary>
 		/// <param name="value">The value to convert.</param>
 		/// <exception cref="OverflowException"><paramref name="value"/> is outside the range of <see cref="uint"/>.</exception>
-		public static explicit operator checked uint(Octo value)
+		public static explicit operator checked uint(in Octo value)
 		{
 			Octo twoPow32 = new Octo(0x4001_F000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
 			bool isNegative = Octo.IsNegative(value);
@@ -545,7 +545,7 @@ namespace MissingValues
 		/// Explicitly converts a <see cref="Octo" /> value to a <see cref="ulong"/>.
 		/// </summary>
 		/// <param name="value">The value to convert.</param>
-		public static explicit operator ulong(Octo value)
+		public static explicit operator ulong(in Octo value)
 		{
 			Octo twoPow64 = new Octo(0x4003_F000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
 			bool isNegative = Octo.IsNegative(value);
@@ -577,7 +577,7 @@ namespace MissingValues
 		/// </summary>
 		/// <param name="value">The value to convert.</param>
 		/// <exception cref="OverflowException"><paramref name="value"/> is outside the range of <see cref="ulong"/>.</exception>
-		public static explicit operator checked ulong(Octo value)
+		public static explicit operator checked ulong(in Octo value)
 		{
 			Octo twoPow64 = new Octo(0x4003_F000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
 			bool isNegative = Octo.IsNegative(value);
@@ -604,7 +604,7 @@ namespace MissingValues
 		/// Explicitly converts a <see cref="Octo" /> value to a <see cref="UInt128"/>.
 		/// </summary>
 		/// <param name="value">The value to convert.</param>
-		public static explicit operator UInt128(Octo value)
+		public static explicit operator UInt128(in Octo value)
 		{
 			Octo twoPow128 = new Octo(0x4007_F000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
 			bool isNegative = Octo.IsNegative(value);
@@ -636,7 +636,7 @@ namespace MissingValues
 		/// </summary>
 		/// <param name="value">The value to convert.</param>
 		/// <exception cref="OverflowException"><paramref name="value"/> is outside the range of <see cref="UInt128"/>.</exception>
-		public static explicit operator checked UInt128(Octo value)
+		public static explicit operator checked UInt128(in Octo value)
 		{
 			Octo twoPow128 = new Octo(0x4007_F000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
 			bool isNegative = Octo.IsNegative(value);
@@ -663,7 +663,7 @@ namespace MissingValues
 		/// Explicitly converts a <see cref="Octo" /> value to a <see cref="UInt256"/>.
 		/// </summary>
 		/// <param name="value">The value to convert.</param>
-		public static explicit operator UInt256(Octo value)
+		public static explicit operator UInt256(in Octo value)
 		{
 			Octo twoPow256 = new Octo(0x400F_F000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
 			bool isNegative = Octo.IsNegative(value);
@@ -695,7 +695,7 @@ namespace MissingValues
 		/// </summary>
 		/// <param name="value">The value to convert.</param>
 		/// <exception cref="OverflowException"><paramref name="value"/> is outside the range of <see cref="UInt256"/>.</exception>
-		public static explicit operator checked UInt256(Octo value)
+		public static explicit operator checked UInt256(in Octo value)
 		{
 			Octo twoPow256 = new Octo(0x400F_F000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
 			bool isNegative = Octo.IsNegative(value);
@@ -722,7 +722,7 @@ namespace MissingValues
 		/// Explicitly converts a <see cref="Octo" /> value to a <see cref="UInt512"/>.
 		/// </summary>
 		/// <param name="value">The value to convert.</param>
-		public static explicit operator UInt512(Octo value)
+		public static explicit operator UInt512(in Octo value)
 		{
 			Octo twoPow512 = new Octo(0x401F_F000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
 			bool isNegative = Octo.IsNegative(value);
@@ -754,7 +754,7 @@ namespace MissingValues
 		/// </summary>
 		/// <param name="value">The value to convert.</param>
 		/// <exception cref="OverflowException"><paramref name="value"/> is outside the range of <see cref="UInt512"/>.</exception>
-		public static explicit operator checked UInt512(Octo value)
+		public static explicit operator checked UInt512(in Octo value)
 		{
 			Octo twoPow512 = new Octo(0x401F_F000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
 			bool isNegative = Octo.IsNegative(value);
@@ -782,7 +782,7 @@ namespace MissingValues
 		/// Explicitly converts a <see cref="Octo" /> value to a <see cref="sbyte"/>.
 		/// </summary>
 		/// <param name="value">The value to convert.</param>
-		public static explicit operator sbyte(Octo value)
+		public static explicit operator sbyte(in Octo value)
 		{
 			Octo twoPow7 = new Octo(0x4000_6000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
 
@@ -801,14 +801,11 @@ namespace MissingValues
 
 			bool isNegative = Octo.IsNegative(value);
 
-			if (isNegative)
-			{
-				value = -value;
-			}
+			Octo abs = isNegative ? -value : value;
 
-			if (value >= Octo.One)
+			if (abs >= Octo.One)
 			{
-				UInt256 bits = Octo.OctoToUInt256Bits(value);
+				UInt256 bits = Octo.OctoToUInt256Bits(abs);
 				sbyte result = (sbyte)(((byte)(bits >> 229) | 0x80) >>> (Octo.ExponentBias + 8 - 1 - (int)(bits >> 236)));
 
 				if (isNegative)
@@ -828,7 +825,7 @@ namespace MissingValues
 		/// </summary>
 		/// <param name="value">The value to convert.</param>
 		/// <exception cref="OverflowException"><paramref name="value"/> is outside the range of <see cref="sbyte"/>.</exception>
-		public static explicit operator checked sbyte(Octo value)
+		public static explicit operator checked sbyte(in Octo value)
 		{
 			Octo twoPow7 = new Octo(0x4000_6000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
 
@@ -839,14 +836,11 @@ namespace MissingValues
 
 			bool isNegative = Octo.IsNegative(value);
 
-			if (isNegative)
-			{
-				value = -value;
-			}
+			Octo abs = isNegative ? -value : value;
 
-			if (value >= Octo.One)
+			if (abs >= Octo.One)
 			{
-				UInt256 bits = Octo.OctoToUInt256Bits(value);
+				UInt256 bits = Octo.OctoToUInt256Bits(abs);
 				sbyte result = (sbyte)(((byte)(bits >> 229) | 0x80) >>> (Octo.ExponentBias + 8 - 1 - (int)(bits >> 236)));
 
 				if (isNegative)
@@ -865,7 +859,7 @@ namespace MissingValues
 		/// Explicitly converts a <see cref="Octo" /> value to a <see cref="short"/>.
 		/// </summary>
 		/// <param name="value">The value to convert.</param>
-		public static explicit operator short(Octo value)
+		public static explicit operator short(in Octo value)
 		{
 			Octo twoPow15 = new Octo(0x4000_E000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
 
@@ -884,14 +878,11 @@ namespace MissingValues
 
 			bool isNegative = Octo.IsNegative(value);
 
-			if (isNegative)
-			{
-				value = -value;
-			}
+			Octo abs = isNegative ? -value : value;
 
-			if (value >= Octo.One)
+			if (abs >= Octo.One)
 			{
-				UInt256 bits = Octo.OctoToUInt256Bits(value);
+				UInt256 bits = Octo.OctoToUInt256Bits(abs);
 				short result = (short)(((ushort)(bits >> 221) | 0x8000) >>> (Octo.ExponentBias + 16 - 1 - (int)(bits >> 236)));
 
 				if (isNegative)
@@ -911,7 +902,7 @@ namespace MissingValues
 		/// </summary>
 		/// <param name="value">The value to convert.</param>
 		/// <exception cref="OverflowException"><paramref name="value"/> is outside the range of <see cref="short"/>.</exception>
-		public static explicit operator checked short(Octo value)
+		public static explicit operator checked short(in Octo value)
 		{
 			Octo twoPow15 = new Octo(0x4000_E000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
 
@@ -922,14 +913,11 @@ namespace MissingValues
 
 			bool isNegative = Octo.IsNegative(value);
 
-			if (isNegative)
-			{
-				value = -value;
-			}
+			Octo abs = isNegative ? -value : value;
 
-			if (value >= Octo.One)
+			if (abs >= Octo.One)
 			{
-				UInt256 bits = Octo.OctoToUInt256Bits(value);
+				UInt256 bits = Octo.OctoToUInt256Bits(abs);
 				short result = (short)(((ushort)(bits >> 221) | 0x8000) >>> (Octo.ExponentBias + 16 - 1 - (int)(bits >> 236)));
 
 				if (isNegative)
@@ -948,7 +936,7 @@ namespace MissingValues
 		/// Explicitly converts a <see cref="Octo" /> value to a <see cref="int"/>.
 		/// </summary>
 		/// <param name="value">The value to convert.</param>
-		public static explicit operator int(Octo value)
+		public static explicit operator int(in Octo value)
 		{
 			Octo twoPow31 = new Octo(0x4001_E000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
 
@@ -967,14 +955,11 @@ namespace MissingValues
 
 			bool isNegative = Octo.IsNegative(value);
 
-			if (isNegative)
-			{
-				value = -value;
-			}
+			Octo abs = isNegative ? -value : value;
 
-			if (value >= Octo.One)
+			if (abs >= Octo.One)
 			{
-				UInt256 bits = Octo.OctoToUInt256Bits(value);
+				UInt256 bits = Octo.OctoToUInt256Bits(abs);
 				int result = (int)((uint)(bits >> 205) | 0x8000_0000);
 
 				result >>>= (Octo.ExponentBias + 32 - 1 - (int)(bits >> 236));
@@ -996,7 +981,7 @@ namespace MissingValues
 		/// </summary>
 		/// <param name="value">The value to convert.</param>
 		/// <exception cref="OverflowException"><paramref name="value"/> is outside the range of <see cref="int"/>.</exception>
-		public static explicit operator checked int(Octo value)
+		public static explicit operator checked int(in Octo value)
 		{
 			Octo twoPow31 = new Octo(0x4001_E000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
 
@@ -1007,14 +992,11 @@ namespace MissingValues
 
 			bool isNegative = Octo.IsNegative(value);
 
-			if (isNegative)
-			{
-				value = -value;
-			}
+			Octo abs = isNegative ? -value : value;
 
-			if (value >= Octo.One)
+			if (abs >= Octo.One)
 			{
-				UInt256 bits = Octo.OctoToUInt256Bits(value);
+				UInt256 bits = Octo.OctoToUInt256Bits(abs);
 				int result = (int)((uint)(bits >> 205) | 0x8000_0000);
 
 				result >>>= (Octo.ExponentBias + 32 - 1 - (int)(bits >> 236));
@@ -1035,7 +1017,7 @@ namespace MissingValues
 		/// Explicitly converts a <see cref="Octo" /> value to a <see cref="long"/>.
 		/// </summary>
 		/// <param name="value">The value to convert.</param>
-		public static explicit operator long(Octo value)
+		public static explicit operator long(in Octo value)
 		{
 			Octo twoPow63 = new Octo(0x4003_E000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
 
@@ -1054,14 +1036,11 @@ namespace MissingValues
 
 			bool isNegative = Octo.IsNegative(value);
 
-			if (isNegative)
-			{
-				value = -value;
-			}
+			Octo abs = isNegative ? -value : value;
 
-			if (value >= Octo.One)
+			if (abs >= Octo.One)
 			{
-				UInt256 bits = Octo.OctoToUInt256Bits(value);
+				UInt256 bits = Octo.OctoToUInt256Bits(abs);
 				long result = (long)((ulong)(bits >> 173) | 0x8000_0000_0000_0000);
 
 				result >>>= (Octo.ExponentBias + 64 - 1 - (int)(bits >> 236));
@@ -1083,7 +1062,7 @@ namespace MissingValues
 		/// </summary>
 		/// <param name="value">The value to convert.</param>
 		/// <exception cref="OverflowException"><paramref name="value"/> is outside the range of <see cref="long"/>.</exception>
-		public static explicit operator checked long(Octo value)
+		public static explicit operator checked long(in Octo value)
 		{
 			Octo twoPow63 = new Octo(0x4003_E000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
 
@@ -1094,14 +1073,11 @@ namespace MissingValues
 
 			bool isNegative = Octo.IsNegative(value);
 
-			if (isNegative)
-			{
-				value = -value;
-			}
+			Octo abs = isNegative ? -value : value;
 
-			if (value >= Octo.One)
+			if (abs >= Octo.One)
 			{
-				UInt256 bits = Octo.OctoToUInt256Bits(value);
+				UInt256 bits = Octo.OctoToUInt256Bits(abs);
 				long result = (long)((ulong)(bits >> 173) | 0x8000_0000_0000_0000);
 
 				result >>>= (Octo.ExponentBias + 64 - 1 - (int)(bits >> 236));
@@ -1122,7 +1098,7 @@ namespace MissingValues
 		/// Explicitly converts a <see cref="Octo" /> value to a <see cref="Int128"/>.
 		/// </summary>
 		/// <param name="value">The value to convert.</param>
-		public static explicit operator Int128(Octo value)
+		public static explicit operator Int128(in Octo value)
 		{
 			Octo twoPow127 = new Octo(0x4007_E000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
 
@@ -1141,14 +1117,11 @@ namespace MissingValues
 
 			bool isNegative = Octo.IsNegative(value);
 
-			if (isNegative)
-			{
-				value = -value;
-			}
+			Octo abs = isNegative ? -value : value;
 
-			if (value >= Octo.One)
+			if (abs >= Octo.One)
 			{
-				UInt256 bits = Octo.OctoToUInt256Bits(value);
+				UInt256 bits = Octo.OctoToUInt256Bits(abs);
 				Int128 result = (Int128)((UInt128)(bits >> 109) | new UInt128(0x8000_0000_0000_0000, 0x0000_0000_0000_0000));
 
 				result >>>= (Octo.ExponentBias + 128 - 1 - (int)(bits >> 236));
@@ -1170,7 +1143,7 @@ namespace MissingValues
 		/// </summary>
 		/// <param name="value">The value to convert.</param>
 		/// <exception cref="OverflowException"><paramref name="value"/> is outside the range of <see cref="Int128"/>.</exception>
-		public static explicit operator checked Int128(Octo value)
+		public static explicit operator checked Int128(in Octo value)
 		{
 			Octo twoPow127 = new Octo(0x4007_E000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
 
@@ -1181,14 +1154,11 @@ namespace MissingValues
 
 			bool isNegative = Octo.IsNegative(value);
 
-			if (isNegative)
-			{
-				value = -value;
-			}
+			Octo abs = isNegative ? -value : value;
 
-			if (value >= Octo.One)
+			if (abs >= Octo.One)
 			{
-				UInt256 bits = Octo.OctoToUInt256Bits(value);
+				UInt256 bits = Octo.OctoToUInt256Bits(abs);
 				Int128 result = (Int128)((UInt128)(bits >> 109) | new UInt128(0x8000_0000_0000_0000, 0x0000_0000_0000_0000));
 
 				result >>>= (Octo.ExponentBias + 128 - 1 - (int)(bits >> 236));
@@ -1209,7 +1179,7 @@ namespace MissingValues
 		/// Explicitly converts a <see cref="Octo" /> value to a <see cref="Int256"/>.
 		/// </summary>
 		/// <param name="value">The value to convert.</param>
-		public static explicit operator Int256(Octo value)
+		public static explicit operator Int256(in Octo value)
 		{
 			Octo twoPow255 = new Octo(0x400F_E000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
 
@@ -1228,14 +1198,11 @@ namespace MissingValues
 
 			bool isNegative = Octo.IsNegative(value);
 
-			if (isNegative)
-			{
-				value = -value;
-			}
+			Octo abs = isNegative ? -value : value;
 
-			if (value >= Octo.One)
+			if (abs >= Octo.One)
 			{
-				UInt256 bits = Octo.OctoToUInt256Bits(value);
+				UInt256 bits = Octo.OctoToUInt256Bits(abs);
 				Int256 result = (Int256)((bits << 20) >> 1 | Octo.SignMask);
 
 				result >>>= (Octo.ExponentBias + 256 - 1 - (int)(bits >> 236));
@@ -1257,7 +1224,7 @@ namespace MissingValues
 		/// </summary>
 		/// <param name="value">The value to convert.</param>
 		/// <exception cref="OverflowException"><paramref name="value"/> is outside the range of <see cref="Int256"/>.</exception>
-		public static explicit operator checked Int256(Octo value)
+		public static explicit operator checked Int256(in Octo value)
 		{
 			Octo twoPow255 = new Octo(0x400F_E000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
 
@@ -1268,14 +1235,11 @@ namespace MissingValues
 
 			bool isNegative = Octo.IsNegative(value);
 
-			if (isNegative)
-			{
-				value = -value;
-			}
+			Octo abs = isNegative ? -value : value;
 
-			if (value >= Octo.One)
+			if (abs >= Octo.One)
 			{
-				UInt256 bits = Octo.OctoToUInt256Bits(value);
+				UInt256 bits = Octo.OctoToUInt256Bits(abs);
 				Int256 result = (Int256)((bits << 20) >> 1 | Octo.SignMask);
 
 				result >>>= (Octo.ExponentBias + 256 - 1 - (int)(bits >> 236));
@@ -1296,7 +1260,7 @@ namespace MissingValues
 		/// Explicitly converts a <see cref="Octo" /> value to a <see cref="Int512"/>.
 		/// </summary>
 		/// <param name="value">The value to convert.</param>
-		public static explicit operator Int512(Octo value)
+		public static explicit operator Int512(in Octo value)
 		{
 			Octo twoPow511 = new Octo(0x401F_E000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
 
@@ -1315,19 +1279,16 @@ namespace MissingValues
 
 			bool isNegative = Octo.IsNegative(value);
 
-			if (isNegative)
-			{
-				value = -value;
-			}
+			Octo abs = isNegative ? -value : value;
 
-			if (value >= Octo.One)
+			if (abs >= Octo.One)
 			{
 				// In order to convert from Quad to Int512 we first need to extract the signficand,
 				// including the implicit leading bit, as a full 512-bit significand. We can then adjust
 				// this down to the represented integer by y shifting by the unbiased exponent, taking
 				// into account the significand is now represented as 512-bits.
 
-				UInt256 bits = Octo.OctoToUInt256Bits(value);
+				UInt256 bits = Octo.OctoToUInt256Bits(abs);
 				Int512 result = new Int512((bits << 20) >> 1 | Octo.SignMask, UInt256.Zero);
 
 				result >>>= (Octo.ExponentBias + 512 - 1 - (int)(bits >> 236));
@@ -1349,7 +1310,7 @@ namespace MissingValues
 		/// </summary>
 		/// <param name="value">The value to convert.</param>
 		/// <exception cref="OverflowException"><paramref name="value"/> is outside the range of <see cref="Int512"/>.</exception>
-		public static explicit operator checked Int512(Octo value)
+		public static explicit operator checked Int512(in Octo value)
 		{
 			Octo twoPow511 = new Octo(0x401F_E000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
 
@@ -1360,19 +1321,16 @@ namespace MissingValues
 
 			bool isNegative = Octo.IsNegative(value);
 
-			if (isNegative)
-			{
-				value = -value;
-			}
+			Octo abs = isNegative ? -value : value;
 
-			if (value >= Octo.One)
+			if (abs >= Octo.One)
 			{
 				// In order to convert from Quad to Int512 we first need to extract the signficand,
 				// including the implicit leading bit, as a full 512-bit significand. We can then adjust
 				// this down to the represented integer by y shifting by the unbiased exponent, taking
 				// into account the significand is now represented as 512-bits.
 
-				UInt256 bits = Octo.OctoToUInt256Bits(value);
+				UInt256 bits = Octo.OctoToUInt256Bits(abs);
 				Int512 result = new Int512((bits << 20) >> 1 | Octo.SignMask, UInt256.Zero);
 
 				result >>>= (Octo.ExponentBias + 512 - 1 - (int)(bits >> 236));
@@ -1394,7 +1352,7 @@ namespace MissingValues
 		/// Explicitly converts a <see cref="Octo" /> value to a <see cref="decimal"/>.
 		/// </summary>
 		/// <param name="value">The value to convert.</param>
-		public static explicit operator decimal(Octo value)
+		public static explicit operator decimal(in Octo value)
 		{
 			return (decimal)(double)value;
 		}
@@ -1402,7 +1360,7 @@ namespace MissingValues
 		/// Explicitly converts a <see cref="Octo" /> value to a <see cref="Quad"/>.
 		/// </summary>
 		/// <param name="value">The value to convert.</param>
-		public static explicit operator Quad(Octo value)
+		public static explicit operator Quad(in Octo value)
 		{
 			UInt256 octoInt = OctoToUInt256Bits(value);
 			bool sign = (octoInt & Octo.SignMask) >> Octo.SignShift != UInt256.Zero;
@@ -1436,7 +1394,7 @@ namespace MissingValues
 		/// Explicitly converts a <see cref="Octo" /> value to a <see cref="double"/>.
 		/// </summary>
 		/// <param name="value">The value to convert.</param>
-		public static explicit operator double(Octo value)
+		public static explicit operator double(in Octo value)
 		{
 			UInt256 octoInt = OctoToUInt256Bits(value);
 			bool sign = (octoInt & Octo.SignMask) >> Octo.SignShift != UInt256.Zero;
@@ -1470,7 +1428,7 @@ namespace MissingValues
 		/// Explicitly converts a <see cref="Octo" /> value to a <see cref="float"/>.
 		/// </summary>
 		/// <param name="value">The value to convert.</param>
-		public static explicit operator float(Octo value)
+		public static explicit operator float(in Octo value)
 		{
 			UInt256 octoInt = OctoToUInt256Bits(value);
 			bool sign = (octoInt & Octo.SignMask) >> Octo.SignShift != UInt256.Zero;
@@ -1503,7 +1461,7 @@ namespace MissingValues
 		/// Explicitly converts a <see cref="Octo" /> value to a <see cref="Half"/>.
 		/// </summary>
 		/// <param name="value">The value to convert.</param>
-		public static explicit operator Half(Octo value)
+		public static explicit operator Half(in Octo value)
 		{
 			UInt256 octoInt = OctoToUInt256Bits(value);
 			bool sign = (octoInt & Octo.SignMask) >> Octo.SignShift != UInt256.Zero;

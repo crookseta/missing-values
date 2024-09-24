@@ -170,13 +170,13 @@ namespace MissingValues
 		/// Explicitly converts a <see cref="UInt256" /> value to a <see cref="char"/>.
 		/// </summary>
 		/// <param name="value">The value to convert.</param>
-		public static explicit operator char(UInt256 value) => (char)value._p0;
+		public static explicit operator char(in UInt256 value) => (char)value._p0;
 		/// <summary>
 		/// Explicitly converts a <see cref="UInt256" /> value to a <see cref="char"/>.
 		/// </summary>
 		/// <param name="value">The value to convert.</param>
 		/// <exception cref="OverflowException"><paramref name="value"/> is outside the range of <see cref="char"/>.</exception>
-		public static explicit operator checked char(UInt256 value)
+		public static explicit operator checked char(in UInt256 value)
 		{
 			if (value._p3 != 0 || value._p2 != 0 || value._p1 != 0)
 			{
@@ -189,13 +189,13 @@ namespace MissingValues
 		/// Explicitly converts a <see cref="UInt256" /> value to a <see cref="byte"/>.
 		/// </summary>
 		/// <param name="value">The value to convert.</param>
-		public static explicit operator byte(UInt256 value) => (byte)value._p0;
+		public static explicit operator byte(in UInt256 value) => (byte)value._p0;
 		/// <summary>
 		/// Explicitly converts a <see cref="UInt256" /> value to a <see cref="byte"/>.
 		/// </summary>
 		/// <param name="value">The value to convert.</param>
 		/// <exception cref="OverflowException"><paramref name="value"/> is outside the range of <see cref="byte"/>.</exception>
-		public static explicit operator checked byte(UInt256 value)
+		public static explicit operator checked byte(in UInt256 value)
 		{
 			if (value._p3 != 0 || value._p2 != 0 || value._p1 != 0)
 			{
@@ -207,13 +207,13 @@ namespace MissingValues
 		/// Explicitly converts a <see cref="UInt256" /> value to a <see cref="ushort"/>.
 		/// </summary>
 		/// <param name="value">The value to convert.</param>
-		public static explicit operator ushort(UInt256 value) => (ushort)value._p0;
+		public static explicit operator ushort(in UInt256 value) => (ushort)value._p0;
 		/// <summary>
 		/// Explicitly converts a <see cref="UInt256" /> value to a <see cref="ushort"/>.
 		/// </summary>
 		/// <param name="value">The value to convert.</param>
 		/// <exception cref="OverflowException"><paramref name="value"/> is outside the range of <see cref="ushort"/>.</exception>
-		public static explicit operator checked ushort(UInt256 value)
+		public static explicit operator checked ushort(in UInt256 value)
 		{
 			if (value._p3 != 0 || value._p2 != 0 || value._p1 != 0)
 			{
@@ -225,13 +225,13 @@ namespace MissingValues
 		/// Explicitly converts a <see cref="UInt256" /> value to a <see cref="uint"/>.
 		/// </summary>
 		/// <param name="value">The value to convert.</param>
-		public static explicit operator uint(UInt256 value) => (uint)value._p0;
+		public static explicit operator uint(in UInt256 value) => (uint)value._p0;
 		/// <summary>
 		/// Explicitly converts a <see cref="UInt256" /> value to a <see cref="uint"/>.
 		/// </summary>
 		/// <param name="value">The value to convert.</param>
 		/// <exception cref="OverflowException"><paramref name="value"/> is outside the range of <see cref="uint"/>.</exception>
-		public static explicit operator checked uint(UInt256 value)
+		public static explicit operator checked uint(in UInt256 value)
 		{
 			if (value._p3 != 0 || value._p2 != 0 || value._p1 != 0)
 			{
@@ -243,13 +243,13 @@ namespace MissingValues
 		/// Explicitly converts a <see cref="UInt256" /> value to a <see cref="ulong"/>.
 		/// </summary>
 		/// <param name="value">The value to convert.</param>
-		public static explicit operator ulong(UInt256 value) => value._p0;
+		public static explicit operator ulong(in UInt256 value) => value._p0;
 		/// <summary>
 		/// Explicitly converts a <see cref="UInt256" /> value to a <see cref="ulong"/>.
 		/// </summary>
 		/// <param name="value">The value to convert.</param>
 		/// <exception cref="OverflowException"><paramref name="value"/> is outside the range of <see cref="ulong"/>.</exception>
-		public static explicit operator checked ulong(UInt256 value)
+		public static explicit operator checked ulong(in UInt256 value)
 		{
 			if (value._p3 != 0 || value._p2 != 0 || value._p1 != 0)
 			{
@@ -261,13 +261,13 @@ namespace MissingValues
 		/// Explicitly converts a <see cref="UInt256" /> value to a <see cref="UInt128"/>.
 		/// </summary>
 		/// <param name="value">The value to convert.</param>
-		public static explicit operator UInt128(UInt256 value) => value.Lower;
+		public static explicit operator UInt128(in UInt256 value) => value.Lower;
 		/// <summary>
 		/// Explicitly converts a <see cref="UInt256" /> value to a <see cref="UInt128"/>.
 		/// </summary>
 		/// <param name="value">The value to convert.</param>
 		/// <exception cref="OverflowException"><paramref name="value"/> is outside the range of <see cref="UInt128"/>.</exception>
-		public static explicit operator checked UInt128(UInt256 value)
+		public static explicit operator checked UInt128(in UInt256 value)
 		{
 			if (value._p3 != 0 || value._p2 != 0)
 			{
@@ -279,18 +279,18 @@ namespace MissingValues
 		/// Implicitly converts a <see cref="UInt256" /> value to a <see cref="UInt512"/>.
 		/// </summary>
 		/// <param name="value">The value to convert.</param>
-		public static implicit operator UInt512(UInt256 value) => new(value);
+		public static implicit operator UInt512(in UInt256 value) => new(value);
 		/// <summary>
 		/// Explicitly converts a <see cref="UInt256" /> value to a <see cref="nuint"/>.
 		/// </summary>
 		/// <param name="value">The value to convert.</param>
-		public static explicit operator nuint(UInt256 value) => (nuint)value._p0;
+		public static explicit operator nuint(in UInt256 value) => (nuint)value._p0;
 		/// <summary>
 		/// Explicitly converts a <see cref="UInt256" /> value to a <see cref="nuint"/>.
 		/// </summary>
 		/// <param name="value">The value to convert.</param>
 		/// <exception cref="OverflowException"><paramref name="value"/> is outside the range of <see cref="nuint"/>.</exception>
-		public static explicit operator checked nuint(UInt256 value)
+		public static explicit operator checked nuint(in UInt256 value)
 		{
 			if (value._p3 != 0 || value._p2 != 0 || value._p1 != 0)
 			{
@@ -303,13 +303,13 @@ namespace MissingValues
 		/// Explicitly converts a <see cref="UInt256" /> value to a <see cref="sbyte"/>.
 		/// </summary>
 		/// <param name="value">The value to convert.</param>
-		public static explicit operator sbyte(UInt256 value) => (sbyte)value._p0;
+		public static explicit operator sbyte(in UInt256 value) => (sbyte)value._p0;
 		/// <summary>
 		/// Explicitly converts a <see cref="UInt256" /> value to a <see cref="sbyte"/>.
 		/// </summary>
 		/// <param name="value">The value to convert.</param>
 		/// <exception cref="OverflowException"><paramref name="value"/> is outside the range of <see cref="sbyte"/>.</exception>
-		public static explicit operator checked sbyte(UInt256 value)
+		public static explicit operator checked sbyte(in UInt256 value)
 		{
 			if (value._p3 != 0 || value._p2 != 0 || value._p1 != 0)
 			{
@@ -321,13 +321,13 @@ namespace MissingValues
 		/// Explicitly converts a <see cref="UInt256" /> value to a <see cref="short"/>.
 		/// </summary>
 		/// <param name="value">The value to convert.</param>
-		public static explicit operator short(UInt256 value) => (short)value._p0;
+		public static explicit operator short(in UInt256 value) => (short)value._p0;
 		/// <summary>
 		/// Explicitly converts a <see cref="UInt256" /> value to a <see cref="short"/>.
 		/// </summary>
 		/// <param name="value">The value to convert.</param>
 		/// <exception cref="OverflowException"><paramref name="value"/> is outside the range of <see cref="short"/>.</exception>
-		public static explicit operator checked short(UInt256 value)
+		public static explicit operator checked short(in UInt256 value)
 		{
 			if (value._p3 != 0 || value._p2 != 0 || value._p1 != 0)
 			{
@@ -339,13 +339,13 @@ namespace MissingValues
 		/// Explicitly converts a <see cref="UInt256" /> value to a <see cref="int"/>.
 		/// </summary>
 		/// <param name="value">The value to convert.</param>
-		public static explicit operator int(UInt256 value) => (int)value._p0;
+		public static explicit operator int(in UInt256 value) => (int)value._p0;
 		/// <summary>
 		/// Explicitly converts a <see cref="UInt256" /> value to a <see cref="int"/>.
 		/// </summary>
 		/// <param name="value">The value to convert.</param>
 		/// <exception cref="OverflowException"><paramref name="value"/> is outside the range of <see cref="int"/>.</exception>
-		public static explicit operator checked int(UInt256 value)
+		public static explicit operator checked int(in UInt256 value)
 		{
 			if (value._p3 != 0 || value._p2 != 0 || value._p1 != 0)
 			{
@@ -357,13 +357,13 @@ namespace MissingValues
 		/// Explicitly converts a <see cref="UInt256" /> value to a <see cref="long"/>.
 		/// </summary>
 		/// <param name="value">The value to convert.</param>
-		public static explicit operator long(UInt256 value) => (long)value._p0;
+		public static explicit operator long(in UInt256 value) => (long)value._p0;
 		/// <summary>
 		/// Explicitly converts a <see cref="UInt256" /> value to a <see cref="long"/>.
 		/// </summary>
 		/// <param name="value">The value to convert.</param>
 		/// <exception cref="OverflowException"><paramref name="value"/> is outside the range of <see cref="long"/>.</exception>
-		public static explicit operator checked long(UInt256 value)
+		public static explicit operator checked long(in UInt256 value)
 		{
 			if (value._p3 != 0 || value._p2 != 0 || value._p1 != 0)
 			{
@@ -375,13 +375,13 @@ namespace MissingValues
 		/// Explicitly converts a <see cref="UInt256" /> value to a <see cref="Int128"/>.
 		/// </summary>
 		/// <param name="value">The value to convert.</param>
-		public static explicit operator Int128(UInt256 value) => (Int128)value.Lower;
+		public static explicit operator Int128(in UInt256 value) => (Int128)value.Lower;
 		/// <summary>
 		/// Explicitly converts a <see cref="UInt256" /> value to a <see cref="Int128"/>.
 		/// </summary>
 		/// <param name="value">The value to convert.</param>
 		/// <exception cref="OverflowException"><paramref name="value"/> is outside the range of <see cref="Int128"/>.</exception>
-		public static explicit operator checked Int128(UInt256 value)
+		public static explicit operator checked Int128(in UInt256 value)
 		{
 			if (value._p3 != 0 || value._p2 != 0)
 			{
@@ -393,13 +393,13 @@ namespace MissingValues
 		/// Explicitly converts a <see cref="UInt256" /> value to a <see cref="Int256"/>.
 		/// </summary>
 		/// <param name="value">The value to convert.</param>
-		public static explicit operator Int256(UInt256 value) => new(value._p3, value._p2, value._p1, value._p0);
+		public static explicit operator Int256(in UInt256 value) => new(value._p3, value._p2, value._p1, value._p0);
 		/// <summary>
 		/// Explicitly converts a <see cref="UInt256" /> value to a <see cref="Int256"/>.
 		/// </summary>
 		/// <param name="value">The value to convert.</param>
 		/// <exception cref="OverflowException"><paramref name="value"/> is outside the range of <see cref="Int256"/>.</exception>
-		public static explicit operator checked Int256(UInt256 value)
+		public static explicit operator checked Int256(in UInt256 value)
 		{
 			if ((long)value._p3 < 0)
 			{
@@ -411,13 +411,13 @@ namespace MissingValues
 		/// Explicitly converts a <see cref="UInt256" /> value to a <see cref="Int512"/>.
 		/// </summary>
 		/// <param name="value">The value to convert.</param>
-		public static explicit operator Int512(UInt256 value) => new(value);
+		public static explicit operator Int512(in UInt256 value) => new(value);
 		/// <summary>
 		/// Explicitly converts a <see cref="UInt256" /> value to a <see cref="Int512"/>.
 		/// </summary>
 		/// <param name="value">The value to convert.</param>
 		/// <exception cref="OverflowException"><paramref name="value"/> is outside the range of <see cref="Int512"/>.</exception>
-		public static explicit operator checked Int512(UInt256 value)
+		public static explicit operator checked Int512(in UInt256 value)
 		{
 			if ((long)value._p3 < 0)
 			{
@@ -429,13 +429,13 @@ namespace MissingValues
 		/// Explicitly converts a <see cref="UInt256" /> value to a <see cref="nint"/>.
 		/// </summary>
 		/// <param name="value">The value to convert.</param>
-		public static explicit operator nint(UInt256 value) => (nint)value._p0;
+		public static explicit operator nint(in UInt256 value) => (nint)value._p0;
 		/// <summary>
 		/// Explicitly converts a <see cref="UInt256" /> value to a <see cref="nint"/>.
 		/// </summary>
 		/// <param name="value">The value to convert.</param>
 		/// <exception cref="OverflowException"><paramref name="value"/> is outside the range of <see cref="nint"/>.</exception>
-		public static explicit operator checked nint(UInt256 value)
+		public static explicit operator checked nint(in UInt256 value)
 		{
 			if (value._p3 != 0 || value._p2 != 0 || value._p1 != 0)
 			{
@@ -449,7 +449,7 @@ namespace MissingValues
 		/// </summary>
 		/// <param name="value">The value to convert.</param>
 		/// <exception cref="OverflowException"><paramref name="value"/> is outside the range of <see cref="decimal"/>.</exception>
-		public static explicit operator decimal(UInt256 value)
+		public static explicit operator decimal(in UInt256 value)
 		{
 
 			if (value.Upper != 0)
@@ -464,7 +464,7 @@ namespace MissingValues
 		/// Explicitly converts a <see cref="UInt256" /> value to a <see cref="Octo"/>.
 		/// </summary>
 		/// <param name="value">The value to convert.</param>
-		public static explicit operator Octo(UInt256 value)
+		public static explicit operator Octo(in UInt256 value)
 		{
 			if (value == UInt256.Zero)
 			{
@@ -473,7 +473,7 @@ namespace MissingValues
 			int shiftDist = BitHelper.LeadingZeroCount(in value);
 			UInt256 a = (value << shiftDist >> 19); // Significant bits, with bit 237 still intact
 			UInt256 b = (value << shiftDist << 237); // Insignificant bits, only relevant for rounding.
-			UInt256 m = a + ((b - (b >> 255 & (a == UInt128.Zero ? UInt128.One : UInt128.Zero))) >> 255); // Add one when we need to round up. Break ties to even.
+			UInt256 m = a + ((b - (b >> 255 & (a == UInt256.Zero ? UInt256.One : UInt256.Zero))) >> 255); // Add one when we need to round up. Break ties to even.
 			UInt256 e = (UInt256)(0x400FD - shiftDist); // Exponent plus 262143, minus one, except for zero.
 			return Octo.UInt256BitsToOcto((e << 236) + m);
 		}
@@ -481,7 +481,7 @@ namespace MissingValues
 		/// Explicitly converts a <see cref="UInt256" /> value to a <see cref="Quad"/>.
 		/// </summary>
 		/// <param name="value">The value to convert.</param>
-		public static explicit operator Quad(UInt256 value)
+		public static explicit operator Quad(in UInt256 value)
 		{
 			if (value.Upper == 0)
 			{
@@ -525,7 +525,7 @@ namespace MissingValues
 		/// Explicitly converts a <see cref="UInt256" /> value to a <see cref="double"/>.
 		/// </summary>
 		/// <param name="value">The value to convert.</param>
-		public static explicit operator double(UInt256 value)
+		public static explicit operator double(in UInt256 value)
 		{
 			const double TwoPow204 = 25711008708143844408671393477458601640355247900524685364822016.0d;
 			const double TwoPow256 = 115792089237316195423570985008687907853269984665640564039457584007913129639936.0d;
@@ -548,12 +548,12 @@ namespace MissingValues
 		/// Explicitly converts a <see cref="UInt256" /> value to a <see cref="float"/>.
 		/// </summary>
 		/// <param name="value">The value to convert.</param>
-		public static explicit operator float(UInt256 value) => (float)(double)value;
+		public static explicit operator float(in UInt256 value) => (float)(double)value;
 		/// <summary>
 		/// Explicitly converts a <see cref="UInt256" /> value to a <see cref="Half"/>.
 		/// </summary>
 		/// <param name="value">The value to convert.</param>
-		public static explicit operator Half(UInt256 value) => (Half)(double)value;
+		public static explicit operator Half(in UInt256 value) => (Half)(double)value;
 		#endregion
 
 		#region To UInt256

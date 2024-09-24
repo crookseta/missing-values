@@ -228,13 +228,13 @@ namespace MissingValues
 		/// Explicitly converts a <see cref="UInt512" /> value to a <see cref="char"/>.
 		/// </summary>
 		/// <param name="value">The value to convert.</param>
-		public static explicit operator char(UInt512 value) => (char)value._p0;
+		public static explicit operator char(in UInt512 value) => (char)value._p0;
 		/// <summary>
 		/// Explicitly converts a <see cref="UInt512" /> value to a <see cref="char"/>.
 		/// </summary>
 		/// <param name="value">The value to convert.</param>
 		/// <exception cref="OverflowException"><paramref name="value"/> is outside the range of <see cref="char"/>.</exception>
-		public static explicit operator checked char(UInt512 value)
+		public static explicit operator checked char(in UInt512 value)
 		{
 			if (value._p7 != 0 || value._p6 != 0 || value._p5 != 0 || value._p4 != 0 || value._p3 != 0 || value._p2 != 0 || value._p1 != 0)
 			{
@@ -247,13 +247,13 @@ namespace MissingValues
 		/// Explicitly converts a <see cref="UInt512" /> value to a <see cref="byte"/>.
 		/// </summary>
 		/// <param name="value">The value to convert.</param>
-		public static explicit operator byte(UInt512 value) => (byte)value._p0;
+		public static explicit operator byte(in UInt512 value) => (byte)value._p0;
 		/// <summary>
 		/// Explicitly converts a <see cref="UInt512" /> value to a <see cref="byte"/>.
 		/// </summary>
 		/// <param name="value">The value to convert.</param>
 		/// <exception cref="OverflowException"><paramref name="value"/> is outside the range of <see cref="byte"/>.</exception>
-		public static explicit operator checked byte(UInt512 value)
+		public static explicit operator checked byte(in UInt512 value)
 		{
 			if (value._p7 != 0 || value._p6 != 0 || value._p5 != 0 || value._p4 != 0 || value._p3 != 0 || value._p2 != 0 || value._p1 != 0)
 			{
@@ -265,13 +265,13 @@ namespace MissingValues
 		/// Explicitly converts a <see cref="UInt512" /> value to a <see cref="ushort"/>.
 		/// </summary>
 		/// <param name="value">The value to convert.</param>
-		public static explicit operator ushort(UInt512 value) => (ushort)value._p0;
+		public static explicit operator ushort(in UInt512 value) => (ushort)value._p0;
 		/// <summary>
 		/// Explicitly converts a <see cref="UInt512" /> value to a <see cref="ushort"/>.
 		/// </summary>
 		/// <param name="value">The value to convert.</param>
 		/// <exception cref="OverflowException"><paramref name="value"/> is outside the range of <see cref="ushort"/>.</exception>
-		public static explicit operator checked ushort(UInt512 value)
+		public static explicit operator checked ushort(in UInt512 value)
 		{
 			if (value._p7 != 0 || value._p6 != 0 || value._p5 != 0 || value._p4 != 0 || value._p3 != 0 || value._p2 != 0 || value._p1 != 0)
 			{
@@ -283,13 +283,13 @@ namespace MissingValues
 		/// Explicitly converts a <see cref="UInt512" /> value to a <see cref="uint"/>.
 		/// </summary>
 		/// <param name="value">The value to convert.</param>
-		public static explicit operator uint(UInt512 value) => (uint)value._p0;
+		public static explicit operator uint(in UInt512 value) => (uint)value._p0;
 		/// <summary>
 		/// Explicitly converts a <see cref="UInt512" /> value to a <see cref="uint"/>.
 		/// </summary>
 		/// <param name="value">The value to convert.</param>
 		/// <exception cref="OverflowException"><paramref name="value"/> is outside the range of <see cref="uint"/>.</exception>
-		public static explicit operator checked uint(UInt512 value)
+		public static explicit operator checked uint(in UInt512 value)
 		{
 			if (value._p7 != 0 || value._p6 != 0 || value._p5 != 0 || value._p4 != 0 || value._p3 != 0 || value._p2 != 0 || value._p1 != 0)
 			{
@@ -301,13 +301,13 @@ namespace MissingValues
 		/// Explicitly converts a <see cref="UInt512" /> value to a <see cref="ulong"/>.
 		/// </summary>
 		/// <param name="value">The value to convert.</param>
-		public static explicit operator ulong(UInt512 value) => value._p0;
+		public static explicit operator ulong(in UInt512 value) => value._p0;
 		/// <summary>
 		/// Explicitly converts a <see cref="UInt512" /> value to a <see cref="ulong"/>.
 		/// </summary>
 		/// <param name="value">The value to convert.</param>
 		/// <exception cref="OverflowException"><paramref name="value"/> is outside the range of <see cref="ulong"/>.</exception>
-		public static explicit operator checked ulong(UInt512 value)
+		public static explicit operator checked ulong(in UInt512 value)
 		{
 			if (value._p7 != 0 || value._p6 != 0 || value._p5 != 0 || value._p4 != 0 || value._p3 != 0 || value._p2 != 0 || value._p1 != 0)
 			{
@@ -319,13 +319,13 @@ namespace MissingValues
 		/// Explicitly converts a <see cref="UInt512" /> value to a <see cref="UInt128"/>.
 		/// </summary>
 		/// <param name="value">The value to convert.</param>
-		public static explicit operator UInt128(UInt512 value) => new UInt128(value._p1, value._p0);
+		public static explicit operator UInt128(in UInt512 value) => new UInt128(value._p1, value._p0);
 		/// <summary>
 		/// Explicitly converts a <see cref="UInt512" /> value to a <see cref="UInt128"/>.
 		/// </summary>
 		/// <param name="value">The value to convert.</param>
 		/// <exception cref="OverflowException"><paramref name="value"/> is outside the range of <see cref="UInt128"/>.</exception>
-		public static explicit operator checked UInt128(UInt512 value)
+		public static explicit operator checked UInt128(in UInt512 value)
 		{
 			if (value._p7 != 0 || value._p6 != 0 || value._p5 != 0 || value._p4 != 0 || value._p3 != 0 || value._p2 != 0)
 			{
@@ -337,13 +337,13 @@ namespace MissingValues
 		/// Explicitly converts a <see cref="UInt512" /> value to a <see cref="UInt256"/>.
 		/// </summary>
 		/// <param name="value">The value to convert.</param>
-		public static explicit operator UInt256(UInt512 value) => value.Lower;
+		public static explicit operator UInt256(in UInt512 value) => value.Lower;
 		/// <summary>
 		/// Explicitly converts a <see cref="UInt512" /> value to a <see cref="UInt256"/>.
 		/// </summary>
 		/// <param name="value">The value to convert.</param>
 		/// <exception cref="OverflowException"><paramref name="value"/> is outside the range of <see cref="UInt256"/>.</exception>
-		public static explicit operator checked UInt256(UInt512 value)
+		public static explicit operator checked UInt256(in UInt512 value)
 		{
 			if (value._p7 != 0 || value._p6 != 0 || value._p5 != 0 || value._p4 != 0)
 			{
@@ -355,13 +355,13 @@ namespace MissingValues
 		/// Explicitly converts a <see cref="UInt512" /> value to a <see cref="nuint"/>.
 		/// </summary>
 		/// <param name="value">The value to convert.</param>
-		public static explicit operator nuint(UInt512 value) => (nuint)value._p0;
+		public static explicit operator nuint(in UInt512 value) => (nuint)value._p0;
 		/// <summary>
 		/// Explicitly converts a <see cref="UInt512" /> value to a <see cref="nuint"/>.
 		/// </summary>
 		/// <param name="value">The value to convert.</param>
 		/// <exception cref="OverflowException"><paramref name="value"/> is outside the range of <see cref="nuint"/>.</exception>
-		public static explicit operator checked nuint(UInt512 value)
+		public static explicit operator checked nuint(in UInt512 value)
 		{
 			if (value._p7 != 0 || value._p6 != 0 || value._p5 != 0 || value._p4 != 0 || value._p3 != 0 || value._p2 != 0 || value._p1 != 0)
 			{
@@ -374,13 +374,13 @@ namespace MissingValues
 		/// Explicitly converts a <see cref="UInt512" /> value to a <see cref="sbyte"/>.
 		/// </summary>
 		/// <param name="value">The value to convert.</param>
-		public static explicit operator sbyte(UInt512 value) => (sbyte)value._p0;
+		public static explicit operator sbyte(in UInt512 value) => (sbyte)value._p0;
 		/// <summary>
 		/// Explicitly converts a <see cref="UInt512" /> value to a <see cref="sbyte"/>.
 		/// </summary>
 		/// <param name="value">The value to convert.</param>
 		/// <exception cref="OverflowException"><paramref name="value"/> is outside the range of <see cref="sbyte"/>.</exception>
-		public static explicit operator checked sbyte(UInt512 value)
+		public static explicit operator checked sbyte(in UInt512 value)
 		{
 			if (value._p7 != 0 || value._p6 != 0 || value._p5 != 0 || value._p4 != 0 || value._p3 != 0 || value._p2 != 0 || value._p1 != 0)
 			{
@@ -392,13 +392,13 @@ namespace MissingValues
 		/// Explicitly converts a <see cref="UInt512" /> value to a <see cref="short"/>.
 		/// </summary>
 		/// <param name="value">The value to convert.</param>
-		public static explicit operator short(UInt512 value) => (short)value._p0;
+		public static explicit operator short(in UInt512 value) => (short)value._p0;
 		/// <summary>
 		/// Explicitly converts a <see cref="UInt512" /> value to a <see cref="short"/>.
 		/// </summary>
 		/// <param name="value">The value to convert.</param>
 		/// <exception cref="OverflowException"><paramref name="value"/> is outside the range of <see cref="short"/>.</exception>
-		public static explicit operator checked short(UInt512 value)
+		public static explicit operator checked short(in UInt512 value)
 		{
 			if (value._p7 != 0 || value._p6 != 0 || value._p5 != 0 || value._p4 != 0 || value._p3 != 0 || value._p2 != 0 || value._p1 != 0)
 			{
@@ -410,13 +410,13 @@ namespace MissingValues
 		/// Explicitly converts a <see cref="UInt512" /> value to a <see cref="int"/>.
 		/// </summary>
 		/// <param name="value">The value to convert.</param>
-		public static explicit operator int(UInt512 value) => (int)value._p0;
+		public static explicit operator int(in UInt512 value) => (int)value._p0;
 		/// <summary>
 		/// Explicitly converts a <see cref="UInt512" /> value to a <see cref="int"/>.
 		/// </summary>
 		/// <param name="value">The value to convert.</param>
 		/// <exception cref="OverflowException"><paramref name="value"/> is outside the range of <see cref="int"/>.</exception>
-		public static explicit operator checked int(UInt512 value)
+		public static explicit operator checked int(in UInt512 value)
 		{
 			if (value._p7 != 0 || value._p6 != 0 || value._p5 != 0 || value._p4 != 0 || value._p3 != 0 || value._p2 != 0 || value._p1 != 0)
 			{
@@ -428,13 +428,13 @@ namespace MissingValues
 		/// Explicitly converts a <see cref="UInt512" /> value to a <see cref="long"/>.
 		/// </summary>
 		/// <param name="value">The value to convert.</param>
-		public static explicit operator long(UInt512 value) => (long)value._p0;
+		public static explicit operator long(in UInt512 value) => (long)value._p0;
 		/// <summary>
 		/// Explicitly converts a <see cref="UInt512" /> value to a <see cref="long"/>.
 		/// </summary>
 		/// <param name="value">The value to convert.</param>
 		/// <exception cref="OverflowException"><paramref name="value"/> is outside the range of <see cref="long"/>.</exception>
-		public static explicit operator checked long(UInt512 value)
+		public static explicit operator checked long(in UInt512 value)
 		{
 			if (value._p7 != 0 || value._p6 != 0 || value._p5 != 0 || value._p4 != 0 || value._p3 != 0 || value._p2 != 0 || value._p1 != 0)
 			{
@@ -446,13 +446,13 @@ namespace MissingValues
 		/// Explicitly converts a <see cref="UInt512" /> value to a <see cref="Int128"/>.
 		/// </summary>
 		/// <param name="value">The value to convert.</param>
-		public static explicit operator Int128(UInt512 value) => new Int128(value._p1, value._p0);
+		public static explicit operator Int128(in UInt512 value) => new Int128(value._p1, value._p0);
 		/// <summary>
 		/// Explicitly converts a <see cref="UInt512" /> value to a <see cref="Int128"/>.
 		/// </summary>
 		/// <param name="value">The value to convert.</param>
 		/// <exception cref="OverflowException"><paramref name="value"/> is outside the range of <see cref="Int128"/>.</exception>
-		public static explicit operator checked Int128(UInt512 value)
+		public static explicit operator checked Int128(in UInt512 value)
 		{
 			if (value._p7 != 0 || value._p6 != 0 || value._p5 != 0 || value._p4 != 0 || value._p3 != 0 || value._p2 != 0 || (long)value._p1 < 0)
 			{
@@ -464,13 +464,13 @@ namespace MissingValues
 		/// Explicitly converts a <see cref="UInt512" /> value to a <see cref="Int256"/>.
 		/// </summary>
 		/// <param name="value">The value to convert.</param>
-		public static explicit operator Int256(UInt512 value) => (Int256)value.Lower;
+		public static explicit operator Int256(in UInt512 value) => (Int256)value.Lower;
 		/// <summary>
 		/// Explicitly converts a <see cref="UInt512" /> value to a <see cref="Int256"/>.
 		/// </summary>
 		/// <param name="value">The value to convert.</param>
 		/// <exception cref="OverflowException"><paramref name="value"/> is outside the range of <see cref="Int256"/>.</exception>
-		public static explicit operator checked Int256(UInt512 value)
+		public static explicit operator checked Int256(in UInt512 value)
 		{
 			if (value._p7 != 0 || value._p6 != 0 || value._p5 != 0 || value._p4 != 0)
 			{
@@ -482,13 +482,13 @@ namespace MissingValues
 		/// Explicitly converts a <see cref="UInt512" /> value to a <see cref="Int512"/>.
 		/// </summary>
 		/// <param name="value">The value to convert.</param>
-		public static explicit operator Int512(UInt512 value) => new Int512(value._p7, value._p6, value._p5, value._p4, value._p3, value._p2, value._p1, value._p0);
+		public static explicit operator Int512(in UInt512 value) => new Int512(value._p7, value._p6, value._p5, value._p4, value._p3, value._p2, value._p1, value._p0);
 		/// <summary>
 		/// Explicitly converts a <see cref="UInt512" /> value to a <see cref="Int512"/>.
 		/// </summary>
 		/// <param name="value">The value to convert.</param>
 		/// <exception cref="OverflowException"><paramref name="value"/> is outside the range of <see cref="Int512"/>.</exception>
-		public static explicit operator checked Int512(UInt512 value)
+		public static explicit operator checked Int512(in UInt512 value)
 		{
 			if ((long)value._p7 < 0)
 			{
@@ -500,13 +500,13 @@ namespace MissingValues
 		/// Explicitly converts a <see cref="UInt512" /> value to a <see cref="nint"/>.
 		/// </summary>
 		/// <param name="value">The value to convert.</param>
-		public static explicit operator nint(UInt512 value) => (nint)value._p0;
+		public static explicit operator nint(in UInt512 value) => (nint)value._p0;
 		/// <summary>
 		/// Explicitly converts a <see cref="UInt512" /> value to a <see cref="nint"/>.
 		/// </summary>
 		/// <param name="value">The value to convert.</param>
 		/// <exception cref="OverflowException"><paramref name="value"/> is outside the range of <see cref="nint"/>.</exception>
-		public static explicit operator checked nint(UInt512 value)
+		public static explicit operator checked nint(in UInt512 value)
 		{
 			if (value._p7 != 0 || value._p6 != 0 || value._p5 != 0 || value._p4 != 0 || value._p3 != 0 || value._p2 != 0 || value._p1 != 0)
 			{
@@ -520,7 +520,7 @@ namespace MissingValues
 		/// </summary>
 		/// <param name="value">The value to convert.</param>
 		/// <exception cref="OverflowException"><paramref name="value"/> is outside the range of <see cref="decimal"/>.</exception>
-		public static explicit operator decimal(UInt512 value)
+		public static explicit operator decimal(in UInt512 value)
 		{
 			if (value.Upper != 0)
 			{
@@ -534,7 +534,7 @@ namespace MissingValues
 		/// Explicitly converts a <see cref="UInt512" /> value to a <see cref="Octo"/>.
 		/// </summary>
 		/// <param name="value">The value to convert.</param>
-		public static explicit operator Octo(UInt512 value)
+		public static explicit operator Octo(in UInt512 value)
 		{
 			if (value.Upper == 0)
 			{
@@ -578,7 +578,7 @@ namespace MissingValues
 		/// Explicitly converts a <see cref="UInt512" /> value to a <see cref="Quad"/>.
 		/// </summary>
 		/// <param name="value">The value to convert.</param>
-		public static explicit operator Quad(UInt512 value)
+		public static explicit operator Quad(in UInt512 value)
 		{
 			if (value.Upper == UInt256.Zero)
 			{
@@ -605,7 +605,7 @@ namespace MissingValues
 		/// Explicitly converts a <see cref="UInt512" /> value to a <see cref="double"/>.
 		/// </summary>
 		/// <param name="value">The value to convert.</param>
-		public static explicit operator double(UInt512 value)
+		public static explicit operator double(in UInt512 value)
 		{
 			const double TwoPow460 = 2977131414714805823690030317109266572712515013375254774912983855843898524112477893944078543723575564536883288499266264815757728270805630976.0d;
 			const double TwoPow512 = 13407807929942597099574024998205846127479365820592393377723561443721764030073546976801874298166903427690031858186486050853753882811946569946433649006084096.0d;
@@ -627,12 +627,12 @@ namespace MissingValues
 		/// Explicitly converts a <see cref="UInt512" /> value to a <see cref="float"/>.
 		/// </summary>
 		/// <param name="value">The value to convert.</param>
-		public static explicit operator float(UInt512 value) => (float)(double)value;
+		public static explicit operator float(in UInt512 value) => (float)(double)value;
 		/// <summary>
 		/// Explicitly converts a <see cref="UInt512" /> value to a <see cref="Half"/>.
 		/// </summary>
 		/// <param name="value">The value to convert.</param>
-		public static explicit operator Half(UInt512 value) => (Half)(double)value;
+		public static explicit operator Half(in UInt512 value) => (Half)(double)value;
 		#endregion
 		#region To UInt512
 		/// <summary>
