@@ -51,7 +51,7 @@ Console.WriteLine($"Sum: {sum}");
 The library introduces the `Quad` and `Octo` struct, representing a quadruple-precision floating-point and a octuple-precision floating-point number respectively. 
 Quadruple-precision offers higher precision than standard `double` or `float` types, making it suitable for applications requiring extensive precision in numerical calculations.
 
-Here is a chart comparing the existing IEEE floating point numbers to `Quad`:
+Here is a chart comparing the existing IEEE floating point numbers to `Quad` and `Octo`:
 
 | Name   	| Size 		| Significand Digits 	| Decimal Digits 	| Max Exponent 	| Min Exponent 	| Max Value 	| Min Value  	|
 |--------	|--------	|--------------------	|----------------	|--------------	|--------------	|-----------	|------------	|
