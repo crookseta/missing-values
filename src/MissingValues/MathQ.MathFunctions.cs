@@ -62,8 +62,6 @@ namespace MissingValues
 		private static Quad M_PI_2 => new Quad(0x3FFF_921F_B544_42D1, 0x8469_898C_C517_01B8); // pi / 2
 		private static Quad M_PI_4 => new Quad(0x3FFE_921F_B544_42D1, 0x8469_898C_C517_01B8); // pi / 4
 		private static Quad LN2 => new Quad(0x3FFE_62E4_2FEF_A39E, 0xF357_ADEB_B905_E4BD);
-		private static Quad LOG2EA => new Quad();
-		private static Quad SQRTH => new Quad();
 
 		private static Quad RoundLimit => new Quad(0x4073_3426_172C_74D8, 0x22B8_78FE_8000_0000); // 1E35
 		internal static ReadOnlySpan<Quad> RoundPower10 => new Quad[MaxRoundingDigits + 1] 
@@ -547,7 +545,7 @@ namespace MissingValues
 		/// Returns the angle whose hyperbolic tangent is the specified number.
 		/// </summary>
 		/// <param name="x">A number representing a hyperbolic tangent, where <paramref name="x"/> must be greater than or equal to -1, but less than or equal to 1.</param>
-		/// <returns>An angle, θ, measured in radians, such that -∞ < θ <-1, or 1 < θ < ∞.</returns>
+		/// <returns>An angle, θ, measured in radians.</returns>
 		public static Quad Atanh(Quad x)
 		{
 			var exponent = x.BiasedExponent;
@@ -763,6 +761,13 @@ namespace MissingValues
 			}
 			return x + y;
 		}
+		/// <summary>
+		/// Returns <paramref name="value"/> clamped to the inclusive range of <paramref name="min"/> and <paramref name="max"/>.
+		/// </summary>
+		/// <param name="value">The value to be clamped</param>
+		/// <param name="min">The lower bound of the result</param>
+		/// <param name="max">The upper bound of the result</param>
+		/// <returns><paramref name="value"/> if <paramref name="min"/> ≤ <paramref name="value"/> ≤ <paramref name="max"/>.</returns>
 		public static Quad Clamp(Quad value, Quad min, Quad max)
 		{
 			if (min > max)
@@ -1179,7 +1184,6 @@ namespace MissingValues
 		public static Quad Cosh(Quad x)
 		{
 			var exponent = x.BiasedExponent;
-			uint w;
 			Quad t;
 
 			x = Quad.Abs(x);
@@ -1213,7 +1217,7 @@ namespace MissingValues
 		/// <returns>The number <seealso cref="Quad.E"/> raised to the power <paramref name="x"/>. If <paramref name="x"/> equals <see cref="Quad.NaN"/> or <see cref="Quad.PositiveInfinity"/>, that value is returned. If <paramref name="x"/> equals <see cref="Quad.NegativeInfinity"/>, 0 is returned.</returns>
 		public static Quad Exp(Quad x)
 		{
-			Quad t, twopk;
+			Quad t;
 
 			ushort ix;
 
@@ -1249,7 +1253,7 @@ namespace MissingValues
 		}
 		private static void Exp(Quad x, out Quad hip, out Quad lop, out int kp)
 		{
-			Quad q, r, r1, t, z;
+			Quad q, r, r1, t;
 			double dr, fn, r2;
 			int n, n2;
 
@@ -1366,8 +1370,8 @@ namespace MissingValues
 				expA = (short)exp;
 			}
 
-			sigA |= new UInt128(0x0001_0000_0000_0000, 0x0);
-			sigB |= new UInt128(0x0001_0000_0000_0000, 0x0);
+			sigA |= Quad.SignificandSignMask;
+			sigB |= Quad.SignificandSignMask;
 			UInt128 rem = sigA, altRem;
 			int expDiff = expA - expB;
 			uint q, recip32;
@@ -1410,7 +1414,7 @@ namespace MissingValues
 					rem <<= 29;
 					term = sigB * q;
 					rem -= term;
-					if ((rem & new UInt128(0x8000_0000_0000_0000, 0x0)) != UInt128.Zero)
+					if ((rem & Quad.SignMask) != UInt128.Zero)
 					{
 						rem += sigB;
 					}
@@ -1424,7 +1428,7 @@ namespace MissingValues
 				rem <<= expDiff + 30;
 				term = sigB * q;
 				rem -= term;
-				if ((rem & new UInt128(0x8000_0000_0000_0000, 0x0)) != UInt128.Zero)
+				if ((rem & Quad.SignMask) != UInt128.Zero)
 				{
 					altRem = rem + sigB;
 					goto selectRem;
@@ -1436,21 +1440,21 @@ namespace MissingValues
 				altRem = rem;
 				++q;
 				rem -= sigB;
-			} while ((rem & new UInt128(0x8000_0000_0000_0000, 0x0)) == UInt128.Zero);
+			} while ((rem & Quad.SignMask) == UInt128.Zero);
 		selectRem:
 			UInt128 meanRem = rem + altRem;
-			if (((meanRem & new UInt128(0x8000_0000_0000_0000, 0x0)) != UInt128.Zero)
+			if (((meanRem & Quad.SignMask) != UInt128.Zero)
 				|| ((meanRem == UInt128.Zero) && ((q & 1) != 0)))
 			{
 				rem = altRem;
 			}
 			bool signRem = signA;
-			if ((rem & new UInt128(0x8000_0000_0000_0000, 0x0)) != UInt128.Zero)
+			if ((rem & Quad.SignMask) != UInt128.Zero)
 			{
 				signRem = !signRem;
 				rem = -rem;
 			}
-			UInt128 resultBits = BitHelper.NormalizeRoundPack(signRem, expB - 1, rem);
+			UInt128 resultBits = BitHelper.NormalizeRoundPackQuad(signRem, expB - 1, rem);
 			return Quad.UInt128BitsToQuad(resultBits);
 		}
 		/// <summary>
@@ -1471,15 +1475,15 @@ namespace MissingValues
 					return NaN;
 				}
 				// subnormal x
-				x *= new Quad(0x4077_0000_0000_0000, 0x0000_0000_0000_0000);
-				return ILogB(x) - 120;
+				Debug.Assert(Quad.IsSubnormal(x));
+				return Quad.MinExponent - ((int)UInt128.TrailingZeroCount(x.TrailingSignificand) - Quad.BiasedExponentLength);
 			}
-			if (exponent == 0x7FFF)
+			if (exponent == Quad.MaxBiasedExponent)
 			{
 				return Quad.IsNaN(x) ? NaN : int.MaxValue;
 			}
 
-			return exponent - 0x3FFF;
+			return exponent - Quad.ExponentBias;
 		}
 		/// <summary>
 		/// Returns the natural (base <c>e</c>) logarithm of a specified number.
@@ -1733,8 +1737,8 @@ namespace MissingValues
 		/// <summary>
 		/// Returns the smaller magnitude of two quadruple-precision floating-point numbers.
 		/// </summary>
-		/// <param name="val1">The first of two quadruple-precision floating-point numbers to compare.</param>
-		/// <param name="val2">The second of two quadruple-precision floating-point numbers to compare.</param>
+		/// <param name="x">The first of two quadruple-precision floating-point numbers to compare.</param>
+		/// <param name="y">The second of two quadruple-precision floating-point numbers to compare.</param>
 		/// <returns>Parameter <paramref name="x"/> or <paramref name="y"/>, whichever has the smaller magnitude. If <paramref name="x"/>, or <paramref name="y"/>, or both <paramref name="x"/> and <paramref name="y"/> are equal to <see cref="Quad.NaN"/>, <see cref="Quad.NaN"/> is returned.</returns>
 		public static Quad MinMagnitude(Quad x, Quad y)
 		{
@@ -1929,7 +1933,6 @@ namespace MissingValues
 				Quad huge = Constants.Pow.Huge;
 				Quad tiny = Constants.Pow.Tiny;
 
-				/* if (1 - 2^-113)^y underflows, y > 1.1873e38 */
 				if (iy > 0x407d654b)
 				{
 					if (ix <= 0x3ffeffff)
@@ -2175,7 +2178,7 @@ namespace MissingValues
 			for (int i = 0; i < 15; i++)
 			{
 				// X1 = X(2 - DX)
-				//Quad x1 = f * (two - (normalizedValue * f));
+				// x1 = f * (two - (normalizedValue * f))
 				Quad x1 = x0 * FusedMultiplyAdd(normalizedValue, x0, two);
 				// Since we need: two - (normalizedValue * f)
 				// to make use of FusedMultiplyAdd, we can rewrite it to (-normalizedValue * f) + two
@@ -2213,7 +2216,7 @@ namespace MissingValues
 			// This is based on the 'Berkeley SoftFloat Release 3e' algorithm
 			// source: berkeley-softfloat-3/source/f128_roundToInt.c
 
-			UInt128 uiZ, lastBitMask;
+			UInt128 uiZ;
 			UInt128 bits = Quad.QuadToUInt128Bits(x);
 			ulong uiZ64 = x._upper, uiZ0 = x._lower, roundBitsMask;
 			ulong lastBitMask64, lastBitMask0;
@@ -2352,42 +2355,40 @@ namespace MissingValues
 		/// <returns>x * 2^n computed efficiently.</returns>
 		public static Quad ScaleB(Quad x, int n)
 		{
-			const int MaxExponent = 16383;
-			const int MinExponent = -16382;
-
-			if (n > MaxExponent)
+			if (n > Quad.MaxExponent)
 			{
 				Quad maxExp = new Quad(0x7FFE_0000_0000_0000, 0x0000_0000_0000_0000);
 
 				x *= maxExp;
-				n -= MaxExponent;
-				if (n > MaxExponent)
+				n -= Quad.MaxExponent;
+				if (n > Quad.MaxExponent)
 				{
 					x *= maxExp;
-					n -= MaxExponent;
+					n -= Quad.MaxExponent;
 
-					if (n > MaxExponent)
+					if (n > Quad.MaxExponent)
 					{
-						n = MaxExponent;
+						n = Quad.MaxExponent;
 					}
 				}
 			}
-			else if(n < MinExponent)
+			else if(n < Quad.MinExponent)
 			{
 				Quad minExp = new Quad(0x0001_0000_0000_0000, 0x0000_0000_0000_0000);
 				Quad b113 = new Quad(0x4070_0000_0000_0000, 0x0000_0000_0000_0000);
 
-				x *= minExp * b113;
-				n += -MinExponent - Quad.MantissaDigits;
+				Quad scaleb = minExp * b113;
+				x *= scaleb;
+				n += -Quad.MinExponent - Quad.MantissaDigits;
 
-				if (n < MinExponent)
+				if (n < Quad.MinExponent)
 				{
-					x *= minExp * b113;
-					n += -MinExponent - Quad.MantissaDigits;
+					x *= scaleb;
+					n += -Quad.MinExponent - Quad.MantissaDigits;
 
-					if (n < MinExponent)
+					if (n < Quad.MinExponent)
 					{
-						n = MinExponent;
+						n = Quad.MinExponent;
 					}
 				}
 
@@ -2625,7 +2626,7 @@ namespace MissingValues
 			{
 				rem = sig << 13;
 			}
-			Span<uint> qs = stackalloc uint[3] { 0, 0, sig32Z };
+			Span<uint> qs = [0, 0, sig32Z];
 			rem -= new UInt128((ulong)sig32Z * sig32Z, 0x0);
 
 			uint q = (uint)(((uint)(rem >> 66) * (ulong)recipSqrt32) >> 32);
@@ -2666,14 +2667,14 @@ namespace MissingValues
 			qs[0] = q;
 
 			q = (uint)((((ulong)(rem >> 66) * recipSqrt32) >> 32) + 2);
-			ulong sigZExtra = q << 59;
+			ulong sigZExtra = (ulong)q << 59;
 			term = (UInt128)qs[1] << 53;
 			UInt128 sigZ = new UInt128((ulong)qs[2] << 18, ((ulong)qs[0] << 24) + (q >> 5)) + term;
 
 			if ((q & 0xF) <= 2)
 			{
 				q &= ~3U;
-				sigZExtra = q << 59;
+				sigZExtra = (ulong)q << 59;
 				y = sigZ << 6;
 				y |= sigZExtra >> 58;
 				term = y - q;

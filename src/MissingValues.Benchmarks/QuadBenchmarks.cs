@@ -13,7 +13,6 @@ namespace MissingValues.Benchmarks
 	{
 		private static readonly Random rnd = new Random(7);
 
-		[MemoryDiagnoser]
 		public class MathOperators
 		{
 			private Quad q;
@@ -127,7 +126,7 @@ namespace MissingValues.Benchmarks
 			}
 		}
 		[MemoryDiagnoser]
-		public class Parser
+		public class Parsing
 		{
 			private string[] _lines;
 

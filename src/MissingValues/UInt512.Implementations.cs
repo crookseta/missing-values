@@ -1,4 +1,5 @@
-﻿using MissingValues.Internals;
+﻿using MissingValues.Info;
+using MissingValues.Internals;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -8,32 +9,31 @@ using System.Linq;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Runtime.Intrinsics;
 using System.Text;
 using System.Threading.Tasks;
 
 namespace MissingValues
 {
 	public partial struct UInt512 :
-		IBinaryInteger<UInt512>,
+		IBigInteger<UInt512>,
 		IMinMaxValue<UInt512>,
 		IUnsignedNumber<UInt512>,
 		IFormattableUnsignedInteger<UInt512, Int512>
 	{
-		public static UInt512 One => new UInt512(0, 0, 0, 0, 0, 0, 0, 1);
+		static UInt512 INumberBase<UInt512>.One => One;
 
 		static int INumberBase<UInt512>.Radix => 2;
 
-		public static UInt512 Zero => default;
+		static UInt512 INumberBase<UInt512>.Zero => Zero;
 
-		public static UInt512 AdditiveIdentity => default;
+		static UInt512 IAdditiveIdentity<UInt512, UInt512>.AdditiveIdentity => Zero;
 
-		public static UInt512 MultiplicativeIdentity => One;
+		static UInt512 IMultiplicativeIdentity<UInt512, UInt512>.MultiplicativeIdentity => One;
 
-		public static UInt512 MaxValue => new UInt512(
-			   0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF,
-			   0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF);
+		static UInt512 IMinMaxValue<UInt512>.MaxValue => MaxValue;
 
-		public static UInt512 MinValue => default;
+		static UInt512 IMinMaxValue<UInt512>.MinValue => MinValue;
 
 		static UInt512 IFormattableUnsignedInteger<UInt512, Int512>.SignedMaxMagnitude => new UInt512(
 			   0x8000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000,
@@ -67,6 +67,7 @@ namespace MissingValues
 
 		static UInt512 INumberBase<UInt512>.Abs(UInt512 value) => value;
 
+		/// <inheritdoc/>
 		public static UInt512 Clamp(UInt512 value, UInt512 min, UInt512 max)
 		{
 			if (min > max)
@@ -86,6 +87,7 @@ namespace MissingValues
 			return value;
 		}
 
+		/// <inheritdoc/>
 		public int CompareTo(object? obj)
 		{
 			if (obj is UInt512 value)
@@ -100,6 +102,7 @@ namespace MissingValues
 			return default;
 		}
 
+		/// <inheritdoc/>
 		public int CompareTo(UInt512 other)
 		{
 			if (this < other) return -1;
@@ -107,6 +110,7 @@ namespace MissingValues
 			else return 0;
 		}
 
+		/// <inheritdoc/>
 		public static UInt512 CreateChecked<TOther>(TOther value)
 			where TOther : INumberBase<TOther>
 		{
@@ -124,6 +128,7 @@ namespace MissingValues
 			return result;
 		}
 
+		/// <inheritdoc/>
 		public static UInt512 CreateSaturating<TOther>(TOther value)
 			where TOther : INumberBase<TOther>
 		{
@@ -141,6 +146,7 @@ namespace MissingValues
 			return result;
 		}
 
+		/// <inheritdoc/>
 		public static UInt512 CreateTruncating<TOther>(TOther value)
 			where TOther : INumberBase<TOther>
 		{
@@ -158,151 +164,152 @@ namespace MissingValues
 			return result;
 		}
 
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		/// <inheritdoc/>
 		public static (UInt512 Quotient, UInt512 Remainder) DivRem(UInt512 left, UInt512 right)
 		{
-			UInt512 quotient = left / right;
-			return (quotient, (left - (quotient * right)));
+			DivRem(in left, in right, out UInt512 quotient, out UInt512 remainder);
+
+			return (quotient, remainder);
+		}
+		internal static void DivRem(in UInt512 left, in UInt512 right, out UInt512 quotient, out UInt512 remainder)
+		{
+			if (right._p7 == 0 && right._p6 == 0 && right._p5 == 0 && right._p4 == 0)
+			{
+				if (right._p3 == 0 && right._p2 == 0 && right._p1 == 0 && right._p0 <= uint.MaxValue)
+				{
+					if (right._p0 == 0)
+					{
+						Thrower.DivideByZero();
+					}
+					DivRemFast(in left, (uint)right._p0, out quotient, out remainder);
+				}
+			}
+
+			if (right >= left)
+			{
+				quotient = (right == left) ? One : Zero;
+				remainder = (left - (quotient * right));
+			}
+
+			DivRemSlow(in left, in right, out quotient, out remainder);
+
+			unsafe static void DivRemFast(in UInt512 quotient, uint divisor, out UInt512 quo, out UInt512 rem)
+			{
+				const int UIntCount = Size / sizeof(uint);
+
+				uint* pLeft = stackalloc uint[UIntCount];
+				Unsafe.WriteUnaligned(ref *(byte*)(pLeft), quotient);
+				Span<uint> left = new Span<uint>(pLeft, (UIntCount) - (BitHelper.LeadingZeroCount(in quotient) / 32));
+
+				Span<uint> rawBits = stackalloc uint[UIntCount];
+				rawBits.Clear();
+
+				Calculator.DivRem(left, divisor, rawBits, out uint remainder);
+
+				quo = Unsafe.ReadUnaligned<UInt512>(ref Unsafe.As<uint, byte>(ref MemoryMarshal.GetReference(rawBits)));
+				rem = remainder;
+			}
+			unsafe static void DivRemSlow(in UInt512 quotient, in UInt512 divisor, out UInt512 quo, out UInt512 rem)
+			{
+				const int UIntCount = Size / sizeof(uint);
+
+				uint* pLeft = stackalloc uint[UIntCount];
+				Unsafe.WriteUnaligned(ref *(byte*)(pLeft), quotient);
+				Span<uint> left = new Span<uint>(pLeft, (UIntCount) - (BitHelper.LeadingZeroCount(in quotient) / 32));
+
+
+				uint* pRight = stackalloc uint[UIntCount];
+				Unsafe.WriteUnaligned(ref *(byte*)(pRight), divisor);
+				Span<uint> right = new Span<uint>(pRight, (UIntCount) - (BitHelper.LeadingZeroCount(in divisor) / 32));
+
+
+				Span<uint> quoBits = stackalloc uint[UIntCount];
+				quoBits.Clear();
+				Span<uint> remBits = stackalloc uint[UIntCount];
+				remBits.Clear();
+
+				Calculator.DivRem(left, right, quoBits, remBits);
+
+				quo = Unsafe.ReadUnaligned<UInt512>(ref Unsafe.As<uint, byte>(ref MemoryMarshal.GetReference(quoBits)));
+				rem = Unsafe.ReadUnaligned<UInt512>(ref Unsafe.As<uint, byte>(ref MemoryMarshal.GetReference(remBits)));
+			}
 		}
 
+		/// <inheritdoc/>
 		public bool Equals(UInt512 other) => this == other;
 
-		public int GetByteCount()
-		{
-			return Size;
-		}
+		int IBinaryInteger<UInt512>.GetByteCount() => Size;
 
-		public int GetShortestBitLength()
+		int IBinaryInteger<UInt512>.GetShortestBitLength()
 		{
 			UInt512 value = this;
-			return (Size * 8) - BitHelper.LeadingZeroCount(value);
+			return (Size * 8) - BitHelper.LeadingZeroCount(in value);
 		}
 
-		static bool INumberBase<UInt512>.IsCanonical(UInt512 value)
-		{
-			return true;
-		}
+		static bool INumberBase<UInt512>.IsCanonical(UInt512 value) => true;
 
-		static bool INumberBase<UInt512>.IsComplexNumber(UInt512 value)
-		{
-			return false;
-		}
+		static bool INumberBase<UInt512>.IsComplexNumber(UInt512 value) => false;
 
-		public static bool IsEvenInteger(UInt512 value)
-		{
-			return (value._lower & UInt256.One) == UInt256.Zero;
-		}
+		/// <inheritdoc/>
+		public static bool IsEvenInteger(UInt512 value) => (value._p0 & 1) == 0;
 
-		static bool INumberBase<UInt512>.IsFinite(UInt512 value)
-		{
-			return true;
-		}
+		static bool INumberBase<UInt512>.IsFinite(UInt512 value) => true;
 
-		static bool INumberBase<UInt512>.IsImaginaryNumber(UInt512 value)
-		{
-			return false;
-		}
+		static bool INumberBase<UInt512>.IsImaginaryNumber(UInt512 value) => false;
 
-		static bool INumberBase<UInt512>.IsInfinity(UInt512 value)
-		{
-			return false;
-		}
+		static bool INumberBase<UInt512>.IsInfinity(UInt512 value) => false;
 
-		static bool INumberBase<UInt512>.IsInteger(UInt512 value)
-		{
-			return true;
-		}
+		static bool INumberBase<UInt512>.IsInteger(UInt512 value) => true;
 
-		static bool INumberBase<UInt512>.IsNaN(UInt512 value)
-		{
-			return false;
-		}
+		static bool INumberBase<UInt512>.IsNaN(UInt512 value) => false;
 
-		static bool INumberBase<UInt512>.IsNegative(UInt512 value)
-		{
-			return false;
-		}
+		static bool INumberBase<UInt512>.IsNegative(UInt512 value) => false;
 
-		static bool INumberBase<UInt512>.IsNegativeInfinity(UInt512 value)
-		{
-			return false;
-		}
+		static bool INumberBase<UInt512>.IsNegativeInfinity(UInt512 value) => false;
 
-		static bool INumberBase<UInt512>.IsNormal(UInt512 value)
-		{
-			return value != Zero;
-		}
+		static bool INumberBase<UInt512>.IsNormal(UInt512 value) => value != Zero;
 
-		public static bool IsOddInteger(UInt512 value)
-		{
-			return (value._lower & UInt256.One) != UInt256.Zero;
-		}
+		/// <inheritdoc/>
+		public static bool IsOddInteger(UInt512 value) => (value._p0 & 1) != 0;
 
-		static bool INumberBase<UInt512>.IsPositive(UInt512 value)
-		{
-			return true;
-		}
+		static bool INumberBase<UInt512>.IsPositive(UInt512 value) => true;
 
-		static bool INumberBase<UInt512>.IsPositiveInfinity(UInt512 value)
-		{
-			return false;
-		}
+		static bool INumberBase<UInt512>.IsPositiveInfinity(UInt512 value) => false;
 
-		public static bool IsPow2(UInt512 value)
-		{
-			return PopCount(value) == 1;
-		}
+		/// <inheritdoc/>
+		public static bool IsPow2(UInt512 value) => BitHelper.PopCount(in value) == 1;
 
-		static bool INumberBase<UInt512>.IsRealNumber(UInt512 value)
-		{
-			return true;
-		}
+		static bool INumberBase<UInt512>.IsRealNumber(UInt512 value) => true;
 
-		static bool INumberBase<UInt512>.IsSubnormal(UInt512 value)
-		{
-			return false;
-		}
+		static bool INumberBase<UInt512>.IsSubnormal(UInt512 value) => false;
 
-		static bool INumberBase<UInt512>.IsZero(UInt512 value)
-		{
-			return value == Zero;
-		}
+		static bool INumberBase<UInt512>.IsZero(UInt512 value) => value == Zero;
 
-		public static UInt512 LeadingZeroCount(UInt512 value)
-		{
-			if (value._upper == UInt256.Zero)
-			{
-				return 256 + UInt256.LeadingZeroCount(value._lower);
-			}
+		/// <inheritdoc/>
+		public static UInt512 LeadingZeroCount(UInt512 value) => (UInt512)BitHelper.LeadingZeroCount(in value);
 
-			return UInt256.LeadingZeroCount(value._upper);
-		}
+		/// <inheritdoc/>
+		public static UInt512 Log2(UInt512 value) => (UInt512)BitHelper.Log2(in value);
 
-		public static UInt512 Log2(UInt512 value)
-		{
-			if (value._upper == 0)
-			{
-				return UInt256.Log2(value._lower);
-			}
-			return 256 + UInt256.Log2(value._upper);
-		}
-
+		/// <inheritdoc/>
 		public static UInt512 Max(UInt512 x, UInt512 y) => (x >= y) ? x : y;
 
 		static UInt512 INumber<UInt512>.MaxNumber(UInt512 x, UInt512 y) => Max(x, y);
 
-		public static UInt512 MaxMagnitude(UInt512 x, UInt512 y) => Max(x, y);
+		static UInt512 INumberBase<UInt512>.MaxMagnitude(UInt512 x, UInt512 y) => Max(x, y);
 
-		public static UInt512 MaxMagnitudeNumber(UInt512 x, UInt512 y) => Max(x, y);
+		static UInt512 INumberBase<UInt512>.MaxMagnitudeNumber(UInt512 x, UInt512 y) => Max(x, y);
 
+		/// <inheritdoc/>
 		public static UInt512 Min(UInt512 x, UInt512 y) => (x <= y) ? x : y;
 
 		static UInt512 INumber<UInt512>.MinNumber(UInt512 x, UInt512 y) => Min(x, y);
 
-		public static UInt512 MinMagnitude(UInt512 x, UInt512 y) => Min(x, y);
+		static UInt512 INumberBase<UInt512>.MinMagnitude(UInt512 x, UInt512 y) => Min(x, y);
 
-		public static UInt512 MinMagnitudeNumber(UInt512 x, UInt512 y) => Min(x, y);
+		static UInt512 INumberBase<UInt512>.MinMagnitudeNumber(UInt512 x, UInt512 y) => Min(x, y);
 
+		/// <inheritdoc/>
 		public static UInt512 Parse(ReadOnlySpan<char> s, NumberStyles style, IFormatProvider? provider)
 		{
 			var status = NumberParser.TryParseToUnsigned(Utf16Char.CastFromCharSpan(s), style, provider, out UInt512 output);
@@ -313,8 +320,10 @@ namespace MissingValues
 			return output;
 		}
 
+		/// <inheritdoc/>
 		public static UInt512 Parse(string s, NumberStyles style, IFormatProvider? provider)
 		{
+			ArgumentNullException.ThrowIfNull(s);
 			var status = NumberParser.TryParseToUnsigned(Utf16Char.CastFromCharSpan(s), style, provider, out UInt512 output);
 			if (!status)
 			{
@@ -323,6 +332,7 @@ namespace MissingValues
 			return output;
 		}
 
+		/// <inheritdoc/>
 		public static UInt512 Parse(ReadOnlySpan<char> s, IFormatProvider? provider)
 		{
 			var status = NumberParser.TryParseToUnsigned(Utf16Char.CastFromCharSpan(s), NumberStyles.Integer, provider, out UInt512 output);
@@ -333,8 +343,10 @@ namespace MissingValues
 			return output;
 		}
 
+		/// <inheritdoc/>
 		public static UInt512 Parse(string s, IFormatProvider? provider)
 		{
+			ArgumentNullException.ThrowIfNull(s);
 			var status = NumberParser.TryParseToUnsigned(Utf16Char.CastFromCharSpan(s), NumberStyles.Integer, provider, out UInt512 output);
 			if (!status)
 			{
@@ -343,7 +355,7 @@ namespace MissingValues
 			return output;
 		}
 
-#if NET8_0_OR_GREATER
+		/// <inheritdoc/>
 		public static UInt512 Parse(ReadOnlySpan<byte> utf8Text, NumberStyles style, IFormatProvider? provider)
 		{
 			var status = NumberParser.TryParseToUnsigned(Utf8Char.CastFromByteSpan(utf8Text), style, provider, out UInt512 output);
@@ -353,6 +365,7 @@ namespace MissingValues
 			}
 			return output;
 		}
+		/// <inheritdoc/>
 		public static UInt512 Parse(ReadOnlySpan<byte> utf8Text, IFormatProvider? provider)
 		{
 			var status = NumberParser.TryParseToUnsigned(Utf8Char.CastFromByteSpan(utf8Text), NumberStyles.Integer, provider, out UInt512 output);
@@ -362,32 +375,20 @@ namespace MissingValues
 			}
 			return output;
 		}
-#endif
 
-		public static UInt512 PopCount(UInt512 value)
-		{
-			return UInt256.PopCount(value._lower) + UInt256.PopCount(value._upper);
-		}
+		/// <inheritdoc/>
+		public static UInt512 PopCount(UInt512 value) => (UInt512)(BitHelper.PopCount(in value));
 
-		public static UInt512 RotateLeft(UInt512 value, int rotateAmount)
-		{
-			return (value << rotateAmount) | (value >>> (512 - rotateAmount));
-		}
+		/// <inheritdoc/>
+		public static UInt512 RotateLeft(UInt512 value, int rotateAmount) => (value << rotateAmount) | (value >>> (512 - rotateAmount));
 
-		public static UInt512 RotateRight(UInt512 value, int rotateAmount)
-		{
-			return (value >>> rotateAmount) | (value << (512 - rotateAmount));
-		}
+		/// <inheritdoc/>
+		public static UInt512 RotateRight(UInt512 value, int rotateAmount) => (value >>> rotateAmount) | (value << (512 - rotateAmount));
 
-		public static UInt512 TrailingZeroCount(UInt512 value)
-		{
-			if (value._lower == 0)
-			{
-				return 256 + UInt256.TrailingZeroCount(value._upper);
-			}
-			return UInt256.TrailingZeroCount(value._lower);
-		}
+		/// <inheritdoc/>
+		public static UInt512 TrailingZeroCount(UInt512 value) => (UInt512)BitHelper.TrailingZeroCount(in value);
 
+		/// <inheritdoc/>
 		public static bool TryParse(ReadOnlySpan<char> s, NumberStyles style, IFormatProvider? provider, [MaybeNullWhen(false)] out UInt512 result)
 		{
 			if (s.Length == 0 || s.IsWhiteSpace())
@@ -399,6 +400,7 @@ namespace MissingValues
 			return NumberParser.TryParseToUnsigned(Utf16Char.CastFromCharSpan(s), style, provider, out result);
 		}
 
+		/// <inheritdoc/>
 		public static bool TryParse([NotNullWhen(true)] string? s, NumberStyles style, IFormatProvider? provider, [MaybeNullWhen(false)] out UInt512 result)
 		{
 			if (string.IsNullOrWhiteSpace(s))
@@ -410,6 +412,7 @@ namespace MissingValues
 			return NumberParser.TryParseToUnsigned(Utf16Char.CastFromCharSpan(s), style, provider, out result);
 		}
 
+		/// <inheritdoc/>
 		public static bool TryParse(ReadOnlySpan<char> s, IFormatProvider? provider, [MaybeNullWhen(false)] out UInt512 result)
 		{
 			if (s.Length == 0 || s.IsWhiteSpace())
@@ -421,6 +424,7 @@ namespace MissingValues
 			return NumberParser.TryParseToUnsigned(Utf16Char.CastFromCharSpan(s), NumberStyles.Integer, provider, out result);
 		}
 
+		/// <inheritdoc/>
 		public static bool TryParse([NotNullWhen(true)] string? s, IFormatProvider? provider, [MaybeNullWhen(false)] out UInt512 result)
 		{
 			if (string.IsNullOrWhiteSpace(s))
@@ -432,7 +436,7 @@ namespace MissingValues
 			return NumberParser.TryParseToUnsigned(Utf16Char.CastFromCharSpan(s), NumberStyles.Integer, provider, out result);
 		}
 
-#if NET8_0_OR_GREATER
+		/// <inheritdoc/>
 		public static bool TryParse(ReadOnlySpan<byte> utf8Text, NumberStyles style, IFormatProvider? provider, [MaybeNullWhen(false)] out UInt512 result)
 		{
 			if (utf8Text.Length == 0 || !utf8Text.ContainsAnyExcept((byte)' '))
@@ -443,6 +447,7 @@ namespace MissingValues
 
 			return NumberParser.TryParseToUnsigned(Utf8Char.CastFromByteSpan(utf8Text), style, provider, out result);
 		}
+		/// <inheritdoc/>
 		public static bool TryParse(ReadOnlySpan<byte> utf8Text, IFormatProvider? provider, [MaybeNullWhen(false)] out UInt512 result)
 		{
 			if (utf8Text.Length == 0 || !utf8Text.ContainsAnyExcept((byte)' '))
@@ -453,9 +458,8 @@ namespace MissingValues
 
 			return NumberParser.TryParseToUnsigned(Utf8Char.CastFromByteSpan(utf8Text), NumberStyles.Integer, provider, out result);
 		}
-#endif
 
-		public static bool TryReadBigEndian(ReadOnlySpan<byte> source, bool isUnsigned, out UInt512 value)
+		static bool IBinaryInteger<UInt512>.TryReadBigEndian(ReadOnlySpan<byte> source, bool isUnsigned, out UInt512 value)
 		{
 			UInt512 result = default;
 
@@ -490,7 +494,7 @@ namespace MissingValues
 
 					if (BitConverter.IsLittleEndian)
 					{
-						result = BitHelper.ReverseEndianness(result);
+						result = BitHelper.ReverseEndianness(in result);
 					}
 				}
 				else
@@ -511,7 +515,7 @@ namespace MissingValues
 			return true;
 		}
 
-		public static bool TryReadLittleEndian(ReadOnlySpan<byte> source, bool isUnsigned, out UInt512 value)
+		static bool IBinaryInteger<UInt512>.TryReadLittleEndian(ReadOnlySpan<byte> source, bool isUnsigned, out UInt512 value)
 		{
 			UInt512 result = default;
 
@@ -544,7 +548,7 @@ namespace MissingValues
 
 					if (!BitConverter.IsLittleEndian)
 					{
-						result = BitHelper.ReverseEndianness(result);
+						result = BitHelper.ReverseEndianness(in result);
 					}
 				}
 				else
@@ -590,9 +594,10 @@ namespace MissingValues
 			throw new FormatException();
 		}
 
-		public string ToString(string? format, IFormatProvider? formatProvider)
+		/// <inheritdoc/>
+		public string ToString([StringSyntax(StringSyntaxAttribute.NumericFormat)] string? format, IFormatProvider? formatProvider)
 		{
-			return NumberFormatter.FormatUnsignedNumber(in this, format, NumberStyles.Integer, formatProvider);
+			return NumberFormatter.FormatUInt512(in this, format, formatProvider);
 		}
 
 		static bool INumberBase<UInt512>.TryConvertFromChecked<TOther>(TOther value, out UInt512 result) => TryConvertFromChecked(value, out result);
@@ -607,6 +612,7 @@ namespace MissingValues
 					Half actual => (UInt512)actual,
 					float actual => (UInt512)actual,
 					double actual => (UInt512)actual,
+					Quad actual => (UInt512)actual,
 					decimal actual => (UInt512)actual,
 					byte actual => (UInt512)actual,
 					ushort actual => (UInt512)actual,
@@ -641,6 +647,7 @@ namespace MissingValues
 				Half actual => (actual < Half.Zero) ? MinValue : (UInt512)actual,
 				float actual => (actual < 0) ? MinValue : (UInt512)actual,
 				double actual => (actual < 0) ? MinValue : (actual > TwoPow512) ? MaxValue : (UInt512)actual,
+				Quad actual => (actual >= new Quad(0x41FF_0000_0000_0000, 0x0000_0000_0000_0000)) ? UInt512.MaxValue : (actual <= Quad.Zero) ? UInt512.MinValue : (UInt512)actual,
 				decimal actual => (actual < 0) ? MinValue : (UInt512)actual,
 				byte actual => actual,
 				ushort actual => actual,
@@ -802,17 +809,17 @@ namespace MissingValues
 			return converted;
 		}
 
+		/// <inheritdoc/>
 		public bool TryFormat(Span<char> destination, out int charsWritten, [StringSyntax(StringSyntaxAttribute.NumericFormat)] ReadOnlySpan<char> format, IFormatProvider? provider)
 		{
-			return NumberFormatter.TryFormatUnsignedInteger(in this, Utf16Char.CastFromCharSpan(destination), out charsWritten, format, provider);
+			return NumberFormatter.TryFormatUInt512(in this, Utf16Char.CastFromCharSpan(destination), out charsWritten, format, provider);
 		}
 
-#if NET8_0_OR_GREATER
+		/// <inheritdoc/>
 		public bool TryFormat(Span<byte> utf8Destination, out int bytesWritten, [StringSyntax(StringSyntaxAttribute.NumericFormat)] ReadOnlySpan<char> format, IFormatProvider? provider)
 		{
-			return NumberFormatter.TryFormatUnsignedInteger(in this, Utf8Char.CastFromByteSpan(utf8Destination), out bytesWritten, format, provider);
+			return NumberFormatter.TryFormatUInt512(in this, Utf8Char.CastFromByteSpan(utf8Destination), out bytesWritten, format, provider);
 		}
-#endif
 
 		bool IBinaryInteger<UInt512>.TryWriteBigEndian(Span<byte> destination, out int bytesWritten)
 		{
@@ -840,19 +847,19 @@ namespace MissingValues
 
 		private void WriteBigEndianUnsafe(Span<byte> destination)
 		{
-			UInt256 lower = _lower;
-			UInt256 upper = _upper;
+			UInt256 lower = Lower;
+			UInt256 upper = Upper;
 
 			if (BitConverter.IsLittleEndian)
 			{
-				lower = BitHelper.ReverseEndianness(lower);
-				upper = BitHelper.ReverseEndianness(upper);
+				lower = BitHelper.ReverseEndianness(in lower);
+				upper = BitHelper.ReverseEndianness(in upper);
 			}
 
 			ref byte address = ref MemoryMarshal.GetReference(destination);
 
 			Unsafe.WriteUnaligned(ref address, upper);
-			Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref address, BitHelper.SizeOf<UInt256>()), lower);
+			Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref address, Unsafe.SizeOf<UInt256>()), lower);
 		}
 
 		bool IBinaryInteger<UInt512>.TryWriteLittleEndian(Span<byte> destination, out int bytesWritten)
@@ -883,147 +890,324 @@ namespace MissingValues
 		{
 			Debug.Assert(destination.Length >= Size);
 
-			UInt256 lower = _lower;
-			UInt256 upper = _upper;
+			UInt256 lower = Lower;
+			UInt256 upper = Upper;
 
 			if (!BitConverter.IsLittleEndian)
 			{
-				lower = BitHelper.ReverseEndianness(lower);
-				upper = BitHelper.ReverseEndianness(upper);
+				lower = BitHelper.ReverseEndianness(in lower);
+				upper = BitHelper.ReverseEndianness(in upper);
 			}
 
 			ref byte address = ref MemoryMarshal.GetReference(destination);
 
 			Unsafe.WriteUnaligned(ref address, lower);
-			Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref address, BitHelper.SizeOf<UInt256>()), upper);
+			Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref address, Unsafe.SizeOf<UInt256>()), upper);
 		}
 
-		char IFormattableInteger<UInt512>.ToChar()
+		char IFormattableInteger<UInt512>.ToChar() => (char)_p0;
+
+		int IFormattableInteger<UInt512>.ToInt32() => (int)_p0;
+
+		Int512 IFormattableUnsignedInteger<UInt512, Int512>.ToSigned() => (Int512)this;
+
+		static int IFormattableUnsignedInteger<UInt512, Int512>.CountDigits(in UInt512 value) => CountDigits(in value);
+
+		internal static int CountDigits(in UInt512 value)
 		{
-			return (char)this._lower;
+			var upper = value.Upper;
+			if (upper == UInt256.Zero)
+			{
+				return UInt256.CountDigits(value.Lower);
+			}
+			// We have more than 1e77, so we have atleast 78 digits
+			int digits = 78;
+
+			if (upper > 0x8)
+			{
+				// value / 1e78
+				var lower = (value / new UInt512(0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0008, 0xA2DB_F142_DFCC_7AB6, 0xE356_9326_C784_3372, 0xA9F4_D250_5E3A_4000, 0x0000_0000_0000_0000));
+				digits += UInt256.CountDigits(lower.Lower);
+			}
+			else if ((upper == 0x59) && (value.Lower >= new UInt256(0x5C97_6C9C_BDFC_CB24, 0xE161_BF83_CB2A_027A, 0xA390_3723_AE46_8000, 0x0000_0000_0000_0000)))
+			{
+				// We are greater than 1e78, but less than 1e79
+				// so we have exactly 79 digits
+
+				digits++;
+			}
+
+			return digits;
 		}
 
-		int IFormattableInteger<UInt512>.ToInt32()
+		/// <inheritdoc/>
+		public static UInt512 operator +(in UInt512 value) => value;
+
+		/// <inheritdoc/>
+		public static UInt512 operator +(in UInt512 left, in UInt512 right)
 		{
-			return (int)this._lower;
+			// For unsigned addition, we can detect overflow by checking `(x + y) < x`
+			// This gives us the carry to add to upper to compute the correct result
+
+			ulong part0 = left._p0 + right._p0;
+			ulong carry = (part0 < left._p0) ? 1UL : 0UL;
+
+			ulong part1 = left._p1 + right._p1 + carry;
+			carry = (part1 < left._p1 || (carry == 1 && part1 == left._p1)) ? 1UL : 0UL;
+
+			ulong part2 = left._p2 + right._p2 + carry;
+			carry = (part2 < left._p2 || (carry == 1 && part2 == left._p2)) ? 1UL : 0UL;
+
+			ulong part3 = left._p3 + right._p3 + carry;
+			carry = (part3 < left._p3 || (carry == 1 && part3 == left._p3)) ? 1UL : 0UL;
+			
+			ulong part4 = left._p4 + right._p4 + carry;
+			carry = (part4 < left._p4 || (carry == 1 && part4 == left._p4)) ? 1UL : 0UL;
+			
+			ulong part5 = left._p5 + right._p5 + carry;
+			carry = (part5 < left._p5 || (carry == 1 && part5 == left._p5)) ? 1UL : 0UL;
+			
+			ulong part6 = left._p6 + right._p6 + carry;
+			carry = (part6 < left._p6 || (carry == 1 && part6 == left._p6)) ? 1UL : 0UL;
+			
+			ulong part7 = left._p7 + right._p7 + carry;
+
+			return new UInt512(part7, part6, part5, part4, part3, part2, part1, part0);
 		}
 
-		Int512 IFormattableUnsignedInteger<UInt512, Int512>.ToSigned()
+		/// <inheritdoc/>
+		public static UInt512 operator checked +(in UInt512 left, in UInt512 right)
 		{
-			return (Int512)this;
+			ulong part0 = left._p0 + right._p0;
+			ulong carry = (part0 < left._p0) ? 1UL : 0UL;
+
+			ulong part1 = left._p1 + right._p1 + carry;
+			carry = (part1 < left._p1 || (carry == 1 && part1 == left._p1)) ? 1UL : 0UL;
+
+			ulong part2 = left._p2 + right._p2 + carry;
+			carry = (part2 < left._p2 || (carry == 1 && part2 == left._p2)) ? 1UL : 0UL;
+
+			ulong part3 = left._p3 + right._p3 + carry;
+			carry = (part3 < left._p3 || (carry == 1 && part3 == left._p3)) ? 1UL : 0UL;
+
+			ulong part4 = left._p4 + right._p4 + carry;
+			carry = (part4 < left._p4 || (carry == 1 && part4 == left._p4)) ? 1UL : 0UL;
+
+			ulong part5 = left._p5 + right._p5 + carry;
+			carry = (part5 < left._p5 || (carry == 1 && part5 == left._p5)) ? 1UL : 0UL;
+
+			ulong part6 = left._p6 + right._p6 + carry;
+			carry = (part6 < left._p6 || (carry == 1 && part6 == left._p6)) ? 1UL : 0UL;
+
+			ulong part7 = checked(left._p7 + right._p7 + carry);
+
+			return new UInt512(part7, part6, part5, part4, part3, part2, part1, part0);
 		}
 
-		public static UInt512 operator +(UInt512 value)
-		{
-			return value;
-		}
+		/// <inheritdoc/>
+		public static UInt512 operator -(in UInt512 value) => Zero - value;
 
-		public static UInt512 operator +(UInt512 left, UInt512 right)
-		{
-			UInt256 lower = left._lower + right._lower;
-			UInt256 carry = (lower < left._lower) ? 1UL : 0UL;
+		/// <inheritdoc/>
+		public static UInt512 operator checked -(in UInt512 value) => checked(Zero - value);
 
-			UInt256 upper = left._upper + right._upper + carry;
-			return new UInt512(upper, lower);
-		}
-
-		public static UInt512 operator checked +(UInt512 left, UInt512 right)
-		{
-			UInt256 lower = left._lower + right._lower;
-			UInt256 carry = (lower < left._lower) ? 1UL : 0UL;
-
-			UInt256 upper = checked(left._upper + right._upper + carry);
-			return new UInt512(upper, lower);
-		}
-
-		public static UInt512 operator -(UInt512 value)
-		{
-			return Zero - value;
-		}
-		
-		public static UInt512 operator checked -(UInt512 value)
-		{
-			return checked(Zero - value);
-		}
-
-		public static UInt512 operator -(UInt512 left, UInt512 right)
+		/// <inheritdoc/>
+		public static UInt512 operator -(in UInt512 left, in UInt512 right)
 		{
 			// For unsigned subtract, we can detect overflow by checking `(x - y) > x`
 			// This gives us the borrow to subtract from upper to compute the correct result
 
-			UInt256 lower = left._lower - right._lower;
-			UInt256 borrow = (lower > left._lower) ? 1UL : 0UL;
+			ulong part0 = left._p0 - right._p0;
+			ulong borrow = (part0 > left._p0) ? 1UL : 0UL;
 
-			UInt256 upper = left._upper - right._upper - borrow;
-			return new UInt512(upper, lower);
+			ulong part1 = left._p1 - right._p1 - borrow;
+			borrow = (part1 > left._p1 || (borrow == 1UL && part1 == left._p1)) ? 1UL : 0UL;
+
+			ulong part2 = left._p2 - right._p2 - borrow;
+			borrow = (part2 > left._p2 || (borrow == 1UL && part2 == left._p2)) ? 1UL : 0UL;
+
+			ulong part3 = left._p3 - right._p3 - borrow;
+			borrow = (part3 > left._p3 || (borrow == 1UL && part3 == left._p3)) ? 1UL : 0UL;
+
+			ulong part4 = left._p4 - right._p4 - borrow;
+			borrow = (part4 > left._p4 || (borrow == 1UL && part4 == left._p4)) ? 1UL : 0UL;
+
+			ulong part5 = left._p5 - right._p5 - borrow;
+			borrow = (part5 > left._p5 || (borrow == 1UL && part5 == left._p5)) ? 1UL : 0UL;
+
+			ulong part6 = left._p6 - right._p6 - borrow;
+			borrow = (part6 > left._p6 || (borrow == 1UL && part6 == left._p6)) ? 1UL : 0UL;
+
+			ulong part7 = left._p7 - right._p7 - borrow;
+
+			return new UInt512(part7, part6, part5, part4, part3, part2, part1, part0);
 		}
-		
-		public static UInt512 operator checked -(UInt512 left, UInt512 right)
+
+		/// <inheritdoc/>
+		public static UInt512 operator checked -(in UInt512 left, in UInt512 right)
 		{
 			// For unsigned subtract, we can detect overflow by checking `(x - y) > x`
 			// This gives us the borrow to subtract from upper to compute the correct result
 
-			UInt256 lower = left._lower - right._lower;
-			UInt256 borrow = (lower > left._lower) ? 1UL : 0UL;
+			ulong part0 = left._p0 - right._p0;
+			ulong borrow = (part0 > left._p0) ? 1UL : 0UL;
 
-			UInt256 upper = checked(left._upper - right._upper - borrow);
-			return new UInt512(upper, lower);
-		}
+			ulong part1 = left._p1 - right._p1 - borrow;
+			borrow = (part1 > left._p1 || (borrow == 1UL && part1 == left._p1)) ? 1UL : 0UL;
 
-		public static UInt512 operator ~(UInt512 value)
-		{
-			return new(~value._upper, ~value._lower);
-		}
+			ulong part2 = left._p2 - right._p2 - borrow;
+			borrow = (part2 > left._p2 || (borrow == 1UL && part2 == left._p2)) ? 1UL : 0UL;
 
-		public static UInt512 operator ++(UInt512 value)
-		{
-			return value + One;
-		}
-		
-		public static UInt512 operator checked ++(UInt512 value)
-		{
-			return checked(value + One);
-		}
+			ulong part3 = left._p3 - right._p3 - borrow;
+			borrow = (part3 > left._p3 || (borrow == 1UL && part3 == left._p3)) ? 1UL : 0UL;
 
-		public static UInt512 operator --(UInt512 value)
-		{
-			return value - One;
-		}
-		
-		public static UInt512 operator checked --(UInt512 value)
-		{
-			return checked(value - One);
+			ulong part4 = left._p4 - right._p4 - borrow;
+			borrow = (part4 > left._p4 || (borrow == 1UL && part4 == left._p4)) ? 1UL : 0UL;
+
+			ulong part5 = left._p5 - right._p5 - borrow;
+			borrow = (part5 > left._p5 || (borrow == 1UL && part5 == left._p5)) ? 1UL : 0UL;
+
+			ulong part6 = left._p6 - right._p6 - borrow;
+			borrow = (part6 > left._p6 || (borrow == 1UL && part6 == left._p6)) ? 1UL : 0UL;
+
+			ulong part7 = checked(left._p7 - right._p7 - borrow);
+
+			return new UInt512(part7, part6, part5, part4, part3, part2, part1, part0);
 		}
 
-		public static UInt512 operator *(UInt512 left, UInt512 right)
+		/// <inheritdoc/>
+		public static UInt512 operator ~(in UInt512 value)
 		{
-			UInt256 upper = UInt256.BigMul(left._lower, right._lower, out UInt256 lower);
-			upper += (left._upper * right._lower) + (left._lower * right._upper);
-			return new UInt512(upper, lower);
-		}
-		
-		public static UInt512 operator checked *(UInt512 left, UInt512 right)
-		{
-			UInt512 upper = BigMul(left, right, out UInt512 lower);
-
-			if (upper != UInt512.Zero)
+			if (Vector512.IsHardwareAccelerated)
 			{
-				Thrower.ArithmethicOverflow(Thrower.ArithmethicOperation.Multiplication);
+				var v = Unsafe.As<UInt512, Vector512<ulong>>(ref Unsafe.AsRef(in value));
+				var result = ~v;
+				return Unsafe.As<Vector512<ulong>, UInt512>(ref result);
+			}
+			else
+			{
+				return new(~value._p7, ~value._p6, ~value._p5, ~value._p4, ~value._p3, ~value._p2, ~value._p1, ~value._p0);
+			}
+		}
+
+		/// <inheritdoc/>
+		public static UInt512 operator ++(in UInt512 value) => value + One;
+
+		/// <inheritdoc/>
+		public static UInt512 operator checked ++(in UInt512 value) => checked(value + One);
+
+		/// <inheritdoc/>
+		public static UInt512 operator --(in UInt512 value) => value - One;
+
+		/// <inheritdoc/>
+		public static UInt512 operator checked --(in UInt512 value) => checked(value - One);
+
+		/// <inheritdoc/>
+		public static UInt512 operator *(in UInt512 left, in UInt512 right)
+		{
+			if (right._p7 == 0 && right._p6 == 0 && right._p5 == 0 && right._p4 == 0 && right._p3 == 0 && right._p2 == 0 && right._p1 == 0)
+			{
+				if (right._p0 <= uint.MaxValue)
+				{
+					return Calculator.Multiply(in left, unchecked((uint)right._p0), out _);
+				}
+				if (left._p7 == 0 && left._p6 == 0 && left._p5 == 0 && left._p4 == 0 && left._p3 == 0 && left._p2 == 0 && left._p1 == 0)
+				{
+					ulong up = Math.BigMul(left._p0, right._p0, out ulong low);
+					return new UInt512(0, 0, 0, 0, 0, 0, up, low);
+				}
 			}
 
-			return lower;
+			const int UIntCount = Size / sizeof(uint);
+
+			Span<uint> leftSpan = stackalloc uint[UIntCount];
+			leftSpan.Clear();
+			Unsafe.WriteUnaligned(ref Unsafe.As<uint, byte>(ref MemoryMarshal.GetReference(leftSpan)), left);
+
+			Span<uint> rightSpan = stackalloc uint[UIntCount];
+			rightSpan.Clear();
+			Unsafe.WriteUnaligned(ref Unsafe.As<uint, byte>(ref MemoryMarshal.GetReference(rightSpan)), right);
+
+			Span<uint> rawBits = stackalloc uint[UIntCount * 2];
+			rawBits.Clear();
+
+			Calculator.Multiply(
+				leftSpan[..(UIntCount - (BitHelper.LeadingZeroCount(in left) / 32))],
+				rightSpan[..(UIntCount - (BitHelper.LeadingZeroCount(in right) / 32))],
+				rawBits);
+
+			return Unsafe.ReadUnaligned<UInt512>(ref Unsafe.As<uint, byte>(ref MemoryMarshal.GetReference(rawBits)));
+		}
+		
+		/// <inheritdoc/>
+		public static UInt512 operator checked *(in UInt512 left, in UInt512 right)
+		{
+			UInt512 lower;
+
+			if (right._p7 == 0 && right._p6 == 0 && right._p5 == 0 && right._p4 == 0 && right._p3 == 0 && right._p2 == 0 && right._p1 == 0)
+			{
+				if (right._p0 <= uint.MaxValue)
+				{
+					lower = Calculator.Multiply(in left, unchecked((uint)right._p0), out uint carry);
+
+					if (carry != 0)
+					{
+						Thrower.ArithmethicOverflow(Thrower.ArithmethicOperation.Multiplication);
+					}
+
+					return lower;
+				}
+				if (left._p7 == 0 && left._p6 == 0 && left._p5 == 0 && left._p4 == 0 && left._p3 == 0 && left._p2 == 0 && left._p1 == 0)
+				{
+					ulong up = Math.BigMul(left._p0, right._p0, out ulong low);
+					return new UInt512(0, 0, 0, 0, 0, 0, up, low);
+				}
+			}
+
+			const int UIntCount = Size / sizeof(uint);
+
+			Span<uint> leftSpan = stackalloc uint[UIntCount];
+			leftSpan.Clear();
+			Unsafe.WriteUnaligned(ref Unsafe.As<uint, byte>(ref MemoryMarshal.GetReference(leftSpan)), left);
+
+			Span<uint> rightSpan = stackalloc uint[UIntCount];
+			rightSpan.Clear();
+			Unsafe.WriteUnaligned(ref Unsafe.As<uint, byte>(ref MemoryMarshal.GetReference(rightSpan)), right);
+
+			Span<uint> rawBits = stackalloc uint[UIntCount * 2];
+			rawBits.Clear();
+
+			Calculator.Multiply(
+				leftSpan[..(UIntCount - (BitHelper.LeadingZeroCount(in left) / 32))],
+				rightSpan[..(UIntCount - (BitHelper.LeadingZeroCount(in right) / 32))],
+				rawBits);
+			var overflowBits = rawBits[16..];
+
+			for (int i = 0; i < overflowBits.Length; i++)
+			{
+				if (overflowBits[i] != 0)
+				{
+					Thrower.ArithmethicOverflow(Thrower.ArithmethicOperation.Multiplication);
+				}
+			}
+
+			return Unsafe.ReadUnaligned<UInt512>(ref Unsafe.As<uint, byte>(ref MemoryMarshal.GetReference(rawBits)));
 		}
 
-		public static UInt512 operator /(UInt512 left, UInt512 right)
+		/// <inheritdoc/>
+		public static UInt512 operator /(in UInt512 left, in UInt512 right)
 		{
-			if ((right._lower == UInt256.Zero) && (right._upper == UInt256.Zero))
+			if (right._p7 == 0 && right._p6 == 0 && right._p5 == 0 && right._p4 == 0)
 			{
-				Thrower.DivideByZero();
+				if (right._p3 == 0 && right._p2 == 0 && right._p1 == 0 && right._p0 <= uint.MaxValue)
+				{
+					if (right._p0 == 0)
+					{
+						Thrower.DivideByZero();
+					}
+					return DivideFast(in left, (uint)right._p0);
+				}
 			}
-			if ((left._upper == UInt256.Zero) && (right._upper == UInt256.Zero))
-			{
-				return left._lower / right._lower;
-			}
+			
 			if (right >= left)
 			{
 				return (right == left) ? One : Zero;
@@ -1031,294 +1215,507 @@ namespace MissingValues
 
 			return DivideSlow(left, right);
 
-			static ulong AddDivisor(Span<ulong> left, ReadOnlySpan<ulong> right)
+			unsafe static UInt512 DivideFast(in UInt512 quotient, uint divisor)
 			{
-				UInt128 carry = UInt128.Zero;
+				const int UIntCount = Size / sizeof(uint);
 
-				for (int i = 0; i < right.Length; i++)
-				{
-					ref ulong leftElement = ref left[i];
-					UInt128 digit = (leftElement + carry) + right[i];
+				uint* pLeft = stackalloc uint[UIntCount];
+				Unsafe.WriteUnaligned(ref *(byte*)(pLeft), quotient);
+				Span<uint> left = new Span<uint>(pLeft, (UIntCount) - (BitHelper.LeadingZeroCount(in quotient) / 32));
 
-					leftElement = unchecked((ulong)digit);
-					carry = digit >> 64;
-				}
-
-				return (ulong)carry;
-			}
-
-			static bool DivideGuessTooBig(UInt128 q, UInt128 valHi, ulong valLo, ulong divHi, ulong divLo)
-			{
-				UInt128 chkHi = divHi * q;
-				UInt128 chkLo = divLo * q;
-
-				chkHi += (chkLo >> 64);
-				chkLo &= 0xFFFF_FFFF_FFFF_FFFF;
-
-				if (chkHi < valHi)
-					return false;
-				if (chkHi > valHi)
-					return true;
-
-				if (chkLo < valLo)
-					return false;
-				if (chkLo > valLo)
-					return true;
-
-				return false;
-			}
-
-			unsafe static UInt512 DivideSlow(UInt512 quotient, UInt512 divisor)
-			{
-				const int UlongCount = 64 / sizeof(ulong);
-
-				ulong* pLeft = stackalloc ulong[UlongCount];
-
-				Unsafe.WriteUnaligned(ref *(byte*)(pLeft + 0), (ulong)(quotient._lower >> 00));
-				Unsafe.WriteUnaligned(ref *(byte*)(pLeft + 1), (ulong)(quotient._lower >> 64));
-				Unsafe.WriteUnaligned(ref *(byte*)(pLeft + 2), (ulong)(quotient._lower >> 128));
-				Unsafe.WriteUnaligned(ref *(byte*)(pLeft + 3), (ulong)(quotient._lower >> 192));
-
-				Unsafe.WriteUnaligned(ref *(byte*)(pLeft + 4), (ulong)(quotient._upper >> 00));
-				Unsafe.WriteUnaligned(ref *(byte*)(pLeft + 5), (ulong)(quotient._upper >> 64));
-				Unsafe.WriteUnaligned(ref *(byte*)(pLeft + 6), (ulong)(quotient._upper >> 128));
-				Unsafe.WriteUnaligned(ref *(byte*)(pLeft + 7), (ulong)(quotient._upper >> 192));
-
-				Span<ulong> left = new Span<ulong>(pLeft, (UlongCount) - (BitHelper.LeadingZeroCount(quotient) / 64));
-
-
-				ulong* pRight = stackalloc ulong[UlongCount];
-
-				Unsafe.WriteUnaligned(ref *(byte*)(pRight + 0), (ulong)(divisor._lower >> 00));
-				Unsafe.WriteUnaligned(ref *(byte*)(pRight + 1), (ulong)(divisor._lower >> 64));
-				Unsafe.WriteUnaligned(ref *(byte*)(pRight + 2), (ulong)(divisor._lower >> 128));
-				Unsafe.WriteUnaligned(ref *(byte*)(pRight + 3), (ulong)(divisor._lower >> 192));
-
-				Unsafe.WriteUnaligned(ref *(byte*)(pRight + 4), (ulong)(divisor._upper >> 00));
-				Unsafe.WriteUnaligned(ref *(byte*)(pRight + 5), (ulong)(divisor._upper >> 64));
-				Unsafe.WriteUnaligned(ref *(byte*)(pRight + 6), (ulong)(divisor._upper >> 128));
-				Unsafe.WriteUnaligned(ref *(byte*)(pRight + 7), (ulong)(divisor._upper >> 192));
-
-				Span<ulong> right = new Span<ulong>(pRight, (UlongCount) - (BitHelper.LeadingZeroCount(divisor) / 64));
-
-
-				Span<ulong> rawBits = stackalloc ulong[UlongCount];
+				Span<uint> rawBits = stackalloc uint[UIntCount];
 				rawBits.Clear();
-				Span<ulong> bits = rawBits.Slice(0, left.Length - right.Length + 1);
 
-				ulong divHi = right[right.Length - 1];
-				ulong divLo = right.Length > 1 ? right[right.Length - 2] : 0;
+				Calculator.Divide(left, divisor, rawBits);
 
-				int shift = BitOperations.LeadingZeroCount(divHi);
-				int backShift = 64 - shift;
+				return Unsafe.ReadUnaligned<UInt512>(ref Unsafe.As<uint, byte>(ref MemoryMarshal.GetReference(rawBits)));
+			}
+			unsafe static UInt512 DivideSlow(in UInt512 quotient, in UInt512 divisor)
+			{
+				const int UIntCount = Size / sizeof(uint);
 
-				if (shift > 0)
+				uint* pLeft = stackalloc uint[UIntCount];
+				Unsafe.WriteUnaligned(ref *(byte*)(pLeft), quotient);
+				Span<uint> left = new Span<uint>(pLeft, (UIntCount) - (BitHelper.LeadingZeroCount(in quotient) / 32));
+
+
+				uint* pRight = stackalloc uint[UIntCount];
+				Unsafe.WriteUnaligned(ref *(byte*)(pRight), divisor);
+				Span<uint> right = new Span<uint>(pRight, (UIntCount) - (BitHelper.LeadingZeroCount(in divisor) / 32));
+
+
+				Span<uint> rawBits = stackalloc uint[UIntCount];
+				rawBits.Clear();
+
+				Calculator.Divide(left, right, rawBits);
+
+				return Unsafe.ReadUnaligned<UInt512>(ref Unsafe.As<uint, byte>(ref MemoryMarshal.GetReference(rawBits)));
+			}
+		}
+
+		/// <inheritdoc/>
+		public static UInt512 operator %(in UInt512 left, in UInt512 right)
+		{
+			if (right._p7 == 0 && right._p6 == 0 && right._p5 == 0 && right._p4 == 0)
+			{
+				if (right._p3 == 0 && right._p2 == 0 && right._p1 == 0 && right._p0 <= uint.MaxValue)
 				{
-					ulong divNx = right.Length > 2 ? right[right.Length - 3] : 0;
-
-					divHi = (divHi << shift) | (divLo >> backShift);
-					divLo = (divLo << shift) | (divNx >> backShift);
+					if (right._p0 == 0)
+					{
+						Thrower.DivideByZero();
+					}
+					return RemainderFast(in left, (uint)right._p0);
 				}
-
-				// Then, we divide all of the bits as we would do it using
-				// pen and paper: guessing the next digit, subtracting, ...
-				for (int i = left.Length; i >= right.Length; i--)
-				{
-					int n = i - right.Length;
-					ulong t = ((ulong)(i) < (ulong)(left.Length)) ? left[i] : 0;
-
-					UInt128 valHi = ((UInt128)(t) << 64) | left[i - 1];
-					ulong valLo = (i > 1) ? left[i - 2] : 0;
-
-					// We shifted the divisor, we shift the dividend too
-					if (shift > 0)
-					{
-						ulong valNx = i > 2 ? left[i - 3] : 0;
-
-						valHi = (valHi << shift) | (valLo >> backShift);
-						valLo = (valLo << shift) | (valNx >> backShift);
-					}
-
-					// First guess for the current digit of the quotient,
-					// which naturally must have only 64 bits...
-					UInt128 digit = valHi / divHi;
-
-					if (digit > 0xFFFF_FFFF_FFFF_FFFF)
-					{
-						digit = 0xFFFF_FFFF_FFFF_FFFF;
-					}
-
-					// Our first guess may be a little bit to big
-					while (DivideGuessTooBig(digit, valHi, valLo, divHi, divLo))
-					{
-						--digit;
-					}
-
-					if (digit > 0)
-					{
-						// Now it's time to subtract our current quotient
-						ulong carry = SubtractDivisor(left.Slice(n), right, digit);
-
-						if (carry != t)
-						{
-							Debug.Assert(carry == (t + 1));
-
-							// Our guess was still exactly one too high
-							carry = AddDivisor(left.Slice(n), right);
-
-							--digit;
-							Debug.Assert(carry == 1);
-						}
-					}
-
-					// We have the digit!
-					if ((uint)(n) < (uint)(bits.Length))
-					{
-						bits[n] = (ulong)(digit);
-					}
-
-					if ((uint)(i) < (uint)(left.Length))
-					{
-						left[i] = 0;
-					}
-				}
-
-				return new UInt512(
-					rawBits[7], rawBits[6], rawBits[5], rawBits[4],
-					rawBits[3], rawBits[2], rawBits[1], rawBits[0]
-					);
 			}
 
-			static ulong SubtractDivisor(Span<ulong> left, ReadOnlySpan<ulong> right, UInt128 q)
+			if (right >= left)
 			{
-				// Combines a subtract and a multiply operation, which is naturally
-				// more efficient than multiplying and then subtracting...
-
-				UInt128 carry = UInt128.Zero;
-
-				for (int i = 0; i < right.Length; i++)
-				{
-					carry += right[i] * q;
-
-					ulong digit = (ulong)(carry);
-					carry >>= 64;
-
-					ref ulong leftElement = ref left[i];
-
-					if (leftElement < digit)
-					{
-						++carry;
-					}
-					leftElement -= digit;
-				}
-
-				return (ulong)(carry);
+				return left - (((right == left) ? One : Zero) * right);
 			}
 
-			throw new NotImplementedException();
-		}
+			return RemainderSlow(in left, in right);
 
-		public static UInt512 operator %(UInt512 left, UInt512 right)
-		{
-			UInt512 quotient = left / right;
-			return left - (quotient * right);
-		}
-
-		public static UInt512 operator &(UInt512 left, UInt512 right)
-		{
-			return new(left._upper & right._upper, left._lower & right._lower);
-		}
-
-		public static UInt512 operator |(UInt512 left, UInt512 right)
-		{
-			return new(left._upper | right._upper, left._lower | right._lower);
-		}
-
-		public static UInt512 operator ^(UInt512 left, UInt512 right)
-		{
-			return new(left._upper ^ right._upper, left._lower ^ right._lower);
-		}
-
-		public static UInt512 operator <<(UInt512 value, int shiftAmount)
-		{
-			shiftAmount &= 0x1FF;
-
-			if ((shiftAmount & 0x100) != 0)
+			unsafe static UInt512 RemainderFast(in UInt512 quotient, uint divisor)
 			{
-				UInt256 upper = value._lower << shiftAmount;
-				return new UInt512(upper, UInt256.Zero);
+				const int UIntCount = Size / sizeof(uint);
+
+				uint* pLeft = stackalloc uint[UIntCount];
+				Unsafe.WriteUnaligned(ref *(byte*)(pLeft), quotient);
+				Span<uint> left = new Span<uint>(pLeft, (UIntCount) - (BitHelper.LeadingZeroCount(in quotient) / 32));
+
+				return Calculator.Remainder(left, divisor);
 			}
-			else if (shiftAmount != 0)
+			unsafe static UInt512 RemainderSlow(in UInt512 quotient, in UInt512 divisor)
 			{
-				UInt256 lower = value._lower << shiftAmount;
-				UInt256 upper = (value._upper << shiftAmount) | (value._lower >> (256 - shiftAmount));
+				const int UIntCount = Size / sizeof(uint);
 
-				return new UInt512(upper, lower);
+				uint* pLeft = stackalloc uint[UIntCount];
+				Unsafe.WriteUnaligned(ref *(byte*)(pLeft), quotient);
+				Span<uint> left = new Span<uint>(pLeft, (UIntCount) - (BitHelper.LeadingZeroCount(in quotient) / 32));
+
+
+				uint* pRight = stackalloc uint[UIntCount];
+				Unsafe.WriteUnaligned(ref *(byte*)(pRight), divisor);
+				Span<uint> right = new Span<uint>(pRight, (UIntCount) - (BitHelper.LeadingZeroCount(in divisor) / 32));
+
+
+				Span<uint> rawBits = stackalloc uint[UIntCount];
+				rawBits.Clear();
+
+				Calculator.Remainder(left, right, rawBits);
+
+				return Unsafe.ReadUnaligned<UInt512>(ref Unsafe.As<uint, byte>(ref MemoryMarshal.GetReference(rawBits)));
+			}
+		}
+
+		/// <inheritdoc/>
+		public static UInt512 operator &(in UInt512 left, in UInt512 right)
+		{
+			if (Vector512.IsHardwareAccelerated)
+			{
+				var v1 = Unsafe.As<UInt512, Vector512<ulong>>(ref Unsafe.AsRef(in left));
+				var v2 = Unsafe.As<UInt512, Vector512<ulong>>(ref Unsafe.AsRef(in right));
+				var result = v1 & v2;
+				return Unsafe.As<Vector512<ulong>, UInt512>(ref result);
 			}
 			else
 			{
-				return value;
+				return new(left._p7 & right._p7, left._p6 & right._p6, left._p5 & right._p5, left._p4 & right._p4, left._p3 & right._p3, left._p2 & right._p2, left._p1 & right._p1, left._p0 & right._p0);
 			}
 		}
 
-		public static UInt512 operator >>(UInt512 value, int shiftAmount)
+		/// <inheritdoc/>
+		public static UInt512 operator |(in UInt512 left, in UInt512 right)
 		{
-			return value >>> shiftAmount;
-		}
-
-		public static bool operator ==(UInt512 left, UInt512 right)
-		{
-			return (left._upper == right._upper) && (left._lower == right._lower);
-		}
-
-		public static bool operator !=(UInt512 left, UInt512 right)
-		{
-			return (left._upper != right._upper) || (left._lower != right._lower);
-		}
-
-		public static bool operator <(UInt512 left, UInt512 right)
-		{
-			return (left._upper < right._upper)
-				|| (left._upper == right._upper) && (left._lower < right._lower);
-		}
-
-		public static bool operator >(UInt512 left, UInt512 right)
-		{
-			return (left._upper > right._upper)
-				|| (left._upper == right._upper) && (left._lower > right._lower);
-		}
-
-		public static bool operator <=(UInt512 left, UInt512 right)
-		{
-			return (left._upper < right._upper)
-			   || (left._upper == right._upper) && (left._lower <= right._lower);
-		}
-
-		public static bool operator >=(UInt512 left, UInt512 right)
-		{
-			return (left._upper > right._upper)
-				|| (left._upper == right._upper) && (left._lower >= right._lower);
-		}
-
-		public static UInt512 operator >>>(UInt512 value, int shiftAmount)
-		{
-			shiftAmount &= 0x1FF;
-
-			if ((shiftAmount & 0x100) != 0)
+			if (Vector512.IsHardwareAccelerated)
 			{
-				UInt256 lower = value._upper >> shiftAmount;
-				return new UInt512(UInt256.Zero, lower);
-			}
-			else if (shiftAmount != 0)
-			{
-				UInt256 lower = (value._lower >> shiftAmount) | (value._upper << (256 - shiftAmount));
-				UInt256 upper = value._upper >> shiftAmount;
-
-				return new UInt512(upper, lower);
+				var v1 = Unsafe.As<UInt512, Vector512<ulong>>(ref Unsafe.AsRef(in left));
+				var v2 = Unsafe.As<UInt512, Vector512<ulong>>(ref Unsafe.AsRef(in right));
+				var result = v1 | v2;
+				return Unsafe.As<Vector512<ulong>, UInt512>(ref result);
 			}
 			else
 			{
+				return new(left._p7 | right._p7, left._p6 | right._p6, left._p5 | right._p5, left._p4 | right._p4, left._p3 | right._p3, left._p2 | right._p2, left._p1 | right._p1, left._p0 | right._p0);
+			}
+		}
+
+		/// <inheritdoc/>
+		public static UInt512 operator ^(in UInt512 left, in UInt512 right)
+		{
+			if (Vector512.IsHardwareAccelerated)
+			{
+				var v1 = Unsafe.As<UInt512, Vector512<ulong>>(ref Unsafe.AsRef(in left));
+				var v2 = Unsafe.As<UInt512, Vector512<ulong>>(ref Unsafe.AsRef(in right));
+				var result = v1 ^ v2;
+				return Unsafe.As<Vector512<ulong>, UInt512>(ref result);
+			}
+			else
+			{
+				return new(left._p7 ^ right._p7, left._p6 ^ right._p6, left._p5 ^ right._p5, left._p4 ^ right._p4, left._p3 ^ right._p3, left._p2 ^ right._p2, left._p1 ^ right._p1, left._p0 ^ right._p0);
+			}
+		}
+
+		/// <inheritdoc/>
+		public static UInt512 operator <<(in UInt512 value, int shiftAmount)
+		{
+			// C# automatically masks the shift amount for UInt64 to be 0x3F. So we
+			// need to specially handle things if the shift amount exceeds 0x3F.
+
+			shiftAmount &= 0x1FF; // mask the shift amount to be within [0, 255]
+
+			if (shiftAmount == 0)
+			{
 				return value;
+			}
+
+			if (shiftAmount < 64)
+			{
+				ulong part7 = (value._p7 << shiftAmount) | (value._p6 >> (64 - shiftAmount));
+				ulong part6 = (value._p6 << shiftAmount) | (value._p5 >> (64 - shiftAmount));
+				ulong part5 = (value._p5 << shiftAmount) | (value._p4 >> (64 - shiftAmount));
+				ulong part4 = (value._p4 << shiftAmount) | (value._p3 >> (64 - shiftAmount));
+				ulong part3 = (value._p3 << shiftAmount) | (value._p2 >> (64 - shiftAmount));
+				ulong part2 = (value._p2 << shiftAmount) | (value._p1 >> (64 - shiftAmount));
+				ulong part1 = (value._p1 << shiftAmount) | (value._p0 >> (64 - shiftAmount));
+				ulong part0 = value._p0 << shiftAmount;
+
+				return new UInt512(part7, part6, part5, part4, part3, part2, part1, part0);
+			}
+			else if (shiftAmount < 128)
+			{
+				shiftAmount -= 64;
+
+				if (shiftAmount == 0)
+				{
+					return new UInt512(value._p6, value._p5, value._p4, value._p3, value._p2, value._p1, value._p0, 0);
+				}
+
+				ulong part6 = (value._p6 << shiftAmount) | (value._p5 >> (64 - shiftAmount));
+				ulong part5 = (value._p5 << shiftAmount) | (value._p4 >> (64 - shiftAmount));
+				ulong part4 = (value._p4 << shiftAmount) | (value._p3 >> (64 - shiftAmount));
+				ulong part3 = (value._p3 << shiftAmount) | (value._p2 >> (64 - shiftAmount));
+				ulong part2 = (value._p2 << shiftAmount) | (value._p1 >> (64 - shiftAmount));
+				ulong part1 = (value._p1 << shiftAmount) | (value._p0 >> (64 - shiftAmount));
+				ulong part0 = value._p0 << shiftAmount;
+
+				return new UInt512(part6, part5, part4, part3, part2, part1, part0, 0);
+			}
+			else if (shiftAmount < 192)
+			{
+				shiftAmount -= 128;
+
+				if (shiftAmount == 0)
+				{
+					return new UInt512(value._p5, value._p4, value._p3, value._p2, value._p1, value._p0, 0, 0);
+				}
+
+				ulong part5 = (value._p5 << shiftAmount) | (value._p4 >> (64 - shiftAmount));
+				ulong part4 = (value._p4 << shiftAmount) | (value._p3 >> (64 - shiftAmount));
+				ulong part3 = (value._p3 << shiftAmount) | (value._p2 >> (64 - shiftAmount));
+				ulong part2 = (value._p2 << shiftAmount) | (value._p1 >> (64 - shiftAmount));
+				ulong part1 = (value._p1 << shiftAmount) | (value._p0 >> (64 - shiftAmount));
+				ulong part0 = value._p0 << shiftAmount;
+
+				return new UInt512(part5, part4, part3, part2, part1, part0, 0, 0);
+			}
+			else if (shiftAmount < 256)
+			{
+				shiftAmount -= 192;
+
+				if (shiftAmount == 0)
+				{
+					return new UInt512(value._p4, value._p3, value._p2, value._p1, value._p0, 0, 0, 0);
+				}
+
+				ulong part4 = (value._p4 << shiftAmount) | (value._p3 >> (64 - shiftAmount));
+				ulong part3 = (value._p3 << shiftAmount) | (value._p2 >> (64 - shiftAmount));
+				ulong part2 = (value._p2 << shiftAmount) | (value._p1 >> (64 - shiftAmount));
+				ulong part1 = (value._p1 << shiftAmount) | (value._p0 >> (64 - shiftAmount));
+				ulong part0 = value._p0 << shiftAmount;
+
+				return new UInt512(part4, part3, part2, part1, part0, 0, 0, 0);
+			}
+			else if (shiftAmount < 320)
+			{
+				shiftAmount -= 256;
+
+				if (shiftAmount == 0)
+				{
+					return new UInt512(value._p3, value._p2, value._p1, value._p0, 0, 0, 0, 0);
+				}
+
+				ulong part3 = (value._p3 << shiftAmount) | (value._p2 >> (64 - shiftAmount));
+				ulong part2 = (value._p2 << shiftAmount) | (value._p1 >> (64 - shiftAmount));
+				ulong part1 = (value._p1 << shiftAmount) | (value._p0 >> (64 - shiftAmount));
+				ulong part0 = value._p0 << shiftAmount;
+
+				return new UInt512(part3, part2, part1, part0, 0, 0, 0, 0);
+			}
+			else if (shiftAmount < 384)
+			{
+				shiftAmount -= 320;
+
+				if (shiftAmount == 0)
+				{
+					return new UInt512(value._p2, value._p1, value._p0, 0, 0, 0, 0, 0);
+				}
+
+				ulong part2 = (value._p2 << shiftAmount) | (value._p1 >> (64 - shiftAmount));
+				ulong part1 = (value._p1 << shiftAmount) | (value._p0 >> (64 - shiftAmount));
+				ulong part0 = value._p0 << shiftAmount;
+
+				return new UInt512(part2, part1, part0, 0, 0, 0, 0, 0);
+			}
+			else if (shiftAmount < 448)
+			{
+				shiftAmount -= 384;
+
+				if (shiftAmount == 0)
+				{
+					return new UInt512(value._p1, value._p0, 0, 0, 0, 0, 0, 0);
+				}
+
+				ulong part1 = (value._p1 << shiftAmount) | (value._p0 >> (64 - shiftAmount));
+				ulong part0 = value._p0 << shiftAmount;
+
+				return new UInt512(part1, part0, 0, 0, 0, 0, 0, 0);
+			}
+			else // shiftAmount < 512
+			{
+				shiftAmount -= 448;
+
+				if (shiftAmount == 0)
+				{
+					return new UInt512(value._p0, 0, 0, 0, 0, 0, 0, 0);
+				}
+
+				ulong part0 = value._p0 << shiftAmount;
+
+				return new UInt512(part0, 0, 0, 0, 0, 0, 0, 0);
+			}
+		}
+
+		/// <inheritdoc/>
+		public static UInt512 operator >>(in UInt512 value, int shiftAmount) => value >>> shiftAmount;
+
+		/// <inheritdoc/>
+		public static bool operator ==(in UInt512 left, in UInt512 right)
+		{
+			if (Vector512.IsHardwareAccelerated)
+			{
+				var v1 = Unsafe.As<UInt512, Vector512<ulong>>(ref Unsafe.AsRef(in left));
+				var v2 = Unsafe.As<UInt512, Vector512<ulong>>(ref Unsafe.AsRef(in right));
+				return v1 == v2;
+			}
+			else
+			{
+				return (left._p7 == right._p7) && (left._p6 == right._p6) && (left._p5 == right._p5) && (left._p4 == right._p4)
+					&& (left._p3 == right._p3) && (left._p2 == right._p2) && (left._p1 == right._p1) && (left._p0 == right._p0);
+			}
+		}
+
+		/// <inheritdoc/>
+		public static bool operator !=(in UInt512 left, in UInt512 right)
+		{
+			if (Vector512.IsHardwareAccelerated)
+			{
+				var v1 = Unsafe.As<UInt512, Vector512<ulong>>(ref Unsafe.AsRef(in left));
+				var v2 = Unsafe.As<UInt512, Vector512<ulong>>(ref Unsafe.AsRef(in right));
+				return v1 != v2;
+			}
+			else
+			{
+				return (left._p7 != right._p7) || (left._p6 != right._p6) || (left._p5 != right._p5) || (left._p4 != right._p4)
+					|| (left._p3 != right._p3) || (left._p2 != right._p2) || (left._p1 != right._p1) || (left._p0 != right._p0);
+			}
+		}
+
+		/// <inheritdoc/>
+		public static bool operator <(in UInt512 left, in UInt512 right)
+		{
+			// Successively compare each part.
+			return (left._p7 < right._p7)
+				|| (left._p7 == right._p7 && ((left._p6 < right._p6)
+				|| (left._p6 == right._p6 && ((left._p5 < right._p5)
+				|| (left._p5 == right._p5 && ((left._p4 < right._p4)
+				|| (left._p4 == right._p4 && ((left._p3 < right._p3)
+				|| (left._p3 == right._p3 && ((left._p2 < right._p2)
+				|| (left._p2 == right._p2 && ((left._p1 < right._p1)
+				|| (left._p1 == right._p1 && (left._p0 < right._p0))))))))))))));
+		}
+
+		/// <inheritdoc/>
+		public static bool operator >(in UInt512 left, in UInt512 right)
+		{
+			return (left._p7 > right._p7)
+				|| (left._p7 == right._p7 && ((left._p6 > right._p6) 
+				|| (left._p6 == right._p6 && ((left._p5 > right._p5)
+				|| (left._p5 == right._p5 && ((left._p4 > right._p4)
+				|| (left._p4 == right._p4 && ((left._p3 > right._p3)
+				|| (left._p3 == right._p3 && ((left._p2 > right._p2)
+				|| (left._p2 == right._p2 && ((left._p1 > right._p1) 
+				|| (left._p1 == right._p1 && (left._p0 > right._p0))))))))))))));
+		}
+
+		/// <inheritdoc/>
+		public static bool operator <=(in UInt512 left, in UInt512 right)
+		{
+			return (left._p7 < right._p7)
+				|| (left._p7 == right._p7 && ((left._p6 < right._p6)
+				|| (left._p6 == right._p6 && ((left._p5 < right._p5)
+				|| (left._p5 == right._p5 && ((left._p4 < right._p4)
+				|| (left._p4 == right._p4 && ((left._p3 < right._p3)
+				|| (left._p3 == right._p3 && ((left._p2 < right._p2)
+				|| (left._p2 == right._p2 && ((left._p1 < right._p1)
+				|| (left._p1 == right._p1 && (left._p0 <= right._p0))))))))))))));
+		}
+
+		/// <inheritdoc/>
+		public static bool operator >=(in UInt512 left, in UInt512 right)
+		{
+			return (left._p7 > right._p7)
+				|| (left._p7 == right._p7 && ((left._p6 > right._p6)
+				|| (left._p6 == right._p6 && ((left._p5 > right._p5)
+				|| (left._p5 == right._p5 && ((left._p4 > right._p4)
+				|| (left._p4 == right._p4 && ((left._p3 > right._p3)
+				|| (left._p3 == right._p3 && ((left._p2 > right._p2)
+				|| (left._p2 == right._p2 && ((left._p1 > right._p1)
+				|| (left._p1 == right._p1 && (left._p0 >= right._p0))))))))))))));
+		}
+
+		/// <inheritdoc/>
+		public static UInt512 operator >>>(in UInt512 value, int shiftAmount)
+		{
+			// C# automatically masks the shift amount for UInt64 to be 0x3F. So we
+			// need to specially handle things if the shift amount exceeds 0x3F.
+
+			shiftAmount &= 0x1FF; // mask the shift amount to be within [0, 511]
+
+			if (shiftAmount == 0)
+			{
+				return value;
+			}
+
+			if (shiftAmount < 64)
+			{
+				ulong part0 = (value._p0 >> shiftAmount) | (value._p1 << (64 - shiftAmount));
+				ulong part1 = (value._p1 >> shiftAmount) | (value._p2 << (64 - shiftAmount));
+				ulong part2 = (value._p2 >> shiftAmount) | (value._p3 << (64 - shiftAmount));
+				ulong part3 = (value._p3 >> shiftAmount) | (value._p4 << (64 - shiftAmount));
+				ulong part4 = (value._p4 >> shiftAmount) | (value._p5 << (64 - shiftAmount));
+				ulong part5 = (value._p5 >> shiftAmount) | (value._p6 << (64 - shiftAmount));
+				ulong part6 = (value._p6 >> shiftAmount) | (value._p7 << (64 - shiftAmount));
+				ulong part7 = value._p7 >> shiftAmount;
+
+				return new UInt512(part7, part6, part5, part4, part3, part2, part1, part0);
+			}
+			else if (shiftAmount < 128)
+			{
+				shiftAmount -= 64;
+
+				if (shiftAmount == 0)
+				{
+					return new UInt512(0, value._p7, value._p6, value._p5, value._p4, value._p3, value._p2, value._p1);
+				}
+
+				ulong part0 = (value._p1 >> shiftAmount) | (value._p2 << (64 - shiftAmount));
+				ulong part1 = (value._p2 >> shiftAmount) | (value._p3 << (64 - shiftAmount));
+				ulong part2 = (value._p3 >> shiftAmount) | (value._p4 << (64 - shiftAmount));
+				ulong part3 = (value._p4 >> shiftAmount) | (value._p5 << (64 - shiftAmount));
+				ulong part4 = (value._p5 >> shiftAmount) | (value._p6 << (64 - shiftAmount));
+				ulong part5 = (value._p6 >> shiftAmount) | (value._p7 << (64 - shiftAmount));
+				ulong part6 = value._p7 >> shiftAmount;
+
+				return new UInt512(0, part6, part5, part4, part3, part2, part1, part0);
+			}
+			else if (shiftAmount < 192)
+			{
+				shiftAmount -= 128;
+
+				if (shiftAmount == 0)
+				{
+					return new UInt512(0, 0, value._p7, value._p6, value._p5, value._p4, value._p3, value._p2);
+				}
+
+				ulong part0 = (value._p2 >> shiftAmount) | (value._p3 << (64 - shiftAmount));
+				ulong part1 = (value._p3 >> shiftAmount) | (value._p4 << (64 - shiftAmount));
+				ulong part2 = (value._p4 >> shiftAmount) | (value._p5 << (64 - shiftAmount));
+				ulong part3 = (value._p5 >> shiftAmount) | (value._p6 << (64 - shiftAmount));
+				ulong part4 = (value._p6 >> shiftAmount) | (value._p7 << (64 - shiftAmount));
+				ulong part5 = value._p7 >> shiftAmount;
+
+				return new UInt512(0, 0, part5, part4, part3, part2, part1, part0);
+			}
+			else if (shiftAmount < 256)
+			{
+				shiftAmount -= 192;
+
+				if (shiftAmount == 0)
+				{
+					return new UInt512(0, 0, 0, value._p7, value._p6, value._p5, value._p4, value._p3);
+				}
+
+				ulong part0 = (value._p3 >> shiftAmount) | (value._p4 << (64 - shiftAmount));
+				ulong part1 = (value._p4 >> shiftAmount) | (value._p5 << (64 - shiftAmount));
+				ulong part2 = (value._p5 >> shiftAmount) | (value._p6 << (64 - shiftAmount));
+				ulong part3 = (value._p6 >> shiftAmount) | (value._p7 << (64 - shiftAmount));
+				ulong part4 = value._p7 >> shiftAmount;
+
+				return new UInt512(0, 0, 0, part4, part3, part2, part1, part0);
+			}
+			else if (shiftAmount < 320)
+			{
+				shiftAmount -= 256;
+
+				if (shiftAmount == 0)
+				{
+					return new UInt512(0, 0, 0, 0, value._p7, value._p6, value._p5, value._p4);
+				}
+
+				ulong part0 = (value._p4 >> shiftAmount) | (value._p5 << (64 - shiftAmount));
+				ulong part1 = (value._p5 >> shiftAmount) | (value._p6 << (64 - shiftAmount));
+				ulong part2 = (value._p6 >> shiftAmount) | (value._p7 << (64 - shiftAmount));
+				ulong part3 = value._p7 >> shiftAmount;
+
+				return new UInt512(0, 0, 0, 0, part3, part2, part1, part0);
+			}
+			else if (shiftAmount < 384)
+			{
+				shiftAmount -= 320;
+
+				if (shiftAmount == 0)
+				{
+					return new UInt512(0, 0, 0, 0, 0, value._p7, value._p6, value._p5);
+				}
+
+				ulong part0 = (value._p5 >> shiftAmount) | (value._p6 << (64 - shiftAmount));
+				ulong part1 = (value._p6 >> shiftAmount) | (value._p7 << (64 - shiftAmount));
+				ulong part2 = value._p7 >> shiftAmount;
+
+				return new UInt512(0, 0, 0, 0, 0, part2, part1, part0);
+			}
+			else if (shiftAmount < 448)
+			{
+				shiftAmount -= 384;
+
+				if (shiftAmount == 0)
+				{
+					return new UInt512(0, 0, 0, 0, 0, 0, value._p7, value._p6);
+				}
+
+				ulong part0 = (value._p6 >> shiftAmount) | (value._p7 << (64 - shiftAmount));
+				ulong part1 = value._p7 >> shiftAmount;
+
+				return new UInt512(0, 0, 0, 0, 0, 0, part1, part0);
+			}
+			else // shiftAmount < 512
+			{
+				shiftAmount -= 448;
+
+				ulong part0 = value._p7 >> shiftAmount;
+
+				return new UInt512(0, 0, 0, 0, 0, 0, 0, part0);
 			}
 		}
 	}

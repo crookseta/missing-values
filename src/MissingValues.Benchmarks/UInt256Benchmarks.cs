@@ -10,123 +10,153 @@ namespace MissingValues.Benchmarks
 {
 	public class UInt256Benchmarks
 	{
-		static readonly Random rnd = new Random(7);
-
-		[MemoryDiagnoser]
+		[MinColumn, MaxColumn, MeanColumn, MedianColumn]
 		public class MathOperators
 		{
-			private UInt256 a, b;
+			[Params(100, 10_000, 500_000)]
+			public int Length;
+			private UInt256[] a, b, c;
 
 			[GlobalSetup]
 			public void Setup()
 			{
-				a = new UInt256(new(0, (ulong)rnd.NextInt64()), new((ulong)rnd.NextInt64(), (ulong)rnd.NextInt64()));
-				b = new UInt256(new(0, (ulong)rnd.NextInt64()), new((ulong)rnd.NextInt64(), (ulong)rnd.NextInt64()));
+				a = new UInt256[Length];
+				b = new UInt256[Length];
+
+				for (int i = 0; i < Length; i++)
+				{
+					a[i] = new((ulong)Random.Shared.NextInt64(), (ulong)Random.Shared.NextInt64(), (ulong)Random.Shared.NextInt64(), (ulong)Random.Shared.NextInt64());
+					b[i] = new((ulong)Random.Shared.NextInt64(), (ulong)Random.Shared.NextInt64(), (ulong)Random.Shared.NextInt64(), (ulong)Random.Shared.NextInt64());
+				}
+
+				c = new UInt256[Length];
 			}
 
 			[Benchmark]
-			public UInt256 Add_UInt256()
+			public UInt256[] Add_UInt256()
 			{
-				return a + b;
+				for (int i = 0; i < Length; i++)
+				{
+					c[i] = a[i] + b[i];
+				}
+				return c;
 			}
 
 			[Benchmark]
-			public UInt256 Subtract_UInt256()
+			public UInt256[] Subtract_UInt256()
 			{
-				return a - b;
+				for (int i = 0; i < Length; i++)
+				{
+					c[i] = a[i] - b[i];
+				}
+				return c;
 			}
 
 			[Benchmark]
-			public UInt256 Multiply_UInt256()
+			public UInt256[] Multiply_UInt256()
 			{
-				return a * b;
+				for (int i = 0; i < Length; i++)
+				{
+					c[i] = a[i] * b[i];
+				}
+				return c;
 			}
 
 			[Benchmark]
-			public UInt256 Divide_UInt256()
+			public UInt256[] Divide_UInt256()
 			{
-				return a / b;
+				for (int i = 0; i < Length; i++)
+				{
+					c[i] = a[i] / b[i];
+				}
+				return c;
 			}
 
 			[Benchmark]
-			public UInt256 Modulus_UInt256()
+			public UInt256[] Modulus_UInt256()
 			{
-				return a % b;
+				for (int i = 0; i < Length; i++)
+				{
+					c[i] = a[i] % b[i];
+				}
+				return c;
+			}
+
+			[Benchmark]
+			public UInt256[] BitwiseAnd_UInt256()
+			{
+				for (int i = 0; i < Length; i++)
+				{
+					c[i] = a[i] & b[i];
+				}
+				return c;
+			}
+
+			[Benchmark]
+			[Arguments(16)]
+			[Arguments(32)]
+			[Arguments(64)]
+			[Arguments(100)]
+			[Arguments(128)]
+			[Arguments(192)]
+			[Arguments(200)]
+			public UInt256[] ShiftLeft_UInt256(int shiftAmount)
+			{
+				for (int i = 0; i < Length; i++)
+				{
+					c[i] = a[i] << shiftAmount;
+				}
+				return c;
+			}
+
+			[Benchmark]
+			[Arguments(16)]
+			[Arguments(32)]
+			[Arguments(64)]
+			[Arguments(100)]
+			[Arguments(128)]
+			[Arguments(192)]
+			[Arguments(200)]
+			public UInt256[] ShiftRight_UInt256(int shiftAmount)
+			{
+				for (int i = 0; i < Length; i++)
+				{
+					c[i] = a[i] >> shiftAmount;
+				}
+				return c;
 			}
 		}
 
 		[MemoryDiagnoser]
-		public class Formatting
+		public class ParsingAndFormatting
 		{
-			private UInt256 value;
-
-			[Params("57896044618658097711785492504343953926634992332820282019728792003956564819967", "1", "115792089237316195423570985008687907853269984665640564039457584007913129639935")]
-			public string Value { get; set; }
-			[Params(null, "X64", "B256")]
-			public string Format { get; set; }
-
-			[GlobalSetup]
-			public void Setup()
-			{
-				value = UInt256.Parse(Value);
-			}
-
 			[Benchmark]
-			public string ToString_UInt256()
+			[ArgumentsSource(nameof(ValuesToFormat))]
+			public string ToString_UInt256(UInt256 value, string? fmt)
 			{
-				return value.ToString(Format, CultureInfo.CurrentCulture);
-			}
-		}
-		
-		[MemoryDiagnoser]
-		public class Parsing
-		{
-			private string _bin, _hex;
-
-			[Params("57896044618658097711785492504343953926634992332820282019728792003956564819967", "1", "115792089237316195423570985008687907853269984665640564039457584007913129639935")]
-			public string Value { get; set; }
-
-			[GlobalSetup]
-			public void Setup()
-			{
-				_bin = UInt256.Parse(Value).ToString("B256", CultureInfo.CurrentCulture);
-				_hex = UInt256.Parse(Value).ToString("X64", CultureInfo.CurrentCulture);
-			}
-
-			[Benchmark(Baseline = true)]
-			public UInt256 Parse_DecimalUInt256()
-			{
-				return UInt256.Parse(Value);
+				return value.ToString(fmt, CultureInfo.CurrentCulture);
 			}
 			[Benchmark]
-			public UInt256 Parse_HexadecimalUInt256()
+			[ArgumentsSource(nameof(ValuesToParse))]
+			public UInt256 Parse_UInt256(string s, NumberStyles style, IFormatProvider provider)
 			{
-				return UInt256.Parse(_hex, NumberStyles.HexNumber, CultureInfo.CurrentCulture);
-			}
-		}
-
-		[MemoryDiagnoser]
-		public class Operations
-		{
-			private UInt256 a, b;
-
-			[GlobalSetup]
-			public void Setup()
-			{
-				a = new UInt256(new(0, (ulong)rnd.NextInt64()), new((ulong)rnd.NextInt64(), (ulong)rnd.NextInt64()));
-				b = new UInt256(new(0, (ulong)rnd.NextInt64()), new((ulong)rnd.NextInt64(), (ulong)rnd.NextInt64()));
+				return UInt256.Parse(s, style, provider);
 			}
 
-			[Benchmark]
-			public UInt256 Clamp_UInt256()
+			public IEnumerable<object[]> ValuesToParse()
 			{
-				return UInt256.Clamp(a, UInt256.Zero, b);
+				yield return ["57896044618658097711785492504343953926634992332820282019728792003956564819967", NumberStyles.Integer, CultureInfo.CurrentCulture];
+				yield return ["11111111111111111111111111111111111111111111111111111111111111111111111111111", NumberStyles.BinaryNumber, CultureInfo.CurrentCulture];
+				yield return ["FEDCBA0987654321", NumberStyles.HexNumber, CultureInfo.CurrentCulture];
 			}
-
-			[Benchmark]
-			public (UInt256, UInt256) DivRem_UInt256()
+			public IEnumerable<object[]> ValuesToFormat()
 			{
-				return UInt256.DivRem(a, b);
+				yield return [UInt256.MaxValue, "D"];
+				yield return [UInt256.MaxValue, "X64"];
+				yield return [UInt256.MaxValue, "B256"];
+				yield return [UInt256.MaxValue, "C"];
+				yield return [UInt256.MaxValue, "E"];
+				yield return [UInt256.MaxValue, "N"];
 			}
 		}
 	}

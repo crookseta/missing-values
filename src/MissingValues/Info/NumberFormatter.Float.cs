@@ -1,4 +1,6 @@
-﻿using System;
+﻿using MissingValues.Internals;
+using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -6,7 +8,7 @@ using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MissingValues.Internals;
+namespace MissingValues.Info;
 
 internal interface IFormattableFloatingPoint<TSelf> : IFloatingPoint<TSelf>, IFormattableNumber<TSelf>
 		where TSelf : IFormattableFloatingPoint<TSelf>
@@ -18,8 +20,9 @@ internal interface IFormattableFloatingPoint<TSelf> : IFloatingPoint<TSelf>, IFo
 		return false;
 	}
 }
-internal interface IFormattableBinaryFloatingPoint<TSelf> : IFormattableFloatingPoint<TSelf>, IBinaryFloatingPointIeee754<TSelf>
-	where TSelf : IFormattableBinaryFloatingPoint<TSelf>
+internal interface IBinaryFloatingPointInfo<TFloat, TSignificand> : IBinaryFloatingPointIeee754<TFloat>, IFormattableFloatingPoint<TFloat>
+	where TFloat : struct, IBinaryFloatingPointInfo<TFloat, TSignificand>
+	where TSignificand : unmanaged, IBinaryInteger<TSignificand>, IUnsignedNumber<TSignificand>
 {
 	abstract static bool ExplicitLeadingBit { get; }
 	abstract static int NormalMantissaBits { get; }
@@ -32,38 +35,39 @@ internal interface IFormattableBinaryFloatingPoint<TSelf> : IFormattableFloating
 	abstract static int ExponentBits { get; }
 	abstract static int ExponentBias { get; }
 	abstract static int OverflowDecimalExponent { get; }
-	abstract static UInt128 DenormalMantissaMask { get; }
-	abstract static UInt128 NormalMantissaMask { get; }
-	abstract static UInt128 TrailingSignificandMask { get; }
-	abstract static UInt128 PositiveZeroBits { get; }
-	abstract static UInt128 PositiveInfinityBits { get; }
-	abstract static UInt128 NegativeInfinityBits { get; }
+	abstract static TSignificand DenormalMantissaMask { get; }
+	abstract static TSignificand NormalMantissaMask { get; }
+	abstract static TSignificand TrailingSignificandMask { get; }
+	abstract static TSignificand PositiveZeroBits { get; }
+	abstract static TSignificand PositiveInfinityBits { get; }
+	abstract static TSignificand NegativeInfinityBits { get; }
 
-	static abstract TSelf BitsToFloat(UInt128 bits);
-	static abstract UInt128 FloatToBits(TSelf value);
-
+	static abstract TFloat BitsToFloat(TSignificand bits);
+	static abstract TSignificand FloatToBits(TFloat value);
 }
 
 internal static partial class NumberFormatter
 {
-	public static string FloatToString<TFloat>(
+	public static string FloatToString<TFloat, TSignificand>(
 		in TFloat value,
-		ReadOnlySpan<char> format,
+		string? format,
 		IFormatProvider? provider)
-		where TFloat : struct, IFormattableBinaryFloatingPoint<TFloat>
+		where TFloat : unmanaged, IBinaryFloatingPointInfo<TFloat, TSignificand>
+		where TSignificand : unmanaged, IBinaryInteger<TSignificand>, IUnsignedNumber<TSignificand>
 	{
 		int maxSignificandPrecision = TFloat.MaxSignificandPrecision;
 		int maxBufferAlloc = maxSignificandPrecision + 4 + 4 + 4; // N significant decimal digits precision, 4 possible special symbols, 4 exponent decimal digits
 
 		int precision;
+		bool noFormat = string.IsNullOrWhiteSpace(format);
 
-		if (format.IsEmpty)
+		if (noFormat)
 		{
 			precision = maxSignificandPrecision;
 		}
 		else
 		{
-			if (int.TryParse(format.Trim()[1..], out int p))
+			if (format!.Length > 1 && int.TryParse(format![1..].TrimEnd(), out int p))
 			{
 				precision = p > maxSignificandPrecision ? maxSignificandPrecision : p;
 			}
@@ -71,36 +75,37 @@ internal static partial class NumberFormatter
 			{
 				precision = maxSignificandPrecision;
 			}
-
-			if (!(format.Contains("F", StringComparison.OrdinalIgnoreCase)
-			|| format.Contains("G", StringComparison.OrdinalIgnoreCase)
-			|| format.Contains("N", StringComparison.OrdinalIgnoreCase)
-			|| format.Contains("E", StringComparison.OrdinalIgnoreCase)))
-			{
-				Thrower.NotSupported();
-			}
 		}
+
+		ReadOnlySpan<char> fmt = noFormat ? ['G'] : format;
 
 		NumberFormatInfo info = NumberFormatInfo.GetInstance(provider);
 
 		Span<Utf16Char> buffer = stackalloc Utf16Char[maxBufferAlloc];
-		Ryu.Format(in value, buffer, out _, format, out bool isExceptional, info, precision);
+		if (!(fmt.Contains("G", StringComparison.OrdinalIgnoreCase)
+			|| fmt.Contains("E", StringComparison.OrdinalIgnoreCase)))
+		{
+			return FormatNumber(in value, format!, info);
+		}
 
-		if (isExceptional || format.Contains("E", StringComparison.OrdinalIgnoreCase))
+		Ryu.Format<TFloat, TSignificand, Utf16Char>(in value, buffer, out _, fmt, out bool isExceptional, info, precision);
+
+		if (isExceptional || fmt.Contains("E", StringComparison.OrdinalIgnoreCase))
 		{
 			return new string(Utf16Char.CastToCharSpan(buffer).TrimEnd('\0'));
 		}
 
-		return new string(Utf16Char.CastToCharSpan(GetGeneralFromScientificFloatChars(buffer, info, precision)));
+		return new string(Utf16Char.CastToCharSpan(GetGeneralFromScientificFloatChars(buffer, info, precision, maxSignificandPrecision)));
 	}
 
-	public static bool TryFormatFloat<TFloat, TChar>(
+	public static bool TryFormatFloat<TFloat, TSignificand, TChar>(
 		in TFloat value,
 		Span<TChar> destination,
 		out int charsWritten,
 		ReadOnlySpan<char> format,
 		IFormatProvider? provider)
-		where TFloat : struct, IFormattableBinaryFloatingPoint<TFloat>
+		where TFloat : unmanaged, IBinaryFloatingPointInfo<TFloat, TSignificand>
+		where TSignificand : unmanaged, IBinaryInteger<TSignificand>, IUnsignedNumber<TSignificand>
 		where TChar : unmanaged, IUtfCharacter<TChar>
 	{
 		int maxSignificandPrecision = TFloat.MaxSignificandPrecision;
@@ -108,6 +113,7 @@ internal static partial class NumberFormatter
 
 		int precision;
 
+		NumberFormatInfo info = provider is null ? NumberFormatInfo.CurrentInfo : NumberFormatInfo.GetInstance(provider);
 		if (format.IsEmpty)
 		{
 			format = "G";
@@ -124,35 +130,30 @@ internal static partial class NumberFormatter
 				precision = maxSignificandPrecision;
 			}
 		}
-		
-		NumberFormatInfo info = NumberFormatInfo.GetInstance(provider);
+
 
 		if (!(format.Contains("G", StringComparison.OrdinalIgnoreCase)
-			|| format.Contains("F", StringComparison.OrdinalIgnoreCase)
-			|| format.Contains("N", StringComparison.OrdinalIgnoreCase)
 			|| format.Contains("E", StringComparison.OrdinalIgnoreCase)))
 		{
-			Thrower.NotSupported();
 			return TryFormatNumber(in value, destination, out charsWritten, format, info);
 		}
 
 		Span<TChar> buffer = stackalloc TChar[maxBufferAlloc];
-		Ryu.Format(in value, buffer, out charsWritten, format, out bool isExceptional, info, precision);
+		Ryu.Format<TFloat, TSignificand, TChar>(in value, buffer, out charsWritten, format, out bool isExceptional, info, precision);
 
 		if (isExceptional || format.Contains("E", StringComparison.OrdinalIgnoreCase))
 		{
 			return buffer.TrimEnd(TChar.NullCharacter).TryCopyTo(destination);
 		}
 
-		ReadOnlySpan<TChar> general = GetGeneralFromScientificFloatChars(buffer, info, precision);
+		ReadOnlySpan<TChar> general = GetGeneralFromScientificFloatChars(buffer, info, precision, maxSignificandPrecision);
 		charsWritten = general.Length;
 		return general.TryCopyTo(destination);
 	}
-	private static ReadOnlySpan<TChar> GetGeneralFromScientificFloatChars<TChar>(Span<TChar> buffer, NumberFormatInfo info, int precision)
+
+	private static ReadOnlySpan<TChar> GetGeneralFromScientificFloatChars<TChar>(Span<TChar> buffer, NumberFormatInfo info, int precision, int maxSignificandPrecision)
 		where TChar : unmanaged, IUtfCharacter<TChar>
 	{
-		const int MaxSignificandPrecision = 33;
-
 		Span<TChar> actualValue = buffer.TrimEnd(TChar.NullCharacter);
 
 		int eIndex = actualValue.IndexOf((TChar)'E');
@@ -172,16 +173,16 @@ internal static partial class NumberFormatter
 		bool containsDecimalSeparator = dotIndex >= 0;
 
 		// If buffer cannot be represented with precision.
-		if ((!isNegativeExponent && (containsDecimalSeparator && exponent >= actualValue[(dotIndex + 1)..eIndex].Length && MaxSignificandPrecision < actualValue.Length)) ||
-			(isNegativeExponent && (containsDecimalSeparator && (-exponent) >= 1 && MaxSignificandPrecision < actualValue.Length)))
+		if ((!isNegativeExponent && (containsDecimalSeparator && exponent >= actualValue[(dotIndex + 1)..eIndex].Length && maxSignificandPrecision < actualValue.Length)) ||
+			(isNegativeExponent && (containsDecimalSeparator && (-exponent) >= 1 && maxSignificandPrecision < actualValue.Length)))
 		{
 			return actualValue;
 		}
-		if (!containsDecimalSeparator && ((isNegativeExponent && (-exponent) >= MaxSignificandPrecision) || (!isNegativeExponent && exponent >= MaxSignificandPrecision)))
+		if (!containsDecimalSeparator && ((isNegativeExponent && (-exponent) >= maxSignificandPrecision) || (!isNegativeExponent && exponent >= maxSignificandPrecision)))
 		{
 			return actualValue;
 		}
-		if (int.Abs(exponent) >= MaxSignificandPrecision)
+		if (int.Abs(exponent) >= maxSignificandPrecision)
 		{
 			return actualValue;
 		}

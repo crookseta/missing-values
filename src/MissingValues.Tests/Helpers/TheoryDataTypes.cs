@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.Contracts;
+using System.Globalization;
 using System.Linq;
 using System.Numerics;
 using System.Text;
@@ -115,4 +116,17 @@ namespace MissingValues.Tests.Helpers
 			}
 		}
 	}
+
+	public class FormatStringTheoryData : TheoryData<IFormattable, string, NumberFormatInfo?, string>
+	{
+        public FormatStringTheoryData(IEnumerable<(IFormattable, string, NumberFormatInfo?, string)> data)
+        {
+			Contract.Assert(data is not null && data.Any());
+
+            foreach (var dat in data)
+            {
+				Add(dat.Item1, dat.Item2, dat.Item3, dat.Item4);
+            }
+        }
+    }
 }

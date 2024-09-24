@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MissingValues.Internals;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Quic;
@@ -159,11 +160,10 @@ namespace MissingValues
 				sigB = normExpSig.Sig;
 			}
 
-			expZ = (ushort)(expA + expB - 0x4000);
+			expZ = (ushort)(expA + expB - (Quad.ExponentBias + 1));
 			sigA |= new UInt128(0x0001_0000_0000_0000, 0);
 			sigB <<= 16;
-			UInt128 sig256Hi = BitHelper.BigMul(sigA, sigB, out UInt128 sig256Lo);
-			sig256 = new UInt256(sig256Hi, sig256Lo);
+			sig256 = MathQ.BigMul(sigA, sigB);
 			ulong sigZExtra = Convert.ToUInt64(sig256 != UInt256.Zero);
 			sigZ = sig256.Upper + sigA;
 			if (0x0002_0000_0000_0000 <= (ulong)(sigZ >> 64))
@@ -285,7 +285,7 @@ namespace MissingValues
 				}
 			}
 
-			ulong sigZExtra = (q << 60);
+			ulong sigZExtra = ((ulong)q << 60);
 			term = new UInt128(0, qs[1]) << 54;
 			UInt128 sigZ = new UInt128((ulong)qs[2] << 19, ((ulong)qs[0] << 25) + (q >> 4)) + term;
 			return Quad.UInt128BitsToQuad(BitHelper.RoundPackToQuad(signZ, expZ, sigZ, sigZExtra));

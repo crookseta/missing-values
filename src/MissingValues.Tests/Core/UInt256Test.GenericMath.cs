@@ -27,6 +27,8 @@ namespace MissingValues.Tests.Core
 		private static readonly UInt MaxValue = new(new(0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF), new(0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF));
 		private static readonly UInt MaxValueMinusOne = new(new(0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF), new(0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFE));
 		private static readonly UInt MaxValueMinusTwo = new(new(0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF), new(0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFD));
+
+		private static readonly UInt E40 = new(0x0000_0000_0000_0000, 0x0000_0000_0000_001D, 0x6329_F1C3_5CA4_BFAB, 0xB9F5_6100_0000_0000);
 		#endregion
 
 		#region Generic Math Operators
@@ -115,7 +117,10 @@ namespace MissingValues.Tests.Core
 		public static void op_DivisionTest()
 		{
 			Assert.Equal(new UInt(new(0x7FFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF), new(0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF)), MathOperatorsHelper.DivisionOperation<UInt, UInt, UInt>(MaxValue, Two));
+			Assert.Equal(new UInt(0x0000_0000_0000_0001, 0xD83C_94FB_6D2A_C34A, 0x5663_D3C7_A0D8_65CA, 0x3C4C_A40E_0EA7_CFE9), MathOperatorsHelper.DivisionOperation<UInt, UInt, UInt>(MaxValue, 0x8AC7_2304_89E8_0000));
+			Assert.Equal(new UInt(0x0000_0000_0000_0000, 0x0000_0000_0000_0003, 0x671F_73B5_4F1C_8956, 0x5B9E_F4D6_3241_2884), MathOperatorsHelper.DivisionOperation<UInt, UInt, UInt>(MaxValue, new UInt128(0x4B3B_4CA8_5A86_C47A, 0x098A_2240_0000_0000)));
 			Assert.Equal(One, MathOperatorsHelper.DivisionOperation<UInt, UInt, UInt>(MaxValue, MaxValue));
+			Assert.Equal(new UInt(0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x08B6_1313_BBAB_CE2C, 0x6232_3AC4_B3B3_DA01), MathOperatorsHelper.DivisionOperation<UInt, UInt, UInt>(MaxValue, E40));
 
 			Assert.Throws<DivideByZeroException>(() => MathOperatorsHelper.DivisionOperation<UInt, UInt, UInt>(One, Zero));
 		}
@@ -123,7 +128,10 @@ namespace MissingValues.Tests.Core
 		public static void op_CheckedDivisionTest()
 		{
 			Assert.Equal(new UInt(new(0x7FFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF), new(0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF)), MathOperatorsHelper.CheckedDivisionOperation<UInt, UInt, UInt>(MaxValue, Two));
+			Assert.Equal(new UInt(0x0000_0000_0000_0001, 0xD83C_94FB_6D2A_C34A, 0x5663_D3C7_A0D8_65CA, 0x3C4C_A40E_0EA7_CFE9), MathOperatorsHelper.CheckedDivisionOperation<UInt, UInt, UInt>(MaxValue, 0x8AC7_2304_89E8_0000));
+			Assert.Equal(new UInt(0x0000_0000_0000_0000, 0x0000_0000_0000_0003, 0x671F_73B5_4F1C_8956, 0x5B9E_F4D6_3241_2884), MathOperatorsHelper.CheckedDivisionOperation<UInt, UInt, UInt>(MaxValue, new UInt128(0x4B3B_4CA8_5A86_C47A, 0x098A_2240_0000_0000)));
 			Assert.Equal(One, MathOperatorsHelper.CheckedDivisionOperation<UInt, UInt, UInt>(MaxValue, MaxValue));
+			Assert.Equal(new UInt(0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x08B6_1313_BBAB_CE2C, 0x6232_3AC4_B3B3_DA01), MathOperatorsHelper.CheckedDivisionOperation<UInt, UInt, UInt>(MaxValue, E40));
 
 			Assert.Throws<DivideByZeroException>(() => MathOperatorsHelper.CheckedDivisionOperation<UInt, UInt, UInt>(One, Zero));
 		}
@@ -133,6 +141,9 @@ namespace MissingValues.Tests.Core
 			MathOperatorsHelper.ModulusOperation<UInt, UInt, UInt>(Two, Two).Should().Be(Zero);
 			MathOperatorsHelper.ModulusOperation<UInt, UInt, UInt>(One, Two).Should().NotBe(Zero);
 			MathOperatorsHelper.ModulusOperation<UInt, UInt, UInt>(MaxValue, new(10U)).Should().Be(5U);
+			MathOperatorsHelper.ModulusOperation<UInt, UInt, UInt>(MaxValue, new(10_000_000_000_000_000_000U)).Should().Be(7584007913129639935U);
+			MathOperatorsHelper.ModulusOperation<UInt, UInt, UInt>(MaxValue, E40)
+				.Should().Be(new UInt(0x0000_0000_0000_0000, 0x0000_0000_0000_0009, 0x9C10_2376_5631_2693, 0x7E70_9EFF_FFFF_FFFF));
 
 			Assert.Throws<DivideByZeroException>(() => MathOperatorsHelper.ModulusOperation<UInt, UInt, UInt>(One, Zero));
 		}
@@ -184,6 +195,17 @@ namespace MissingValues.Tests.Core
 				.Should().Be(Two);
 			ShiftOperatorsHelper<UInt, int, UInt>.LeftShiftOperation(MaxValue, 1)
 				.Should().Be(MaxValueMinusOne);
+
+			UInt actual = new(0x028F_5C28_F5C2_8F5C, 0x28F5_C28F_5C28_F5C2, 0x8F5C_28F5_C28F_5C28, 0xF5C2_8F5C_28F5_C28F);
+
+			ShiftOperatorsHelper<UInt, int, UInt>.LeftShiftOperation(actual, 0)
+				.Should().Be(actual);
+			ShiftOperatorsHelper<UInt, int, UInt>.LeftShiftOperation(actual, 64)
+				.Should().Be(new(0x28F5_C28F_5C28_F5C2, 0x8F5C_28F5_C28F_5C28, 0xF5C2_8F5C_28F5_C28F, 0));
+			ShiftOperatorsHelper<UInt, int, UInt>.LeftShiftOperation(actual, 128)
+				.Should().Be(new(0x8F5C_28F5_C28F_5C28, 0xF5C2_8F5C_28F5_C28F, 0, 0));
+			ShiftOperatorsHelper<UInt, int, UInt>.LeftShiftOperation(actual, 192)
+				.Should().Be(new(0xF5C2_8F5C_28F5_C28F, 0, 0, 0));
 		}
 		[Fact]
 		public static void op_RightShiftTest()
@@ -194,6 +216,17 @@ namespace MissingValues.Tests.Core
 				.Should().Be(Zero);
 			ShiftOperatorsHelper<UInt, int, UInt>.RightShiftOperation(MaxValue, 1)
 				.Should().Be(new(new(0x7FFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF), new(0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF)));
+
+			UInt actual = new(0x028F_5C28_F5C2_8F5C, 0x28F5_C28F_5C28_F5C2, 0x8F5C_28F5_C28F_5C28, 0xF5C2_8F5C_28F5_C28F);
+
+			ShiftOperatorsHelper<UInt, int, UInt>.RightShiftOperation(actual, 0)
+				.Should().Be(actual);
+			ShiftOperatorsHelper<UInt, int, UInt>.RightShiftOperation(actual, 64)
+				.Should().Be(new(0, 0x028F_5C28_F5C2_8F5C, 0x28F5_C28F_5C28_F5C2, 0x8F5C_28F5_C28F_5C28));
+			ShiftOperatorsHelper<UInt, int, UInt>.RightShiftOperation(actual, 128)
+				.Should().Be(new(0, 0, 0x028F_5C28_F5C2_8F5C, 0x28F5_C28F_5C28_F5C2));
+			ShiftOperatorsHelper<UInt, int, UInt>.RightShiftOperation(actual, 192)
+				.Should().Be(new(0, 0, 0, 0x028F_5C28_F5C2_8F5C));
 		}
 		[Fact]
 		public static void op_UnsignedRightShiftTest()
@@ -204,6 +237,17 @@ namespace MissingValues.Tests.Core
 				.Should().Be(Zero);
 			ShiftOperatorsHelper<UInt, int, UInt>.UnsignedRightShiftOperation(MaxValue, 1)
 				.Should().Be(new(new(0x7FFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF), new(0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF)));
+
+			UInt actual = new(0x028F_5C28_F5C2_8F5C, 0x28F5_C28F_5C28_F5C2, 0x8F5C_28F5_C28F_5C28, 0xF5C2_8F5C_28F5_C28F);
+
+			ShiftOperatorsHelper<UInt, int, UInt>.UnsignedRightShiftOperation(actual, 0)
+				.Should().Be(actual);
+			ShiftOperatorsHelper<UInt, int, UInt>.UnsignedRightShiftOperation(actual, 64)
+				.Should().Be(new(0, 0x028F_5C28_F5C2_8F5C, 0x28F5_C28F_5C28_F5C2, 0x8F5C_28F5_C28F_5C28));
+			ShiftOperatorsHelper<UInt, int, UInt>.UnsignedRightShiftOperation(actual, 128)
+				.Should().Be(new(0, 0, 0x028F_5C28_F5C2_8F5C, 0x28F5_C28F_5C28_F5C2));
+			ShiftOperatorsHelper<UInt, int, UInt>.UnsignedRightShiftOperation(actual, 192)
+				.Should().Be(new(0, 0, 0, 0x028F_5C28_F5C2_8F5C));
 		}
 
 		[Fact]
@@ -271,23 +315,30 @@ namespace MissingValues.Tests.Core
 		{
 			Assert.Equal((Zero, Zero), BinaryIntegerHelper<UInt>.DivRem(Zero, Two));
 			Assert.Equal((Zero, One), BinaryIntegerHelper<UInt>.DivRem(One, Two));
-			Assert.Equal((new UInt(new(0x7FFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF), new(0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF)), One), BinaryIntegerHelper<UInt>.DivRem(MaxValue, 2));
+			Assert.Equal(
+				(new UInt(0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x08B6_1313_BBAB_CE2C, 0x6232_3AC4_B3B3_DA01), 
+				new UInt(0x0000_0000_0000_0000, 0x0000_0000_0000_0009, 0x9C10_2376_5631_2693, 0x7E70_9EFF_FFFF_FFFF)),
+				BinaryIntegerHelper<UInt>.DivRem(MaxValue, E40));
+			Assert.Equal((new UInt(0x7FFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF), One), BinaryIntegerHelper<UInt>.DivRem(MaxValue, 2));
 		}
 
 		[Fact]
 		public static void LeadingZeroCountTest()
 		{
-			Assert.Equal(0x100U, BinaryIntegerHelper<UInt>.LeadingZeroCount(Zero));
-			Assert.Equal(0xFFU, BinaryIntegerHelper<UInt>.LeadingZeroCount(One));
-			Assert.Equal(0x0U, BinaryIntegerHelper<UInt>.LeadingZeroCount(MaxValue));
+			Assert.Equal(256U, BinaryIntegerHelper<UInt>.LeadingZeroCount(Zero));
+			Assert.Equal(255U, BinaryIntegerHelper<UInt>.LeadingZeroCount(One));
+			Assert.Equal(192U, BinaryIntegerHelper<UInt>.LeadingZeroCount(ulong.MaxValue));
+			Assert.Equal(128U, BinaryIntegerHelper<UInt>.LeadingZeroCount(UInt128.MaxValue));
+			Assert.Equal(64U, BinaryIntegerHelper<UInt>.LeadingZeroCount(MaxValue >>> 64));
+			Assert.Equal(0U, BinaryIntegerHelper<UInt>.LeadingZeroCount(MaxValue));
 		}
 
 		[Fact]
 		public static void PopCountTest()
 		{
-			Assert.Equal(0x00U, BinaryIntegerHelper<UInt>.PopCount(Zero));
-			Assert.Equal(0x01U, BinaryIntegerHelper<UInt>.PopCount(One));
-			Assert.Equal(0x100U, BinaryIntegerHelper<UInt>.PopCount(MaxValue));
+			Assert.Equal(0U, BinaryIntegerHelper<UInt>.PopCount(Zero));
+			Assert.Equal(1U, BinaryIntegerHelper<UInt>.PopCount(One));
+			Assert.Equal(256U, BinaryIntegerHelper<UInt>.PopCount(MaxValue));
 		}
 
 		[Fact]
@@ -309,9 +360,13 @@ namespace MissingValues.Tests.Core
 		[Fact]
 		public static void TrailingZeroCountTest()
 		{
-			Assert.Equal(0x100U, BinaryIntegerHelper<UInt>.TrailingZeroCount(Zero));
-			Assert.Equal(0x00U, BinaryIntegerHelper<UInt>.TrailingZeroCount(One));
-			Assert.Equal(0x00U, BinaryIntegerHelper<UInt>.TrailingZeroCount(MaxValue));
+			Assert.Equal(256U, BinaryIntegerHelper<UInt>.TrailingZeroCount(Zero));
+			Assert.Equal(0U, BinaryIntegerHelper<UInt>.TrailingZeroCount(One));
+			Assert.Equal(1U, BinaryIntegerHelper<UInt>.TrailingZeroCount(Two));
+			Assert.Equal(64U, BinaryIntegerHelper<UInt>.TrailingZeroCount(new UInt(0,0,1,0)));
+			Assert.Equal(128U, BinaryIntegerHelper<UInt>.TrailingZeroCount(new UInt(0,1,0,0)));
+			Assert.Equal(192U, BinaryIntegerHelper<UInt>.TrailingZeroCount(new UInt(1,0,0,0)));
+			Assert.Equal(0U, BinaryIntegerHelper<UInt>.TrailingZeroCount(MaxValue));
 		}
 
 		[Fact]

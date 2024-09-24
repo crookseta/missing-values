@@ -1,4 +1,5 @@
-﻿using MissingValues.Internals;
+﻿using MissingValues.Info;
+using MissingValues.Internals;
 using System;
 using System.Buffers.Binary;
 using System.Collections.Generic;
@@ -17,25 +18,25 @@ using System.Threading.Tasks;
 namespace MissingValues
 {
 	public readonly partial struct UInt256 : 
-		IBinaryInteger<UInt256>,
+		IBigInteger<UInt256>,
 		IMinMaxValue<UInt256>,
 		IUnsignedNumber<UInt256>,
 		IFormattableUnsignedInteger<UInt256, Int256>
 	{
-		public static UInt256 One => new(1);
+		static UInt256 INumberBase<UInt256>.One => One;
 
-		public static int Radix => 2;
+		static int INumberBase<UInt256>.Radix => 2;
 
-		public static UInt256 Zero => default;
+		static UInt256 INumberBase<UInt256>.Zero => Zero;
 
-		public static UInt256 AdditiveIdentity => default;
+		static UInt256 IAdditiveIdentity<UInt256, UInt256>.AdditiveIdentity => Zero;
 
-		public static UInt256 MultiplicativeIdentity => One;
+		static UInt256 IMultiplicativeIdentity<UInt256, UInt256>.MultiplicativeIdentity => One;
 
 		// 115792089237316195423570985008687907853269984665640564039457584007913129639935
-		public static UInt256 MaxValue => new(UInt128.MaxValue, UInt128.MaxValue);
+		static UInt256 IMinMaxValue<UInt256>.MaxValue => MaxValue;
 
-		public static UInt256 MinValue => new(0);
+		static UInt256 IMinMaxValue<UInt256>.MinValue => MinValue;
 
 		static UInt256 IFormattableInteger<UInt256>.Two => new(0x2);
 
@@ -67,6 +68,7 @@ namespace MissingValues
 
 		static UInt256 INumberBase<UInt256>.Abs(UInt256 value) => value;
 
+		/// <inheritdoc/>
 		public static UInt256 Clamp(UInt256 value, UInt256 min, UInt256 max)
 		{
 			if (min > max)
@@ -86,6 +88,7 @@ namespace MissingValues
 			return value;
 		}
 
+		/// <inheritdoc/>
 		public int CompareTo(UInt256 other)
 		{
 			if (this < other) return -1;
@@ -93,6 +96,7 @@ namespace MissingValues
 			else return 0;
 		}
 
+		/// <inheritdoc/>
 		public int CompareTo(object? obj)
 		{
 			if(obj is UInt256 value)
@@ -107,6 +111,7 @@ namespace MissingValues
 			return default;
 		}
 
+		/// <inheritdoc/>
 		public static UInt256 CreateChecked<TOther>(TOther value)
 			where TOther : INumberBase<TOther>
 		{
@@ -124,6 +129,7 @@ namespace MissingValues
 			return result;
 		}
 
+		/// <inheritdoc/>
 		public static UInt256 CreateSaturating<TOther>(TOther value)
 			where TOther : INumberBase<TOther>
 		{
@@ -141,6 +147,7 @@ namespace MissingValues
 			return result;
 		}
 
+		/// <inheritdoc/>
 		public static UInt256 CreateTruncating<TOther>(TOther value)
 			where TOther : INumberBase<TOther>
 		{
@@ -158,20 +165,86 @@ namespace MissingValues
 			return result;
 		}
 
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		/// <inheritdoc/>
 		public static (UInt256 Quotient, UInt256 Remainder) DivRem(UInt256 left, UInt256 right)
 		{
-			UInt256 quotient = left / right;
-			return (quotient, (left - (quotient * right)));
+			DivRem(in left, in right, out UInt256 quotient, out UInt256 remainder);
+
+			return (quotient, remainder);
+		}
+		internal static void DivRem(in UInt256 left, in UInt256 right, out UInt256 quotient, out UInt256 remainder)
+		{
+			if (right._p3 == 0 && right._p2 == 0)
+			{
+				if (right._p1 == 0 && right._p0 <= uint.MaxValue)
+				{
+					if (right._p0 == 0)
+					{
+						Thrower.DivideByZero();
+					}
+					DivRemFast(in left, (uint)right._p0, out quotient, out remainder);
+				}
+			}
+
+			if (right >= left)
+			{
+				quotient = (right == left) ? One : Zero;
+				remainder = (left - (quotient * right));
+			}
+
+			DivRemSlow(in left, in right, out quotient, out remainder);
+
+			unsafe static void DivRemFast(in UInt256 quotient, uint divisor, out UInt256 quo, out UInt256 rem)
+			{
+				const int UIntCount = Size / sizeof(uint);
+
+				uint* pLeft = stackalloc uint[UIntCount];
+				Unsafe.WriteUnaligned(ref *(byte*)(pLeft), quotient);
+				Span<uint> left = new Span<uint>(pLeft, (UIntCount) - (BitHelper.LeadingZeroCount(in quotient) / 32));
+
+				Span<uint> rawBits = stackalloc uint[UIntCount];
+				rawBits.Clear();
+
+				Calculator.DivRem(left, divisor, rawBits, out uint remainder);
+
+				quo = Unsafe.ReadUnaligned<UInt256>(ref Unsafe.As<uint, byte>(ref MemoryMarshal.GetReference(rawBits)));
+				rem = remainder;
+			}
+			unsafe static void DivRemSlow(in UInt256 quotient, in UInt256 divisor, out UInt256 quo, out UInt256 rem)
+			{
+				const int UIntCount = Size / sizeof(uint);
+
+				uint* pLeft = stackalloc uint[UIntCount];
+				Unsafe.WriteUnaligned(ref *(byte*)(pLeft), quotient);
+				Span<uint> left = new Span<uint>(pLeft, (UIntCount) - (BitHelper.LeadingZeroCount(in quotient) / 32));
+
+
+				uint* pRight = stackalloc uint[UIntCount];
+				Unsafe.WriteUnaligned(ref *(byte*)(pRight), divisor);
+				Span<uint> right = new Span<uint>(pRight, (UIntCount) - (BitHelper.LeadingZeroCount(in divisor) / 32));
+
+
+				Span<uint> quoBits = stackalloc uint[UIntCount];
+				quoBits.Clear();
+				Span<uint> remBits = stackalloc uint[UIntCount];
+				remBits.Clear();
+
+				Calculator.DivRem(left, right, quoBits, remBits);
+
+				quo = Unsafe.ReadUnaligned<UInt256>(ref Unsafe.As<uint, byte>(ref MemoryMarshal.GetReference(quoBits)));
+				rem = Unsafe.ReadUnaligned<UInt256>(ref Unsafe.As<uint, byte>(ref MemoryMarshal.GetReference(remBits)));
+			}
 		}
 
+		/// <inheritdoc/>
 		public bool Equals(UInt256 other) => this == other;
 
 		static bool INumberBase<UInt256>.IsCanonical(UInt256 value) => true;
 
 		static bool INumberBase<UInt256>.IsComplexNumber(UInt256 value) => false;
 
-		public static bool IsEvenInteger(UInt256 value) => (value._lower & 1) == 0;
+		/// <inheritdoc/>
+		public static bool IsEvenInteger(UInt256 value) => (value._p0 & 1) == 0;
 
 		static bool INumberBase<UInt256>.IsFinite(UInt256 value) => true;
 
@@ -187,15 +260,17 @@ namespace MissingValues
 
 		static bool INumberBase<UInt256>.IsNegativeInfinity(UInt256 value) => false;
 
-		static bool INumberBase<UInt256>.IsNormal(UInt256 value) => value != UInt128.Zero;
+		static bool INumberBase<UInt256>.IsNormal(UInt256 value) => value != Zero;
 
-		public static bool IsOddInteger(UInt256 value) => (value._lower & 1) != 0;
+		/// <inheritdoc/>
+		public static bool IsOddInteger(UInt256 value) => (value._p0 & 1) != 0;
 
 		static bool INumberBase<UInt256>.IsPositive(UInt256 value) => true;
 
 		static bool INumberBase<UInt256>.IsPositiveInfinity(UInt256 value) => false;
 
-		public static bool IsPow2(UInt256 value) => PopCount(value) == 1;
+		/// <inheritdoc/>
+		public static bool IsPow2(UInt256 value) => BitHelper.PopCount(in value) == 1;
 
 		static bool INumberBase<UInt256>.IsRealNumber(UInt256 value) => true;
 
@@ -203,24 +278,13 @@ namespace MissingValues
 
 		static bool INumberBase<UInt256>.IsZero(UInt256 value) => value == Zero;
 
-		public static UInt256 LeadingZeroCount(UInt256 value)
-		{
-			if (value._upper == UInt128.Zero)
-			{
-				return 128 + UInt128.LeadingZeroCount(value._lower);
-			}
-			return UInt128.LeadingZeroCount(value._upper);
-		}
+		/// <inheritdoc/>
+		public static UInt256 LeadingZeroCount(UInt256 value) => (UInt256)BitHelper.LeadingZeroCount(in value);
 
-		public static UInt256 Log2(UInt256 value)
-		{
-			if(value._upper == 0)
-			{
-				return UInt128.Log2(value._lower);
-			}
-			return 128 + UInt128.Log2(value._upper);
-		}
+		/// <inheritdoc/>
+		public static UInt256 Log2(UInt256 value) => (UInt256)BitHelper.Log2(in value);
 
+		/// <inheritdoc/>
 		public static UInt256 Max(UInt256 x, UInt256 y) => (x >= y) ? x : y;
 
 		static UInt256 INumber<UInt256>.MaxNumber(UInt256 x, UInt256 y) => Max(x, y);
@@ -229,6 +293,7 @@ namespace MissingValues
 
 		static UInt256 INumberBase<UInt256>.MaxMagnitudeNumber(UInt256 x, UInt256 y) => Max(x, y);
 
+		/// <inheritdoc/>
 		public static UInt256 Min(UInt256 x, UInt256 y) => (x <= y) ? x : y;
 
 		static UInt256 INumber<UInt256>.MinNumber(UInt256 x, UInt256 y) => Min(x, y);
@@ -237,6 +302,7 @@ namespace MissingValues
 
 		static UInt256 INumberBase<UInt256>.MinMagnitudeNumber(UInt256 x, UInt256 y) => Min(x, y);
 
+		/// <inheritdoc/>
 		public static UInt256 Parse(ReadOnlySpan<char> s, NumberStyles style, IFormatProvider? provider)
 		{
 			var status = NumberParser.TryParseToUnsigned(Utf16Char.CastFromCharSpan(s), style, provider, out UInt256 output);
@@ -247,8 +313,10 @@ namespace MissingValues
 			return output;
 		}
 
+		/// <inheritdoc/>
 		public static UInt256 Parse(string s, NumberStyles style, IFormatProvider? provider)
 		{
+			ArgumentNullException.ThrowIfNull(s);
 			var status = NumberParser.TryParseToUnsigned(Utf16Char.CastFromCharSpan(s), style, provider, out UInt256 output);
 			if (!status)
 			{
@@ -257,6 +325,7 @@ namespace MissingValues
 			return output;
 		}
 
+		/// <inheritdoc/>
 		public static UInt256 Parse(ReadOnlySpan<char> s, IFormatProvider? provider)
 		{
 			var status = NumberParser.TryParseToUnsigned(Utf16Char.CastFromCharSpan(s), NumberStyles.Integer, provider, out UInt256 output);
@@ -267,8 +336,10 @@ namespace MissingValues
 			return output;
 		}
 
+		/// <inheritdoc/>
 		public static UInt256 Parse(string s, IFormatProvider? provider)
 		{
+			ArgumentNullException.ThrowIfNull(s);
 			var status = NumberParser.TryParseToUnsigned(Utf16Char.CastFromCharSpan(s), NumberStyles.Integer, provider, out UInt256 output);
 			if (!status)
 			{
@@ -277,7 +348,7 @@ namespace MissingValues
 			return output;
 		}
 
-#if NET8_0_OR_GREATER
+		/// <inheritdoc/>
 		public static UInt256 Parse(ReadOnlySpan<byte> utf8Text, NumberStyles style, IFormatProvider? provider)
 		{
 			var status = NumberParser.TryParseToUnsigned(Utf8Char.CastFromByteSpan(utf8Text), style, provider, out UInt256 output);
@@ -287,6 +358,7 @@ namespace MissingValues
 			}
 			return output;
 		}
+		/// <inheritdoc/>
 		public static UInt256 Parse(ReadOnlySpan<byte> utf8Text, IFormatProvider? provider)
 		{
 			var status = NumberParser.TryParseToUnsigned(Utf8Char.CastFromByteSpan(utf8Text), NumberStyles.Integer, provider, out UInt256 output);
@@ -296,32 +368,20 @@ namespace MissingValues
 			}
 			return output;
 		}
-#endif
 
-		public static UInt256 PopCount(UInt256 value)
-		{
-			return UInt128.PopCount(value._lower) + UInt128.PopCount(value._upper);
-		}
+		/// <inheritdoc/>
+		public static UInt256 PopCount(UInt256 value) => (UInt256)BitHelper.PopCount(in value);
 
-		public static UInt256 RotateLeft(UInt256 value, int rotateAmount)
-		{
-			return (value << rotateAmount) | (value >>> (256 - rotateAmount));
-		}
+		/// <inheritdoc/>
+		public static UInt256 RotateLeft(UInt256 value, int rotateAmount) => (value << rotateAmount) | (value >>> (256 - rotateAmount));
 
-		public static UInt256 RotateRight(UInt256 value, int rotateAmount)
-		{
-			return (value >>> rotateAmount) | (value << (256 - rotateAmount));
-		}
+		/// <inheritdoc/>
+		public static UInt256 RotateRight(UInt256 value, int rotateAmount) => (value >>> rotateAmount) | (value << (256 - rotateAmount));
 
-		public static UInt256 TrailingZeroCount(UInt256 value)
-		{
-			if (value._lower == 0)
-			{
-				return 128 + UInt128.TrailingZeroCount(value._upper);
-			}
-			return UInt128.TrailingZeroCount(value._lower);
-		}
+		/// <inheritdoc/>
+		public static UInt256 TrailingZeroCount(UInt256 value) => (UInt256)BitHelper.TrailingZeroCount(in value);
 
+		/// <inheritdoc/>
 		public static bool TryParse(ReadOnlySpan<char> s, NumberStyles style, IFormatProvider? provider, [MaybeNullWhen(false)] out UInt256 result)
 		{
 			if (s.Length == 0 || s.IsWhiteSpace())
@@ -333,6 +393,7 @@ namespace MissingValues
 			return NumberParser.TryParseToUnsigned(Utf16Char.CastFromCharSpan(s), style, provider, out result);
 		}
 
+		/// <inheritdoc/>
 		public static bool TryParse([NotNullWhen(true)] string? s, NumberStyles style, IFormatProvider? provider, [MaybeNullWhen(false)] out UInt256 result)
 		{
 			if (string.IsNullOrWhiteSpace(s))
@@ -344,6 +405,7 @@ namespace MissingValues
 			return NumberParser.TryParseToUnsigned(Utf16Char.CastFromCharSpan(s), style, provider, out result);
 		}
 
+		/// <inheritdoc/>
 		public static bool TryParse(ReadOnlySpan<char> s, IFormatProvider? provider, [MaybeNullWhen(false)] out UInt256 result)
 		{
 			if (s.Length == 0 || s.IsWhiteSpace())
@@ -355,6 +417,7 @@ namespace MissingValues
 			return NumberParser.TryParseToUnsigned(Utf16Char.CastFromCharSpan(s), NumberStyles.Integer, provider, out result);
 		}
 
+		/// <inheritdoc/>
 		public static bool TryParse([NotNullWhen(true)] string? s, IFormatProvider? provider, [MaybeNullWhen(false)] out UInt256 result)
 		{
 			if (string.IsNullOrWhiteSpace(s))
@@ -366,7 +429,7 @@ namespace MissingValues
 			return NumberParser.TryParseToUnsigned(Utf16Char.CastFromCharSpan(s), NumberStyles.Integer, provider, out result);
 		}
 
-#if NET8_0_OR_GREATER
+		/// <inheritdoc/>
 		public static bool TryParse(ReadOnlySpan<byte> utf8Text, NumberStyles style, IFormatProvider? provider, [MaybeNullWhen(false)] out UInt256 result)
 		{
 			if (utf8Text.Length == 0 || !utf8Text.ContainsAnyExcept((byte)' '))
@@ -378,6 +441,7 @@ namespace MissingValues
 			return NumberParser.TryParseToUnsigned(Utf8Char.CastFromByteSpan(utf8Text), style, provider, out result);
 		}
 
+		/// <inheritdoc/>
 		public static bool TryParse(ReadOnlySpan<byte> utf8Text, IFormatProvider? provider, [MaybeNullWhen(false)] out UInt256 result)
 		{
 			if (utf8Text.Length == 0 || !utf8Text.ContainsAnyExcept((byte)' '))
@@ -388,9 +452,8 @@ namespace MissingValues
 
 			return NumberParser.TryParseToUnsigned(Utf8Char.CastFromByteSpan(utf8Text), NumberStyles.Integer, provider, out result);
 		}
-#endif
 
-		public static bool TryReadBigEndian(ReadOnlySpan<byte> source, bool isUnsigned, out UInt256 value)
+		static bool IBinaryInteger<UInt256>.TryReadBigEndian(ReadOnlySpan<byte> source, bool isUnsigned, out UInt256 value)
 		{
 			UInt256 result = default;
 
@@ -425,7 +488,7 @@ namespace MissingValues
 
 					if (BitConverter.IsLittleEndian)
 					{
-						result = BitHelper.ReverseEndianness(result);
+						result = BitHelper.ReverseEndianness(in result);
 					}
 				}
 				else
@@ -446,7 +509,7 @@ namespace MissingValues
 			return true;
 		}
 
-		public static bool TryReadLittleEndian(ReadOnlySpan<byte> source, bool isUnsigned, out UInt256 value)
+		static bool IBinaryInteger<UInt256>.TryReadLittleEndian(ReadOnlySpan<byte> source, bool isUnsigned, out UInt256 value)
 		{
 			UInt256 result = default;
 
@@ -479,7 +542,7 @@ namespace MissingValues
 
 					if (!BitConverter.IsLittleEndian)
 					{
-						result = BitHelper.ReverseEndianness(result);
+						result = BitHelper.ReverseEndianness(in result);
 					}
 				}
 				else
@@ -713,33 +776,31 @@ namespace MissingValues
 			return converted;
 		}
 
-		public int GetByteCount()
-		{
-			return Size;
-		}
+		int IBinaryInteger<UInt256>.GetByteCount() => Size;
 
-		public int GetShortestBitLength()
+		int IBinaryInteger<UInt256>.GetShortestBitLength()
 		{
 			UInt256 value = this;
-			return (Size * 8) - BitHelper.LeadingZeroCount(value);
+			return (Size * 8) - BitHelper.LeadingZeroCount(in value);
 		}
 
+		/// <inheritdoc/>
 		public string ToString([StringSyntax(StringSyntaxAttribute.NumericFormat)] string? format, IFormatProvider? formatProvider)
 		{
-			return NumberFormatter.FormatUnsignedNumber(in this, format, NumberStyles.Integer, formatProvider);
+			return NumberFormatter.FormatUInt256(in this, format, formatProvider);
 		}
 
+		/// <inheritdoc/>
 		public bool TryFormat(Span<char> destination, out int charsWritten, [StringSyntax(StringSyntaxAttribute.NumericFormat)] ReadOnlySpan<char> format, IFormatProvider? provider)
 		{
-			return NumberFormatter.TryFormatUnsignedInteger(in this, Utf16Char.CastFromCharSpan(destination), out charsWritten, format, provider);
+			return NumberFormatter.TryFormatUInt256(in this, Utf16Char.CastFromCharSpan(destination), out charsWritten, format, provider);
 		}
 
-#if NET8_0_OR_GREATER
+		/// <inheritdoc/>
 		public bool TryFormat(Span<byte> utf8Destination, out int bytesWritten, [StringSyntax(StringSyntaxAttribute.NumericFormat)] ReadOnlySpan<char> format, IFormatProvider? provider)
 		{
-			return NumberFormatter.TryFormatUnsignedInteger(in this, Utf8Char.CastFromByteSpan(utf8Destination), out bytesWritten, format, provider);
+			return NumberFormatter.TryFormatUInt256(in this, Utf8Char.CastFromByteSpan(utf8Destination), out bytesWritten, format, provider);
 		}
-#endif
 
 		bool IBinaryInteger<UInt256>.TryWriteBigEndian(Span<byte> destination, out int bytesWritten)
 		{
@@ -791,48 +852,42 @@ namespace MissingValues
 
 		private void WriteBigEndianUnsafe(Span<byte> destination)
 		{
-			UInt128 lower = _lower;
-			UInt128 upper = _upper;
+			UInt128 lower = Lower;
+			UInt128 upper = Upper;
 
 			if (BitConverter.IsLittleEndian)
 			{
-				lower = BitHelper.ReverseEndianness(lower);
-				upper = BitHelper.ReverseEndianness(upper);
+				lower = BinaryPrimitives.ReverseEndianness(lower);
+				upper = BinaryPrimitives.ReverseEndianness(upper);
 			}
 
 			ref byte address = ref MemoryMarshal.GetReference(destination);
 
 			Unsafe.WriteUnaligned(ref address, upper);
-			Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref address, BitHelper.SizeOf<UInt128>()), lower);
+			Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref address, Unsafe.SizeOf<UInt128>()), lower);
 		}
 		private void WriteLittleEndianUnsafe(Span<byte> destination)
 		{
 			Debug.Assert(destination.Length >= Size);
 
-			UInt128 lower = _lower;
-			UInt128 upper = _upper;
+			UInt128 lower = Lower;
+			UInt128 upper = Upper;
 
 			if (!BitConverter.IsLittleEndian)
 			{
-				lower = BitHelper.ReverseEndianness(lower);
-				upper = BitHelper.ReverseEndianness(upper);
+				lower = BinaryPrimitives.ReverseEndianness(lower);
+				upper = BinaryPrimitives.ReverseEndianness(upper);
 			}
 
 			ref byte address = ref MemoryMarshal.GetReference(destination);
 
 			Unsafe.WriteUnaligned(ref address, lower);
-			Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref address, BitHelper.SizeOf<UInt128>()), upper);
+			Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref address, Unsafe.SizeOf<UInt128>()), upper);
 		}
 
-		char IFormattableInteger<UInt256>.ToChar()
-		{
-			return (char)this;
-		}
+		char IFormattableInteger<UInt256>.ToChar() => (char)_p0;
 
-		int IFormattableInteger<UInt256>.ToInt32()
-		{
-			return (int)this;
-		}
+		int IFormattableInteger<UInt256>.ToInt32() => (int)_p0;
 
 		static UInt256 IFormattableNumber<UInt256>.GetDecimalValue(char value)
 		{
@@ -861,318 +916,357 @@ namespace MissingValues
 			return (Int256)this;
 		}
 
-		public static UInt256 operator +(UInt256 value)
+		internal static int CountDigits(in UInt256 value)
 		{
-			return value;
+			if (value.Upper == 0)
+			{
+				return NumberFormatter.CountDigits(value.Lower);
+			}
+
+			// We have more than 1e38, so we have at least 39 digits
+			int digits = 39;
+
+			if (value.Upper > 0x2)
+			{
+				var lower = value / new UInt256(0x0000_0000_0000_0000, 0x0000_0000_0000_0002, 0xF050_FE93_8943_ACC4, 0x5F65_5680_0000_0000);
+
+				digits += NumberFormatter.CountDigits(lower.Lower);
+			}
+			else if ((value.Upper == 0x2) && (value.Lower >= new UInt128(0xF050_FE93_8943_ACC4, 0x5F65_5680_0000_0000)))
+			{
+				// We're greater than 1e39, but definitely less than 1e40
+				// so we have exactly 40 digits
+				digits++;
+			}
+
+			return digits;
+		}
+		static int IFormattableUnsignedInteger<UInt256, Int256>.CountDigits(in UInt256 value) => CountDigits(in value);
+
+		/// <inheritdoc/>
+		public static UInt256 operator +(in UInt256 value) => value;
+
+		/// <inheritdoc/>
+		public static UInt256 operator +(in UInt256 left, in UInt256 right)
+		{
+			// For unsigned addition, we can detect overflow by checking `(x + y) < x`
+			// This gives us the carry to add to upper to compute the correct result
+
+			ulong part0 = left._p0 + right._p0;
+			ulong carry = (part0 < left._p0) ? 1UL : 0UL;
+
+			ulong part1 = left._p1 + right._p1 + carry;
+			carry = (part1 < left._p1 || (carry == 1 && part1 == left._p1)) ? 1UL : 0UL;
+
+			ulong part2 = left._p2 + right._p2 + carry;
+			carry = (part2 < left._p2 || (carry == 1 && part2 == left._p2)) ? 1UL : 0UL;
+
+			ulong part3 = left._p3 + right._p3 + carry;
+
+			return new UInt256(part3, part2, part1, part0);
+		}
+		/// <inheritdoc/>
+		public static UInt256 operator checked +(in UInt256 left, in UInt256 right)
+		{
+			ulong part0 = left._p0 + right._p0;
+			ulong carry = (part0 < left._p0) ? 1UL : 0UL;
+
+			ulong part1 = left._p1 + right._p1 + carry;
+			carry = (part1 < left._p1 || (carry == 1 && part1 == left._p1)) ? 1UL : 0UL;
+
+			ulong part2 = left._p2 + right._p2 + carry;
+			carry = (part2 < left._p2 || (carry == 1 && part2 == left._p2)) ? 1UL : 0UL;
+
+			ulong part3 = checked(left._p3 + right._p3 + carry);
+
+			return new UInt256(part3, part2, part1, part0);
 		}
 
-		public static UInt256 operator +(UInt256 left, UInt256 right)
-		{
-			UInt128 lower = left._lower + right._lower;
-			UInt128 carry = (lower < left._lower) ? 1UL : 0UL;
+		/// <inheritdoc/>
+		public static UInt256 operator -(in UInt256 value) => Zero - value;
+		/// <inheritdoc/>
+		public static UInt256 operator checked -(in UInt256 value) => checked(Zero - value);
 
-			UInt128 upper = left._upper + right._upper + carry;
-			return new UInt256(upper, lower);
-		}
-		public static UInt256 operator checked +(UInt256 left, UInt256 right)
-		{
-			UInt128 lower = left._lower + right._lower;
-			UInt128 carry = (lower < left._lower) ? 1UL : 0UL;
-
-			UInt128 upper = checked(left._upper + right._upper + carry);
-			return new UInt256(upper, lower); 
-		}
-
-		public static UInt256 operator -(UInt256 value)
-		{
-			return Zero - value;
-		}
-		public static UInt256 operator checked -(UInt256 value)
-		{
-			return checked(Zero - value);
-		}
-
-		public static UInt256 operator -(UInt256 left, UInt256 right)
+		/// <inheritdoc/>
+		public static UInt256 operator -(in UInt256 left, in UInt256 right)
 		{
 			// For unsigned subtract, we can detect overflow by checking `(x - y) > x`
 			// This gives us the borrow to subtract from upper to compute the correct result
 
-			UInt128 lower = left._lower - right._lower;
-			UInt128 borrow = (lower > left._lower) ? 1UL : 0UL;
+			ulong part0 = left._p0 - right._p0;
+			ulong borrow = (part0 > left._p0) ? 1UL : 0UL;
 
-			UInt128 upper = left._upper - right._upper - borrow;
-			return new UInt256(upper, lower); 
+			ulong part1 = left._p1 - right._p1 - borrow;
+			borrow = (part1 > left._p1 || (borrow == 1UL && part1 == left._p1)) ? 1UL : 0UL;
+
+			ulong part2 = left._p2 - right._p2 - borrow;
+			borrow = (part2 > left._p2 || (borrow == 1UL && part2 == left._p2)) ? 1UL : 0UL;
+
+			ulong part3 = left._p3 - right._p3 - borrow;
+
+			return new UInt256(part3, part2, part1, part0);
 		}
-		public static UInt256 operator checked -(UInt256 left, UInt256 right)
+		/// <inheritdoc/>
+		public static UInt256 operator checked -(in UInt256 left, in UInt256 right)
 		{
-			
 			// For unsigned subtract, we can detect overflow by checking `(x - y) > x`
 			// This gives us the borrow to subtract from upper to compute the correct result
 
-			UInt128 lower = left._lower - right._lower;
-			UInt128 borrow = (lower > left._lower) ? 1UL : 0UL;
+			ulong part0 = left._p0 - right._p0;
+			ulong borrow = (part0 > left._p0) ? 1UL : 0UL;
 
-			UInt128 upper = checked(left._upper - right._upper - borrow);
-			return new UInt256(upper, lower); 
-			
+			ulong part1 = left._p1 - right._p1 - borrow;
+			borrow = (part1 > left._p1 || (borrow == 1UL && part1 == left._p1)) ? 1UL : 0UL;
+
+			ulong part2 = left._p2 - right._p2 - borrow;
+			borrow = (part2 > left._p2 || (borrow == 1UL && part2 == left._p2)) ? 1UL : 0UL;
+
+			ulong part3 = checked(left._p3 - right._p3 - borrow);
+
+			return new UInt256(part3, part2, part1, part0);
+
 		}
 
-		public static UInt256 operator ~(UInt256 value)
+		/// <inheritdoc/>
+		public static UInt256 operator ~(in UInt256 value)
 		{
 			if (Vector256.IsHardwareAccelerated)
 			{
-				var v = Unsafe.As<UInt256, Vector256<ulong>>(ref Unsafe.AsRef(in value));
-				return Unsafe.As<Vector256<ulong>, UInt256>(ref Unsafe.AsRef(~v));
+				var v = Vector256.OnesComplement(Unsafe.As<UInt256, Vector256<ulong>>(ref Unsafe.AsRef(in value)));
+				return Unsafe.As<Vector256<ulong>, UInt256>(ref v);
 			}
 			else
 			{
-				return new(~value._upper, ~value._lower);
+				return new(~value._p3, ~value._p2, ~value._p1, ~value._p0);
 			}
 		}
 
-		public static UInt256 operator ++(UInt256 value)
-		{
-			return value + One;
-		}
-		public static UInt256 operator checked ++(UInt256 value)
-		{
-			return checked(value + One);
-		}
+		/// <inheritdoc/>
+		public static UInt256 operator ++(in UInt256 value) => value + One;
+		/// <inheritdoc/>
+		public static UInt256 operator checked ++(in UInt256 value) => checked(value + One);
 
-		public static UInt256 operator --(UInt256 value)
-		{
-			return value - One;
-		}
-		public static UInt256 operator checked --(UInt256 value)
-		{
-			return checked(value - One);
-		}
+		/// <inheritdoc/>
+		public static UInt256 operator --(in UInt256 value) => value - One;
+		/// <inheritdoc/>
+		public static UInt256 operator checked --(in UInt256 value) => checked(value - One);
 
-		public static UInt256 operator *(UInt256 left, UInt256 right)
+		/// <inheritdoc/>
+		public static UInt256 operator *(in UInt256 left, in UInt256 right)
 		{
-			UInt128 upper = BitHelper.BigMul(left._lower, right._lower, out UInt128 lower);
-			upper += (left._upper * right._lower) + (left._lower * right._upper);
-			return new UInt256(upper, lower);
-		}
-		public static UInt256 operator checked *(UInt256 left, UInt256 right)
-		{
-			UInt256 upper = BigMul(left, right, out UInt256 lower);
-
-			if(upper != UInt256.Zero)
+			if (right._p3 == 0 && right._p2 == 0 && right._p1 == 0)
 			{
-				Thrower.ArithmethicOverflow(Thrower.ArithmethicOperation.Multiplication);
+				if (right._p0 <= uint.MaxValue)
+				{
+					return Calculator.Multiply(in left, unchecked((uint)right._p0), out _);
+				}
+				if (left._p3 == 0 && left._p2 == 0 && left._p1 == 0)
+				{
+					ulong up = Math.BigMul(left._p0, right._p0, out ulong low);
+					return new UInt256(0, 0, up, low);
+				}
 			}
 
-			return lower;
+			const int UIntCount = Size / sizeof(uint);
+
+			Span<uint> leftSpan = stackalloc uint[UIntCount];
+			leftSpan.Clear();
+			Unsafe.WriteUnaligned(ref Unsafe.As<uint, byte>(ref MemoryMarshal.GetReference(leftSpan)), left);
+
+			Span<uint> rightSpan = stackalloc uint[UIntCount];
+			rightSpan.Clear();
+			Unsafe.WriteUnaligned(ref Unsafe.As<uint, byte>(ref MemoryMarshal.GetReference(rightSpan)), right);
+
+			Span<uint> rawBits = stackalloc uint[UIntCount * 2];
+			rawBits.Clear();
+
+			Calculator.Multiply(
+				leftSpan[..(UIntCount - (BitHelper.LeadingZeroCount(in left) / 32))],
+				rightSpan[..(UIntCount - (BitHelper.LeadingZeroCount(in right) / 32))],
+				rawBits);
+
+			return Unsafe.ReadUnaligned<UInt256>(ref Unsafe.As<uint, byte>(ref MemoryMarshal.GetReference(rawBits)));
+		}
+		/// <inheritdoc/>
+		public static UInt256 operator checked *(in UInt256 left, in UInt256 right)
+		{
+			UInt256 lower;
+
+			if (right._p3 == 0 && right._p2 == 0 && right._p1 == 0)
+			{
+				if (right._p0 <= uint.MaxValue)
+				{
+					lower = Calculator.Multiply(in left, unchecked((uint)right._p0), out uint carry);
+
+					if (carry != 0)
+					{
+						Thrower.ArithmethicOverflow(Thrower.ArithmethicOperation.Multiplication);
+					}
+
+					return lower;
+				}
+				if (left._p3 == 0 && left._p2 == 0 && left._p1 == 0)
+				{
+					ulong up = Math.BigMul(left._p0, right._p0, out ulong low);
+					return new UInt256(0, 0, up, low);
+				}
+			}
+
+			const int UIntCount = Size / sizeof(uint);
+
+			Span<uint> leftSpan = stackalloc uint[UIntCount];
+			leftSpan.Clear();
+			Unsafe.WriteUnaligned(ref Unsafe.As<uint, byte>(ref MemoryMarshal.GetReference(leftSpan)), left);
+
+			Span<uint> rightSpan = stackalloc uint[UIntCount];
+			rightSpan.Clear();
+			Unsafe.WriteUnaligned(ref Unsafe.As<uint, byte>(ref MemoryMarshal.GetReference(rightSpan)), right);
+
+			Span<uint> rawBits = stackalloc uint[UIntCount * 2];
+			rawBits.Clear();
+
+			Calculator.Multiply(
+				leftSpan[..(UIntCount - (BitHelper.LeadingZeroCount(in left) / 32))],
+				rightSpan[..(UIntCount - (BitHelper.LeadingZeroCount(in right) / 32))],
+				rawBits);
+			var overflowBits = rawBits[8..];
+
+			for (int i = 0; i < overflowBits.Length; i++)
+			{
+				if (overflowBits[i] != 0)
+				{
+					Thrower.ArithmethicOverflow(Thrower.ArithmethicOperation.Multiplication);
+				}
+			}
+
+			return Unsafe.ReadUnaligned<UInt256>(ref Unsafe.As<uint, byte>(ref MemoryMarshal.GetReference(rawBits)));
 		}
 
-		public static UInt256 operator /(UInt256 left, UInt256 right)
+		/// <inheritdoc/>
+		public static UInt256 operator /(in UInt256 left, in UInt256 right)
 		{
-			if ((right._lower == UInt128.Zero) && (right._upper == UInt128.Zero))
+			if (right._p3 == 0 && right._p2 == 0)
 			{
-				Thrower.DivideByZero();
+				if (right._p1 == 0 && right._p0 <= uint.MaxValue)
+				{
+					if (right._p0 == 0)
+					{
+						Thrower.DivideByZero();
+					}
+					return DivideFast(in left, (uint)right._p0);
+				}
 			}
-			if ((left._upper == UInt128.Zero) && (right._upper == UInt128.Zero))
-			{
-				return left._lower / right._lower;
-			}
-			if(right >= left)
+
+			if (right >= left)
 			{
 				return (right == left) ? One : Zero;
 			}
 
-			return DivideSlow(left, right);
+			return DivideSlow(in left, in right);
 
-			static ulong AddDivisor(Span<ulong> left, ReadOnlySpan<ulong> right)
+			unsafe static UInt256 DivideFast(in UInt256 quotient, uint divisor)
 			{
-				UInt128 carry = UInt128.Zero;
+				const int UIntCount = Size / sizeof(uint);
 
-				for (int i = 0; i < right.Length; i++)
-				{
-					ref ulong leftElement = ref left[i];
-					UInt128 digit = (leftElement + carry) + right[i];
+				uint* pLeft = stackalloc uint[UIntCount];
+				Unsafe.WriteUnaligned(ref *(byte*)(pLeft), quotient);
+				Span<uint> left = new Span<uint>(pLeft, (UIntCount) - (BitHelper.LeadingZeroCount(in quotient) / 32));
 
-					leftElement = unchecked((ulong)digit);
-					carry = digit >> 64;
-				}
-
-				return (ulong)carry;
-			}
-
-			static bool DivideGuessTooBig(UInt128 q, UInt128 valHi, ulong valLo, ulong divHi, ulong divLo)
-			{
-				UInt128 chkHi = divHi * q;
-				UInt128 chkLo = divLo * q;
-
-				chkHi += (chkLo >> 64);
-				chkLo &= 0xFFFF_FFFF_FFFF_FFFF;
-
-				if (chkHi < valHi)
-					return false;
-				if (chkHi > valHi)
-					return true;
-
-				if (chkLo < valLo)
-					return false;
-				if (chkLo > valLo)
-					return true;
-
-				return false;
-			}
-
-			unsafe static UInt256 DivideSlow(UInt256 quotient, UInt256 divisor)
-			{
-				const int UlongCount = 32 / sizeof(ulong);
-
-				ulong* pLeft = stackalloc ulong[UlongCount];
-
-				Unsafe.WriteUnaligned(ref *(byte*)(pLeft + 0), (ulong)(quotient._lower >> 00));
-				Unsafe.WriteUnaligned(ref *(byte*)(pLeft + 1), (ulong)(quotient._lower >> 64));
-
-				Unsafe.WriteUnaligned(ref *(byte*)(pLeft + 2), (ulong)(quotient._upper >> 00));
-				Unsafe.WriteUnaligned(ref *(byte*)(pLeft + 3), (ulong)(quotient._upper >> 64));
-
-				Span<ulong> left = new Span<ulong>(pLeft, (UlongCount) - (BitHelper.LeadingZeroCount(quotient) / 64));
-
-
-				ulong* pRight = stackalloc ulong[UlongCount];
-
-				Unsafe.WriteUnaligned(ref *(byte*)(pRight + 0), (ulong)(divisor._lower >> 00));
-				Unsafe.WriteUnaligned(ref *(byte*)(pRight + 1), (ulong)(divisor.	_lower >> 64));
-
-				Unsafe.WriteUnaligned(ref *(byte*)(pRight + 2), (ulong)(divisor._upper >> 00));
-				Unsafe.WriteUnaligned(ref *(byte*)(pRight + 3), (ulong)(divisor._upper >> 64));
-
-				Span<ulong> right = new Span<ulong>(pRight, (UlongCount) - (BitHelper.LeadingZeroCount(divisor) / 64));
-
-
-				Span<ulong> rawBits = stackalloc ulong[UlongCount];
+				Span<uint> rawBits = stackalloc uint[UIntCount];
 				rawBits.Clear();
-				Span<ulong> bits = rawBits.Slice(0, left.Length - right.Length + 1);
 
-				ulong divHi = right[right.Length - 1];
-				ulong divLo = right.Length > 1 ? right[right.Length - 2] : 0;
+				Calculator.Divide(left, divisor, rawBits);
 
-				int shift = BitOperations.LeadingZeroCount(divHi);
-				int backShift = 64 - shift;
-
-				if (shift > 0)
-				{
-					ulong divNx = right.Length > 2 ? right[right.Length - 3] : 0;
-
-					divHi = (divHi << shift) | (divLo >> backShift);
-					divLo = (divLo << shift) | (divNx >> backShift);
-				}
-
-				// Then, we divide all of the bits as we would do it using
-				// pen and paper: guessing the next digit, subtracting, ...
-				for (int i = left.Length; i >= right.Length; i--)
-				{
-					int n = i - right.Length;
-					ulong t = ((ulong)(i) < (ulong)(left.Length)) ? left[i] : 0;
-
-					UInt128 valHi = ((UInt128)(t) << 64) | left[i - 1];
-					ulong valLo = (i > 1) ? left[i - 2] : 0;
-
-					// We shifted the divisor, we shift the dividend too
-					if (shift > 0)
-					{
-						ulong valNx = i > 2 ? left[i - 3] : 0;
-
-						valHi = (valHi << shift) | (valLo >> backShift);
-						valLo = (valLo << shift) | (valNx >> backShift);
-					}
-
-					// First guess for the current digit of the quotient,
-					// which naturally must have only 64 bits...
-					UInt128 digit = valHi / divHi;
-
-					if (digit > 0xFFFF_FFFF_FFFF_FFFF)
-					{
-						digit = 0xFFFF_FFFF_FFFF_FFFF;
-					}
-
-					// Our first guess may be a little bit to big
-					while (DivideGuessTooBig(digit, valHi, valLo, divHi, divLo))
-					{
-						--digit;
-					}
-
-					if (digit > 0)
-					{
-						// Now it's time to subtract our current quotient
-						ulong carry = SubtractDivisor(left.Slice(n), right, digit);
-
-						if (carry != t)
-						{
-							Debug.Assert(carry == (t + 1));
-
-							// Our guess was still exactly one too high
-							carry = AddDivisor(left.Slice(n), right);
-
-							--digit;
-							Debug.Assert(carry == 1);
-						}
-					}
-
-					// We have the digit!
-					if ((uint)(n) < (uint)(bits.Length))
-					{
-						bits[n] = (ulong)(digit);
-					}
-
-					if ((uint)(i) < (uint)(left.Length))
-					{
-						left[i] = 0;
-					}
-				}
-
-				return new UInt256(
-					((UInt128)(rawBits[3]) << 64) | rawBits[2],
-					((UInt128)(rawBits[1]) << 64) | rawBits[0]
-					);
+				return Unsafe.ReadUnaligned<UInt256>(ref Unsafe.As<uint, byte>(ref MemoryMarshal.GetReference(rawBits)));
 			}
-
-			static ulong SubtractDivisor(Span<ulong> left, ReadOnlySpan<ulong> right, UInt128 q)
+			unsafe static UInt256 DivideSlow(in UInt256 quotient, in UInt256 divisor)
 			{
-				// Combines a subtract and a multiply operation, which is naturally
-				// more efficient than multiplying and then subtracting...
+				const int UIntCount = Size / sizeof(uint);
 
-				UInt128 carry = UInt128.Zero;
+				uint* pLeft = stackalloc uint[UIntCount];
+				Unsafe.WriteUnaligned(ref *(byte*)(pLeft), quotient);
+				Span<uint> left = new Span<uint>(pLeft, (UIntCount) - (BitHelper.LeadingZeroCount(in quotient) / 32));
 
-				for (int i = 0; i < right.Length; i++)
-				{
-					carry += right[i] * q;
 
-					ulong digit = (ulong)(carry);
-					carry >>= 64;
+				uint* pRight = stackalloc uint[UIntCount];
+				Unsafe.WriteUnaligned(ref *(byte*)(pRight), divisor);
+				Span<uint> right = new Span<uint>(pRight, (UIntCount) - (BitHelper.LeadingZeroCount(in divisor) / 32));
 
-					ref ulong leftElement = ref left[i];
 
-					if (leftElement < digit)
-					{
-						++carry;
-					}
-					leftElement -= digit;
-				}
+				Span<uint> rawBits = stackalloc uint[UIntCount];
+				rawBits.Clear();
 
-				return (ulong)(carry);
+				Calculator.Divide(left, right, rawBits);
+
+				return Unsafe.ReadUnaligned<UInt256>(ref Unsafe.As<uint, byte>(ref MemoryMarshal.GetReference(rawBits)));
 			}
 		}
 
-		public static UInt256 operator %(UInt256 left, UInt256 right)
+		/// <inheritdoc/>
+		public static UInt256 operator %(in UInt256 left, in UInt256 right)
 		{
-			UInt256 quotient = left / right;
-			return left - (quotient * right);
+			if (right._p3 == 0 && right._p2 == 0)
+			{
+				if (right._p1 == 0 && right._p0 <= uint.MaxValue)
+				{
+					if (right._p0 == 0)
+					{
+						Thrower.DivideByZero();
+					}
+					return RemainderFast(in left, (uint)right._p0);
+				}
+			}
+
+			if (right >= left)
+			{
+				UInt256 quotient = (right == left) ? One : Zero;
+				return left - (quotient * right);
+			}
+
+			return RemainderSlow(in left, in right);
+
+			unsafe static UInt256 RemainderFast(in UInt256 quotient, uint divisor)
+			{
+				const int UIntCount = Size / sizeof(uint);
+
+				uint* pLeft = stackalloc uint[UIntCount];
+				Unsafe.WriteUnaligned(ref *(byte*)(pLeft), quotient);
+				Span<uint> left = new Span<uint>(pLeft, (UIntCount) - (BitHelper.LeadingZeroCount(in quotient) / 32));
+
+				return Calculator.Remainder(left, divisor);
+			}
+			unsafe static UInt256 RemainderSlow(in UInt256 quotient, in UInt256 divisor)
+			{
+				const int UIntCount = Size / sizeof(uint);
+
+				uint* pLeft = stackalloc uint[UIntCount];
+				Unsafe.WriteUnaligned(ref *(byte*)(pLeft), quotient);
+				Span<uint> left = new Span<uint>(pLeft, (UIntCount) - (BitHelper.LeadingZeroCount(in quotient) / 32));
+
+
+				uint* pRight = stackalloc uint[UIntCount];
+				Unsafe.WriteUnaligned(ref *(byte*)(pRight), divisor);
+				Span<uint> right = new Span<uint>(pRight, (UIntCount) - (BitHelper.LeadingZeroCount(in divisor) / 32));
+
+
+				Span<uint> rawBits = stackalloc uint[UIntCount];
+				rawBits.Clear();
+
+				Calculator.Remainder(left, right, rawBits);
+
+				return Unsafe.ReadUnaligned<UInt256>(ref Unsafe.As<uint, byte>(ref MemoryMarshal.GetReference(rawBits)));
+			}
 		}
 
-		public static UInt256 operator &(UInt256 left, UInt256 right)
+		/// <inheritdoc/>
+		public static UInt256 operator &(in UInt256 left, in UInt256 right)
 		{
 			if (Vector256.IsHardwareAccelerated)
 			{
 				var v1 = Unsafe.As<UInt256, Vector256<ulong>>(ref Unsafe.AsRef(in left));
 				var v2 = Unsafe.As<UInt256, Vector256<ulong>>(ref Unsafe.AsRef(in right));
-				return Unsafe.As<Vector256<ulong>, UInt256>(ref Unsafe.AsRef(v1 & v2));
+				var result = v1 & v2;
+				return Unsafe.As<Vector256<ulong>, UInt256>(ref result);
 			}
 			else if (Avx2.IsSupported)
 			{
@@ -1183,17 +1277,19 @@ namespace MissingValues
 			}
 			else
 			{
-				return new(left._upper & right._upper, left._lower & right._lower);
+				return new(left._p3 & right._p3, left._p2 & right._p2, left._p1 & right._p1, left._p0 & right._p0);
 			}
 		}
 
-		public static UInt256 operator |(UInt256 left, UInt256 right)
+		/// <inheritdoc/>
+		public static UInt256 operator |(in UInt256 left, in UInt256 right)
 		{
 			if (Vector256.IsHardwareAccelerated)
 			{
 				var v1 = Unsafe.As<UInt256, Vector256<ulong>>(ref Unsafe.AsRef(in left));
 				var v2 = Unsafe.As<UInt256, Vector256<ulong>>(ref Unsafe.AsRef(in right));
-				return Unsafe.As<Vector256<ulong>, UInt256>(ref Unsafe.AsRef(v1 | v2));
+				var result = v1 | v2;
+				return Unsafe.As<Vector256<ulong>, UInt256>(ref result);
 			}
 			else if (Avx2.IsSupported)
 			{
@@ -1204,17 +1300,19 @@ namespace MissingValues
 			}
 			else
 			{
-				return new(left._upper | right._upper, left._lower | right._lower);
+				return new(left._p3 | right._p3, left._p2 | right._p2, left._p1 | right._p1, left._p0 | right._p0);
 			}
 		}
 
-		public static UInt256 operator ^(UInt256 left, UInt256 right)
+		/// <inheritdoc/>
+		public static UInt256 operator ^(in UInt256 left, in UInt256 right)
 		{
 			if (Vector256.IsHardwareAccelerated)
 			{
 				var v1 = Unsafe.As<UInt256, Vector256<ulong>>(ref Unsafe.AsRef(in left));
 				var v2 = Unsafe.As<UInt256, Vector256<ulong>>(ref Unsafe.AsRef(in right));
-				return Unsafe.As<Vector256<ulong>, UInt256>(ref Unsafe.AsRef(v1 ^ v2));
+				var result = v1 ^ v2;
+				return Unsafe.As<Vector256<ulong>, UInt256>(ref result);
 			}
 			else if (Avx2.IsSupported)
 			{
@@ -1225,44 +1323,81 @@ namespace MissingValues
 			}
 			else
 			{
-				return new(left._upper ^ right._upper, left._lower ^ right._lower);
+				return new(left._p3 ^ right._p3, left._p2 ^ right._p2, left._p1 ^ right._p1, left._p0 ^ right._p0);
 			}
 		}
 
-		public static UInt256 operator <<(UInt256 value, int shiftAmount)
+		/// <inheritdoc/>
+		public static UInt256 operator <<(in UInt256 value, int shiftAmount)
 		{
-			// We need to specially handle things if the 15th bit is set.
+			// C# automatically masks the shift amount for UInt64 to be 0x3F. So we
+			// need to specially handle things if the shift amount exceeds 0x3F.
 
-			shiftAmount &= 0xFF;
+			shiftAmount &= 0xFF; // mask the shift amount to be within [0, 255]
 
-			if ((shiftAmount & 0x80) != 0)
-			{
-				// In the case it is set, we know the entire upper bits must be zero
-				// and so the lower bits are just the upper shifted by the remaining
-				// masked amount
-
-				UInt128 upper = value._lower << shiftAmount;
-				return new UInt256(upper, 0);
-			}
-			else if (shiftAmount != 0)
-			{
-				// Otherwise we need to shift both upper and lower halves by the masked
-				// amount and then or that with whatever bits were shifted "out" of lower
-
-				UInt128 lower = value._lower << shiftAmount;
-				UInt128 upper = (value._upper << shiftAmount) | (value._lower >> (128 - shiftAmount));
-
-				return new UInt256(upper, lower);
-			}
-			else
+			if (shiftAmount == 0)
 			{
 				return value;
 			}
+
+			if (shiftAmount < 64)
+			{
+				ulong part3 = (value._p3 << shiftAmount) | (value._p2 >> (64 - shiftAmount));
+				ulong part2 = (value._p2 << shiftAmount) | (value._p1 >> (64 - shiftAmount));
+				ulong part1 = (value._p1 << shiftAmount) | (value._p0 >> (64 - shiftAmount));
+				ulong part0 = value._p0 << shiftAmount;
+
+				return new UInt256(part3, part2, part1, part0);
+			}
+			else if (shiftAmount < 128)
+			{
+				shiftAmount -= 64;
+
+				if (shiftAmount == 0)
+				{
+					return new UInt256(value._p2, value._p1, value._p0, 0);
+				}
+
+				ulong part2 = (value._p2 << shiftAmount) | (value._p1 >> (64 - shiftAmount));
+				ulong part1 = (value._p1 << shiftAmount) | (value._p0 >> (64 - shiftAmount));
+				ulong part0 = value._p0 << shiftAmount;
+
+				return new UInt256(part2, part1, part0, 0);
+			}
+			else if (shiftAmount < 192)
+			{
+				shiftAmount -= 128;
+
+				if (shiftAmount == 0)
+				{
+					return new UInt256(value._p1, value._p0, 0, 0);
+				}
+
+				ulong part1 = (value._p1 << shiftAmount) | (value._p0 >> (64 - shiftAmount));
+				ulong part0 = value._p0 << shiftAmount;
+
+				return new UInt256(part1, part0, 0, 0);
+			}
+			else // shiftAmount < 256
+			{
+				shiftAmount -= 192;
+
+				if (shiftAmount == 0)
+				{
+					return new UInt256(value._p0, 0, 0, 0);
+				}
+
+				ulong part0 = value._p0 << shiftAmount;
+
+				return new UInt256(part0, 0, 0, 0);
+			}
 		}
 
-		public static UInt256 operator >>(UInt256 value, int shiftAmount) => value >>> shiftAmount;
+		/// <inheritdoc/>
+		public static UInt256 operator >>(in UInt256 value, int shiftAmount) => value >>> shiftAmount;
 
-		public static bool operator ==(UInt256 left, UInt256 right)
+		/// <inheritdoc/>
+		public static bool operator ==(in UInt256 left, in UInt256 right)
 		{
 			if (Vector256.IsHardwareAccelerated)
 			{
@@ -1280,11 +1415,12 @@ namespace MissingValues
 			}
 			else
 			{
-				return (left._upper == right._upper) && (left._lower == right._lower);
+				return (left._p3 == right._p3) && (left._p2 == right._p2) && (left._p1 == right._p1) && (left._p0 == right._p0);
 			}
 		}
 
-		public static bool operator !=(UInt256 left, UInt256 right)
+		/// <inheritdoc/>
+		public static bool operator !=(in UInt256 left, in UInt256 right)
 		{
 			if (Vector256.IsHardwareAccelerated)
 			{
@@ -1302,63 +1438,106 @@ namespace MissingValues
 			}
 			else
 			{
-				return (left._upper != right._upper) || (left._lower != right._lower);
+				return (left._p3 != right._p3) || (left._p2 != right._p2) || (left._p1 != right._p1) || (left._p0 != right._p0);
 			}
 		}
 
-		public static bool operator <(UInt256 left, UInt256 right)
+		/// <inheritdoc/>
+		public static bool operator <(in UInt256 left, in UInt256 right)
 		{
-			return (left._upper < right._upper)
-				|| (left._upper == right._upper) && (left._lower < right._lower);
+			// Successively compare each part.
+			return (left._p3 < right._p3)
+				|| (left._p3 == right._p3 && ((left._p2 < right._p2)
+				|| (left._p2 == right._p2 && ((left._p1 < right._p1)
+				|| (left._p1 == right._p1 && (left._p0 < right._p0))))));
 			
 		}
 
-		public static bool operator >(UInt256 left, UInt256 right)
+		/// <inheritdoc/>
+		public static bool operator >(in UInt256 left, in UInt256 right)
 		{
-			return (left._upper > right._upper)
-				|| (left._upper == right._upper) && (left._lower > right._lower);
+			return (left._p3 > right._p3)
+				|| (left._p3 == right._p3 && ((left._p2 > right._p2)
+				|| (left._p2 == right._p2 && ((left._p1 > right._p1)
+				|| (left._p1 == right._p1 && (left._p0 > right._p0))))));
 		}
 
-		public static bool operator <=(UInt256 left, UInt256 right)
+		/// <inheritdoc/>
+		public static bool operator <=(in UInt256 left, in UInt256 right)
 		{
-			return (left._upper < right._upper)
-			   || (left._upper == right._upper) && (left._lower <= right._lower);
+			return (left._p3 < right._p3)
+				|| (left._p3 == right._p3 && ((left._p2 < right._p2)
+				|| (left._p2 == right._p2 && ((left._p1 < right._p1)
+				|| (left._p1 == right._p1 && (left._p0 <= right._p0))))));
 		}
 
-		public static bool operator >=(UInt256 left, UInt256 right)
+		/// <inheritdoc/>
+		public static bool operator >=(in UInt256 left, in UInt256 right)
 		{
-			return (left._upper > right._upper)
-				|| (left._upper == right._upper) && (left._lower >= right._lower);
+			return (left._p3 > right._p3)
+				|| (left._p3 == right._p3 && ((left._p2 > right._p2)
+				|| (left._p2 == right._p2 && ((left._p1 > right._p1)
+				|| (left._p1 == right._p1 && (left._p0 >= right._p0))))));
 		}
 
-		public static UInt256 operator >>>(UInt256 value, int shiftAmount)
+		/// <inheritdoc/>
+		public static UInt256 operator >>>(in UInt256 value, int shiftAmount)
 		{
-			// We need to specially handle things if the 15th bit is set.
+			// C# automatically masks the shift amount for UInt64 to be 0x3F. So we
+			// need to specially handle things if the shift amount exceeds 0x3F.
 
-			shiftAmount &= 0xFF;
+			shiftAmount &= 0xFF; // mask the shift amount to be within [0, 255]
 
-			if ((shiftAmount & 0x80) != 0)
-			{
-				// In the case it is set, we know the entire upper bits must be zero
-				// and so the lower bits are just the upper shifted by the remaining
-				// masked amount
-
-				UInt128 lower = value._upper >> shiftAmount;
-				return new UInt256(0, lower);
-			}
-			else if (shiftAmount != 0)
-			{
-				// Otherwise we need to shift both upper and lower halves by the masked
-				// amount and then or that with whatever bits were shifted "out" of upper
-
-				UInt128 lower = (value._lower >> shiftAmount) | (value._upper << (128 - shiftAmount));
-				UInt128 upper = value._upper >> shiftAmount;
-
-				return new UInt256(upper, lower);
-			}
-			else
+			if (shiftAmount == 0)
 			{
 				return value;
+			}
+			
+			if (shiftAmount < 64)
+			{
+				ulong part0 = (value._p0 >> shiftAmount) | (value._p1 << (64 - shiftAmount));
+				ulong part1 = (value._p1 >> shiftAmount) | (value._p2 << (64 - shiftAmount));
+				ulong part2 = (value._p2 >> shiftAmount) | (value._p3 << (64 - shiftAmount));
+				ulong part3 = value._p3 >> shiftAmount;
+
+				return new UInt256(part3, part2, part1, part0);
+			}
+			else if (shiftAmount < 128)
+			{
+				shiftAmount -= 64;
+
+				if (shiftAmount == 0)
+				{
+					return new UInt256(0, value._p3, value._p2, value._p1);
+				}
+
+				ulong part0 = (value._p1 >> shiftAmount) | (value._p2 << (64 - shiftAmount));
+				ulong part1 = (value._p2 >> shiftAmount) | (value._p3 << (64 - shiftAmount));
+				ulong part2 = value._p3 >> shiftAmount;
+
+				return new UInt256(0, part2, part1, part0);
+			}
+			else if (shiftAmount < 192)
+			{
+				shiftAmount -= 128;
+
+				if (shiftAmount == 0)
+				{
+					return new UInt256(0, 0, value._p3, value._p2);
+				}
+
+				ulong part0 = (value._p2 >> shiftAmount) | (value._p3 << (64 - shiftAmount));
+				ulong part1 = value._p3 >> shiftAmount;
+
+				return new UInt256(0, 0, part1, part0);
+			}
+			else // shiftAmount < 256
+			{
+				shiftAmount -= 192;
+
+				ulong part0 = value._p3 >> shiftAmount;
+
+				return new UInt256(0, 0, 0, part0);
 			}
 		}
 	}

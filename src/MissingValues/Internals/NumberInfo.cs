@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MissingValues.Info;
+using System;
 using System.Buffers.Binary;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -8,6 +9,7 @@ using System.Linq;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Text;
 
 namespace MissingValues.Internals
 {
@@ -57,7 +59,7 @@ namespace MissingValues.Internals
 		}
 	}
 
-	internal ref struct FloatInfo
+	internal ref struct NumberInfo
 	{
 		public int DigitsCount;
 		public int Scale;
@@ -65,7 +67,7 @@ namespace MissingValues.Internals
 		public bool HasNonZeroTail;
 		public Span<byte> Digits;
 
-        public FloatInfo(Span<byte> digits)
+        public NumberInfo(Span<byte> digits)
         {
 			DigitsCount = 0;
 			Scale = 0;
@@ -75,8 +77,9 @@ namespace MissingValues.Internals
 			Digits[0] = (byte)'\0';
 		}
 
-		public static TFloat ConvertToFloat<TFloat>(ref FloatInfo number)
-			where TFloat : struct, IFormattableBinaryFloatingPoint<TFloat>
+		public static TFloat ConvertToFloat<TFloat, TBits>(ref NumberInfo number)
+			where TFloat : struct, IBinaryFloatingPointInfo<TFloat, TBits>
+			where TBits : unmanaged, IBinaryInteger<TBits>, IUnsignedNumber<TBits>
 		{
 			TFloat result;
 
@@ -90,14 +93,19 @@ namespace MissingValues.Internals
 			}
 			else
 			{
-				UInt128 bits = GetFloatBits<TFloat>(ref number);
+				TBits bits = GetFloatBits<TFloat, TBits>(ref number);
 				result = TFloat.BitsToFloat(bits);
 			}
 
 			return number.IsNegative ? -result : result;
 		}
 
-		public static unsafe bool TryParse<TChar>(ReadOnlySpan<TChar> s, ref FloatInfo info, NumberFormatInfo formatInfo, NumberStyles styles = NumberStyles.Float)
+		public override string ToString()
+		{
+			return Encoding.UTF8.GetString(Digits[..DigitsCount]);
+		}
+
+		public static unsafe bool TryParse<TChar>(ReadOnlySpan<TChar> s, ref NumberInfo info, NumberFormatInfo formatInfo, NumberStyles styles = NumberStyles.Float)
 			where TChar : unmanaged, IUtfCharacter<TChar>
 		{
 			const int StateSign = 0x0001;
@@ -352,8 +360,9 @@ namespace MissingValues.Internals
 			return false;
 		}
 
-		private static UInt128 GetFloatBits<TFloat>(ref FloatInfo number)
-			where TFloat : struct, IFormattableBinaryFloatingPoint<TFloat>
+		private static TBits GetFloatBits<TFloat, TBits>(ref NumberInfo number)
+			where TFloat : struct, IBinaryFloatingPointInfo<TFloat, TBits>
+			where TBits : unmanaged, IBinaryInteger<TBits>, IUnsignedNumber<TBits>
 		{
 			int normalMantissaBits = TFloat.NormalMantissaBits;
 			int overflowDecimalExponent = TFloat.OverflowDecimalExponent;
@@ -399,7 +408,7 @@ namespace MissingValues.Internals
 
 			if ((integerBitsOfPrecision >= requiredBitsOfPrecision) || (fractionalDigitsPresent == 0))
 			{
-				return ConvertBigIntegerToFloatingPointBits<TFloat>(
+				return ConvertBigIntegerToFloatingPointBits<TFloat, TBits>(
 					ref integerValue,
 					integerBitsOfPrecision,
 					fractionalDigitsPresent != 0
@@ -433,7 +442,7 @@ namespace MissingValues.Internals
 
 			if (fractionalNumerator.IsZero())
 			{
-				return ConvertBigIntegerToFloatingPointBits<TFloat>(
+				return ConvertBigIntegerToFloatingPointBits<TFloat, TBits>(
 					ref integerValue,
 					integerBitsOfPrecision,
 					fractionalDigitsPresent != 0
@@ -482,7 +491,7 @@ namespace MissingValues.Internals
 				// Thus, we need to do the division to correctly round the result.
 				if (fractionalShift > remainingBitsOfPrecisionRequired)
 				{
-					return ConvertBigIntegerToFloatingPointBits<TFloat>(
+					return ConvertBigIntegerToFloatingPointBits<TFloat, TBits>(
 						ref integerValue,
 						integerBitsOfPrecision,
 						fractionalDigitsPresent != 0
@@ -510,7 +519,7 @@ namespace MissingValues.Internals
 			BigNumber.DivRem(ref fractionalNumerator, ref fractionalDenominator, out BigNumber bigFractionalMantissa, out BigNumber fractionalRemainder);
 
 
-			UInt128 fractionalMantissa = bigFractionalMantissa.ToUInt128();
+			TBits fractionalMantissa = bigFractionalMantissa.ToUInt<TBits>();
 			bool hasZeroTail = !number.HasNonZeroTail && fractionalRemainder.IsZero();
 
 			// We may have produced more bits of precision than were required.  Check,
@@ -519,14 +528,14 @@ namespace MissingValues.Internals
 			if (fractionalMantissaBits > requiredFractionalBitsOfPrecision)
 			{
 				int shift = (int)(fractionalMantissaBits - requiredFractionalBitsOfPrecision);
-				hasZeroTail = hasZeroTail && (fractionalMantissa & ((UInt128.One << shift) - UInt128.One)) == 0;
+				hasZeroTail = hasZeroTail && (fractionalMantissa & ((TBits.One << shift) - TBits.One)) == TBits.Zero;
 				fractionalMantissa >>= shift;
 			}
 
 
 			// Compose the mantissa from the integer and fractional parts:
-			UInt128 integerMantissa = integerValue.ToUInt128();
-			UInt128 completeMantissa = (integerMantissa << (int)(requiredFractionalBitsOfPrecision)) + fractionalMantissa;
+			TBits integerMantissa = integerValue.ToUInt<TBits>();
+			TBits completeMantissa = (integerMantissa << (int)(requiredFractionalBitsOfPrecision)) + fractionalMantissa;
 
 			// Compute the final exponent:
 			// * If the mantissa had an integer part, then the exponent is one less than
@@ -540,65 +549,110 @@ namespace MissingValues.Internals
 			// use in rounding.
 			int finalExponent = (integerBitsOfPrecision > 0) ? (int)(integerBitsOfPrecision) - 2 : -(int)(fractionalExponent) - 1;
 
-			return AssembleFloatingPointBits<TFloat>(completeMantissa, finalExponent, hasZeroTail);
+			return AssembleFloatingPointBits<TFloat, TBits>(completeMantissa, finalExponent, hasZeroTail);
 		}
 
-		private static UInt128 ConvertBigIntegerToFloatingPointBits<TFloat>(ref BigNumber value, uint integerBitsOfPrecision, bool hasNonZeroFractionalPart)
-			where TFloat : struct, IFormattableBinaryFloatingPoint<TFloat>
+		private unsafe static TBits ConvertBigIntegerToFloatingPointBits<TFloat, TBits>(ref BigNumber value, uint integerBitsOfPrecision, bool hasNonZeroFractionalPart)
+			where TFloat : struct, IBinaryFloatingPointInfo<TFloat, TBits>
+			where TBits : unmanaged, IBinaryInteger<TBits>, IUnsignedNumber<TBits>
 		{
 			int baseExponent = TFloat.DenormalMantissaBits;
+			int size = sizeof(TBits) * 8;
 
-			// When we have 128-bits or less of precision, we can just get the mantissa directly
-			if (integerBitsOfPrecision <= 128)
+			// When we have N-bits or less of precision, we can just get the mantissa directly
+			if (integerBitsOfPrecision <= size)
 			{
-				return AssembleFloatingPointBits<TFloat>(value.ToUInt128(), baseExponent, !hasNonZeroFractionalPart);
+				return AssembleFloatingPointBits<TFloat, TBits>(value.ToUInt<TBits>(), baseExponent, !hasNonZeroFractionalPart);
 			}
 
 			(uint topBlockIndex, uint topBlockBits) = Math.DivRem(integerBitsOfPrecision, 64);
-			uint middleBlockIndex = topBlockIndex - 1;
+			uint secondTopBlockIndex = topBlockIndex - 1;
+			uint middleBlockIndex = secondTopBlockIndex - 1;
 			uint bottomBlockIndex = middleBlockIndex - 1;
 
-			UInt128 mantissa;
-			int exponent = baseExponent + ((int)(bottomBlockIndex) * 64);
+			TBits mantissa;
+			int exponent;
 			bool hasZeroTail = !hasNonZeroFractionalPart;
 
-			// When the top 128-bits perfectly span two blocks, we can get those blocks directly
+			// When the top N-bits perfectly span two blocks, we can get those blocks directly
 			if (topBlockBits == 0)
 			{
-				mantissa = new UInt128(value.GetBlock(middleBlockIndex), value.GetBlock(bottomBlockIndex));
+				exponent = baseExponent + ((int)(bottomBlockIndex) * 64);
+
+				var secondTopBlock = value.GetBlock(secondTopBlockIndex);
+				var middleBlock = value.GetBlock(middleBlockIndex);
+				if (typeof(TBits) == typeof(UInt128))
+				{
+					if (secondTopBlock == 0 && middleBlock == 0)
+					{
+						mantissa = TBits.CreateChecked(new UInt128(value.GetBlock(bottomBlockIndex), value.GetBlock(bottomBlockIndex - 1)));
+						goto END;
+					}
+				}
+				else
+				{
+					mantissa = TBits.CreateChecked(new UInt256(secondTopBlock, middleBlock, value.GetBlock(bottomBlockIndex), value.GetBlock(bottomBlockIndex - 1)));
+					goto END;
+				}
 			}
-			else
+			if(typeof(TBits) == typeof(UInt128))
 			{
 				// Otherwise, we need to read three blocks and combine them into a 128-bit mantissa
+			
+				exponent = baseExponent + ((int)(middleBlockIndex) * 64);
+				int bottomBlockShift = (int)(topBlockBits);
+				int topBlockShift = size - bottomBlockShift;
+				int middleBlockShift = topBlockShift - 64;
+
+				exponent += (int)(topBlockBits);
+
+				ulong bottomBlock = value.GetBlock(middleBlockIndex);
+				ulong bottomBits = bottomBlock >> bottomBlockShift;
+
+				TBits middleBits = TBits.CreateChecked(value.GetBlock(secondTopBlockIndex)) << middleBlockShift;
+				TBits topBits = TBits.CreateChecked(value.GetBlock(topBlockIndex)) << topBlockShift;
+
+				mantissa = topBits + middleBits + TBits.CreateChecked(bottomBits);
+
+				ulong unusedBottomBlockBitsMask = (1UL << (int)(topBlockBits)) - 1;
+				hasZeroTail &= (bottomBlock & unusedBottomBlockBitsMask) == 0;
+			}
+			else // typeof(TBits) == typeof(UInt256)
+			{
+				// Otherwise, we need to read five blocks and combine them into a 128-bit mantissa
+				exponent = baseExponent + ((int)(bottomBlockIndex) * 64);
 
 				int bottomBlockShift = (int)(topBlockBits);
-				int topBlockShift = 128 - bottomBlockShift;
-				int middleBlockShift = topBlockShift - 64;
+				int topBlockShift = 256 - bottomBlockShift;
+				int secondTopBlockShift = topBlockShift - 64;
+				int middleBlockShift = secondTopBlockShift - 64;
 
 				exponent += (int)(topBlockBits);
 
 				ulong bottomBlock = value.GetBlock(bottomBlockIndex);
 				ulong bottomBits = bottomBlock >> bottomBlockShift;
 
-				UInt128 middleBits = (UInt128)(value.GetBlock(middleBlockIndex)) << middleBlockShift;
-				UInt128 topBits = (UInt128)(value.GetBlock(topBlockIndex)) << topBlockShift;
+				TBits middleBits = TBits.CreateChecked(value.GetBlock(middleBlockIndex)) << middleBlockShift;
+				TBits secondTopBits = TBits.CreateChecked(value.GetBlock(secondTopBlockIndex)) << secondTopBlockShift;
+				TBits topBits = TBits.CreateChecked(value.GetBlock(topBlockIndex)) << topBlockShift;
 
-				mantissa = topBits + middleBits + bottomBits;
+				mantissa = topBits + secondTopBits + middleBits + TBits.CreateChecked(bottomBits);
 
-				ulong unusedBottomBlockBitsMask = (1UL << (int)(topBlockBits)) - 1;
+				ulong unusedBottomBlockBitsMask = (1u << (int)(topBlockBits)) - 1;
 				hasZeroTail &= (bottomBlock & unusedBottomBlockBitsMask) == 0;
 			}
-
+		END:
 			for (uint i = 0; i != bottomBlockIndex; i++)
 			{
 				hasZeroTail &= (value.GetBlock(i) == 0);
 			}
 
-			return AssembleFloatingPointBits<TFloat>(mantissa, exponent, hasZeroTail);
+			return AssembleFloatingPointBits<TFloat, TBits>(mantissa, exponent, hasZeroTail);
 		}
 
-		private static UInt128 AssembleFloatingPointBits<TFloat>(UInt128 initialMantissa, int initialExponent, bool hasZeroTail)
-			where TFloat : struct, IFormattableBinaryFloatingPoint<TFloat>
+		private static TBits AssembleFloatingPointBits<TFloat, TBits>(TBits initialMantissa, int initialExponent, bool hasZeroTail)
+			where TFloat : struct, IBinaryFloatingPointInfo<TFloat, TBits>
+			where TBits : unmanaged, IBinaryInteger<TBits>, IUnsignedNumber<TBits>
 		{
 			int denormalMantissaBits = TFloat.DenormalMantissaBits;
 			int normalMantissaBits = TFloat.NormalMantissaBits;
@@ -609,7 +663,7 @@ namespace MissingValues.Internals
 			int normalMantissaShift = normalMantissaBits - (int)(initialMantissaBits);
 			int normalExponent = initialExponent - normalMantissaShift;
 
-			UInt128 mantissa = initialMantissa;
+			TBits mantissa = initialMantissa;
 			int exponent = normalExponent;
 
 			if (normalExponent > TFloat.MaxBiasedExponent)
@@ -640,7 +694,7 @@ namespace MissingValues.Internals
 					mantissa = RightShiftWithRounding(mantissa, -denormalMantissaShift, hasZeroTail);
 
 					// If the mantissa is now zero, we have underflowed:
-					if (mantissa == 0)
+					if (mantissa == TBits.Zero)
 					{
 						return TFloat.PositiveZeroBits;
 					}
@@ -707,29 +761,32 @@ namespace MissingValues.Internals
 
 			mantissa &= TFloat.TrailingSignificandMask;
 
-			UInt128 shiftedExponent = ((UInt128)(exponent + TFloat.ExponentBias)) << denormalMantissaBits;
+			TBits shiftedExponent = (TBits.CreateChecked(exponent + TFloat.ExponentBias)) << denormalMantissaBits;
 
 			return shiftedExponent | mantissa;
 		}
 
-		private static UInt128 RightShiftWithRounding(UInt128 value, int shift, bool hasZeroTail)
+		private unsafe static T RightShiftWithRounding<T>(T value, int shift, bool hasZeroTail)
+			where T : unmanaged, IBinaryInteger<T>, IUnsignedNumber<T>
 		{
 			// If we'd need to shift further than it is possible to shift, the answer
 			// is always zero:
-			if (shift >= 128)
+			if (shift >= (sizeof(T) * 8))
 			{
-				return 0;
+				return T.Zero;
 			}
 
-			UInt128 extraBitsMask = (UInt128.One << (shift - 1)) - 1;
-			UInt128 roundBitMask = (UInt128.One << (shift - 1));
-			UInt128 lsbBitMask = UInt128.One << shift;
+			T one = T.One;
+			T extraBitsMask = (one << (shift - 1)) - one;
+			T roundBitMask = (one << (shift - 1));
+			T lsbBitMask = one << shift;
 
-			bool lsbBit = (value & lsbBitMask) != 0;
-			bool roundBit = (value & roundBitMask) != 0;
-			bool hasTailBits = !hasZeroTail || (value & extraBitsMask) != 0;
+			T zero = T.Zero;
+			bool lsbBit = (value & lsbBitMask) != zero;
+			bool roundBit = (value & roundBitMask) != zero;
+			bool hasTailBits = !hasZeroTail || (value & extraBitsMask) != zero;
 
-			return (value >> shift) + (ShouldRoundUp(lsbBit, roundBit, hasTailBits) ? 1UL : 0);
+			return (value >> shift) + (ShouldRoundUp(lsbBit, roundBit, hasTailBits) ? one : zero);
 		}
 
 		private static bool ShouldRoundUp(bool lsbBit, bool roundBit, bool hasTailBits)
@@ -743,7 +800,7 @@ namespace MissingValues.Internals
 			return roundBit && (hasTailBits || lsbBit);
 		}
 
-		private static unsafe void AccumulateDecimalDigitsIntoBigNumber(scoped ref FloatInfo number, uint firstIndex, uint lastIndex, out BigNumber result)
+		private static unsafe void AccumulateDecimalDigitsIntoBigNumber(scoped ref NumberInfo number, uint firstIndex, uint lastIndex, out BigNumber result)
 		{
 			BigNumber.SetZero(out result);
 
@@ -814,9 +871,13 @@ namespace MissingValues.Internals
 			return (uint)val;
 		}
 
-		private unsafe byte* GetDigitsPointer()
+		internal unsafe byte* GetDigitsPointer()
 		{
 			return (byte*)Unsafe.AsPointer(ref MemoryMarshal.GetReference(Digits));
+		}
+		internal ref byte GetDigitsReference()
+		{
+			return ref MemoryMarshal.GetReference(Digits);
 		}
 	}
 }

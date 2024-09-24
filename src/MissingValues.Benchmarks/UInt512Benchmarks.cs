@@ -10,123 +10,165 @@ namespace MissingValues.Benchmarks
 {
 	public class UInt512Benchmarks
 	{
-		static Random rnd = new Random(7);
-
-		[MemoryDiagnoser]
+		[MinColumn, MaxColumn, MeanColumn, MedianColumn]
 		public class MathOperators
 		{
-			private UInt256 a, b;
+			[Params(100, 10_000, 500_000)]
+			public int Length;
+			private UInt512[] a, b, c;
 
 			[GlobalSetup]
 			public void Setup()
 			{
-				a = new UInt256(new(0, (ulong)rnd.NextInt64()), new((ulong)rnd.NextInt64(), (ulong)rnd.NextInt64()));
-				b = new UInt256(new(0, (ulong)rnd.NextInt64()), new((ulong)rnd.NextInt64(), (ulong)rnd.NextInt64()));
+				a = new UInt512[Length];
+				b = new UInt512[Length];
+
+				for (int i = 0; i < Length; i++)
+				{
+					a[i] = new(
+						(ulong)Random.Shared.NextInt64(), (ulong)Random.Shared.NextInt64(), (ulong)Random.Shared.NextInt64(), (ulong)Random.Shared.NextInt64(),
+						(ulong)Random.Shared.NextInt64(), (ulong)Random.Shared.NextInt64(), (ulong)Random.Shared.NextInt64(), (ulong)Random.Shared.NextInt64());
+					b[i] = new(
+						(ulong)Random.Shared.NextInt64(), (ulong)Random.Shared.NextInt64(), (ulong)Random.Shared.NextInt64(), (ulong)Random.Shared.NextInt64(),
+						(ulong)Random.Shared.NextInt64(), (ulong)Random.Shared.NextInt64(), (ulong)Random.Shared.NextInt64(), (ulong)Random.Shared.NextInt64());
+				}
+
+				c = new UInt512[Length];
 			}
 
 			[Benchmark]
-			public UInt256 Add_UInt256()
+			public UInt512[] Add_UInt512()
 			{
-				return a + b;
+				for (int i = 0; i < Length; i++)
+				{
+					c[i] = a[i] + b[i];
+				}
+				return c;
 			}
 
 			[Benchmark]
-			public UInt256 Subtract_UInt256()
+			public UInt512[] Subtract_UInt512()
 			{
-				return a - b;
+				for (int i = 0; i < Length; i++)
+				{
+					c[i] = a[i] - b[i];
+				}
+				return c;
 			}
 
 			[Benchmark]
-			public UInt256 Multiply_UInt256()
+			public UInt512[] Multiply_UInt512()
 			{
-				return a * b;
+				for (int i = 0; i < Length; i++)
+				{
+					c[i] = a[i] * b[i];
+				}
+				return c;
 			}
 
 			[Benchmark]
-			public UInt256 Divide_UInt256()
+			public UInt512[] Divide_UInt512()
 			{
-				return a / b;
+				for (int i = 0; i < Length; i++)
+				{
+					c[i] = a[i] / b[i];
+				}
+				return c;
 			}
 
 			[Benchmark]
-			public UInt256 Modulus_UInt256()
+			public UInt512[] Modulus_UInt512()
 			{
-				return a % b;
+				for (int i = 0; i < Length; i++)
+				{
+					c[i] = a[i] % b[i];
+				}
+				return c;
+			}
+
+			[Benchmark]
+			public UInt512[] BitwiseAnd_UInt512()
+			{
+				for (int i = 0; i < Length; i++)
+				{
+					c[i] = a[i] & b[i];
+				}
+				return c;
+			}
+
+			[Benchmark]
+			[Arguments(16)]
+			[Arguments(32)]
+			[Arguments(64)]
+			[Arguments(100)]
+			[Arguments(128)]
+			[Arguments(192)]
+			[Arguments(256)]
+			[Arguments(320)]
+			[Arguments(384)]
+			[Arguments(448)]
+			[Arguments(450)]
+			public UInt512[] ShiftLeft_UInt512(int shiftAmount)
+			{
+				for (int i = 0; i < Length; i++)
+				{
+					c[i] = a[i] << shiftAmount;
+				}
+				return c;
+			}
+
+			[Benchmark]
+			[Arguments(16)]
+			[Arguments(32)]
+			[Arguments(64)]
+			[Arguments(100)]
+			[Arguments(128)]
+			[Arguments(192)]
+			[Arguments(256)]
+			[Arguments(320)]
+			[Arguments(384)]
+			[Arguments(448)]
+			[Arguments(450)]
+			public UInt512[] ShiftRight_UInt512(int shiftAmount)
+			{
+				for (int i = 0; i < Length; i++)
+				{
+					c[i] = a[i] >> shiftAmount;
+				}
+				return c;
 			}
 		}
 
 		[MemoryDiagnoser]
-		public class Formatting
+		public class ParsingAndFormatting
 		{
-			private UInt256 value;
-
-			[Params("57896044618658097711785492504343953926634992332820282019728792003956564819967", "1", "115792089237316195423570985008687907853269984665640564039457584007913129639935")]
-			public string Value { get; set; }
-			[Params(null, "X64", "B256")]
-			public string Format { get; set; }
-
-			[GlobalSetup]
-			public void Setup()
-			{
-				value = UInt256.Parse(Value);
-			}
-
 			[Benchmark]
-			public string ToString_UInt256()
+			[ArgumentsSource(nameof(ValuesToFormat))]
+			public string ToString_UInt512(UInt512 value, string? fmt)
 			{
-				return value.ToString(Format, CultureInfo.CurrentCulture);
-			}
-		}
-
-		[MemoryDiagnoser]
-		public class Parsing
-		{
-			private string _bin, _hex;
-
-			[Params("57896044618658097711785492504343953926634992332820282019728792003956564819967", "1", "115792089237316195423570985008687907853269984665640564039457584007913129639935")]
-			public string Value { get; set; }
-
-			[GlobalSetup]
-			public void Setup()
-			{
-				_bin = UInt256.Parse(Value).ToString("B256", CultureInfo.CurrentCulture);
-				_hex = UInt256.Parse(Value).ToString("X64", CultureInfo.CurrentCulture);
-			}
-
-			[Benchmark(Baseline = true)]
-			public UInt256 Parse_DecimalUInt256()
-			{
-				return UInt256.Parse(Value);
+				return value.ToString(fmt, CultureInfo.CurrentCulture);
 			}
 			[Benchmark]
-			public UInt256 Parse_HexadecimalUInt256()
+			[ArgumentsSource(nameof(ValuesToParse))]
+			public UInt512 Parse_UInt512(string s, NumberStyles style, IFormatProvider provider)
 			{
-				return UInt256.Parse(_hex, NumberStyles.HexNumber, CultureInfo.CurrentCulture);
-			}
-		}
-
-		[MemoryDiagnoser]
-		public class Operations
-		{
-			private UInt256 a, b;
-
-			[GlobalSetup]
-			public void Setup()
-			{
-				a = new UInt256(new(0, (ulong)rnd.NextInt64()), new((ulong)rnd.NextInt64(), (ulong)rnd.NextInt64()));
-				b = new UInt256(new(0, (ulong)rnd.NextInt64()), new((ulong)rnd.NextInt64(), (ulong)rnd.NextInt64()));
+				return UInt512.Parse(s, style, provider);
 			}
 
-			[Benchmark]
-			public UInt256 Clamp_UInt256()
+			public IEnumerable<object[]> ValuesToParse()
 			{
-				return UInt256.Clamp(a, UInt256.Zero, b);
+				yield return ["6703903964971298549787012499102923063739682910296196688861780721860882015036773488400937149083451713845015929093243025426876941405973284973216824503042047", NumberStyles.Integer, CultureInfo.CurrentCulture];
+				yield return ["1111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111", NumberStyles.BinaryNumber, CultureInfo.CurrentCulture];
+				yield return ["FEDCBA09876543210123456789ABCDEF", NumberStyles.HexNumber, CultureInfo.CurrentCulture];
 			}
-
-			[Benchmark]
-			public (UInt256, UInt256) DivRem_UInt256()
+			public IEnumerable<object[]> ValuesToFormat()
 			{
-				return UInt256.DivRem(a, b);
+				yield return [UInt512.MaxValue, "D"];
+				yield return [UInt512.MaxValue, "X128"];
+				yield return [UInt512.MaxValue, "B512"];
+				yield return [UInt512.MaxValue, "C"];
+				yield return [UInt512.MaxValue, "E"];
+				yield return [UInt512.MaxValue, "N"];
 			}
 		}
 	}

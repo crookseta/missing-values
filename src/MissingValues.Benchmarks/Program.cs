@@ -9,26 +9,29 @@ using System.Runtime.Intrinsics.X86;
 using System.Runtime.CompilerServices;
 using System.Runtime.Intrinsics;
 using System.Windows.Markup;
+using MissingValues.Internals;
 
-//BenchmarkRunner.Run(
-//	new Type[]
-//	{
-//		typeof(UInt256Benchmarks.MathOperators),
-//		typeof(UInt256Benchmarks.Formatting),
-//		typeof(UInt256Benchmarks.Parsing),
-//		typeof(UInt256Benchmarks.Operations),
-//		typeof(UInt512Benchmarks.MathOperators),
-//		typeof(UInt512Benchmarks.Formatting),
-//		typeof(UInt512Benchmarks.Parsing),
-//		typeof(UInt512Benchmarks.Operations),
-//		typeof(QuadBenchmarks.MathOperators),
-//		typeof(QuadBenchmarks.Parser),
-//	}
-//);
+#if DEBUG
 
-//BenchmarkRunner.Run<QuadBenchmarks.MathOperators>();
+Console.WriteLine(Quad.Sqrt(10));
+Console.WriteLine(Octo.Sqrt(10));
 
-UInt128 uInt = new UInt128(0xFFFFFFFFFFFFFFFF, 0x7FFFFFFFFFFFFFFF);
-
-Console.WriteLine(uInt.GetUpperBits());
+#else
+BenchmarkSwitcher.FromTypes(
+	[
+		typeof(UInt256Benchmarks.MathOperators),
+		typeof(UInt256Benchmarks.ParsingAndFormatting),
+		typeof(Int256Benchmarks.MathOperators),
+		typeof(Int256Benchmarks.ParsingAndFormatting),
+		typeof(UInt512Benchmarks.MathOperators),
+		typeof(UInt512Benchmarks.ParsingAndFormatting),
+		typeof(Int512Benchmarks.MathOperators),
+		typeof(Int512Benchmarks.ParsingAndFormatting),
+		typeof(QuadBenchmarks.MathOperators),
+		typeof(QuadBenchmarks.Parsing),
+		typeof(GenericIntegerBenchmarks<>),
+		typeof(BigIntegerBenchmarks)
+	]
+	).Run(args); 
+#endif
 Console.ReadLine();

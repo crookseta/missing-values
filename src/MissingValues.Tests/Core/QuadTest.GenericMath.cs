@@ -74,37 +74,37 @@ namespace MissingValues.Tests.Core
 		[Fact]
 		public static void op_BitwiseAndTest()
 		{
-			BitwiseOperatorsHelper<Float, Float, Float>.BitwiseAndOperation(Zero, Values.CreateQuad(0x0, 0x1)).Should().Be(Zero);
-			BitwiseOperatorsHelper<Float, Float, Float>.BitwiseAndOperation(Values.CreateQuad(0x0, 0x1), Values.CreateQuad(0x0, 0x1)).Should().Be(Values.CreateQuad(0x0, 0x1));
-			BitwiseOperatorsHelper<Float, Float, Float>.BitwiseAndOperation(BinaryNumberHelper<Float>.AllBitsSet, Values.CreateQuad(0x0, 0x1)).Should().Be(Values.CreateQuad(0x0, 0x1));
+			BitwiseOperatorsHelper<Float, Float, Float>.BitwiseAndOperation(Zero, Values.CreateFloat<Float>(0x0, 0x1)).Should().Be(Zero);
+			BitwiseOperatorsHelper<Float, Float, Float>.BitwiseAndOperation(Values.CreateFloat<Float>(0x0, 0x1), Values.CreateFloat<Float>(0x0, 0x1)).Should().Be(Values.CreateFloat<Float>(0x0, 0x1));
+			BitwiseOperatorsHelper<Float, Float, Float>.BitwiseAndOperation(BinaryNumberHelper<Float>.AllBitsSet, Values.CreateFloat<Float>(0x0, 0x1)).Should().Be(Values.CreateFloat<Float>(0x0, 0x1));
 		}
 		[Fact]
 		public static void op_BitwiseOrTest()
 		{
-			BitwiseOperatorsHelper<Float, Float, Float>.BitwiseOrOperation(Zero, Values.CreateQuad(0x0, 0x1))
-				.Should().Be(Values.CreateQuad(0x0, 0x1));
-			BitwiseOperatorsHelper<Float, Float, Float>.BitwiseOrOperation(Values.CreateQuad(0x0, 0x1), Values.CreateQuad(0x0, 0x1))
-				.Should().Be(Values.CreateQuad(0x0, 0x1));
-			BitwiseOperatorsHelper<Float, Float, Float>.BitwiseOrOperation(BinaryNumberHelper<Float>.AllBitsSet, Values.CreateQuad(0x0, 0x1))
+			BitwiseOperatorsHelper<Float, Float, Float>.BitwiseOrOperation(Zero, Values.CreateFloat<Float>(0x0, 0x1))
+				.Should().Be(Values.CreateFloat<Float>(0x0, 0x1));
+			BitwiseOperatorsHelper<Float, Float, Float>.BitwiseOrOperation(Values.CreateFloat<Float>(0x0, 0x1), Values.CreateFloat<Float>(0x0, 0x1))
+				.Should().Be(Values.CreateFloat<Float>(0x0, 0x1));
+			BitwiseOperatorsHelper<Float, Float, Float>.BitwiseOrOperation(BinaryNumberHelper<Float>.AllBitsSet, Values.CreateFloat<Float>(0x0, 0x1))
 				.Should().Be(BinaryNumberHelper<Float>.AllBitsSet);
 		}
 		[Fact]
 		public static void op_ExclusiveOrTest()
 		{
-			BitwiseOperatorsHelper<Float, Float, Float>.ExclusiveOrOperation(Zero, Values.CreateQuad(0x0, 0x1))
-				.Should().Be(Values.CreateQuad(0x0, 0x1));
-			BitwiseOperatorsHelper<Float, Float, Float>.ExclusiveOrOperation(Values.CreateQuad(0x0, 0x1), Values.CreateQuad(0x0, 0x1))
+			BitwiseOperatorsHelper<Float, Float, Float>.ExclusiveOrOperation(Zero, Values.CreateFloat<Float>(0x0, 0x1))
+				.Should().Be(Values.CreateFloat<Float>(0x0, 0x1));
+			BitwiseOperatorsHelper<Float, Float, Float>.ExclusiveOrOperation(Values.CreateFloat<Float>(0x0, 0x1), Values.CreateFloat<Float>(0x0, 0x1))
 				.Should().Be(Zero);
-			BitwiseOperatorsHelper<Float, Float, Float>.ExclusiveOrOperation(BinaryNumberHelper<Float>.AllBitsSet, Values.CreateQuad(0x0, 0x1))
-				.Should().Be(Values.CreateQuad(0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFE));
+			BitwiseOperatorsHelper<Float, Float, Float>.ExclusiveOrOperation(BinaryNumberHelper<Float>.AllBitsSet, Values.CreateFloat<Float>(0x0, 0x1))
+				.Should().Be(Values.CreateFloat<Float>(0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFE));
 		}
 		[Fact]
 		public static void op_OnesComplementTest()
 		{
 			BitwiseOperatorsHelper<Float, Float, Float>.OnesComplementOperation(Zero)
 				.Should().Be(BinaryNumberHelper<Float>.AllBitsSet);
-			BitwiseOperatorsHelper<Float, Float, Float>.OnesComplementOperation(Values.CreateQuad(0x0, 0x1))
-				.Should().Be(Values.CreateQuad(0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFE));
+			BitwiseOperatorsHelper<Float, Float, Float>.OnesComplementOperation(Values.CreateFloat<Float>(0x0, 0x1))
+				.Should().Be(Values.CreateFloat<Float>(0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFE));
 			BitwiseOperatorsHelper<Float, Float, Float>.OnesComplementOperation(BinaryNumberHelper<Float>.AllBitsSet)
 				.Should().Be(Zero);
 		}
@@ -172,7 +172,7 @@ namespace MissingValues.Tests.Core
 		[Fact]
 		public static void AllBitsSetTest()
 		{
-			BinaryNumberHelper<Float>.AllBitsSet.Should().Be(~Zero);
+			BinaryNumberHelper<Float>.AllBitsSet.Should().Be(BitwiseOperatorsHelper<Float, Float, Float>.OnesComplementOperation(Zero));
 		}
 		[Fact]
 		public static void IsPow2Test()
@@ -239,7 +239,7 @@ namespace MissingValues.Tests.Core
 		public static void AcoshTest()
 		{
 			GenericFloatingPointFunctions.Acosh<Float>(Two)
-				.Should().BeApproximately(Values.CreateQuad(0x3FFF_5124_2719_8043, 0x49BE_684B_D018_8D53), Delta);
+				.Should().BeApproximately(Values.CreateFloat<Float>(0x3FFF_5124_2719_8043, 0x49BE_684B_D018_8D53), Delta);
 			GenericFloatingPointFunctions.Acosh<Float>(Half)
 				.Should().BeNaN();
 			GenericFloatingPointFunctions.Acosh<Float>(Zero)
@@ -251,7 +251,7 @@ namespace MissingValues.Tests.Core
 		public static void AsinTest()
 		{
 			GenericFloatingPointFunctions.Asin<Float>(Half)
-				.Should().BeApproximately(Values.CreateQuad(0x3FFE_0C15_2382_D736, 0x5846_5BB3_2E0F_567B), Delta)
+				.Should().BeApproximately(Values.CreateFloat<Float>(0x3FFE_0C15_2382_D736, 0x5846_5BB3_2E0F_567B), Delta)
 				.And.BeApproximately(Float.Pi / Six, Delta);
 			GenericFloatingPointFunctions.Asin<Float>(Two)
 				.Should().Be(Float.NaN);
@@ -264,23 +264,23 @@ namespace MissingValues.Tests.Core
 		public static void AsinhTest()
 		{
 			GenericFloatingPointFunctions.Asinh<Float>(Two)
-				.Should().BeApproximately(Values.CreateQuad(0x3FFF_7192_1831_3D08, 0x72F8_E831_837F_0E95), Delta);
+				.Should().BeApproximately(Values.CreateFloat<Float>(0x3FFF_7192_1831_3D08, 0x72F8_E831_837F_0E95), Delta);
 			GenericFloatingPointFunctions.Asinh<Float>(Zero)
 				.Should().BeApproximately(Zero, Delta);
-			GenericFloatingPointFunctions.Asinh<Float>(Values.CreateQuad(0xBFFF_8000_0000_0000, 0x0000_0000_0000_0000))
-				.Should().BeApproximately(Values.CreateQuad(0x3FFF_31DC_0090_B63D, 0x8682_7E4B_AAAD_1909), Delta);
+			GenericFloatingPointFunctions.Asinh<Float>(Values.CreateFloat<Float>(0xBFFF_8000_0000_0000, 0x0000_0000_0000_0000))
+				.Should().BeApproximately(Values.CreateFloat<Float>(0x3FFF_31DC_0090_B63D, 0x8682_7E4B_AAAD_1909), Delta);
 		}
 		[Fact]
 		public static void AtanTest()
 		{
 			GenericFloatingPointFunctions.Atan<Float>(Half)
-				.Should().BeApproximately(Values.CreateQuad(0x3FFD_DAC6_7056_1BB4, 0xF1DE_7924_87B0_F0F3), Delta);
+				.Should().BeApproximately(Values.CreateFloat<Float>(0x3FFD_DAC6_7056_1BB4, 0xF1DE_7924_87B0_F0F3), Delta);
 			GenericFloatingPointFunctions.Atan<Float>(Zero)
 				.Should().BeApproximately(Zero, Delta);
 			GenericFloatingPointFunctions.Atan<Float>(Float.PositiveInfinity)
 				.Should().BeApproximately(Float.Pi / Two, Delta);
 			GenericFloatingPointFunctions.Atan<Float>(Two)
-				.Should().BeApproximately(Values.CreateQuad(0x3FFF_1B6E_192E_BBE4, 0x3F5A_7D44_566B_01A8), Delta);
+				.Should().BeApproximately(Values.CreateFloat<Float>(0x3FFF_1B6E_192E_BBE4, 0x3F5A_7D44_566B_01A8), Delta);
 		}
 		[Fact]
 		public static void Atan2Test()
@@ -292,11 +292,11 @@ namespace MissingValues.Tests.Core
 			FloatingPointIeee754<Float>.Atan2(Zero, NegativeTwo)
 				.Should().BeApproximately(Float.Pi, Delta);
 			FloatingPointIeee754<Float>.Atan2(One, Two)
-				.Should().BeApproximately(Values.CreateQuad(0x3FFD_DAC6_7056_1BB4, 0xF1DE_7924_87B0_F0F3), Delta);
+				.Should().BeApproximately(Values.CreateFloat<Float>(0x3FFD_DAC6_7056_1BB4, 0xF1DE_7924_87B0_F0F3), Delta);
 			FloatingPointIeee754<Float>.Atan2(NegativeOne, Two)
-				.Should().BeApproximately(Values.CreateQuad(0xBFFD_DAC6_7056_1BB4, 0xF1DE_7924_87B0_F0F3), Delta);
+				.Should().BeApproximately(Values.CreateFloat<Float>(0xBFFD_DAC6_7056_1BB4, 0xF1DE_7924_87B0_F0F3), Delta);
 			FloatingPointIeee754<Float>.Atan2(One, NegativeTwo)
-				.Should().BeApproximately(Values.CreateQuad(0x4000_56C6_E739_7F5A, 0xE130_A2BB_E272_574C), Delta);
+				.Should().BeApproximately(Values.CreateFloat<Float>(0x4000_56C6_E739_7F5A, 0xE130_A2BB_E272_574C), Delta);
 		}
 		[Fact]
 		public static void AtanhTest()
@@ -308,15 +308,15 @@ namespace MissingValues.Tests.Core
 			GenericFloatingPointFunctions.Atanh<Float>(Zero)
 				.Should().BeApproximately(Zero, Delta);
 			GenericFloatingPointFunctions.Atanh<Float>(Half)
-				.Should().BeApproximately(Values.CreateQuad(0x3FFE_193E_A7AA_D030, 0xA976_BA8D_B53A_D6E3), Delta);
+				.Should().BeApproximately(Values.CreateFloat<Float>(0x3FFE_193E_A7AA_D030, 0xA976_BA8D_B53A_D6E3), Delta);
 		}
 		[Fact]
 		public static void BitDecrementTest()
 		{
 			FloatingPointIeee754<Float>.BitDecrement(One)
-				.Should().Be(Values.CreateQuad(0x3FFEFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF));
+				.Should().Be(Values.CreateFloat<Float>(0x3FFEFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF));
 			FloatingPointIeee754<Float>.BitDecrement(NegativeOne)
-				.Should().Be(Values.CreateQuad(0xBFFF000000000000, 0x0000000000000001));
+				.Should().Be(Values.CreateFloat<Float>(0xBFFF000000000000, 0x0000000000000001));
 			FloatingPointIeee754<Float>.BitDecrement(Zero)
 				.Should().Be(-Float.Epsilon);
 			FloatingPointIeee754<Float>.BitDecrement(Float.NegativeInfinity)
@@ -328,9 +328,9 @@ namespace MissingValues.Tests.Core
 		public static void BitIncrementTest()
 		{
 			FloatingPointIeee754<Float>.BitIncrement(One)
-				.Should().Be(Values.CreateQuad(0x3FFF000000000000, 0x0000000000000001));
+				.Should().Be(Values.CreateFloat<Float>(0x3FFF000000000000, 0x0000000000000001));
 			FloatingPointIeee754<Float>.BitIncrement(NegativeOne)
-				.Should().Be(Values.CreateQuad(0xBFFEFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF));
+				.Should().Be(Values.CreateFloat<Float>(0xBFFEFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF));
 			FloatingPointIeee754<Float>.BitIncrement(NegativeZero)
 				.Should().Be(Float.Epsilon);
 			FloatingPointIeee754<Float>.BitIncrement(Float.NegativeInfinity)
@@ -341,7 +341,7 @@ namespace MissingValues.Tests.Core
 		[Fact]
 		public static void CbrtTest()
 		{
-			GenericFloatingPointFunctions.Cbrt(Values.CreateQuad(0x4005_0000_0000_0000, 0x0000_0000_0000_0000))
+			GenericFloatingPointFunctions.Cbrt(Values.CreateFloat<Float>(0x4005_0000_0000_0000, 0x0000_0000_0000_0000))
 				.Should().Be(Four);
 
 
@@ -352,7 +352,7 @@ namespace MissingValues.Tests.Core
 			GenericFloatingPointFunctions.Cbrt(Float.PositiveInfinity)
 				.Should().Be(Float.PositiveInfinity);
 			GenericFloatingPointFunctions.Cbrt(NegativeFour)
-				.Should().BeApproximately(Values.CreateQuad(0xBFFF_965F_EA53_D6E3, 0xC82B_0599_9AB4_3DC5), Delta);
+				.Should().BeApproximately(Values.CreateFloat<Float>(0xBFFF_965F_EA53_D6E3, 0xC82B_0599_9AB4_3DC5), Delta);
 			GenericFloatingPointFunctions.Cbrt(Float.NaN)
 				.Should().Be(Float.NaN);
 		}
@@ -381,22 +381,22 @@ namespace MissingValues.Tests.Core
 			GenericFloatingPointFunctions.Cosh(Zero)
 				.Should().Be(One);
 			GenericFloatingPointFunctions.Cosh(Two)
-				.Should().BeApproximately(Values.CreateQuad(0x4000_E18F_A0DF_2D9B, 0xC293_27F7_1777_4D0C), Delta);
+				.Should().BeApproximately(Values.CreateFloat<Float>(0x4000_E18F_A0DF_2D9B, 0xC293_27F7_1777_4D0C), Delta);
 			GenericFloatingPointFunctions.Cosh(Five)
-				.Should().BeApproximately(Values.CreateQuad(0x4005_28D6_FCBE_FF3A, 0x9C65_3333_916C_7D52), Delta);
+				.Should().BeApproximately(Values.CreateFloat<Float>(0x4005_28D6_FCBE_FF3A, 0x9C65_3333_916C_7D52), Delta);
 			GenericFloatingPointFunctions.Cosh(NegativeFive)
-				.Should().BeApproximately(Values.CreateQuad(0x4005_28D6_FCBE_FF3A, 0x9C65_3333_916C_7D52), Delta);
+				.Should().BeApproximately(Values.CreateFloat<Float>(0x4005_28D6_FCBE_FF3A, 0x9C65_3333_916C_7D52), Delta);
 		}
 		[Fact]
 		public static void ExpTest()
 		{
 			GenericFloatingPointFunctions.Exp(Two)
-				.Should().BeApproximately(Values.CreateQuad(0x4001_D8E6_4B8D_4DDA, 0xDCC3_3A3B_A206_B68B), Delta);
+				.Should().BeApproximately(Values.CreateFloat<Float>(0x4001_D8E6_4B8D_4DDA, 0xDCC3_3A3B_A206_B68B), Delta);
 			GenericFloatingPointFunctions.Exp(NegativeHalf)
-				.Should().BeApproximately(Values.CreateQuad(0x3FFE_368B_2FC6_F960, 0x9FE7_ACEB_46AA_619C), Delta);
-			GenericFloatingPointFunctions.Exp(Values.CreateQuad(0x400C_7700_0000_0000, 0x0000_0000_0000_0000))
+				.Should().BeApproximately(Values.CreateFloat<Float>(0x3FFE_368B_2FC6_F960, 0x9FE7_ACEB_46AA_619C), Delta);
+			GenericFloatingPointFunctions.Exp(Values.CreateFloat<Float>(0x400C_7700_0000_0000, 0x0000_0000_0000_0000))
 				.Should().Be(Float.PositiveInfinity);
-			GenericFloatingPointFunctions.Exp(Values.CreateQuad(0xC00C_7700_0000_0000, 0x0000_0000_0000_0000))
+			GenericFloatingPointFunctions.Exp(Values.CreateFloat<Float>(0xC00C_7700_0000_0000, 0x0000_0000_0000_0000))
 				.Should().Be(Zero);
 			GenericFloatingPointFunctions.Exp(Zero)
 				.Should().Be(One);
@@ -455,7 +455,7 @@ namespace MissingValues.Tests.Core
 		public static void HypotTest()
 		{
 			GenericFloatingPointFunctions.Hypot(Hundred, Ten)
-				.Should().BeApproximately(Values.CreateQuad(0x4005_91FE_B9F2_BF46, 0xC3A7_08A3_1212_49E7), Delta);
+				.Should().BeApproximately(Values.CreateFloat<Float>(0x4005_91FE_B9F2_BF46, 0xC3A7_08A3_1212_49E7), Delta);
 			GenericFloatingPointFunctions.Hypot(Float.PositiveInfinity, Float.NegativeInfinity)
 				.Should().Be(Float.PositiveInfinity);
 			GenericFloatingPointFunctions.Hypot(Float.NaN, Float.NaN)
@@ -473,11 +473,11 @@ namespace MissingValues.Tests.Core
 		[Fact]
 		public static void ILogBTest()
 		{
-			FloatingPointIeee754<Float>.ILogB(Values.CreateQuad(0x4009_0000_0000_0000, 0x0000_0000_0000_0000))
+			FloatingPointIeee754<Float>.ILogB(Values.CreateFloat<Float>(0x4009_0000_0000_0000, 0x0000_0000_0000_0000))
 				.Should().Be(10);
-			FloatingPointIeee754<Float>.ILogB(Values.CreateQuad(0x403F_0000_0000_0000, 0x0000_0000_0000_0000))
+			FloatingPointIeee754<Float>.ILogB(Values.CreateFloat<Float>(0x403F_0000_0000_0000, 0x0000_0000_0000_0000))
 				.Should().Be(64);
-			FloatingPointIeee754<Float>.ILogB(Values.CreateQuad(0xC03F_0000_0000_0000, 0x0000_0000_0000_0000))
+			FloatingPointIeee754<Float>.ILogB(Values.CreateFloat<Float>(0xC03F_0000_0000_0000, 0x0000_0000_0000_0000))
 				.Should().Be(64);
 			FloatingPointIeee754<Float>.ILogB(Zero)
 				.Should().Be(int.MinValue);
@@ -486,7 +486,7 @@ namespace MissingValues.Tests.Core
 		public static void LogTest()
 		{
 			GenericFloatingPointFunctions.Log(Hundred)
-				.Should().BeApproximately(Values.CreateQuad(0x4001_26BB_1BBB_5551, 0x582D_D4AD_AC57_05A6), Delta);
+				.Should().BeApproximately(Values.CreateFloat<Float>(0x4001_26BB_1BBB_5551, 0x582D_D4AD_AC57_05A6), Delta);
 			GenericFloatingPointFunctions.Log(One)
 				.Should().Be(Zero);
 			GenericFloatingPointFunctions.Log(Zero)
@@ -499,7 +499,7 @@ namespace MissingValues.Tests.Core
 		{
 			GenericFloatingPointFunctions.LogP1(One)
 				.Should().Be(GenericFloatingPointFunctions.Log(Two))
-				.And.BeApproximately(Values.CreateQuad(0x3FFE_62E4_2FEF_A39E, 0xF357_93C7_6730_07E6), Delta);
+				.And.BeApproximately(Values.CreateFloat<Float>(0x3FFE_62E4_2FEF_A39E, 0xF357_93C7_6730_07E6), Delta);
 			GenericFloatingPointFunctions.LogP1(Zero)
 				.Should().Be(Zero);
 			GenericFloatingPointFunctions.LogP1(NegativeOne)
@@ -536,10 +536,10 @@ namespace MissingValues.Tests.Core
 		{
 			GenericFloatingPointFunctions.Pow<Float>(Three, Ten)
 				.Should()
-				.BeApproximately(Values.CreateQuad(0x400E_CD52_0000_0000, 0x0000_0000_0000_0000), Delta);
+				.BeApproximately(Values.CreateFloat<Float>(0x400E_CD52_0000_0000, 0x0000_0000_0000_0000), Delta);
 			GenericFloatingPointFunctions.Pow<Float>(Two, NegativeFour)
 				.Should()
-				.BeApproximately(Values.CreateQuad(0x3FFB_0000_0000_0000, 0x0000_0000_0000_0000), Delta);
+				.BeApproximately(Values.CreateFloat<Float>(0x3FFB_0000_0000_0000, 0x0000_0000_0000_0000), Delta);
 
 			// Special Cases
 			Float anything = 8, oddInt = 7, nonInt = 7.5d, greaterThanOne = GreaterThanOneSmallest, lessThanOne = LessThanOneLargest;
@@ -642,18 +642,18 @@ namespace MissingValues.Tests.Core
 			FloatingPointIeee754<Float>.ReciprocalEstimate(Two)
 				.Should().Be(Half);
 			FloatingPointIeee754<Float>.ReciprocalEstimate(Three)
-				.Should().BeApproximately(Values.CreateQuad(0x3FFD_5555_5555_5555, 0x5555_165E_5289_24A5), Delta);
+				.Should().BeApproximately(Values.CreateFloat<Float>(0x3FFD_5555_5555_5555, 0x5555_165E_5289_24A5), Delta);
 			FloatingPointIeee754<Float>.ReciprocalEstimate(Four)
-				.Should().BeApproximately(Values.CreateQuad(0x3FFD_0000_0000_0000, 0x0000_0000_0000_0000), Delta);
+				.Should().BeApproximately(Values.CreateFloat<Float>(0x3FFD_0000_0000_0000, 0x0000_0000_0000_0000), Delta);
 		}
 		[Fact]
 		public static void RootNTest()
 		{
-			GenericFloatingPointFunctions.RootN(Values.CreateQuad(0x4005_4400_0000_0000, 0x0000_0000_0000_0000), 4)
+			GenericFloatingPointFunctions.RootN(Values.CreateFloat<Float>(0x4005_4400_0000_0000, 0x0000_0000_0000_0000), 4)
 				.Should().Be(Three);
-			GenericFloatingPointFunctions.RootN(Values.CreateQuad(0x4005_0000_0000_0000, 0x0000_0000_0000_0000), 3)
+			GenericFloatingPointFunctions.RootN(Values.CreateFloat<Float>(0x4005_0000_0000_0000, 0x0000_0000_0000_0000), 3)
 				.Should().Be(Four)
-				.And.Be(GenericFloatingPointFunctions.Cbrt(Values.CreateQuad(0x4005_0000_0000_0000, 0x0000_0000_0000_0000)));
+				.And.Be(GenericFloatingPointFunctions.Cbrt(Values.CreateFloat<Float>(0x4005_0000_0000_0000, 0x0000_0000_0000_0000)));
 			GenericFloatingPointFunctions.RootN(Hundred, 2)
 				.Should().Be(Ten)
 				.And.Be(GenericFloatingPointFunctions.Sqrt(Hundred));
@@ -673,9 +673,9 @@ namespace MissingValues.Tests.Core
 		public static void ScaleBTest()
 		{
 			FloatingPointIeee754<Float>.ScaleB(Two, 3)
-				.Should().Be(Values.CreateQuad(0x4003_0000_0000_0000, 0x0000_0000_0000_0000));
+				.Should().Be(Values.CreateFloat<Float>(0x4003_0000_0000_0000, 0x0000_0000_0000_0000));
 			FloatingPointIeee754<Float>.ScaleB(NegativeTwo, 3)
-				.Should().Be(Values.CreateQuad(0xC003_0000_0000_0000, 0x0000_0000_0000_0000));
+				.Should().Be(Values.CreateFloat<Float>(0xC003_0000_0000_0000, 0x0000_0000_0000_0000));
 			FloatingPointIeee754<Float>.ScaleB(Zero, 6)
 				.Should().Be(Zero);
 			FloatingPointIeee754<Float>.ScaleB(Two, 30000)
@@ -718,7 +718,7 @@ namespace MissingValues.Tests.Core
 		public static void SinhTest()
 		{
 			GenericFloatingPointFunctions.Sinh(Two)
-				.Should().BeApproximately(Values.CreateQuad(0x4000_D03C_F63B_6E19, 0xF6F3_4C80_2C96_2009), Delta);
+				.Should().BeApproximately(Values.CreateFloat<Float>(0x4000_D03C_F63B_6E19, 0xF6F3_4C80_2C96_2009), Delta);
 			GenericFloatingPointFunctions.Sinh(Zero)
 				.Should().Be(Zero);
 		}
@@ -726,7 +726,7 @@ namespace MissingValues.Tests.Core
 		public static void SqrtTest()
 		{
 			GenericFloatingPointFunctions.Sqrt(Ten)
-				.Should().BeApproximately(Values.CreateQuad(0x4000_94C5_83AD_A5B5, 0x2920_4A2B_C830_CD9C), Delta);
+				.Should().BeApproximately(Values.CreateFloat<Float>(0x4000_94C5_83AD_A5B5, 0x2920_4A2B_C830_CD9C), Delta);
 			GenericFloatingPointFunctions.Sqrt(Hundred)
 				.Should().BeApproximately(Ten, Delta);
 
@@ -755,7 +755,7 @@ namespace MissingValues.Tests.Core
 		public static void TanhTest()
 		{
 			GenericFloatingPointFunctions.Tanh(Two)
-				.Should().BeApproximately(Values.CreateQuad(0x3FFE_ED95_05E1_BC3D, 0x3D33_C432_FC3E_8256), Delta);
+				.Should().BeApproximately(Values.CreateFloat<Float>(0x3FFE_ED95_05E1_BC3D, 0x3D33_C432_FC3E_8256), Delta);
 			GenericFloatingPointFunctions.Tanh(Float.NaN)
 				.Should().Be(Float.NaN);
 			GenericFloatingPointFunctions.Tanh(Zero)
@@ -1032,8 +1032,10 @@ namespace MissingValues.Tests.Core
 			NumberBaseHelper<int>.CreateChecked<Float>(Int32MaxValue).Should().Be(int.MaxValue);
 			NumberBaseHelper<long>.CreateChecked<Float>(Int64MaxValue).Should().Be(long.MaxValue);
 			NumberBaseHelper<UInt128>.CreateChecked<Float>(TwoOver127).Should().Be(UInt128.Parse("170141183460469231731687303715884105728"));
-			NumberBaseHelper<UInt256>.CreateChecked<Float>(TwoOver127).Should().Be(UInt256.Parse("170141183460469231731687303715884105728"));
-			NumberBaseHelper<UInt512>.CreateChecked<Float>(TwoOver127).Should().Be(UInt512.Parse("170141183460469231731687303715884105728"));
+			NumberBaseHelper<UInt256>.CreateChecked<Float>(TwoOver255)
+				.Should().Be(UInt256.Parse("57896044618658097711785492504343953926634992332820282019728792003956564819968"));
+			NumberBaseHelper<UInt512>.CreateChecked<Float>(TwoOver511)
+				.Should().Be(UInt512.Parse("6703903964971298549787012499102923063739682910296196688861780721860882015036773488400937149083451713845015929093243025426876941405973284973216824503042048"));
 
 			NumberBaseHelper<Half>.CreateChecked<Float>(Half).Should().Be((Half)0.5f);
 			NumberBaseHelper<float>.CreateChecked<Float>(Half).Should().Be(0.5f);
@@ -1047,8 +1049,10 @@ namespace MissingValues.Tests.Core
 			NumberBaseHelper<int>.CreateSaturating<Float>(Int32MaxValue).Should().Be(int.MaxValue);
 			NumberBaseHelper<long>.CreateSaturating<Float>(Int64MaxValue).Should().Be(long.MaxValue);
 			NumberBaseHelper<UInt128>.CreateSaturating<Float>(TwoOver127).Should().Be(UInt128.Parse("170141183460469231731687303715884105728"));
-			NumberBaseHelper<UInt256>.CreateSaturating<Float>(TwoOver127).Should().Be(UInt256.Parse("170141183460469231731687303715884105728"));
-			NumberBaseHelper<UInt512>.CreateSaturating<Float>(TwoOver127).Should().Be(UInt512.Parse("170141183460469231731687303715884105728"));
+			NumberBaseHelper<UInt256>.CreateSaturating<Float>(TwoOver255)
+				.Should().Be(UInt256.Parse("57896044618658097711785492504343953926634992332820282019728792003956564819968"));
+			NumberBaseHelper<UInt512>.CreateSaturating<Float>(TwoOver511)
+				.Should().Be(UInt512.Parse("6703903964971298549787012499102923063739682910296196688861780721860882015036773488400937149083451713845015929093243025426876941405973284973216824503042048"));
 
 			NumberBaseHelper<Half>.CreateSaturating<Float>(Half).Should().Be((Half)0.5f);
 			NumberBaseHelper<float>.CreateSaturating<Float>(Half).Should().Be(0.5f);
@@ -1062,8 +1066,10 @@ namespace MissingValues.Tests.Core
 			NumberBaseHelper<int>.CreateTruncating<Float>(Int32MaxValue).Should().Be(int.MaxValue);
 			NumberBaseHelper<long>.CreateTruncating<Float>(Int64MaxValue).Should().Be(long.MaxValue);
 			NumberBaseHelper<UInt128>.CreateTruncating<Float>(TwoOver127).Should().Be(UInt128.Parse("170141183460469231731687303715884105728"));
-			NumberBaseHelper<UInt256>.CreateTruncating<Float>(TwoOver127).Should().Be(UInt256.Parse("170141183460469231731687303715884105728"));
-			NumberBaseHelper<UInt512>.CreateTruncating<Float>(TwoOver127).Should().Be(UInt512.Parse("170141183460469231731687303715884105728"));
+			NumberBaseHelper<UInt256>.CreateTruncating<Float>(TwoOver255)
+				.Should().Be(UInt256.Parse("57896044618658097711785492504343953926634992332820282019728792003956564819968"));
+			NumberBaseHelper<UInt512>.CreateTruncating<Float>(TwoOver511)
+				.Should().Be(UInt512.Parse("6703903964971298549787012499102923063739682910296196688861780721860882015036773488400937149083451713845015929093243025426876941405973284973216824503042048"));
 
 			NumberBaseHelper<Half>.CreateTruncating<Float>(Half).Should().Be((Half)0.5f);
 			NumberBaseHelper<float>.CreateTruncating<Float>(Half).Should().Be(0.5f);
@@ -1078,10 +1084,10 @@ namespace MissingValues.Tests.Core
 			NumberBaseHelper<Float>.CreateChecked<long>(long.MaxValue).Should().Be(Int64MaxValue);
 			NumberBaseHelper<Float>.CreateChecked<UInt128>(UInt128.Parse("170141183460469231731687303715884105728"))
 				.Should().Be(TwoOver127);
-			NumberBaseHelper<Float>.CreateChecked<UInt256>(UInt256.Parse("170141183460469231731687303715884105728"))
-				.Should().Be(TwoOver127);
-			NumberBaseHelper<Float>.CreateChecked<UInt512>(UInt512.Parse("170141183460469231731687303715884105728"))
-				.Should().Be(TwoOver127);
+			NumberBaseHelper<Float>.CreateChecked<UInt256>(UInt256.Parse("57896044618658097711785492504343953926634992332820282019728792003956564819968"))
+				.Should().Be(TwoOver255);
+			NumberBaseHelper<Float>.CreateChecked<UInt512>(UInt512.Parse("6703903964971298549787012499102923063739682910296196688861780721860882015036773488400937149083451713845015929093243025426876941405973284973216824503042048"))
+				.Should().Be(TwoOver511);
 
 			NumberBaseHelper<Float>.CreateChecked<Half>((Half)0.5f).Should().Be(Half);
 			NumberBaseHelper<Float>.CreateChecked<float>(0.5f).Should().Be(Half);
@@ -1090,38 +1096,38 @@ namespace MissingValues.Tests.Core
 		[Fact]
 		public static void CreateSaturatingToQuadTest()
 		{
-			NumberBaseHelper<Float>.CreateChecked<byte>(byte.MaxValue).Should().Be(ByteMaxValue);
-			NumberBaseHelper<Float>.CreateChecked<short>(short.MaxValue).Should().Be(Int16MaxValue);
-			NumberBaseHelper<Float>.CreateChecked<int>(int.MaxValue).Should().Be(Int32MaxValue);
-			NumberBaseHelper<Float>.CreateChecked<long>(long.MaxValue).Should().Be(Int64MaxValue);
-			NumberBaseHelper<Float>.CreateChecked<UInt128>(UInt128.Parse("170141183460469231731687303715884105728"))
+			NumberBaseHelper<Float>.CreateSaturating<byte>(byte.MaxValue).Should().Be(ByteMaxValue);
+			NumberBaseHelper<Float>.CreateSaturating<short>(short.MaxValue).Should().Be(Int16MaxValue);
+			NumberBaseHelper<Float>.CreateSaturating<int>(int.MaxValue).Should().Be(Int32MaxValue);
+			NumberBaseHelper<Float>.CreateSaturating<long>(long.MaxValue).Should().Be(Int64MaxValue);
+			NumberBaseHelper<Float>.CreateSaturating<UInt128>(UInt128.Parse("170141183460469231731687303715884105728"))
 				.Should().Be(TwoOver127);
-			NumberBaseHelper<Float>.CreateChecked<UInt256>(UInt256.Parse("170141183460469231731687303715884105728"))
-				.Should().Be(TwoOver127);
-			NumberBaseHelper<Float>.CreateChecked<UInt512>(UInt512.Parse("170141183460469231731687303715884105728"))
-				.Should().Be(TwoOver127);
+			NumberBaseHelper<Float>.CreateSaturating<UInt256>(UInt256.Parse("57896044618658097711785492504343953926634992332820282019728792003956564819968"))
+				.Should().Be(TwoOver255);
+			NumberBaseHelper<Float>.CreateSaturating<UInt512>(UInt512.Parse("6703903964971298549787012499102923063739682910296196688861780721860882015036773488400937149083451713845015929093243025426876941405973284973216824503042048"))
+				.Should().Be(TwoOver511);
 
-			NumberBaseHelper<Float>.CreateChecked<Half>((Half)0.5f).Should().Be(Half);
-			NumberBaseHelper<Float>.CreateChecked<float>(0.5f).Should().Be(Half);
-			NumberBaseHelper<Float>.CreateChecked<double>(0.5d).Should().Be(Half);
+			NumberBaseHelper<Float>.CreateSaturating<Half>((Half)0.5f).Should().Be(Half);
+			NumberBaseHelper<Float>.CreateSaturating<float>(0.5f).Should().Be(Half);
+			NumberBaseHelper<Float>.CreateSaturating<double>(0.5d).Should().Be(Half);
 		}
 		[Fact]
 		public static void CreateTruncatingToQuadTest()
 		{
-			NumberBaseHelper<Float>.CreateChecked<byte>(byte.MaxValue).Should().Be(ByteMaxValue);
-			NumberBaseHelper<Float>.CreateChecked<short>(short.MaxValue).Should().Be(Int16MaxValue);
-			NumberBaseHelper<Float>.CreateChecked<int>(int.MaxValue).Should().Be(Int32MaxValue);
-			NumberBaseHelper<Float>.CreateChecked<long>(long.MaxValue).Should().Be(Int64MaxValue);
-			NumberBaseHelper<Float>.CreateChecked<UInt128>(UInt128.Parse("170141183460469231731687303715884105728"))
+			NumberBaseHelper<Float>.CreateTruncating<byte>(byte.MaxValue).Should().Be(ByteMaxValue);
+			NumberBaseHelper<Float>.CreateTruncating<short>(short.MaxValue).Should().Be(Int16MaxValue);
+			NumberBaseHelper<Float>.CreateTruncating<int>(int.MaxValue).Should().Be(Int32MaxValue);
+			NumberBaseHelper<Float>.CreateTruncating<long>(long.MaxValue).Should().Be(Int64MaxValue);
+			NumberBaseHelper<Float>.CreateTruncating<UInt128>(UInt128.Parse("170141183460469231731687303715884105728"))
 				.Should().Be(TwoOver127);
-			NumberBaseHelper<Float>.CreateChecked<UInt256>(UInt256.Parse("170141183460469231731687303715884105728"))
-				.Should().Be(TwoOver127);
-			NumberBaseHelper<Float>.CreateChecked<UInt512>(UInt512.Parse("170141183460469231731687303715884105728"))
-				.Should().Be(TwoOver127);
+			NumberBaseHelper<Float>.CreateTruncating<UInt256>(UInt256.Parse("57896044618658097711785492504343953926634992332820282019728792003956564819968"))
+				.Should().Be(TwoOver255);
+			NumberBaseHelper<Float>.CreateTruncating<UInt512>(UInt512.Parse("6703903964971298549787012499102923063739682910296196688861780721860882015036773488400937149083451713845015929093243025426876941405973284973216824503042048"))
+				.Should().Be(TwoOver511);
 
-			NumberBaseHelper<Float>.CreateChecked<Half>((Half)0.5f).Should().Be(Half);
-			NumberBaseHelper<Float>.CreateChecked<float>(0.5f).Should().Be(Half);
-			NumberBaseHelper<Float>.CreateChecked<double>(0.5d).Should().Be(Half);
+			NumberBaseHelper<Float>.CreateTruncating<Half>((Half)0.5f).Should().Be(Half);
+			NumberBaseHelper<Float>.CreateTruncating<float>(0.5f).Should().Be(Half);
+			NumberBaseHelper<Float>.CreateTruncating<double>(0.5d).Should().Be(Half);
 		}
 		[Fact]
 		public static void IsCanonicalTest()
