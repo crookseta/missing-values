@@ -443,6 +443,21 @@ namespace MissingValues
 			}
 			return (nint)value._p0;
 		}
+
+		/// <summary>
+		/// Explicitly converts a <see cref="UInt256" /> value to a <see cref="BigInteger"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
+		public static explicit operator BigInteger(in UInt256 value)
+		{
+			if (value._p3 == 0 && value._p2 == 0 && value._p1 == 0)
+			{
+				return new BigInteger(value._p0);
+			}
+			Span<byte> span = stackalloc byte[Size];
+			value.WriteLittleEndianUnsafe(span);
+			return new BigInteger(span, true);
+		}
 		// Floating
 		/// <summary>
 		/// Explicitly converts a <see cref="UInt256" /> value to a <see cref="decimal"/>.
@@ -806,7 +821,76 @@ namespace MissingValues
 				Thrower.IntegerOverflow();
 			}
 			return new(0, (UInt128)value);
-		} 
+		}
+
+		/// <summary>
+		/// Explicitly converts a <see cref="BigInteger" /> value to a <see cref="UInt256"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
+		public static explicit operator UInt256(BigInteger value)
+		{
+			Span<byte> span = stackalloc byte[value.GetByteCount()];
+			value.TryWriteBytes(span, out int bytesWritten, true);
+
+			ref byte sourceRef = ref MemoryMarshal.GetReference(span);
+
+			if (bytesWritten >= Size)
+			{
+				return Unsafe.ReadUnaligned<UInt256>(ref sourceRef);
+			}
+
+			UInt256 result = Zero;
+
+			for (int i = 0; i < bytesWritten; i++)
+			{
+				UInt256 part = Unsafe.Add(ref sourceRef, i);
+				part <<= (i * 8);
+				result |= part;
+			}
+
+			return result;
+		}
+		/// <summary>
+		/// Explicitly converts a <see cref="BigInteger" /> value to a <see cref="UInt256"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
+		/// <exception cref="OverflowException"><paramref name="value"/> is outside the range of <see cref="UInt256"/>.</exception>
+		public static explicit operator checked UInt256(BigInteger value)
+		{
+			if (BigInteger.IsNegative(value))
+			{
+				Thrower.IntegerOverflow();
+			}
+
+			Span<byte> span = stackalloc byte[Size];
+
+			if (!value.TryWriteBytes(span, out int bytesWritten, true))
+			{
+				Thrower.IntegerOverflow();
+			}
+
+			ref byte sourceRef = ref MemoryMarshal.GetReference(span);
+
+			if (bytesWritten == Size)
+			{
+				return Unsafe.ReadUnaligned<UInt256>(ref sourceRef);
+			}
+			else if (bytesWritten > Size)
+			{
+				Thrower.IntegerOverflow();
+			}
+
+			UInt256 result = Zero;
+
+			for (int i = 0; i < bytesWritten; i++)
+			{
+				UInt256 part = Unsafe.Add(ref sourceRef, i);
+				part <<= (i * 8);
+				result |= part;
+			}
+
+			return result;
+		}
 		#endregion
 
 		private static UInt256 ToUInt256(double value)

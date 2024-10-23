@@ -661,6 +661,7 @@ namespace MissingValues
 					Int256 actual => actual,
 					Int512 actual => (Int256)actual,
 					nint actual => (Int256)actual,
+					BigInteger actual => (Int256)actual,
 					_ => BitHelper.DefaultConvert<Int256>(out converted)
 				};
 			}
@@ -695,8 +696,9 @@ namespace MissingValues
 				long actual => actual,
 				Int128 actual => actual,
 				Int256 actual => actual,
-				Int512 actual => (actual <= MinValue) ? MinValue : (actual >= MaxValue) ? MaxValue : (Int256)actual,
+				Int512 actual => (actual < MinValue) ? MinValue : (actual > MaxValue) ? MaxValue : (Int256)actual,
 				nint actual => actual,
+				BigInteger actual => (actual < (BigInteger)MinValue) ? MinValue : (actual > (BigInteger)MaxValue) ? MaxValue : (Int256)actual,
 				_ => BitHelper.DefaultConvert<Int256>(out converted)
 			};
 			return converted;
@@ -730,6 +732,7 @@ namespace MissingValues
 				Int128 actual => actual,
 				Int256 actual => actual,
 				nint actual => actual,
+				BigInteger actual => (Int256)actual,
 				_ => BitHelper.DefaultConvert<Int256>(out converted)
 			};
 			return converted;
@@ -764,6 +767,7 @@ namespace MissingValues
 					Int256 => (TOther)(object)value,
 					Int512 => (TOther)(object)(Int512)value,
 					nint => (TOther)(object)(nint)value,
+					BigInteger => (TOther)(object)(BigInteger)value,
 					_ => BitHelper.DefaultConvert<TOther>(out converted)
 				};
 			}
@@ -799,6 +803,7 @@ namespace MissingValues
 				Int256 => (TOther)(object)value,
 				Int512 => (TOther)(object)(Int512)value,
 				nint => (TOther)(object)((value >= (Int256)nint.MaxValue) ? nint.MaxValue : (value <= (Int256)nint.MinValue) ? nint.MinValue : (nint)value),
+				BigInteger => (TOther)(object)(BigInteger)value,
 				_ => BitHelper.DefaultConvert<TOther>(out converted)
 			};
 
@@ -832,6 +837,7 @@ namespace MissingValues
 				Int256 => (TOther)(object)value,
 				Int512 => (TOther)(object)(Int512)value,
 				nint => (TOther)(object)(nint)value,
+				BigInteger => (TOther)(object)(BigInteger)value,
 				_ => BitHelper.DefaultConvert<TOther>(out converted)
 			};
 

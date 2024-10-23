@@ -595,6 +595,7 @@ namespace MissingValues
 					Int128 actual => (UInt256)actual,
 					Int256 actual => (UInt256)actual,
 					Int512 actual => (UInt256)actual,
+					BigInteger actual => (UInt256)actual,
 					_ => BitHelper.DefaultConvert<UInt256>(out converted)
 				}; 
 			}
@@ -630,6 +631,7 @@ namespace MissingValues
 				Int128 actual => (actual < 0) ? MinValue : (UInt256)actual,
 				Int256 actual => (actual < 0) ? MinValue : (UInt256)actual,
 				Int512 actual => (actual < 0) ? MinValue : (actual > (Int512)MaxValue) ? MaxValue : (UInt256)actual,
+				BigInteger actual => (BigInteger.IsNegative(actual)) ? MinValue : (actual > (BigInteger)MaxValue) ? MaxValue : (UInt256)actual,
 				_ => BitHelper.DefaultConvert<UInt256>(out converted)
 			};
 			return converted;
@@ -662,6 +664,7 @@ namespace MissingValues
 				Int128 actual => (actual < 0) ? MinValue : (UInt256)actual,
 				Int256 actual => (actual < 0) ? MinValue : (UInt256)actual,
 				Int512 actual => (actual < 0) ? MinValue : (UInt256)actual,
+				BigInteger actual => (BigInteger.IsNegative(actual)) ? MinValue : (UInt256)actual,
 				_ => BitHelper.DefaultConvert<UInt256>(out converted)
 			};
 			return converted;
@@ -696,6 +699,7 @@ namespace MissingValues
 					Int256 => (TOther)(object)(Int256)value,
 					Int512 => (TOther)(object)(Int512)value,
 					nint => (TOther)(object)(nint)value,
+					BigInteger => (TOther)(object)(BigInteger)value,
 					_ => BitHelper.DefaultConvert<TOther>(out converted)
 				};
 			}
@@ -738,6 +742,7 @@ namespace MissingValues
 #else
 				nint => (TOther)(object)((value >= new UInt128(0x0000_0000_0000_0000, 0x7FFF_FFFF_FFFF_FFFF)) ? nint.MaxValue : (nint)value),
 #endif
+				BigInteger => (TOther)(object)(BigInteger)value,
 				_ => BitHelper.DefaultConvert<TOther>(out converted)
 			};
 
@@ -771,6 +776,7 @@ namespace MissingValues
 				Int256 => (TOther)(object)(Int256)value,
 				Int512 => (TOther)(object)(Int512)value,
 				nint => (TOther)(object)(nint)value,
+				BigInteger => (TOther)(object)(BigInteger)value,
 				_ => BitHelper.DefaultConvert<TOther>(out converted)
 			};
 			return converted;

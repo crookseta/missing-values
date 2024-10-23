@@ -759,6 +759,7 @@ namespace MissingValues
 					Int256 actual => (Int512)actual,
 					Int512 actual => actual,
 					nint actual => (Int512)actual,
+					BigInteger actual => (Int512)actual,
 					_ => BitHelper.DefaultConvert<Int512>(out converted)
 				};
 			}
@@ -797,6 +798,7 @@ namespace MissingValues
 				Int256 actual => actual,
 				Int512 actual => actual,
 				nint actual => actual,
+				BigInteger actual => (actual < (BigInteger)MinValue) ? MinValue : (actual > (BigInteger)MaxValue) ? MaxValue : (Int512)actual,
 				_ => BitHelper.DefaultConvert<Int512>(out converted)
 			};
 
@@ -834,6 +836,7 @@ namespace MissingValues
 				Int256 actual => actual,
 				Int512 actual => actual,
 				nint actual => actual,
+				BigInteger actual => (Int512)actual,
 				_ => BitHelper.DefaultConvert<Int512>(out converted)
 			};
 
@@ -870,6 +873,7 @@ namespace MissingValues
 					Int256 => (TOther)(object)(Int256)value,
 					Int512 => (TOther)(object)value,
 					nint => (TOther)(object)(nint)value,
+					BigInteger => (TOther)(object)(BigInteger)value,
 					_ => BitHelper.DefaultConvert<TOther>(out converted)
 				};
 			}
@@ -906,6 +910,7 @@ namespace MissingValues
 				Int256 => (TOther)(object)((value >= (Int512)Int256.MaxValue) ? Int256.MaxValue : (value <= (Int512)Int256.MinValue) ? Int128.MinValue : (Int256)value),
 				Int512 => (TOther)(object)value,
 				nint => (TOther)(object)((value >= (Int512)nint.MaxValue) ? nint.MaxValue : (value <= (Int512)nint.MinValue) ? nint.MinValue : (nint)value),
+				BigInteger => (TOther)(object)(BigInteger)value,
 				_ => BitHelper.DefaultConvert<TOther>(out converted)
 			};
 
@@ -940,6 +945,7 @@ namespace MissingValues
 				Int256 => (TOther)(object)(Int256)value,
 				Int512 => (TOther)(object)value,
 				nint => (TOther)(object)(nint)value,
+				BigInteger => (TOther)(object)(BigInteger)value,
 				_ => BitHelper.DefaultConvert<TOther>(out converted)
 			};
 

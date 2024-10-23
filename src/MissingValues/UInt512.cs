@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
+using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -514,6 +515,21 @@ namespace MissingValues
 			}
 			return checked((nint)value._p0);
 		}
+
+		/// <summary>
+		/// Explicitly converts a <see cref="UInt512" /> value to a <see cref="BigInteger"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
+		public static explicit operator BigInteger(in UInt512 value)
+		{
+			if (value._p7 == 0 && value._p6 == 0 && value._p5 == 0 && value._p4 == 0 && value._p3 == 0 && value._p2 == 0 && value._p1 == 0)
+			{
+				return new BigInteger(value._p0);
+			}
+			Span<byte> span = stackalloc byte[Size];
+			value.WriteLittleEndianUnsafe(span);
+			return new BigInteger(span, true);
+		}
 		// Floating
 		/// <summary>
 		/// Explicitly converts a <see cref="UInt512" /> value to a <see cref="decimal"/>.
@@ -816,6 +832,75 @@ namespace MissingValues
 				Thrower.IntegerOverflow();
 			}
 			return new UInt512((nuint)value);
+		}
+
+		/// <summary>
+		/// Explicitly converts a <see cref="BigInteger" /> value to a <see cref="UInt512"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
+		public static explicit operator UInt512(BigInteger value)
+		{
+			Span<byte> span = stackalloc byte[value.GetByteCount()];
+			value.TryWriteBytes(span, out int bytesWritten, true);
+
+			ref byte sourceRef = ref MemoryMarshal.GetReference(span);
+
+			if (bytesWritten >= Size)
+			{
+				return Unsafe.ReadUnaligned<UInt512>(ref sourceRef);
+			}
+
+			UInt512 result = Zero;
+
+			for (int i = 0; i < bytesWritten; i++)
+			{
+				UInt512 part = Unsafe.Add(ref sourceRef, i);
+				part <<= (i * 8);
+				result |= part;
+			}
+
+			return result;
+		}
+		/// <summary>
+		/// Explicitly converts a <see cref="BigInteger" /> value to a <see cref="UInt512"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
+		/// <exception cref="OverflowException"><paramref name="value"/> is outside the range of <see cref="UInt512"/>.</exception>
+		public static explicit operator checked UInt512(BigInteger value)
+		{
+			if (BigInteger.IsNegative(value))
+			{
+				Thrower.IntegerOverflow();
+			}
+
+			Span<byte> span = stackalloc byte[Size];
+
+			if (!value.TryWriteBytes(span, out int bytesWritten, true))
+			{
+				Thrower.IntegerOverflow();
+			}
+
+			ref byte sourceRef = ref MemoryMarshal.GetReference(span);
+
+			if (bytesWritten == Size)
+			{
+				return Unsafe.ReadUnaligned<UInt512>(ref sourceRef);
+			}
+			else if (bytesWritten > Size)
+			{
+				Thrower.IntegerOverflow();
+			}
+
+			UInt512 result = Zero;
+
+			for (int i = 0; i < bytesWritten; i++)
+			{
+				UInt512 part = Unsafe.Add(ref sourceRef, i);
+				part <<= (i * 8);
+				result |= part;
+			}
+
+			return result;
 		}
 		//Floating
 		/// <summary>

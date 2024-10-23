@@ -6,6 +6,7 @@ using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
+using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
@@ -532,6 +533,26 @@ namespace MissingValues
 			}
 			return checked((nint)value._p0);
 		}
+
+		/// <summary>
+		/// Explicitly converts a <see cref="Int512" /> value to a <see cref="BigInteger"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
+		public static explicit operator BigInteger(in Int512 value)
+		{
+			if (~(value._p7 & value._p6 & value._p5 & value._p4 & value._p3 & value._p2 & value._p1) == 0)
+			{
+				return new BigInteger((long)value._p0);
+			}
+			if (value._p7 == 0 && value._p6 == 0 && value._p5 == 0 && value._p4 == 0 && value._p3 == 0 && value._p2 == 0 && value._p1 == 0)
+			{
+				return new BigInteger(value._p0);
+			}
+
+			Span<byte> span = stackalloc byte[Size];
+			value.WriteLittleEndianUnsafe(span);
+			return new BigInteger(span, value >= 0);
+		}
 		// Floating
 		/// <summary>
 		/// Explicitly converts a <see cref="Int512" /> value to a <see cref="decimal"/>.
@@ -714,6 +735,124 @@ namespace MissingValues
 				lowerShifted, lowerShifted, lowerShifted, lowerShifted,
 				lowerShifted, lowerShifted, (ulong)Unsafe.Add(ref v, 1), (ulong)v
 				);
+		}
+
+		/// <summary>
+		/// Explicitly converts a <see cref="BigInteger" /> value to a <see cref="Int512"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
+		public static explicit operator Int512(BigInteger value)
+		{
+			bool isUnsigned = BigInteger.IsPositive(value);
+
+			Span<byte> span = stackalloc byte[value.GetByteCount()];
+			value.TryWriteBytes(span, out int bytesWritten, isUnsigned);
+
+			ref byte sourceRef = ref MemoryMarshal.GetReference(span);
+
+			if (bytesWritten >= Size)
+			{
+				return Unsafe.ReadUnaligned<Int512>(ref sourceRef);
+			}
+
+			Int512 result = Zero;
+
+			for (int i = 0; i < bytesWritten; i++)
+			{
+				Int512 part = Unsafe.Add(ref sourceRef, i);
+				part <<= (i * 8);
+				result |= part;
+			}
+
+			result <<= ((Size - bytesWritten) * 8);
+
+			if (!isUnsigned)
+			{
+				result |= ((One << ((Size * 8) - 1)) >> (((Size - bytesWritten) * 8) - 1));
+			}
+
+			return result;
+		}
+		/// <summary>
+		/// Explicitly converts a <see cref="BigInteger" /> value to a <see cref="Int512"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
+		/// <exception cref="OverflowException"><paramref name="value"/> is outside the range of <see cref="Int512"/>.</exception>
+		public static explicit operator checked Int512(BigInteger value)
+		{
+			bool isUnsigned = BigInteger.IsPositive(value);
+
+			Span<byte> span = stackalloc byte[isUnsigned ? Size : value.GetByteCount()];
+			if (!value.TryWriteBytes(span, out int bytesWritten, isUnsigned))
+			{
+				Thrower.IntegerOverflow();
+			}
+
+			// Propagate the most significant bit so we have `0` or `-1`
+			sbyte sign = (sbyte)(span[^1]);
+			sign >>= 31;
+
+			// We need to also track if the input data is unsigned
+			isUnsigned |= (sign == 0);
+
+			if (isUnsigned && sbyte.IsNegative(sign) && (bytesWritten >= Size))
+			{
+				// When we are unsigned and the most significant bit is set, we are a large positive
+				// and therefore definitely out of range
+
+				Thrower.IntegerOverflow();
+			}
+
+			if (bytesWritten > Size)
+			{
+				if (span[Size..].IndexOfAnyExcept((byte)sign) >= 0)
+				{
+					// When we are unsigned and have any non-zero leading data or signed with any non-set leading
+					// data, we are a large positive/negative, respectively, and therefore definitely out of range
+
+					Thrower.IntegerOverflow();
+				}
+
+				if (isUnsigned == sbyte.IsNegative((sbyte)span[Size - 1]))
+				{
+					// When the most significant bit of the value being set/clear matches whether we are unsigned
+					// or signed then we are a large positive/negative and therefore definitely out of range
+
+					Thrower.IntegerOverflow();
+				}
+			}
+			
+			ref byte sourceRef = ref MemoryMarshal.GetReference(span);
+
+			if (bytesWritten >= Size)
+			{
+				return Unsafe.ReadUnaligned<Int512>(ref sourceRef);
+			}
+
+			Int512 result = Zero;
+
+			// We have between 1 and 63 bytes, so construct the relevant value directly
+			// since the data is in Little Endian format, we can just read the bytes and
+			// shift left by 8-bits for each subsequent part, then reverse endianness to
+			// ensure the order is correct. This is more efficient than iterating in reverse
+			// due to current JIT limitations
+
+			for (int i = 0; i < bytesWritten; i++)
+			{
+				Int512 part = Unsafe.Add(ref sourceRef, i);
+				part <<= (i * 8);
+				result |= part;
+			}
+
+			result <<= ((Size - bytesWritten) * 8);
+			result = BitHelper.ReverseEndianness(in result);
+
+			if (!isUnsigned)
+			{
+				result |= ((One << ((Size * 8) - 1)) >> (((Size - bytesWritten) * 8) - 1));
+			}
+
+			return result;
 		}
 		//Floating
 		/// <summary>
