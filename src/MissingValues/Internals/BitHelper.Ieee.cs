@@ -58,7 +58,7 @@ namespace MissingValues
 				else
 				{
 					// Mask off the implicit high bit.
-					bits = (man & Quad.TrailingSignificandMask) | ((ulong)exp << Quad.BiasedExponentShift);
+					bits = (man & Quad.TrailingSignificandMask) | ((UInt128)exp << Quad.BiasedExponentShift);
 				}
 			}
 
@@ -113,7 +113,7 @@ namespace MissingValues
 				else
 				{
 					// Mask off the implicit high bit.
-					bits = (man & Octo.TrailingSignificandMask) | ((ulong)exp << Octo.BiasedExponentShift);
+					bits = (man & Octo.TrailingSignificandMask) | ((UInt256)exp << Octo.BiasedExponentShift);
 				}
 			}
 

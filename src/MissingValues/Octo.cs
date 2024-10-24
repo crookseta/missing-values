@@ -8,6 +8,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Numerics;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Json.Serialization;
@@ -1355,8 +1356,8 @@ namespace MissingValues
 		/// <exception cref="OverflowException"><paramref name="value"/> is not finite.</exception>
 		public static explicit operator BigInteger(in Octo value)
 		{
-			const int kcbitUint = 32;
-			const int kcbitUlong = 64;
+			const int kcbitUInt128 = 128;
+			const int kcbitUInt256 = 256;
 
 			if (!IsFinite(value))
 			{
@@ -1372,7 +1373,7 @@ namespace MissingValues
 
 			if (exp <= 0)
 			{
-				if (exp <= -kcbitUlong)
+				if (exp <= -kcbitUInt256)
 				{
 					return BigInteger.Zero;
 				}
@@ -1390,19 +1391,19 @@ namespace MissingValues
 				exp -= BiasedExponentLength;
 
 				// Compute cu and cbit so that exp == 32 * cu - cbit and 0 <= cbit < 32.
-				int cu = (exp - 1) / kcbitUint + 1;
-				int cbit = cu * kcbitUint - exp;
-				Debug.Assert(0 <= cbit && cbit < kcbitUint);
+				int cu = (exp - 1) / kcbitUInt128 + 1;
+				int cbit = cu * kcbitUInt128 - exp;
+				Debug.Assert(0 <= cbit && cbit < kcbitUInt128);
 				Debug.Assert(cu >= 1);
 
 				// Populate the uints.
-				Span<uint> bits = stackalloc uint[cu + 2];
-				bits[cu + 1] = (uint)(man >> (cbit + kcbitUint));
-				bits[cu] = unchecked((uint)(man >> cbit));
+				Span<UInt128> bits = stackalloc UInt128[cu + 2];
+				bits[cu + 1] = (UInt128)(man >> (cbit + kcbitUInt128));
+				bits[cu] = unchecked((UInt128)(man >> cbit));
 				if (cbit > 0)
-					bits[cu - 1] = unchecked((uint)man) << (kcbitUint - cbit);
+					bits[cu - 1] = unchecked((UInt128)man) << (kcbitUInt128 - cbit);
 
-				return sign > 0 ? new BigInteger(MemoryMarshal.Cast<uint, byte>(bits)) : -(new BigInteger(MemoryMarshal.Cast<uint, byte>(bits)));
+				return sign > 0 ? new BigInteger(MemoryMarshal.Cast<UInt128, byte>(bits), true) : -(new BigInteger(MemoryMarshal.Cast<UInt128, byte>(bits)));
 			}
 		}
 		// Floating
@@ -1697,43 +1698,60 @@ namespace MissingValues
 			return (Octo)(UInt128)value;
 		}
 
+		/// <summary>
+		/// Explicitly converts a <see cref="BigInteger" /> value to a <see cref="Octo"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
 		public static explicit operator Octo(BigInteger value)
 		{
-			Span<uint> bits = stackalloc uint[value.GetByteCount() / sizeof(uint)];
+			Span<byte> bits = stackalloc byte[value.GetByteCount()];
 
 			int sign = value.Sign;
-			value.TryWriteBytes(MemoryMarshal.Cast<uint, byte>(bits), out int length);
+			value.TryWriteBytes(bits, out int length);
+			scoped Span<UInt128> bits128;
+			length /= Unsafe.SizeOf<UInt128>();
+			if (!BitOperations.IsPow2(bits.Length) && bits.Length >= 8)
+			{
+				int pow2Length = length * Unsafe.SizeOf<UInt128>();
+				var remainder = bits[pow2Length..];
+				bits128 = stackalloc UInt128[++length];
+				bits[..pow2Length].CopyTo(MemoryMarshal.AsBytes(bits128));
+				for (int i = remainder.Length - 1, shift = 128 - 8; i >= 0; i--, shift -= 8)
+				{
+					bits128[^1] = (UInt128)remainder[i] << shift;
+				}
+			}
+			else if (bits.Length < 4)
+			{
+				bits128 = stackalloc UInt128[length = 1];
+				bits.CopyTo(MemoryMarshal.AsBytes(bits128));
+			}
+			else
+			{
+				bits128 = MemoryMarshal.Cast<byte, UInt128>(bits);
+			}
 
 			if (length == 1)
 			{
-				return bits[0];
+				return bits128[0];
 			}
 
-			// The maximum exponent for quads is 262143, which corresponds to a uint bit length of 32.
-			// All BigIntegers with bits[] longer than 32 evaluate to Octo.Infinity (or NegativeInfinity).
+			// The maximum exponent for quads is 262143, which corresponds to a uint bit length of 128.
+			// All BigIntegers with bits[] longer than 128 evaluate to Quad.Infinity (or NegativeInfinity).
 			// Cases where the exponent is between 262144 and 262162 are handled in BitHelper.GetOctoFromParts.
-			const int InfinityLength = MaxExponent / 32;
+			const int InfinityLength = MaxExponent / 128;
 
 			if (length > InfinityLength)
 			{
 				if (sign == 1)
-					return double.PositiveInfinity;
+					return Octo.PositiveInfinity;
 				else
-					return double.NegativeInfinity;
+					return Octo.NegativeInfinity;
 			}
 
-			UInt256 h = ((ulong)bits[length - 1] << 96) 
-				| ((ulong)bits[length - 2] << 64) 
-				| (length > 2 ? ((ulong)bits[length - 3] << 32) 
-				| (length > 3 ? bits[length - 4] : 0) : 0);
-			UInt256 m = length > 4 ? ((ulong)bits[length - 5] << 96) 
-				| ((ulong)length > 5 ? (bits[length - 6] << 64) 
-				| ((ulong)length > 6 ? (bits[length - 7] << 32) 
-				| (length > 7 ? bits[length - 8] : 0) : 0) : 0) : 0;
-			UInt256 l = length > 8 ? ((ulong)bits[length - 9] << 96)
-				| ((ulong)length > 9 ? (bits[length - 10] << 64)
-				| ((ulong)length > 10 ? (bits[length - 11] << 32)
-				| (length > 11 ? bits[length - 12] : 0) : 0) : 0) : 0;
+			UInt256 h = bits128[^1];
+			UInt256 m = length > 1 ? bits128[^2] : 0;
+			UInt256 l = length > 2 ? bits128[^3] : 0;
 
 			int z = (int)UInt128.LeadingZeroCount((UInt128)h);
 

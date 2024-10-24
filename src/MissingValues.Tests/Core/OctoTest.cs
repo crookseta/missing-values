@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
@@ -156,6 +157,15 @@ namespace MissingValues.Tests.Core
 		{
 			((Octo)from).Should().Be(to);
 		}
+		[Fact]
+		public void Cast_FromBigInteger()
+		{
+			TwoOver255.Should()
+				.Be((Octo)BigInteger.Parse("57896044618658097711785492504343953926634992332820282019728792003956564819968"));
+			TwoOver511
+				.Should()
+				.Be((Octo)BigInteger.Parse("6703903964971298549787012499102923063739682910296196688861780721860882015036773488400937149083451713845015929093243025426876941405973284973216824503042048"));
+		}
 		[Theory]
 		[MemberData(nameof(CastFromHalfTheoryData))]
 		public void Cast_FromHalf(Half from, Octo to)
@@ -258,6 +268,14 @@ namespace MissingValues.Tests.Core
 		public void Cast_ToInt512(Octo from, Int512 to)
 		{
 			((Int512)from).Should().Be(to);
+		}
+		[Fact]
+		public void Cast_ToBigInteger()
+		{
+			BigInteger.Parse("57896044618658097711785492504343953926634992332820282019728792003956564819968")
+				.Should().Be((BigInteger)TwoOver255);
+			BigInteger.Parse("6703903964971298549787012499102923063739682910296196688861780721860882015036773488400937149083451713845015929093243025426876941405973284973216824503042048")
+				.Should().Be((BigInteger)TwoOver511);
 		}
 		[Theory]
 		[MemberData(nameof(CastToHalfTheoryData))]
