@@ -502,6 +502,7 @@ namespace MissingValues
 				Int128 actual => (Quad)actual,
 				Int256 actual => (Quad)actual,
 				Int512 actual => (Quad)actual,
+				BigInteger actual => (Quad)actual,
 				_ => BitHelper.DefaultConvert<Quad>(out converted)
 			};
 
@@ -537,6 +538,7 @@ namespace MissingValues
 					Int128 => (TOther)(object)(Int128)value,
 					Int256 => (TOther)(object)(Int256)value,
 					Int512 => (TOther)(object)(Int512)value,
+					BigInteger => (TOther)(object)(BigInteger)value,
 					nint => (TOther)(object)(nint)value,
 					_ => BitHelper.DefaultConvert<TOther>(out converted)
 				};
@@ -578,6 +580,7 @@ namespace MissingValues
 				Int256 => (TOther)(object)((value >= new Quad(0x40FE_0000_0000_0000, 0x0000_0000_0000_0000)) ? Int256.MaxValue : (value <= new Quad(0xC0FE_0000_0000_0000, 0x0000_0000_0000_0000)) ? Int256.MinValue : (Int256)value),
 				Int512 => (TOther)(object)((value >= new Quad(0x41FE_0000_0000_0000, 0x0000_0000_0000_0000)) ? Int512.MaxValue : (value <= new Quad(0xC1FE_0000_0000_0000, 0x0000_0000_0000_0000)) ? Int512.MinValue : (Int512)value),
 				nint => (TOther)(object)((value >= nint.MaxValue) ? nint.MaxValue : (value <= nint.MinValue) ? nint.MinValue : (nint)value),
+				BigInteger => (TOther)(object)(BigInteger)value,
 				_ => BitHelper.DefaultConvert<TOther>(out converted)
 			};
 
