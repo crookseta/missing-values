@@ -22,6 +22,7 @@ namespace MissingValues
 		IBigInteger<Int256>,
 		IMinMaxValue<Int256>,
 		ISignedNumber<Int256>,
+		IPowerFunctions<Int256>,
 		IFormattableSignedInteger<Int256, UInt256>
 	{
 		private static UInt128 _upperMin => new UInt128(0x8000_0000_0000_0000, 0x0000_0000_0000_0000);
@@ -371,28 +372,18 @@ namespace MissingValues
 		}
 
 		/// <inheritdoc/>
-		public static Int256 PopCount(Int256 value)
-		{
-			return BitHelper.PopCount(in value);
-		}
+		public static Int256 PopCount(Int256 value) => BitHelper.PopCount(in value);
+
+		static Int256 IPowerFunctions<Int256>.Pow(Int256 x, Int256 y) => Pow(x, checked((int)y));
 
 		/// <inheritdoc/>
-		public static Int256 RotateLeft(Int256 value, int rotateAmount)
-		{
-			return (value << rotateAmount) | (value >>> (256 - rotateAmount));
-		}
+		public static Int256 RotateLeft(Int256 value, int rotateAmount) => (value << rotateAmount) | (value >>> (256 - rotateAmount));
 
 		/// <inheritdoc/>
-		public static Int256 RotateRight(Int256 value, int rotateAmount)
-		{
-			return (value >>> rotateAmount) | (value << (256 - rotateAmount));
-		}
+		public static Int256 RotateRight(Int256 value, int rotateAmount) => (value >>> rotateAmount) | (value << (256 - rotateAmount));
 
 		/// <inheritdoc/>
-		public static Int256 TrailingZeroCount(Int256 value)
-		{
-			return BitHelper.TrailingZeroCount(in value);
-		}
+		public static Int256 TrailingZeroCount(Int256 value) => BitHelper.TrailingZeroCount(in value);
 
 		/// <inheritdoc/>
 		public static bool TryParse(ReadOnlySpan<char> s, NumberStyles style, IFormatProvider? provider, [MaybeNullWhen(false)] out Int256 result)

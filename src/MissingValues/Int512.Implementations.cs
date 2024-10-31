@@ -19,6 +19,7 @@ namespace MissingValues
 		IBigInteger<Int512>,
 		IMinMaxValue<Int512>,
 		ISignedNumber<Int512>,
+		IPowerFunctions<Int512>,
 		IFormattableSignedInteger<Int512, UInt512>
 	{
 		private static UInt256 _upperMin => new UInt256(0x8000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
@@ -441,6 +442,8 @@ namespace MissingValues
 
 		/// <inheritdoc/>
 		public static Int512 PopCount(Int512 value) => (Int512)(BitHelper.PopCount(in value));
+
+		static Int512 IPowerFunctions<Int512>.Pow(Int512 x, Int512 y) => Pow(x, checked((int)y));
 
 		/// <inheritdoc/>
 		public static Int512 RotateLeft(Int512 value, int rotateAmount) => (value << rotateAmount) | (value >>> (512 - rotateAmount));

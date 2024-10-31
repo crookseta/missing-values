@@ -1,3 +1,4 @@
+using System.Buffers;
 using System.Diagnostics;
 using System.Numerics;
 using System.Runtime.CompilerServices;
@@ -7,6 +8,8 @@ namespace MissingValues.Internals;
 
 internal static class Calculator
 {
+	public const int StackAllocThreshold = 64;
+
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static UInt128 BigMul(ulong a, ulong b)
 	{
@@ -48,6 +51,50 @@ internal static class Calculator
 	{
 		ulong quotient = left / right;
 		return (quotient, (uint)left - ((uint)quotient * right));
+	}
+
+	public static void Square(ReadOnlySpan<uint> value, Span<uint> bits)
+	{
+		// Based on: https://github.com/dotnet/runtime/blob/main/src/libraries/System.Runtime.Numerics/src/System/Numerics/BigIntegerCalculator.SquMul.cs
+
+		Debug.Assert(bits.Length == value.Length + value.Length);
+
+		// Executes different algorithms for computing z = a * a
+		// based on the actual length of a. If a is "small" enough
+		// we stick to the classic "grammar-school" method; for the
+		// rest we switch to implementations with less complexity
+		// albeit more overhead (which needs to pay off!).
+
+		// Switching to managed references helps eliminating
+		// index bounds check...
+		ref uint resultPtr = ref MemoryMarshal.GetReference(bits);
+
+		// Squares the bits using the "grammar-school" method.
+		// Envisioning the "rhombus" of a pen-and-paper calculation
+		// we see that computing z_i+j += a_j * a_i can be optimized
+		// since a_j * a_i = a_i * a_j (we're squaring after all!).
+		// Thus, we directly get z_i+j += 2 * a_j * a_i + c.
+
+		// ATTENTION: an ordinary multiplication is safe, because
+		// z_i+j + a_j * a_i + c <= 2(2^32 - 1) + (2^32 - 1)^2 =
+		// = 2^64 - 1 (which perfectly matches with ulong!). But
+		// here we would need an UInt65... Hence, we split these
+		// operation and do some extra shifts.
+		for (int i = 0; i < value.Length; i++)
+		{
+			ulong carry = 0UL;
+			uint v = value[i];
+			for (int j = 0; j < i; j++)
+			{
+				ulong digit1 = Unsafe.Add(ref resultPtr, i + j) + carry;
+				ulong digit2 = (ulong)value[j] * v;
+				Unsafe.Add(ref resultPtr, i + j) = unchecked((uint)(digit1 + (digit2 << 1)));
+				carry = (digit2 + (digit1 >> 1)) >> 31;
+			}
+			ulong digits = (ulong)v * v + carry;
+			Unsafe.Add(ref resultPtr, i + i) = unchecked((uint)digits);
+			Unsafe.Add(ref resultPtr, i + i + 1) = (uint)(digits >> 32);
+		}
 	}
 
 	public static UInt256 Multiply(in UInt256 left, uint right, out uint carry)
@@ -420,5 +467,127 @@ internal static class Calculator
 		left.CopyTo(remainder);
 
 		Divide(remainder, right, default);
+	}
+
+	public static void Pow(uint value, uint power, Span<uint> bits)
+	{
+		Pow(value != 0 ? new ReadOnlySpan<uint>(in value) : default, power, bits);
+	}
+	public static void Pow(ReadOnlySpan<uint> value, uint power, Span<uint> bits)
+	{
+		// Based on: https://github.com/dotnet/runtime/blob/main/src/libraries/System.Runtime.Numerics/src/System/Numerics/BigIntegerCalculator.PowMod.cs
+
+		Debug.Assert(bits.Length == PowBound(power, value.Length));
+
+		Span<uint> temp = stackalloc uint[bits.Length];
+		temp.Clear();
+
+		Span<uint> valueCopy = stackalloc uint[bits.Length];
+		value.CopyTo(valueCopy);
+		valueCopy[value.Length..].Clear();
+
+		Span<uint> result = PowCore(valueCopy, value.Length, temp, power, bits);
+		result.CopyTo(bits);
+		bits[result.Length..].Clear();
+	}
+
+	private static Span<uint> PowCore(Span<uint> value, int valueLength, Span<uint> temp, uint power, Span<uint> result)
+	{
+		// Based on: https://github.com/dotnet/runtime/blob/main/src/libraries/System.Runtime.Numerics/src/System/Numerics/BigIntegerCalculator.PowMod.cs
+		Debug.Assert(value.Length >= valueLength);
+		Debug.Assert(temp.Length == result.Length);
+		Debug.Assert(value.Length == temp.Length);
+
+		result[0] = 1;
+		int resultLength = 1;
+
+		// The basic pow algorithm using square-and-multiply.
+		while (power != 0)
+		{
+			if ((power & 1) == 1)
+				resultLength = MultiplySelf(ref result, resultLength, value[..valueLength], ref temp);
+			if (power != 1)
+				valueLength = SquareSelf(ref value, valueLength, ref temp);
+			power >>= 1;
+		}
+
+		return result[..resultLength];
+	}
+
+	private static int MultiplySelf(ref Span<uint> left, int leftLength, ReadOnlySpan<uint> right, ref Span<uint> temp)
+	{
+		// Based on: https://github.com/dotnet/runtime/blob/main/src/libraries/System.Runtime.Numerics/src/System/Numerics/BigIntegerCalculator.PowMod.cs
+		Debug.Assert(leftLength <= left.Length);
+
+		int resultLength = leftLength + right.Length;
+
+		if (leftLength >= right.Length)
+		{
+			Multiply(left[..leftLength], right, temp[..resultLength]);
+		}
+		else
+		{
+			Multiply(right, left[..leftLength], temp[..resultLength]);
+		}
+
+		left.Clear();
+		//switch buffers
+		Span<uint> t = left;
+		left = temp;
+		temp = t;
+		return ActualLength(left[..resultLength]);
+	}
+
+	private static int SquareSelf(ref Span<uint> value, int valueLength, ref Span<uint> temp)
+	{
+		// Based on: https://github.com/dotnet/runtime/blob/main/src/libraries/System.Runtime.Numerics/src/System/Numerics/BigIntegerCalculator.PowMod.cs
+		Debug.Assert(valueLength <= value.Length);
+		Debug.Assert(temp.Length >= valueLength + valueLength);
+
+		int resultLength = valueLength + valueLength;
+
+		Square(value[..valueLength], temp[..resultLength]);
+
+		value.Clear();
+		//switch buffers
+		Span<uint> t = value;
+		value = temp;
+		temp = t;
+		return ActualLength(value[..resultLength]);
+	}
+
+	public static int PowBound(uint power, int valueLength)
+	{
+		// Based on: https://github.com/dotnet/runtime/blob/main/src/libraries/System.Runtime.Numerics/src/System/Numerics/BigIntegerCalculator.PowMod.cs
+		// The basic pow algorithm, but instead of squaring
+		// and multiplying we just sum up the lengths.
+
+		int resultLength = 1;
+		while (power != 0)
+		{
+			checked
+			{
+				if ((power & 1) == 1)
+					resultLength += valueLength;
+				if (power != 1)
+					valueLength += valueLength;
+			}
+			power >>= 1;
+		}
+
+		return resultLength;
+	}
+
+	public static int ActualLength(ReadOnlySpan<uint> value)
+	{
+		// Based on: https://github.com/dotnet/runtime/blob/main/src/libraries/System.Runtime.Numerics/src/System/Numerics/BigIntegerCalculator.Utils.cs
+		// Since we're reusing memory here, the actual length
+		// of a given value may be less then the array's length
+
+		int length = value.Length;
+
+		while (length > 0 && value[length - 1] == 0)
+			--length;
+		return length;
 	}
 }

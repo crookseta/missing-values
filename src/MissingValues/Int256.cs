@@ -1,6 +1,7 @@
 ﻿using MissingValues.Info;
 using MissingValues.Internals;
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -132,6 +133,105 @@ namespace MissingValues
 			UInt256 upper = UInt256.BigMul((UInt256)left, (UInt256)right, out UInt256 ulower);
 			low = (Int256)ulower;
 			return (Int256)(upper) - ((left >> 255) & right) - ((right >> 255) & left);
+		}
+
+		/// <summary>
+		/// Raises a <see cref="Int256"/> value to the power of a specified value.
+		/// </summary>
+		/// <param name="value">The number to raise to the <paramref name="exponent"/> power.</param>
+		/// <param name="exponent">The exponent to raise <paramref name="value"/> by.</param>
+		/// <returns>The result of raising <paramref name="value"/> to the <paramref name="exponent"/> power.</returns>
+		/// <exception cref="ArgumentOutOfRangeException"><paramref name="exponent"/> is negative.</exception>
+		/// <exception cref="OverflowException">
+		/// The result of raising <paramref name="value"/> to the <paramref name="exponent"/> power is less than <see cref="MinValue"/> or greater than <see cref="MaxValue"/>.
+		/// </exception>
+		public static Int256 Pow(Int256 value, int exponent)
+		{
+			const int UIntCount = Size / sizeof(uint);
+
+			ArgumentOutOfRangeException.ThrowIfNegative(exponent);
+
+			if (exponent == 0)
+			{
+				return One;
+			}
+			if (exponent == 1)
+			{
+				return value;
+			}
+			
+			uint power = checked((uint)exponent);
+			int size;
+			uint[]? bitsArray = null;
+			scoped Span<uint> bits;
+
+			if (value <= int.MaxValue && value >= int.MinValue)
+			{
+				int sign = (int)value;
+				if (sign == 1)
+					return value;
+				if (sign == -1)
+					return (exponent & 1) != 0 ? value : One;
+				if (sign == 0)
+					return value;
+
+				if (power >= ((Size * 8) - 1))
+				{
+					Thrower.ArithmethicOverflow(Thrower.ArithmethicOperation.Exponentiation);
+				}
+
+				size = Calculator.PowBound(power, 1);
+
+				bits = (size <= Calculator.StackAllocThreshold 
+					? stackalloc uint[Calculator.StackAllocThreshold]
+					: bitsArray = ArrayPool<uint>.Shared.Rent(size));
+				bits.Clear();
+
+				Calculator.Pow(unchecked((uint)sign), power, bits[..size]);
+			}
+			else
+			{
+				if (power >= ((Size * 8) - 1))
+				{
+					Thrower.ArithmethicOverflow(Thrower.ArithmethicOperation.Exponentiation);
+				}
+
+				int valueLength = (UIntCount - (BitHelper.LeadingZeroCount(in value) / 32));
+				size = Calculator.PowBound(power, valueLength);
+
+				Span<uint> valueSpan = stackalloc uint[UIntCount];
+				valueSpan.Clear();
+				Unsafe.WriteUnaligned(ref Unsafe.As<uint, byte>(ref MemoryMarshal.GetReference(valueSpan)), value);
+
+				bits = (size <= Calculator.StackAllocThreshold
+					? stackalloc uint[Calculator.StackAllocThreshold]
+					: bitsArray = ArrayPool<uint>.Shared.Rent(size));
+				bits.Clear();
+
+				Calculator.Pow(valueSpan[..valueLength], power, bits[..size]);
+			}
+
+			if (size > UIntCount)
+			{
+				Span<uint> overflow = bits[UIntCount..];
+
+				for (int i = 0; i < overflow.Length; i++)
+				{
+					if (overflow[i] != 0)
+					{
+						Thrower.ArithmethicOverflow(Thrower.ArithmethicOperation.Exponentiation);
+					}
+				}
+			}
+
+			Int256 result = Unsafe.ReadUnaligned<Int256>(ref Unsafe.As<uint, byte>(ref MemoryMarshal.GetReference(bits[..UIntCount])));
+
+            if (bitsArray is not null)
+            {
+                ArrayPool<uint>.Shared.Return(bitsArray);
+            }
+
+            return result;
 		}
 
 		/// <summary>Parses a span of characters into a value.</summary>

@@ -1,6 +1,7 @@
 ﻿using MissingValues.Info;
 using MissingValues.Internals;
 using System;
+using System.Buffers;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -203,7 +204,103 @@ namespace MissingValues
 				rawBits);
 
 			lower = Unsafe.ReadUnaligned<UInt512>(ref Unsafe.As<uint, byte>(ref MemoryMarshal.GetReference(rawBits)));
-			return Unsafe.ReadUnaligned<UInt512>(ref Unsafe.As<uint, byte>(ref Unsafe.Add(ref MemoryMarshal.GetReference(rawBits), 16)));
+			return Unsafe.ReadUnaligned<UInt512>(ref Unsafe.As<uint, byte>(ref Unsafe.Add(ref MemoryMarshal.GetReference(rawBits), UIntCount)));
+		}
+
+		/// <summary>
+		/// Raises a <see cref="UInt512"/> value to the power of a specified value.
+		/// </summary>
+		/// <param name="value">The number to raise to the <paramref name="exponent"/> power.</param>
+		/// <param name="exponent">The exponent to raise <paramref name="value"/> by.</param>
+		/// <returns>The result of raising <paramref name="value"/> to the <paramref name="exponent"/> power.</returns>
+		/// <exception cref="ArgumentOutOfRangeException"><paramref name="exponent"/> is negative.</exception>
+		/// <exception cref="OverflowException">
+		/// The result of raising <paramref name="value"/> to the <paramref name="exponent"/> power is less than <see cref="MinValue"/> or greater than <see cref="MaxValue"/>.
+		/// </exception>
+		public static UInt512 Pow(UInt512 value, int exponent)
+		{
+			const int UIntCount = Size / sizeof(uint);
+
+			ArgumentOutOfRangeException.ThrowIfNegative(exponent);
+
+			if (exponent == 0)
+			{
+				return One;
+			}
+			if (exponent == 1)
+			{
+				return value;
+			}
+
+			uint power = checked((uint)exponent);
+			int size;
+			uint[]? bitsArray = null;
+			scoped Span<uint> bits;
+
+			if (value._p7 == 0 && value._p6 == 0 && value._p5 == 0 && value._p4 == 0 && value._p3 == 0 && value._p2 == 0 && value._p1 == 0 && value._p0 <= uint.MaxValue)
+			{
+				if (value._p0 == 1)
+					return value;
+				if (value._p0 == 0)
+					return value;
+
+				if (power >= (Size * 8))
+				{
+					Thrower.ArithmethicOverflow(Thrower.ArithmethicOperation.Exponentiation);
+				}
+
+				size = Calculator.PowBound(power, 1);
+
+				bits = (size <= Calculator.StackAllocThreshold
+					? stackalloc uint[Calculator.StackAllocThreshold]
+					: bitsArray = ArrayPool<uint>.Shared.Rent(size));
+				bits.Clear();
+
+				Calculator.Pow(unchecked((uint)value._p0), power, bits[..size]);
+			}
+			else
+			{
+				if (power >= (Size * 8))
+				{
+					Thrower.ArithmethicOverflow(Thrower.ArithmethicOperation.Exponentiation);
+				}
+
+				int valueLength = (UIntCount - (BitHelper.LeadingZeroCount(in value) / 32));
+				size = Calculator.PowBound(power, valueLength);
+
+				Span<uint> valueSpan = stackalloc uint[UIntCount];
+				valueSpan.Clear();
+				Unsafe.WriteUnaligned(ref Unsafe.As<uint, byte>(ref MemoryMarshal.GetReference(valueSpan)), value);
+
+				bits = (size <= Calculator.StackAllocThreshold
+					? stackalloc uint[Calculator.StackAllocThreshold]
+					: bitsArray = ArrayPool<uint>.Shared.Rent(size));
+				bits.Clear();
+
+				Calculator.Pow(valueSpan[..valueLength], power, bits[..size]);
+			}
+
+			if (size > UIntCount)
+			{
+				Span<uint> overflow = bits[UIntCount..];
+
+				for (int i = 0; i < overflow.Length; i++)
+				{
+					if (overflow[i] != 0)
+					{
+						Thrower.ArithmethicOverflow(Thrower.ArithmethicOperation.Exponentiation);
+					}
+				}
+			}
+
+			UInt512 result = Unsafe.ReadUnaligned<UInt512>(ref Unsafe.As<uint, byte>(ref MemoryMarshal.GetReference(bits[..UIntCount])));
+
+			if (bitsArray is not null)
+			{
+				ArrayPool<uint>.Shared.Return(bitsArray);
+			}
+
+			return result;
 		}
 
 		/// <summary>Parses a span of characters into a value.</summary>

@@ -1157,5 +1157,27 @@ namespace MissingValues.Tests.Core
 			MathConstantsHelper.NegativeOne<Int>().Should().Be(NegativeOne);	
 		}
 		#endregion
+
+		#region IPowerFunctions
+		[Fact]
+		public void PowTest()
+		{
+			GenericFloatingPointFunctions.Pow(Zero, int.MaxValue).Should().Be(Zero);
+			GenericFloatingPointFunctions.Pow(One, int.MaxValue).Should().Be(One);
+			GenericFloatingPointFunctions.Pow(MaxValue, Zero).Should().Be(One);
+			GenericFloatingPointFunctions.Pow(MaxValue, One).Should().Be(MaxValue);
+			GenericFloatingPointFunctions.Pow(Two, Two).Should().Be(4);
+			GenericFloatingPointFunctions.Pow(Two, 4).Should().Be(16);
+			GenericFloatingPointFunctions.Pow(16, Two).Should().Be(256);
+			GenericFloatingPointFunctions.Pow(Two, 510)
+				.Should().Be(new Int(
+					0x4000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000,
+					0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000));
+
+			Assert.Throws<ArgumentOutOfRangeException>(() => GenericFloatingPointFunctions.Pow(Two, NegativeOne));
+			Assert.Throws<OverflowException>(() => GenericFloatingPointFunctions.Pow(Two, 511));
+			Assert.Throws<OverflowException>(() => GenericFloatingPointFunctions.Pow(Two + Two, 510));
+		}
+		#endregion
 	}
 }

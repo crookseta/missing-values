@@ -1086,5 +1086,26 @@ namespace MissingValues.Tests.Core
 			parsedValue.Should().Be(default);
 		}
 		#endregion
+
+		#region IPowerFunctions
+		[Fact]
+		public void PowTest()
+		{
+			GenericFloatingPointFunctions.Pow(Zero, (uint)int.MaxValue).Should().Be(Zero);
+			GenericFloatingPointFunctions.Pow(One, (uint)int.MaxValue).Should().Be(One);
+			GenericFloatingPointFunctions.Pow(MaxValue, Zero).Should().Be(One);
+			GenericFloatingPointFunctions.Pow(MaxValue, One).Should().Be(MaxValue);
+			GenericFloatingPointFunctions.Pow(Two, Two).Should().Be(4);
+			GenericFloatingPointFunctions.Pow(Two, 4U).Should().Be(16);
+			GenericFloatingPointFunctions.Pow(16U, Two).Should().Be(256);
+			GenericFloatingPointFunctions.Pow(Two, 511U)
+				.Should().Be(new UInt(
+					0x8000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000,
+					0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000));
+
+			Assert.Throws<OverflowException>(() => GenericFloatingPointFunctions.Pow(Two, 512U));
+			Assert.Throws<OverflowException>(() => GenericFloatingPointFunctions.Pow(Two + Two, 511U));
+		}
+		#endregion
 	}
 }

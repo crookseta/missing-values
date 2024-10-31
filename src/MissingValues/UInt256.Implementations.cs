@@ -21,6 +21,7 @@ namespace MissingValues
 		IBigInteger<UInt256>,
 		IMinMaxValue<UInt256>,
 		IUnsignedNumber<UInt256>,
+		IPowerFunctions<UInt256>,
 		IFormattableUnsignedInteger<UInt256, Int256>
 	{
 		static UInt256 INumberBase<UInt256>.One => One;
@@ -371,6 +372,8 @@ namespace MissingValues
 
 		/// <inheritdoc/>
 		public static UInt256 PopCount(UInt256 value) => (UInt256)BitHelper.PopCount(in value);
+
+		static UInt256 IPowerFunctions<UInt256>.Pow(UInt256 x, UInt256 y) => Pow(x, checked((int)y));
 
 		/// <inheritdoc/>
 		public static UInt256 RotateLeft(UInt256 value, int rotateAmount) => (value << rotateAmount) | (value >>> (256 - rotateAmount));
@@ -1135,7 +1138,7 @@ namespace MissingValues
 				leftSpan[..(UIntCount - (BitHelper.LeadingZeroCount(in left) / 32))],
 				rightSpan[..(UIntCount - (BitHelper.LeadingZeroCount(in right) / 32))],
 				rawBits);
-			var overflowBits = rawBits[8..];
+			var overflowBits = rawBits[UIntCount..];
 
 			for (int i = 0; i < overflowBits.Length; i++)
 			{

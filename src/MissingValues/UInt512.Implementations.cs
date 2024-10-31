@@ -19,6 +19,7 @@ namespace MissingValues
 		IBigInteger<UInt512>,
 		IMinMaxValue<UInt512>,
 		IUnsignedNumber<UInt512>,
+		IPowerFunctions<UInt512>,
 		IFormattableUnsignedInteger<UInt512, Int512>
 	{
 		static UInt512 INumberBase<UInt512>.One => One;
@@ -378,6 +379,8 @@ namespace MissingValues
 
 		/// <inheritdoc/>
 		public static UInt512 PopCount(UInt512 value) => (UInt512)(BitHelper.PopCount(in value));
+
+		static UInt512 IPowerFunctions<UInt512>.Pow(UInt512 x, UInt512 y) => Pow(x, checked((int)y));
 
 		/// <inheritdoc/>
 		public static UInt512 RotateLeft(UInt512 value, int rotateAmount) => (value << rotateAmount) | (value >>> (512 - rotateAmount));
@@ -1186,7 +1189,7 @@ namespace MissingValues
 				leftSpan[..(UIntCount - (BitHelper.LeadingZeroCount(in left) / 32))],
 				rightSpan[..(UIntCount - (BitHelper.LeadingZeroCount(in right) / 32))],
 				rawBits);
-			var overflowBits = rawBits[16..];
+			var overflowBits = rawBits[UIntCount..];
 
 			for (int i = 0; i < overflowBits.Length; i++)
 			{
