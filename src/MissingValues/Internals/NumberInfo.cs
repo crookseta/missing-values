@@ -93,6 +93,8 @@ namespace MissingValues.Internals
 		public static bool TryConvertToInteger<TInteger>(ref NumberInfo number, out TInteger value)
 			where TInteger : struct, IFormattableInteger<TInteger>, IMinMaxValue<TInteger>
 		{
+			// Based on: https://github.com/dotnet/runtime/blob/main/src/libraries/System.Private.CoreLib/src/System/Number.Parsing.cs
+
 			int i = number.Scale;
 
 			if ((i > TInteger.MaxDecimalDigits) || (i < number.DigitsCount) || (TInteger.IsUnsignedInteger && number.IsNegative) || number.HasNonZeroTail)
@@ -202,6 +204,8 @@ namespace MissingValues.Internals
 		public static unsafe bool TryParse<TChar>(scoped ref TChar* str, TChar* strEnd, ref NumberInfo number, NumberFormatInfo info, NumberStyles styles)
 			where TChar : unmanaged, IUtfCharacter<TChar>
 		{
+			// Based on: https://github.com/dotnet/runtime/blob/main/src/libraries/Common/src/System/Number.NumberBuffer.cs
+
 			Debug.Assert(str != null);
 			Debug.Assert(strEnd != null);
 			Debug.Assert(str <= strEnd);
