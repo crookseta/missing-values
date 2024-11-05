@@ -949,6 +949,13 @@ namespace MissingValues
 			return digits;
 		}
 
+		static int IFormattableInteger<UInt512>.UnsignedCompare(in UInt512 value1, in UInt512 value2)
+		{
+			if (value1 < value2) return -1;
+			else if (value1 > value2) return 1;
+			else return 0;
+		}
+
 		/// <inheritdoc/>
 		public static UInt512 operator +(in UInt512 value) => value;
 

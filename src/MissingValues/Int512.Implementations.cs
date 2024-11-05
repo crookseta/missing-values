@@ -1044,6 +1044,7 @@ namespace MissingValues
 		int IFormattableInteger<Int512>.ToInt32() => (int)_p0;
 
 		UInt512 IFormattableSignedInteger<Int512, UInt512>.ToUnsigned() => (UInt512)this;
+		static int IFormattableInteger<Int512>.UnsignedCompare(in Int512 value1, in Int512 value2) => unchecked(((UInt512)value1).CompareTo((UInt512)value2));
 
 		/// <inheritdoc/>
 		public static Int512 operator +(in Int512 value) => value;

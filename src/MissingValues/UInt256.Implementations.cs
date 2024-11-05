@@ -951,6 +951,12 @@ namespace MissingValues
 			return digits;
 		}
 		static int IFormattableUnsignedInteger<UInt256, Int256>.CountDigits(in UInt256 value) => CountDigits(in value);
+		static int IFormattableInteger<UInt256>.UnsignedCompare(in UInt256 value1, in UInt256 value2)
+		{
+			if (value1 < value2) return -1;
+			else if (value1 > value2) return 1;
+			else return 0;
+		}
 
 		/// <inheritdoc/>
 		public static UInt256 operator +(in UInt256 value) => value;

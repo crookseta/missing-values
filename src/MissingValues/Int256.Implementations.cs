@@ -1078,6 +1078,8 @@ namespace MissingValues
 			throw new FormatException();
 		}
 
+		static int IFormattableInteger<Int256>.UnsignedCompare(in Int256 value1, in Int256 value2) => unchecked(((UInt256)value1).CompareTo((UInt256)value2));
+
 		/// <inheritdoc/>
 		public static Int256 operator +(in Int256 value) => value;
 
