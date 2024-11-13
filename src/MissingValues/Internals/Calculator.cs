@@ -13,8 +13,12 @@ internal static class Calculator
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static UInt128 BigMul(ulong a, ulong b)
 	{
+#if NET9_0_OR_GREATER
+		return Math.BigMul(a, b);
+#else
 		ulong high = Math.BigMul(a, b, out ulong low);
 		return new UInt128(high, low);
+#endif
 	}
 	/// <summary>
 	/// Produces the full product of two unsigned 128-bit numbers.
