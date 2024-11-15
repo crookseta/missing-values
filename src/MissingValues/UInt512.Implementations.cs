@@ -310,6 +310,10 @@ namespace MissingValues
 
 		static UInt512 INumberBase<UInt512>.MinMagnitudeNumber(UInt512 x, UInt512 y) => Min(x, y);
 
+#if NET9_0_OR_GREATER
+		static UInt512 INumberBase<UInt512>.MultiplyAddEstimate(UInt512 left, UInt512 right, UInt512 addend) => (left * right) + addend;
+#endif
+
 		/// <inheritdoc/>
 		public static UInt512 Parse(ReadOnlySpan<char> s, NumberStyles style, IFormatProvider? provider)
 		{

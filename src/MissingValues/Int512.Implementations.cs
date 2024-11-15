@@ -372,6 +372,10 @@ namespace MissingValues
 
 		static Int512 INumberBase<Int512>.MinMagnitudeNumber(Int512 x, Int512 y) => MinMagnitude(x, y);
 
+#if NET9_0_OR_GREATER
+		static Int512 INumberBase<Int512>.MultiplyAddEstimate(Int512 left, Int512 right, Int512 addend) => (left * right) + addend;
+#endif
+
 		/// <inheritdoc/>
 		public static Int512 Parse(ReadOnlySpan<char> s, NumberStyles style, IFormatProvider? provider)
 		{

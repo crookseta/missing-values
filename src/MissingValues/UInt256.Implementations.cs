@@ -294,6 +294,10 @@ namespace MissingValues
 
 		static UInt256 INumberBase<UInt256>.MaxMagnitudeNumber(UInt256 x, UInt256 y) => Max(x, y);
 
+#if NET9_0_OR_GREATER
+		static UInt256 INumberBase<UInt256>.MultiplyAddEstimate(UInt256 left, UInt256 right, UInt256 addend) => (left * right) + addend; 
+#endif
+
 		/// <inheritdoc/>
 		public static UInt256 Min(UInt256 x, UInt256 y) => (x <= y) ? x : y;
 

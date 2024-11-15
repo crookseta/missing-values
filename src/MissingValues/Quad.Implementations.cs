@@ -354,6 +354,10 @@ namespace MissingValues
 			return IsNegative(x) ? x : y;
 		}
 
+#if NET9_0_OR_GREATER
+		static Quad INumberBase<Quad>.MultiplyAddEstimate(Quad left, Quad right, Quad addend) => (left * right) + addend;
+#endif
+
 		/// <inheritdoc/>
 		public static Quad Parse(ReadOnlySpan<char> s, NumberStyles style, IFormatProvider? provider)
 		{
