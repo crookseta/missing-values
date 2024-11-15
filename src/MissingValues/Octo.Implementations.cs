@@ -599,7 +599,7 @@ namespace MissingValues
 			if (biasedExponent == MinBiasedExponent)
 			{
 				// Subnormal values have 1 bit set when they're powers of 2
-				return UInt256.PopCount(trailingSignificand) == UInt256.One;
+				return BitHelper.PopCount(in trailingSignificand) == 1;
 			}
 			else if (biasedExponent == MaxBiasedExponent)
 			{
@@ -858,6 +858,10 @@ namespace MissingValues
 
 			return y;
 		}
+
+#if NET9_0_OR_GREATER
+		static Octo INumberBase<Octo>.MultiplyAddEstimate(Octo left, Octo right, Octo addend) => (left * right) + addend;
+#endif
 
 		/// <inheritdoc/>
 		public static Octo Parse(ReadOnlySpan<char> s, NumberStyles style, IFormatProvider? provider)
@@ -1509,6 +1513,7 @@ namespace MissingValues
 				Int128 actual => (Octo)actual,
 				Int256 actual => (Octo)actual,
 				Int512 actual => (Octo)actual,
+				BigInteger actual => (Octo)actual,
 				_ => BitHelper.DefaultConvert<Octo>(out converted)
 			};
 
@@ -1544,6 +1549,7 @@ namespace MissingValues
 					Int128 => (TOther)(object)(Int128)value,
 					Int256 => (TOther)(object)(Int256)value,
 					Int512 => (TOther)(object)(Int512)value,
+					BigInteger => (TOther)(object)(BigInteger)value,
 					nint => (TOther)(object)(nint)value,
 					_ => BitHelper.DefaultConvert<TOther>(out converted)
 				};
@@ -1552,15 +1558,9 @@ namespace MissingValues
 			return converted;
 		}
 
-		static bool INumberBase<Octo>.TryConvertToSaturating<TOther>(Octo value, out TOther result)
-		{
-			return TryConvertTo(value, out result);
-		}
+		static bool INumberBase<Octo>.TryConvertToSaturating<TOther>(Octo value, out TOther result) => TryConvertTo(value, out result);
 
-		static bool INumberBase<Octo>.TryConvertToTruncating<TOther>(Octo value, out TOther result)
-		{
-			return TryConvertTo(value, out result);
-		}
+		static bool INumberBase<Octo>.TryConvertToTruncating<TOther>(Octo value, out TOther result) => TryConvertTo(value, out result);
 
 		private static bool TryConvertTo<TOther>(Octo value, out TOther result)
 		{
@@ -1595,6 +1595,7 @@ namespace MissingValues
 				Int512 => (TOther)(object)((value >= new Octo(0x401F_E000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000)) ? Int512.MaxValue 
 				: (value <= new Octo(0xC01F_E000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000)) ? Int512.MinValue : (Int512)value),
 				nint => (TOther)(object)((value >= nint.MaxValue) ? nint.MaxValue : (value <= nint.MinValue) ? nint.MinValue : (nint)value),
+				BigInteger => (TOther)(object)(BigInteger)value,
 				_ => BitHelper.DefaultConvert<TOther>(out converted)
 			};
 

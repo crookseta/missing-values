@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Diagnostics.Contracts;
 using System.Globalization;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using System.Text.Json;
 using System.Text.Unicode;
@@ -160,6 +161,17 @@ namespace MissingValues.Tests.Core
 		{
 			((Quad)from).Should().Be(to);
 		}
+		[Fact]
+		public void Cast_FromBigInteger()
+		{
+			TwoOver127.Should()
+				.Be((Quad)BigInteger.Parse("170141183460469231731687303715884105728"));
+			TwoOver255.Should()
+				.Be((Quad)BigInteger.Parse("57896044618658097711785492504343953926634992332820282019728792003956564819968"));
+			TwoOver511
+				.Should()
+				.Be((Quad)BigInteger.Parse("6703903964971298549787012499102923063739682910296196688861780721860882015036773488400937149083451713845015929093243025426876941405973284973216824503042048"));
+		}
 		[Theory]
 		[MemberData(nameof(CastFromHalfTheoryData))]
 		public void Cast_FromHalf(Half from, Quad to)
@@ -262,6 +274,16 @@ namespace MissingValues.Tests.Core
 		public void Cast_ToInt512(Quad from, Int512 to)
 		{
 			((Int512)from).Should().Be(to);
+		}
+		[Fact]
+		public void Cast_ToBigInteger()
+		{
+			BigInteger.Parse("170141183460469231731687303715884105728")
+				.Should().Be((BigInteger)TwoOver127);
+			BigInteger.Parse("57896044618658097711785492504343953926634992332820282019728792003956564819968")
+				.Should().Be((BigInteger)TwoOver255);
+			BigInteger.Parse("6703903964971298549787012499102923063739682910296196688861780721860882015036773488400937149083451713845015929093243025426876941405973284973216824503042048")
+				.Should().Be((BigInteger)TwoOver511);
 		}
 		[Theory]
 		[MemberData(nameof(CastToHalfTheoryData))]

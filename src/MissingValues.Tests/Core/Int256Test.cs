@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using System.Text.Json;
 using System.Text.Unicode;
@@ -71,6 +72,16 @@ namespace MissingValues.Tests.Core
 		{
 			Int128.MinValue.Should().Be((Int128)Int128MinValue);
 			Int128.MaxValue.Should().Be((Int128)Int128MaxValue);
+		}
+
+		[Fact]
+		public void Cast_ToBigInteger()
+		{
+			BigInteger.One.Should().Be((BigInteger)One);
+			BigInteger.Parse("57896044618658097711785492504343953926634992332820282019728792003956564819967")
+				.Should().Be((BigInteger)MaxValue);
+			BigInteger.Parse("-57896044618658097711785492504343953926634992332820282019728792003956564819968")
+				.Should().Be((BigInteger)MinValue);
 		}
 
 		[Fact]

@@ -21,6 +21,7 @@ namespace MissingValues
 		IBigInteger<UInt256>,
 		IMinMaxValue<UInt256>,
 		IUnsignedNumber<UInt256>,
+		IPowerFunctions<UInt256>,
 		IFormattableUnsignedInteger<UInt256, Int256>
 	{
 		static UInt256 INumberBase<UInt256>.One => One;
@@ -293,6 +294,10 @@ namespace MissingValues
 
 		static UInt256 INumberBase<UInt256>.MaxMagnitudeNumber(UInt256 x, UInt256 y) => Max(x, y);
 
+#if NET9_0_OR_GREATER
+		static UInt256 INumberBase<UInt256>.MultiplyAddEstimate(UInt256 left, UInt256 right, UInt256 addend) => (left * right) + addend; 
+#endif
+
 		/// <inheritdoc/>
 		public static UInt256 Min(UInt256 x, UInt256 y) => (x <= y) ? x : y;
 
@@ -371,6 +376,8 @@ namespace MissingValues
 
 		/// <inheritdoc/>
 		public static UInt256 PopCount(UInt256 value) => (UInt256)BitHelper.PopCount(in value);
+
+		static UInt256 IPowerFunctions<UInt256>.Pow(UInt256 x, UInt256 y) => Pow(x, checked((int)y));
 
 		/// <inheritdoc/>
 		public static UInt256 RotateLeft(UInt256 value, int rotateAmount) => (value << rotateAmount) | (value >>> (256 - rotateAmount));
@@ -595,6 +602,7 @@ namespace MissingValues
 					Int128 actual => (UInt256)actual,
 					Int256 actual => (UInt256)actual,
 					Int512 actual => (UInt256)actual,
+					BigInteger actual => (UInt256)actual,
 					_ => BitHelper.DefaultConvert<UInt256>(out converted)
 				}; 
 			}
@@ -630,6 +638,7 @@ namespace MissingValues
 				Int128 actual => (actual < 0) ? MinValue : (UInt256)actual,
 				Int256 actual => (actual < 0) ? MinValue : (UInt256)actual,
 				Int512 actual => (actual < 0) ? MinValue : (actual > (Int512)MaxValue) ? MaxValue : (UInt256)actual,
+				BigInteger actual => (BigInteger.IsNegative(actual)) ? MinValue : (actual > (BigInteger)MaxValue) ? MaxValue : (UInt256)actual,
 				_ => BitHelper.DefaultConvert<UInt256>(out converted)
 			};
 			return converted;
@@ -662,6 +671,7 @@ namespace MissingValues
 				Int128 actual => (actual < 0) ? MinValue : (UInt256)actual,
 				Int256 actual => (actual < 0) ? MinValue : (UInt256)actual,
 				Int512 actual => (actual < 0) ? MinValue : (UInt256)actual,
+				BigInteger actual => (BigInteger.IsNegative(actual)) ? MinValue : (UInt256)actual,
 				_ => BitHelper.DefaultConvert<UInt256>(out converted)
 			};
 			return converted;
@@ -696,6 +706,7 @@ namespace MissingValues
 					Int256 => (TOther)(object)(Int256)value,
 					Int512 => (TOther)(object)(Int512)value,
 					nint => (TOther)(object)(nint)value,
+					BigInteger => (TOther)(object)(BigInteger)value,
 					_ => BitHelper.DefaultConvert<TOther>(out converted)
 				};
 			}
@@ -738,6 +749,7 @@ namespace MissingValues
 #else
 				nint => (TOther)(object)((value >= new UInt128(0x0000_0000_0000_0000, 0x7FFF_FFFF_FFFF_FFFF)) ? nint.MaxValue : (nint)value),
 #endif
+				BigInteger => (TOther)(object)(BigInteger)value,
 				_ => BitHelper.DefaultConvert<TOther>(out converted)
 			};
 
@@ -771,6 +783,7 @@ namespace MissingValues
 				Int256 => (TOther)(object)(Int256)value,
 				Int512 => (TOther)(object)(Int512)value,
 				nint => (TOther)(object)(nint)value,
+				BigInteger => (TOther)(object)(BigInteger)value,
 				_ => BitHelper.DefaultConvert<TOther>(out converted)
 			};
 			return converted;
@@ -942,6 +955,12 @@ namespace MissingValues
 			return digits;
 		}
 		static int IFormattableUnsignedInteger<UInt256, Int256>.CountDigits(in UInt256 value) => CountDigits(in value);
+		static int IFormattableInteger<UInt256>.UnsignedCompare(in UInt256 value1, in UInt256 value2)
+		{
+			if (value1 < value2) return -1;
+			else if (value1 > value2) return 1;
+			else return 0;
+		}
 
 		/// <inheritdoc/>
 		public static UInt256 operator +(in UInt256 value) => value;
@@ -1129,7 +1148,7 @@ namespace MissingValues
 				leftSpan[..(UIntCount - (BitHelper.LeadingZeroCount(in left) / 32))],
 				rightSpan[..(UIntCount - (BitHelper.LeadingZeroCount(in right) / 32))],
 				rawBits);
-			var overflowBits = rawBits[8..];
+			var overflowBits = rawBits[UIntCount..];
 
 			for (int i = 0; i < overflowBits.Length; i++)
 			{

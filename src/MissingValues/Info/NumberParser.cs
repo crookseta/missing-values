@@ -137,6 +137,11 @@ namespace MissingValues.Info
 		}
 
 		#region Integer
+		private const int IntBufferLength = 154 + 2;
+		private const NumberStyles SPECIAL = 
+			NumberStyles.AllowTrailingSign | NumberStyles.AllowDecimalPoint | NumberStyles.AllowThousands | NumberStyles.AllowExponent
+			| NumberStyles.AllowCurrencySymbol;
+
 		public static ParsingStatus ParseDecStringToUnsigned<T, TChar>(ReadOnlySpan<TChar> s, out T output)
 			where T : struct, IFormattableInteger<T>, IMinMaxValue<T>, IUnsignedNumber<T>
 			where TChar : unmanaged, IUtfCharacter<TChar>
@@ -215,6 +220,20 @@ namespace MissingValues.Info
 				return ParsingStatus.Underflow;
 			}
 
+			if ((style & SPECIAL) != 0)
+			{
+				NumberInfo number = new NumberInfo(stackalloc byte[IntBufferLength], true);
+				NumberFormatInfo info = NumberFormatInfo.GetInstance(formatProvider);
+				if (!NumberInfo.TryParse(s, ref number, info, style) 
+					|| !NumberInfo.TryConvertToInteger(ref number, out output))
+				{
+					output = default;
+					return ParsingStatus.Failed;
+				}
+
+				return ParsingStatus.Success;
+			}
+
 			if (ContainsInvalidCharacter(s, style))
 			{
 				output = default;
@@ -278,6 +297,20 @@ namespace MissingValues.Info
 			{
 				isNegative = style.HasFlag(NumberStyles.AllowLeadingSign) && s.IndexOf(negativeSign) == 0;
 				raw = isNegative ? s[1..] : s;
+			}
+
+			if ((style & SPECIAL) != 0)
+			{
+				NumberInfo number = new NumberInfo(stackalloc byte[IntBufferLength], true);
+				NumberFormatInfo info = NumberFormatInfo.GetInstance(formatProvider);
+				if (!NumberInfo.TryParse(s, ref number, info, style)
+					|| !NumberInfo.TryConvertToInteger(ref number, out output))
+				{
+					output = default;
+					return ParsingStatus.Failed;
+				}
+
+				return ParsingStatus.Success;
 			}
 
 			if (ContainsInvalidCharacter(raw, style))
@@ -351,7 +384,7 @@ namespace MissingValues.Info
 			where TChar : unmanaged, IUtfCharacter<TChar>
 		{
 			byte[] buffer = ArrayPool<byte>.Shared.Rent(OctoBufferLength);
-			NumberInfo number = new NumberInfo(buffer);
+			NumberInfo number = new NumberInfo(buffer, true);
 			NumberFormatInfo info = NumberFormatInfo.GetInstance(provider);
 
 

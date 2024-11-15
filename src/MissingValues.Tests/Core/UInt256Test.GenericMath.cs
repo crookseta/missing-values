@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -778,6 +779,10 @@ namespace MissingValues.Tests.Core
 			NumberBaseHelper<UInt>.CreateChecked(uint.MaxValue).Should().Be(UInt32MaxValue);
 			NumberBaseHelper<UInt>.CreateChecked(ulong.MaxValue).Should().Be(UInt64MaxValue);
 			NumberBaseHelper<UInt>.CreateChecked(UInt128.MaxValue).Should().Be(UInt128MaxValue);
+			NumberBaseHelper<UInt>
+				.CreateChecked(BigInteger.Parse(
+					"115792089237316195423570985008687907853269984665640564039457584007913129639935"))
+				.Should().Be(MaxValue);
 			NumberBaseHelper<UInt>.CreateChecked(MaxValueAsDouble).Should().Be(MaxValue);
 
 			NumberBaseHelper<UInt>.CreateChecked(byte.MinValue).Should().Be(Zero);
@@ -794,6 +799,10 @@ namespace MissingValues.Tests.Core
 			NumberBaseHelper<UInt>.CreateSaturating(uint.MaxValue).Should().Be(UInt32MaxValue);
 			NumberBaseHelper<UInt>.CreateSaturating(ulong.MaxValue).Should().Be(UInt64MaxValue);
 			NumberBaseHelper<UInt>.CreateSaturating(UInt128.MaxValue).Should().Be(UInt128MaxValue);
+			NumberBaseHelper<UInt>
+				.CreateSaturating(BigInteger.Parse(
+					"115792089237316195423570985008687907853269984665640564039457584007913129639935"))
+				.Should().Be(MaxValue);
 			NumberBaseHelper<UInt>.CreateSaturating(MaxValueAsDouble).Should().Be(MaxValue);
 
 			NumberBaseHelper<UInt>.CreateSaturating(byte.MinValue).Should().Be(Zero);
@@ -810,6 +819,10 @@ namespace MissingValues.Tests.Core
 			NumberBaseHelper<UInt>.CreateTruncating(uint.MaxValue).Should().Be(UInt32MaxValue);
 			NumberBaseHelper<UInt>.CreateTruncating(ulong.MaxValue).Should().Be(UInt64MaxValue);
 			NumberBaseHelper<UInt>.CreateTruncating(UInt128.MaxValue).Should().Be(UInt128MaxValue);
+			NumberBaseHelper<UInt>
+				.CreateTruncating(BigInteger.Parse(
+					"115792089237316195423570985008687907853269984665640564039457584007913129639935"))
+				.Should().Be(MaxValue);
 			NumberBaseHelper<UInt>.CreateTruncating(MaxValueAsDouble).Should().Be(MaxValue);
 
 			NumberBaseHelper<UInt>.CreateTruncating(byte.MinValue).Should().Be(Zero);
@@ -827,6 +840,9 @@ namespace MissingValues.Tests.Core
 			NumberBaseHelper<uint>.CreateChecked(UInt32MaxValue).Should().Be(uint.MaxValue);
 			NumberBaseHelper<ulong>.CreateChecked(UInt64MaxValue).Should().Be(ulong.MaxValue);
 			NumberBaseHelper<UInt128>.CreateChecked(UInt128MaxValue).Should().Be(UInt128.MaxValue);
+			NumberBaseHelper<BigInteger>.CreateChecked(MaxValue).Should()
+				.Be(BigInteger.Parse(
+					"115792089237316195423570985008687907853269984665640564039457584007913129639935"));
 			NumberBaseHelper<double>.CreateChecked(MaxValue).Should().Be(MaxValueAsDouble);
 
 			NumberBaseHelper<byte>.CreateChecked(Zero).Should().Be(byte.MinValue);
@@ -843,6 +859,9 @@ namespace MissingValues.Tests.Core
 			NumberBaseHelper<uint>.CreateSaturating(UInt32MaxValue).Should().Be(uint.MaxValue);
 			NumberBaseHelper<ulong>.CreateSaturating(UInt64MaxValue).Should().Be(ulong.MaxValue);
 			NumberBaseHelper<UInt128>.CreateSaturating(UInt128MaxValue).Should().Be(UInt128.MaxValue);
+			NumberBaseHelper<BigInteger>.CreateSaturating(MaxValue).Should()
+				.Be(BigInteger.Parse(
+					"115792089237316195423570985008687907853269984665640564039457584007913129639935"));
 			NumberBaseHelper<double>.CreateSaturating(MaxValue).Should().Be(MaxValueAsDouble);
 
 			NumberBaseHelper<byte>.CreateSaturating(Zero).Should().Be(byte.MinValue);
@@ -859,6 +878,9 @@ namespace MissingValues.Tests.Core
 			NumberBaseHelper<uint>.CreateTruncating(UInt32MaxValue).Should().Be(uint.MaxValue);
 			NumberBaseHelper<ulong>.CreateTruncating(UInt64MaxValue).Should().Be(ulong.MaxValue);
 			NumberBaseHelper<UInt128>.CreateTruncating(UInt128MaxValue).Should().Be(UInt128.MaxValue);
+			NumberBaseHelper<BigInteger>.CreateTruncating(MaxValue).Should()
+				.Be(BigInteger.Parse(
+					"115792089237316195423570985008687907853269984665640564039457584007913129639935"));
 			NumberBaseHelper<double>.CreateTruncating(MaxValue).Should().Be(MaxValueAsDouble);
 
 			NumberBaseHelper<byte>.CreateTruncating(Zero).Should().Be(byte.MinValue);
@@ -1065,6 +1087,25 @@ namespace MissingValues.Tests.Core
 			NumberBaseHelper<UInt>.TryParse("115792089237316195423570985008687907853269984665640564039457584007913129639936"u8, System.Globalization.NumberStyles.Integer, CultureInfo.CurrentCulture, out parsedValue)
 				.Should().BeFalse();
 			parsedValue.Should().Be(default);
+		}
+		#endregion
+
+		#region IPowerFunctions
+		[Fact]
+		public void PowTest()
+		{
+			GenericFloatingPointFunctions.Pow(Zero, (uint)int.MaxValue).Should().Be(Zero);
+			GenericFloatingPointFunctions.Pow(One, (uint)int.MaxValue).Should().Be(One);
+			GenericFloatingPointFunctions.Pow(MaxValue, Zero).Should().Be(One);
+			GenericFloatingPointFunctions.Pow(MaxValue, One).Should().Be(MaxValue);
+			GenericFloatingPointFunctions.Pow(Two, Two).Should().Be(4);
+			GenericFloatingPointFunctions.Pow(Two, 4U).Should().Be(16);
+			GenericFloatingPointFunctions.Pow(16U, Two).Should().Be(256);
+			GenericFloatingPointFunctions.Pow(Two, 255U)
+				.Should().Be(new UInt(0x8000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000));
+
+			Assert.Throws<OverflowException>(() => GenericFloatingPointFunctions.Pow(Two, 256U));
+			Assert.Throws<OverflowException>(() => GenericFloatingPointFunctions.Pow(Two + Two, 255U));
 		}
 		#endregion
 	}

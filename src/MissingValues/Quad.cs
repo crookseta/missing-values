@@ -8,6 +8,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Numerics;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Json.Serialization;
@@ -1303,6 +1304,64 @@ namespace MissingValues
 				return Int512.Zero;
 			}
 		}
+
+		/// <summary>
+		/// Explicitly converts a <see cref="Quad" /> value to a <see cref="BigInteger"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
+		/// <exception cref="OverflowException"><paramref name="value"/> is not finite.</exception>
+		public static explicit operator BigInteger(Quad value)
+		{
+			const int kcbitUlong = 64;
+			const int kcbitUInt128 = 128;
+
+			if (!IsFinite(value))
+			{
+				Thrower.IntegerOverflow();
+			}
+
+			BitHelper.GetQuadParts(value, out int sign, out int exp, out var man, out _);
+
+            if (man == UInt128.Zero)
+            {
+				return BigInteger.Zero;
+            }
+			
+			if (exp <= 0)
+			{
+				if (exp <= -kcbitUInt128)
+				{
+					return BigInteger.Zero;
+				}
+				return (BigInteger)(sign < 0 ? -(man >> -exp) : (man >> -exp));
+			}
+			else if (exp <= BiasedExponentLength)
+			{
+				return (BigInteger)(sign < 0 ? -(man << exp) : (man << exp));
+			}
+			else
+			{
+				// Overflow into at least 3 ulongs.
+				// Move the leading 1 to the high bit.
+				man <<= BiasedExponentLength;
+				exp -= BiasedExponentLength;
+
+				// Compute cu and cbit so that exp == 64 * cu - cbit and 0 <= cbit < 64.
+				int cu = (exp - 1) / kcbitUlong + 1;
+				int cbit = cu * kcbitUlong - exp;
+				Debug.Assert(0 <= cbit && cbit < kcbitUlong);
+				Debug.Assert(cu >= 1);
+
+				// Populate the uints.
+				Span<ulong> bits = stackalloc ulong[cu + 2];
+				bits[cu + 1] = (ulong)(man >> (cbit + kcbitUlong));
+				bits[cu] = unchecked((ulong)(man >> cbit));
+				if (cbit > 0)
+					bits[cu - 1] = unchecked((ulong)man) << (kcbitUlong - cbit);
+
+				return sign > 0 ? new BigInteger(MemoryMarshal.Cast<ulong, byte>(bits), true) : -(new BigInteger(MemoryMarshal.Cast<ulong, byte>(bits)));
+			}
+        }
 		// Floating
 		/// <summary>
 		/// Explicitly converts a <see cref="Quad" /> value to a <see cref="decimal"/>.
@@ -1589,6 +1648,69 @@ namespace MissingValues
 				return -(Quad)(UInt128)value;
 			}
 			return (Quad)(UInt128)value;
+		}
+
+		/// <summary>
+		/// Explicitly converts a <see cref="BigInteger" /> value to a <see cref="Quad"/>.
+		/// </summary>
+		/// <param name="value">The value to convert.</param>
+		public static explicit operator Quad(BigInteger value)
+		{
+			Span<byte> bits = stackalloc byte[value.GetByteCount()];
+
+			int sign = value.Sign;
+			value.TryWriteBytes(bits, out int length);
+			scoped Span<ulong> bits64;
+			length /= sizeof(ulong);
+			if (!BitOperations.IsPow2(bits.Length) && bits.Length >= 4)
+			{
+				int pow2Length = length * sizeof(ulong);
+				var remainder = bits[pow2Length..];
+				bits64 = stackalloc ulong[++length];
+				bits[..pow2Length].CopyTo(MemoryMarshal.AsBytes(bits64));
+                for (int i = remainder.Length - 1, shift = 64 - 8; i >= 0; i--, shift -= 8)
+                {
+					bits64[^1] = (ulong)remainder[i] << shift;
+				}
+			}
+			else if (bits.Length < 4)
+			{
+				bits64 = stackalloc ulong[length = 1];
+				bits.CopyTo(MemoryMarshal.AsBytes(bits64));
+			}
+			else
+			{
+				bits64 = MemoryMarshal.Cast<byte, ulong>(bits);
+			}
+
+			if (length == 1)
+			{
+				return bits64[0];
+			}
+
+			// The maximum exponent for quads is 16383, which corresponds to a uint bit length of 64.
+			// All BigIntegers with bits[] longer than 64 evaluate to Quad.Infinity (or NegativeInfinity).
+			// Cases where the exponent is between 16384 and 16398 are handled in BitHelper.GetQuadFromParts.
+			const int InfinityLength = MaxExponent / 64;
+
+			if (length > InfinityLength)
+			{
+				if (sign == 1)
+					return Quad.PositiveInfinity;
+				else
+					return Quad.NegativeInfinity;
+			}
+
+			UInt128 h = bits64[^1];
+			UInt128 m = length > 1 ? bits64[^2] : 0;
+			UInt128 l = length > 2 ? bits64[^3] : 0;
+
+			int z = BitOperations.LeadingZeroCount((ulong)h);
+
+			int exp = (length - 2) * 64 - z;
+			UInt128 man = (h << 64 + z) | (m << z) | (l >> 64 - z);
+
+			return BitHelper.GetQuadFromParts(sign, exp, man);
 		}
 		// Floating
 		/// <summary>

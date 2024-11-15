@@ -10,6 +10,7 @@ using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace MissingValues.Internals
 {
@@ -64,6 +65,7 @@ namespace MissingValues.Internals
 		public int DigitsCount;
 		public int Scale;
 		public bool IsNegative;
+		public bool IsFloating;
 		public bool HasNonZeroTail;
 		public Span<byte> Digits;
 
@@ -72,9 +74,88 @@ namespace MissingValues.Internals
 			DigitsCount = 0;
 			Scale = 0;
 			IsNegative = false;
+			IsFloating = false;
 			HasNonZeroTail = false;
 			Digits = digits;
 			Digits[0] = (byte)'\0';
+		}
+        public NumberInfo(Span<byte> digits, bool isFloating)
+        {
+			DigitsCount = 0;
+			Scale = 0;
+			IsNegative = false;
+			IsFloating = isFloating;
+			HasNonZeroTail = false;
+			Digits = digits;
+			Digits[0] = (byte)'\0';
+		}
+
+		public static bool TryConvertToInteger<TInteger>(ref NumberInfo number, out TInteger value)
+			where TInteger : struct, IFormattableInteger<TInteger>, IMinMaxValue<TInteger>
+		{
+			// Based on: https://github.com/dotnet/runtime/blob/main/src/libraries/System.Private.CoreLib/src/System/Number.Parsing.cs
+
+			int i = number.Scale;
+
+			if ((i > TInteger.MaxDecimalDigits) || (i < number.DigitsCount) || (TInteger.IsUnsignedInteger && number.IsNegative) || number.HasNonZeroTail)
+			{
+				value = default;
+				return false;
+			}
+
+			ref byte p = ref number.GetDigitsReference();
+
+			Debug.Assert(!Unsafe.IsNullRef(ref p));
+			TInteger n = TInteger.Zero;
+			TInteger ten = TInteger.Ten;
+			TInteger maxValueDiv10 = TInteger.MaxValue / ten;
+
+			while (--i >= 0)
+			{
+				if (TInteger.UnsignedCompare(in n, in maxValueDiv10) > 0)
+				{
+					value = default;
+					return false;
+				}
+
+				n *= ten;
+
+				if (p != '\0')
+				{
+					TInteger newN = n + TInteger.GetDecimalValue((char)p);
+					p = ref Unsafe.Add(ref p, 1);
+
+					if (TInteger.IsUnsignedInteger && (newN < n))
+					{
+						value = default;
+						return false;
+					}
+
+					n = newN;
+				}
+			}
+
+			if (!TInteger.IsUnsignedInteger)
+			{
+				if (number.IsNegative)
+				{
+					n = -n;
+
+					if (n > TInteger.Zero)
+					{
+						value = default;
+						return false;
+					}
+				}
+				else if (n < TInteger.Zero)
+				{
+					value = default;
+					return false;
+				}
+			}
+
+			value = n;
+			return true;
 		}
 
 		public static TFloat ConvertToFloat<TFloat, TBits>(ref NumberInfo number)
@@ -105,83 +186,136 @@ namespace MissingValues.Internals
 			return Encoding.UTF8.GetString(Digits[..DigitsCount]);
 		}
 
-		public static unsafe bool TryParse<TChar>(ReadOnlySpan<TChar> s, ref NumberInfo info, NumberFormatInfo formatInfo, NumberStyles styles = NumberStyles.Float)
+		public static unsafe bool TryParse<TChar>(ReadOnlySpan<TChar> s, ref NumberInfo info, NumberFormatInfo formatInfo, NumberStyles styles)
 			where TChar : unmanaged, IUtfCharacter<TChar>
 		{
+			fixed(TChar* stringPointer = &MemoryMarshal.GetReference(s))
+			{
+				TChar* p = stringPointer;
+				if(!TryParse(ref p, p + s.Length, ref info, formatInfo, styles)
+					|| ((int)(p - stringPointer) < s.Length && !TrailingZeros(s, (int)(p - stringPointer))))
+				{
+					return false;
+				}
+
+				return true;
+			}
+		}
+		public static unsafe bool TryParse<TChar>(scoped ref TChar* str, TChar* strEnd, ref NumberInfo number, NumberFormatInfo info, NumberStyles styles)
+			where TChar : unmanaged, IUtfCharacter<TChar>
+		{
+			// Based on: https://github.com/dotnet/runtime/blob/main/src/libraries/Common/src/System/Number.NumberBuffer.cs
+
+			Debug.Assert(str != null);
+			Debug.Assert(strEnd != null);
+			Debug.Assert(str <= strEnd);
+			Debug.Assert((styles & (NumberStyles.AllowHexSpecifier | NumberStyles.AllowBinarySpecifier)) == 0);
+
 			const int StateSign = 0x0001;
 			const int StateParens = 0x0002;
 			const int StateDigits = 0x0004;
 			const int StateNonZero = 0x0008;
 			const int StateDecimal = 0x0010;
+			const int StateCurrency = 0x0020;
 
+			Debug.Assert(number.DigitsCount == 0);
+			Debug.Assert(number.Scale == 0);
+			Debug.Assert(!number.IsNegative);
+			Debug.Assert(!number.HasNonZeroTail);
 
-			Span<TChar> decSep = stackalloc TChar[TChar.GetLength(formatInfo.NumberDecimalSeparator)];
-			Span<TChar> groupSep = stackalloc TChar[TChar.GetLength(formatInfo.NumberGroupSeparator)];
-			Span<TChar> positiveSign = stackalloc TChar[TChar.GetLength(formatInfo.PositiveSign)];
-			Span<TChar> negativeSign = stackalloc TChar[TChar.GetLength(formatInfo.NegativeSign)];
+			scoped Span<TChar> decSep;
+			scoped Span<TChar> groupSep;
+			scoped Span<TChar> currSymbol;
+			Span<TChar> positiveSign = stackalloc TChar[TChar.GetLength(info.PositiveSign)];
+			Span<TChar> negativeSign = stackalloc TChar[TChar.GetLength(info.NegativeSign)];
 
-			TChar.Copy(formatInfo.NumberDecimalSeparator, decSep);
-			TChar.Copy(formatInfo.NumberGroupSeparator, groupSep);
-			TChar.Copy(formatInfo.PositiveSign, positiveSign);
-			TChar.Copy(formatInfo.NegativeSign, negativeSign);
+			bool parsingCurrency;
+
+			if ((styles & NumberStyles.AllowCurrencySymbol) != 0)
+			{
+				decSep = stackalloc TChar[TChar.GetLength(info.CurrencyDecimalSeparator)];
+				groupSep = stackalloc TChar[TChar.GetLength(info.CurrencyGroupSeparator)];
+				currSymbol = stackalloc TChar[TChar.GetLength(info.CurrencySymbol)];
+
+				TChar.Copy(info.CurrencyDecimalSeparator, decSep);
+				TChar.Copy(info.CurrencyGroupSeparator, groupSep);
+				TChar.Copy(info.CurrencySymbol, currSymbol);
+
+				parsingCurrency = true;
+			}
+			else
+			{
+				decSep = stackalloc TChar[TChar.GetLength(info.NumberDecimalSeparator)];
+				groupSep = stackalloc TChar[TChar.GetLength(info.NumberGroupSeparator)];
+				currSymbol = [];
+
+				TChar.Copy(info.NumberDecimalSeparator, decSep);
+				TChar.Copy(info.NumberGroupSeparator, groupSep);
+
+				parsingCurrency = false;
+			}
+			TChar.Copy(info.PositiveSign, positiveSign);
+			TChar.Copy(info.NegativeSign, negativeSign);
 
 			State<int> state = 0;
-
-			if ((styles & NumberStyles.AllowLeadingWhite) != 0)
-			{
-				s = s.TrimStart(TChar.WhiteSpaceCharacter);
-			}
-			if ((styles & NumberStyles.AllowLeadingWhite) != 0)
-			{
-				s = s.TrimEnd(TChar.WhiteSpaceCharacter);
-			}
-
-			int totalLength = s.Length;
-			int curIndex = 0;
-			ref TChar ptr = ref MemoryMarshal.GetReference(s);
-			TChar ch = curIndex < totalLength ? ptr : TChar.NullCharacter;
-
-			int digCount = 0;
-			int digEnd = 0;
-			int maxDigCount = info.Digits.Length - 1;
-			int numberOfTrailingZeros = 0;
-
-			if ((styles & NumberStyles.AllowLeadingSign) != 0)
-			{
-				if (s.IndexOf(positiveSign) == 0)
-				{
-					info.IsNegative = false;
-					state.Add(StateSign);
-
-					curIndex++;
-					ptr = ref curIndex < totalLength ? ref Unsafe.Add(ref ptr, 1) : ref Unsafe.NullRef<TChar>();
-					ch = curIndex < totalLength ? ptr : TChar.NullCharacter;
-				}
-				else if (s.IndexOf(negativeSign) == 0)
-				{
-					info.IsNegative = true;
-					state.Add(StateSign);
-
-					curIndex++;
-					ptr = ref curIndex < totalLength ? ref Unsafe.Add(ref ptr, 1) : ref Unsafe.NullRef<TChar>();
-					ch = curIndex < totalLength ? ptr : TChar.NullCharacter;
-				}
-			}
+			TChar* p = str;
+			uint ch = (p < strEnd) ? (uint)(*p) : '\0';
+			TChar* next;
 
 			while (true)
 			{
-				if (TChar.IsDigit(ch))
+				// Eat whitespace unless we've found a sign which isn't followed by a currency symbol.
+				// "-Kr 1231.47" is legal but "- 1231.47" is not.
+				if (!IsWhite(ch) || (styles & NumberStyles.AllowLeadingWhite) == 0 || (state.Contains(StateSign) && !state.Contains(StateCurrency) && info.NumberNegativePattern != 2))
+				{
+					if (((styles & NumberStyles.AllowLeadingSign) != 0) && !state.Contains(StateSign) && ((next = MatchChars(p, strEnd, positiveSign)) != null || ((next = MatchChars(p, strEnd, negativeSign)) != null && (number.IsNegative = true))))
+					{
+						state.Add(StateSign);
+						p = next - 1;
+					}
+					else if (ch == '(' && ((styles & NumberStyles.AllowParentheses) != 0) && (!state.Contains(StateSign)))
+					{
+						state.Add(StateSign | StateParens);
+						number.IsNegative = true;
+					}
+					else if (!currSymbol.IsEmpty && (next = MatchChars(p, strEnd, currSymbol)) != null)
+					{
+						state.Add(StateCurrency);
+						currSymbol = [];
+						// We already found the currency symbol. There should not be more currency symbols. Set
+						// currSymbol to NULL so that we won't search it again in the later code path.
+						p = next - 1;
+					}
+					else
+					{
+						break;
+					}
+				}
+				ch = ++p < strEnd ? (uint)(*p) : '\0';
+			}
+
+			int digCount = 0;
+			int digEnd = 0;
+			int maxDigCount = number.Digits.Length - 1;
+			int numberOfTrailingZeros = 0;
+
+			while (true)
+			{
+				if (IsDigit(ch))
 				{
 					state.Add(StateDigits);
-					if (ch != (TChar)'0' || state.Contains(StateNonZero))
+
+					if (ch != '0' || state.Contains(StateNonZero))
 					{
 						if (digCount < maxDigCount)
 						{
-							info.Digits[digCount] = (byte)ch;
-							digEnd = digCount + 1;
-
+							number.Digits[digCount] = (byte)ch;
+							if ((ch != '0') || (number.IsFloating))
+							{
+								digEnd = digCount + 1;
+							}
 						}
-						else if (ch != (TChar)'0')
+						else if (ch != '0')
 						{
 							// For decimal and binary floating-point numbers, we only
 							// need to store digits up to maxDigCount. However, we still
@@ -190,19 +324,18 @@ namespace MissingValues.Internals
 							// for an input that falls evenly between two representable
 							// results.
 
-							info.HasNonZeroTail = true;
+							number.HasNonZeroTail = true;
 						}
 
 						if (!state.Contains(StateDecimal))
 						{
-							info.Scale++;
+							number.Scale++;
 						}
 
 						if (digCount < maxDigCount)
 						{
-							// Handle a case like "53.0". We need to ignore trailing zeros in the fractional part for floating point numbers,
-							// so we keep a count of the number of trailing zeros and update digCount later
-							if (ch == (TChar)'0')
+							// Handle a case like "53.0". We need to ignore trailing zeros in the fractional part for floating point numbers, so we keep a count of the number of trailing zeros and update digCount later
+							if (ch == '0')
 							{
 								numberOfTrailingZeros++;
 							}
@@ -216,147 +349,133 @@ namespace MissingValues.Internals
 					}
 					else if (state.Contains(StateDecimal))
 					{
-						info.Scale--;
+						number.Scale--;
 					}
 				}
-				else if (((styles & NumberStyles.AllowDecimalPoint) != 0) && (!state.Contains(StateDecimal)) && (TChar.Constains(s[curIndex..], decSep, StringComparison.OrdinalIgnoreCase)))
+				else if (((styles & NumberStyles.AllowDecimalPoint) != 0) && !state.Contains(StateDecimal) && ((next = MatchChars(p, strEnd, decSep)) != null || (parsingCurrency && !state.Contains(StateCurrency) && (next = MatchChars(p, strEnd, info.NumberDecimalSeparator)) != null)))
 				{
 					state.Add(StateDecimal);
-					int decSepIndex = s.IndexOf(decSep);
-					ptr = ref MemoryMarshal.GetReference(s[decSepIndex..]);
-					curIndex = decSepIndex;
+					p = next - 1;
 				}
-				else if (((styles & NumberStyles.AllowThousands) != 0) && (state.Contains(StateDigits)) && (!state.Contains(StateDecimal)) && (TChar.Constains(s[curIndex..], groupSep, StringComparison.OrdinalIgnoreCase)))
+				else if (((styles & NumberStyles.AllowThousands) != 0) && state.Contains(StateDigits) && !state.Contains(StateDecimal) && ((next = MatchChars(p, strEnd, groupSep)) != null || (parsingCurrency && !state.Contains(StateCurrency) && (next = MatchChars(p, strEnd, info.NumberGroupSeparator)) != null)))
 				{
-					int groupSepIndex = s[curIndex..].IndexOf(groupSep) + curIndex;
-					ptr = ref MemoryMarshal.GetReference(s[groupSepIndex..]);
-					curIndex = groupSepIndex;
+					p = next - 1;
 				}
 				else
 				{
 					break;
 				}
-
-				curIndex++;
-				ptr = ref curIndex < totalLength ? ref Unsafe.Add(ref ptr, 1) : ref Unsafe.NullRef<TChar>();
-				ch = curIndex < totalLength ? ptr : TChar.NullCharacter;
+				ch = ++p < strEnd ? (uint)(*p) : '\0';
 			}
 
 			bool negExp = false;
-			info.DigitsCount = digEnd;
-			info.Digits[digEnd] = (byte)'\0';
+			number.DigitsCount = digEnd;
+			number.Digits[digEnd] = (byte)'\0';
 			if (state.Contains(StateDigits))
 			{
-				if ((ch == (TChar)'E' || ch == (TChar)'e') && ((styles & NumberStyles.AllowExponent) != 0))
+				if ((ch == 'E' || ch == 'e') && ((styles & NumberStyles.AllowExponent) != 0))
 				{
-					ref TChar temp = ref ptr;
-					curIndex++;
-					ptr = ref curIndex < totalLength ? ref Unsafe.Add(ref ptr, 1) : ref Unsafe.NullRef<TChar>();
-					ch = curIndex < totalLength ? ptr : TChar.NullCharacter;
-
-					if (s[curIndex..].IndexOf(positiveSign) == 0)
+					TChar* temp = p;
+					ch = ++p < strEnd ? (uint)(*p) : '\0';
+					if ((next = MatchChars(p, strEnd, positiveSign)) != null)
 					{
-						curIndex++;
-						ptr = ref curIndex < totalLength ? ref Unsafe.Add(ref ptr, 1) : ref Unsafe.NullRef<TChar>();
-						ch = curIndex < totalLength ? ptr : TChar.NullCharacter;
+						ch = (p = next) < strEnd ? (uint)(*p) : '\0';
 					}
-					else if (s[curIndex..].IndexOf(negativeSign) == 0)
+					else if ((next = MatchChars(p, strEnd, negativeSign)) != null)
 					{
-						curIndex++;
-						ptr = ref curIndex < totalLength ? ref Unsafe.Add(ref ptr, 1) : ref Unsafe.NullRef<TChar>();
-						ch = curIndex < totalLength ? ptr : TChar.NullCharacter;
+						ch = (p = next) < strEnd ? (uint)(*p) : '\0';
 						negExp = true;
 					}
-
-					if (TChar.IsDigit(ch))
+					if (IsDigit(ch))
 					{
 						int exp = 0;
 						do
 						{
-							exp = (exp * 10) + ((char)ch - '0');
-							curIndex++;
-							ptr = ref curIndex < totalLength ? ref Unsafe.Add(ref ptr, 1) : ref Unsafe.NullRef<TChar>();
-							ch = curIndex < totalLength ? ptr : TChar.NullCharacter;
-							if (exp > 5000)
+							// Check if we are about to overflow past our limit of 9 digits
+							if (exp >= 100_000_000)
 							{
-								exp = 9999;
-								while (TChar.IsDigit(ch))
-								{
-									curIndex++;
-									ptr = ref curIndex < totalLength ? ref Unsafe.Add(ref ptr, 1) : ref Unsafe.NullRef<TChar>();
-									ch = curIndex < totalLength ? ptr : TChar.NullCharacter;
-								}
-							}
-						} while (TChar.IsDigit(ch));
+								// Set exp to Int.MaxValue to signify the requested exponent is too large. This will lead to an OverflowException later.
+								exp = int.MaxValue;
+								number.Scale = 0;
 
+								// Finish parsing the number, a FormatException could still occur later on.
+								while (IsDigit(ch))
+								{
+									ch = ++p < strEnd ? (uint)(*p) : '\0';
+								}
+								break;
+							}
+
+							exp = (exp * 10) + (int)(ch - '0');
+							ch = ++p < strEnd ? (uint)(*p) : '\0';
+						} while (IsDigit(ch));
 						if (negExp)
 						{
 							exp = -exp;
 						}
-						info.Scale += exp;
+						number.Scale += exp;
 					}
 					else
 					{
-						ptr = ref temp;
+						p = temp;
+						ch = p < strEnd ? (uint)(*p) : '\0';
 					}
 				}
 
-				if (!info.HasNonZeroTail)
+				if (number.IsFloating && !number.HasNonZeroTail)
 				{
-					int numberOfFractionalDigits = digEnd - info.Scale;
+					// Adjust the number buffer for trailing zeros
+					int numberOfFractionalDigits = digEnd - number.Scale;
 					if (numberOfFractionalDigits > 0)
 					{
 						numberOfTrailingZeros = Math.Min(numberOfTrailingZeros, numberOfFractionalDigits);
 						Debug.Assert(numberOfTrailingZeros >= 0);
-						info.DigitsCount = digEnd - numberOfTrailingZeros;
-						info.Digits[info.DigitsCount] = (byte)'\0';
+						number.DigitsCount = digEnd - numberOfTrailingZeros;
+						number.Digits[number.DigitsCount] = (byte)'\0';
 					}
 				}
 
 				while (true)
 				{
-					if (!TChar.IsWhiteSpace(ch) || (styles & NumberStyles.AllowTrailingWhite) == 0)
+					if (!IsWhite(ch) || (styles & NumberStyles.AllowTrailingWhite) == 0)
 					{
-						int tempIndex = 0;
-						if ((styles & NumberStyles.AllowTrailingSign) != 0 && (!state.Contains(StateSign)) && ((tempIndex = s[curIndex..].IndexOf(positiveSign)) >= 0 || (tempIndex = s[curIndex..].IndexOf(negativeSign)) >= 0) && (info.IsNegative = true))
+						if ((styles & NumberStyles.AllowTrailingSign) != 0 && !state.Contains(StateSign) && ((next = MatchChars(p, strEnd, positiveSign)) != null || (((next = MatchChars(p, strEnd, negativeSign)) != null) && (number.IsNegative = true))))
 						{
 							state.Add(StateSign);
-							tempIndex += curIndex;
-							curIndex++;
-							ptr = ref curIndex < totalLength ? ref Unsafe.Add(ref ptr, tempIndex - curIndex) : ref Unsafe.NullRef<TChar>();
-							ch = curIndex < totalLength ? ptr : TChar.NullCharacter;
+							p = next - 1;
 						}
-						else if (ch == (TChar)')' && state.Contains(StateParens))
+						else if (ch == ')' && state.Contains(StateParens))
 						{
 							state.Remove(StateParens);
+						}
+						else if (!currSymbol.IsEmpty && (next = MatchChars(p, strEnd, currSymbol)) != null)
+						{
+							currSymbol = [];
+							p = next - 1;
 						}
 						else
 						{
 							break;
 						}
 					}
-					curIndex++;
-					ptr = ref curIndex < totalLength ? ref Unsafe.Add(ref ptr, 1) : ref Unsafe.NullRef<TChar>();
-					ch = curIndex < totalLength ? ptr : TChar.NullCharacter;
+					ch = ++p < strEnd ? (uint)(*p) : '\0';
 				}
-
 				if (!state.Contains(StateParens))
 				{
 					if (!state.Contains(StateNonZero))
 					{
-						info.Scale = 0;
+						number.Scale = 0;
+						
+						if ((!number.IsFloating) && !state.Contains(StateDecimal))
+						{
+							number.IsNegative = false;
+						}
 					}
-
-					// Check if we got any value after parsing, if there was any invalid character
-					// this will return false
-					if (s[curIndex..].IndexOfAnyExcept(TChar.NullCharacter) >= 0)
-					{
-						return false;
-					}
-
+					str = p;
 					return true;
 				}
 			}
+			str = p;
 			return false;
 		}
 
@@ -878,6 +997,132 @@ namespace MissingValues.Internals
 		internal ref byte GetDigitsReference()
 		{
 			return ref MemoryMarshal.GetReference(Digits);
+		}
+
+		private static bool IsWhite(uint ch) => (ch == 0x20) || ((ch - 0x09) <= (0x0D - 0x09));
+
+		private static bool IsDigit(uint ch) => (ch - '0') <= 9;
+
+		private static bool IsSpaceReplacingChar(uint c) => (c == '\u00a0') || (c == '\u202f');
+
+		[MethodImpl(MethodImplOptions.NoInlining)] // rare slow path that shouldn't impact perf of the main use case
+		private static bool TrailingZeros<TChar>(ReadOnlySpan<TChar> value, int index)
+			where TChar : unmanaged, IUtfCharacter<TChar>
+		{
+			// For compatibility, we need to allow trailing zeros at the end of a number string
+			return !value.Slice(index).ContainsAnyExcept((TChar)('\0'));
+		}
+
+		private static unsafe TChar* MatchChars<TChar>(TChar* p, TChar* pEnd, ReadOnlySpan<TChar> value)
+			where TChar : unmanaged, IUtfCharacter<TChar>
+		{
+			Debug.Assert((p != null) && (pEnd != null) && (p <= pEnd));
+
+			fixed (TChar* stringPointer = &MemoryMarshal.GetReference(value))
+			{
+				TChar* str = stringPointer;
+
+				if ((uint)(*str) != '\0')
+				{
+					// We only hurt the failure case
+					// This fix is for French or Kazakh cultures. Since a user cannot type 0xA0 or 0x202F as a
+					// space character we use 0x20 space character instead to mean the same.
+					while (true)
+					{
+						uint cp = (p < pEnd) ? (uint)(*p) : '\0';
+						uint val = (uint)(*str);
+
+						if ((cp != val) && !(IsSpaceReplacingChar(val) && (cp == '\u0020')))
+						{
+							break;
+						}
+
+						p++;
+						str++;
+
+						if ((uint)(*str) == '\0')
+						{
+							return p;
+						}
+					}
+				}
+			}
+
+			return null;
+		}
+		private static unsafe TChar* MatchChars<TChar>(TChar* p, TChar* pEnd, ReadOnlySpan<char> value)
+			where TChar : unmanaged, IUtfCharacter<TChar>
+		{
+			Debug.Assert((p != null) && (pEnd != null) && (p <= pEnd));
+
+			fixed (char* stringPointer = &MemoryMarshal.GetReference(value))
+			{
+				char* str = stringPointer;
+
+				if ((uint)(*str) != '\0')
+				{
+					// We only hurt the failure case
+					// This fix is for French or Kazakh cultures. Since a user cannot type 0xA0 or 0x202F as a
+					// space character we use 0x20 space character instead to mean the same.
+					while (true)
+					{
+						uint cp = (p < pEnd) ? (uint)(*p) : '\0';
+						uint val = (uint)(*str);
+
+						if ((cp != val) && !(IsSpaceReplacingChar(val) && (cp == '\u0020')))
+						{
+							break;
+						}
+
+						p++;
+						str++;
+
+						if ((uint)(*str) == '\0')
+						{
+							return p;
+						}
+					}
+				}
+			}
+
+			return null;
+		}
+		private static unsafe TChar* MatchChars<TChar>(TChar* p, TChar* pEnd, ReadOnlySpan<byte> value)
+			where TChar : unmanaged, IUtfCharacter<TChar>
+		{
+			Debug.Assert((p != null) && (pEnd != null) && (p <= pEnd));
+
+			fixed (byte* stringPointer = &MemoryMarshal.GetReference(value))
+			{
+				byte* str = stringPointer;
+
+				if ((uint)(*str) != '\0')
+				{
+					// We only hurt the failure case
+					// This fix is for French or Kazakh cultures. Since a user cannot type 0xA0 or 0x202F as a
+					// space character we use 0x20 space character instead to mean the same.
+					while (true)
+					{
+						uint cp = (p < pEnd) ? (uint)(*p) : '\0';
+						uint val = (uint)(*str);
+
+						if ((cp != val) && !(IsSpaceReplacingChar(val) && (cp == '\u0020')))
+						{
+							break;
+						}
+
+						p++;
+						str++;
+
+						if ((uint)(*str) == '\0')
+						{
+							return p;
+						}
+					}
+				}
+			}
+
+			return null;
 		}
 	}
 }

@@ -28,6 +28,8 @@ internal interface IFormattableInteger<TSelf> : IFormattableNumber<TSelf>, IBigI
 	/// <returns>The hexadecimal value of <paramref name="value"/> if it represents a number; otherwise, 0</returns>
 	abstract static TSelf GetHexValue(char value);
 
+	abstract static int UnsignedCompare(in TSelf value1, in TSelf value2);
+
 	static bool IFormattableNumber<TSelf>.IsBinaryInteger() => true;
 
 	/// <summary>
@@ -85,6 +87,7 @@ internal interface IFormattableInteger<TSelf> : IFormattableNumber<TSelf>, IBigI
 	/// Gets the number of digits of the maximum binary value of <typeparamref name="TSelf"/>.
 	/// </summary>
 	abstract static int MaxBinaryDigits { get; }
+	abstract static bool IsUnsignedInteger { get; }
 }
 
 internal interface IFormattableSignedInteger<TSigned, TUnsigned> : IFormattableInteger<TSigned>, ISignedNumber<TSigned>
@@ -96,6 +99,8 @@ internal interface IFormattableSignedInteger<TSigned, TUnsigned> : IFormattableI
 	/// </summary>
 	/// <returns>The unsigned representation of the signed integer.</returns>
 	TUnsigned ToUnsigned();
+
+	static bool IFormattableInteger<TSigned>.IsUnsignedInteger => false;
 }
 
 internal interface IFormattableUnsignedInteger<TUnsigned, TSigned> : IFormattableInteger<TUnsigned>, IUnsignedNumber<TUnsigned>
@@ -113,6 +118,8 @@ internal interface IFormattableUnsignedInteger<TUnsigned, TSigned> : IFormattabl
 	/// <returns>The signed representation of the unsigned integer.</returns>
 	TSigned ToSigned();
 	static abstract int CountDigits(in TUnsigned value);
+
+	static bool IFormattableInteger<TUnsigned>.IsUnsignedInteger => true;
 }
 
 internal static partial class NumberFormatter

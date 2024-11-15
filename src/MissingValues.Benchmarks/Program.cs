@@ -13,10 +13,12 @@ using MissingValues.Internals;
 
 #if DEBUG
 
-Console.WriteLine(Quad.Sqrt(10));
-Console.WriteLine(Octo.Sqrt(10));
+UInt512 b = UInt512.MaxValue / UInt512.Parse("10000000000000000000000000000000000000000");
+UInt256 a = UInt256.Parse("100000000000000000000000000000000000000");
+UInt512 c = UInt512.Parse("13407807929942597099574024998205846127479365820592393377723561443721764030073");
 
 #else
+
 BenchmarkSwitcher.FromTypes(
 	[
 		typeof(UInt256Benchmarks.MathOperators),
@@ -30,8 +32,11 @@ BenchmarkSwitcher.FromTypes(
 		typeof(QuadBenchmarks.MathOperators),
 		typeof(QuadBenchmarks.Parsing),
 		typeof(GenericIntegerBenchmarks<>),
-		typeof(BigIntegerBenchmarks)
+		typeof(BigIntegerBenchmarks),
+		typeof(WriteUnalignedBenchmarks),
+		typeof(ReadUnalignedBenchmarks)
 	]
-	).Run(args); 
+	).Run(args);
+
 #endif
 Console.ReadLine();

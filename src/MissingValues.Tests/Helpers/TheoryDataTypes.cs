@@ -129,4 +129,17 @@ namespace MissingValues.Tests.Helpers
             }
         }
     }
+	public class FormatParsingTheoryData<TNumber> : TheoryData<string, NumberStyles, NumberFormatInfo?, TNumber, bool>
+		where TNumber : INumber<TNumber>
+	{
+        public FormatParsingTheoryData(IEnumerable<(string, NumberStyles, NumberFormatInfo?, TNumber, bool)> data)
+        {
+			Contract.Assert(data is not null && data.Any());
+
+            foreach (var dat in data)
+            {
+				Add(dat.Item1, dat.Item2, dat.Item3, dat.Item4, dat.Item5);
+            }
+        }
+    }
 }
