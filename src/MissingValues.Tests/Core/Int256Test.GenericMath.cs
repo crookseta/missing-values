@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -842,6 +843,10 @@ namespace MissingValues.Tests.Core
 			NumberBaseHelper<Int>.CreateChecked(int.MaxValue).Should().Be(Int32MaxValue);
 			NumberBaseHelper<Int>.CreateChecked(long.MaxValue).Should().Be(Int64MaxValue);
 			NumberBaseHelper<Int>.CreateChecked(Int128.MaxValue).Should().Be(Int128MaxValue);
+			NumberBaseHelper<Int>
+				.CreateChecked(BigInteger.Parse(
+					"57896044618658097711785492504343953926634992332820282019728792003956564819967"))
+				.Should().Be(MaxValue);
 			NumberBaseHelper<Int>.CreateChecked(Int256MaxValueAsDouble).Should().Be(MaxValue);
 
 			NumberBaseHelper<Int>.CreateChecked(byte.MinValue).Should().Be(Zero);
@@ -849,6 +854,10 @@ namespace MissingValues.Tests.Core
 			NumberBaseHelper<Int>.CreateChecked(int.MinValue).Should().Be(Int32MinValue);
 			NumberBaseHelper<Int>.CreateChecked(long.MinValue).Should().Be(Int64MinValue);
 			NumberBaseHelper<Int>.CreateChecked(Int128.MinValue).Should().Be(Int128MinValue);
+			NumberBaseHelper<Int>
+				.CreateChecked(BigInteger.Parse(
+					"-57896044618658097711785492504343953926634992332820282019728792003956564819968"))
+				.Should().Be(MinValue);
 			NumberBaseHelper<Int>.CreateChecked(Int256MinValueAsDouble).Should().Be(MinValue);
 		}
 		[Fact]
@@ -859,6 +868,10 @@ namespace MissingValues.Tests.Core
 			NumberBaseHelper<Int>.CreateSaturating(int.MaxValue).Should().Be(Int32MaxValue);
 			NumberBaseHelper<Int>.CreateSaturating(long.MaxValue).Should().Be(Int64MaxValue);
 			NumberBaseHelper<Int>.CreateSaturating(Int128.MaxValue).Should().Be(Int128MaxValue);
+			NumberBaseHelper<Int>
+				.CreateSaturating(BigInteger.Parse(
+					"57896044618658097711785492504343953926634992332820282019728792003956564819967"))
+				.Should().Be(MaxValue);
 			NumberBaseHelper<Int>.CreateSaturating(Int256MaxValueAsDouble).Should().Be(MaxValue);
 
 			NumberBaseHelper<Int>.CreateSaturating(byte.MinValue).Should().Be(Zero);
@@ -866,6 +879,10 @@ namespace MissingValues.Tests.Core
 			NumberBaseHelper<Int>.CreateSaturating(int.MinValue).Should().Be(Int32MinValue);
 			NumberBaseHelper<Int>.CreateSaturating(long.MinValue).Should().Be(Int64MinValue);
 			NumberBaseHelper<Int>.CreateSaturating(Int128.MinValue).Should().Be(Int128MinValue);
+			NumberBaseHelper<Int>
+				.CreateSaturating(BigInteger.Parse(
+					"-57896044618658097711785492504343953926634992332820282019728792003956564819968"))
+				.Should().Be(MinValue);
 			NumberBaseHelper<Int>.CreateSaturating(Int256MinValueAsDouble).Should().Be(MinValue);
 		}
 		[Fact]
@@ -876,6 +893,10 @@ namespace MissingValues.Tests.Core
 			NumberBaseHelper<Int>.CreateTruncating(int.MaxValue).Should().Be(Int32MaxValue);
 			NumberBaseHelper<Int>.CreateTruncating(long.MaxValue).Should().Be(Int64MaxValue);
 			NumberBaseHelper<Int>.CreateTruncating(Int128.MaxValue).Should().Be(Int128MaxValue);
+			NumberBaseHelper<Int>
+				.CreateTruncating(BigInteger.Parse(
+					"57896044618658097711785492504343953926634992332820282019728792003956564819967"))
+				.Should().Be(MaxValue);
 			NumberBaseHelper<Int>.CreateTruncating(Int256MaxValueAsDouble).Should().Be(MaxValue);
 
 			NumberBaseHelper<Int>.CreateTruncating(byte.MinValue).Should().Be(Zero);
@@ -883,6 +904,10 @@ namespace MissingValues.Tests.Core
 			NumberBaseHelper<Int>.CreateTruncating(int.MinValue).Should().Be(Int32MinValue);
 			NumberBaseHelper<Int>.CreateTruncating(long.MinValue).Should().Be(Int64MinValue);
 			NumberBaseHelper<Int>.CreateTruncating(Int128.MinValue).Should().Be(Int128MinValue);
+			NumberBaseHelper<Int>
+				.CreateTruncating(BigInteger.Parse(
+					"-57896044618658097711785492504343953926634992332820282019728792003956564819968"))
+				.Should().Be(MinValue);
 			NumberBaseHelper<Int>.CreateTruncating(Int256MinValueAsDouble).Should().Be(MinValue);
 		}
 
@@ -894,6 +919,9 @@ namespace MissingValues.Tests.Core
 			NumberBaseHelper<int>.CreateChecked(Int32MaxValue).Should().Be(int.MaxValue);
 			NumberBaseHelper<long>.CreateChecked(Int64MaxValue).Should().Be(long.MaxValue);
 			NumberBaseHelper<Int128>.CreateChecked(Int128MaxValue).Should().Be(Int128.MaxValue);
+			NumberBaseHelper<BigInteger>.CreateChecked(MaxValue).Should()
+				.Be(BigInteger.Parse(
+					"57896044618658097711785492504343953926634992332820282019728792003956564819967"));
 			NumberBaseHelper<double>.CreateChecked(MaxValue).Should().Be(Int256MaxValueAsDouble);
 
 			NumberBaseHelper<byte>.CreateChecked(Zero).Should().Be(byte.MinValue);
@@ -901,6 +929,9 @@ namespace MissingValues.Tests.Core
 			NumberBaseHelper<int>.CreateChecked(Int32MinValue).Should().Be(int.MinValue);
 			NumberBaseHelper<long>.CreateChecked(Int64MinValue).Should().Be(long.MinValue);
 			NumberBaseHelper<Int128>.CreateChecked(Int128MinValue).Should().Be(Int128.MinValue);
+			NumberBaseHelper<BigInteger>.CreateChecked(MinValue).Should()
+				.Be(BigInteger.Parse(
+					"-57896044618658097711785492504343953926634992332820282019728792003956564819968"));
 			NumberBaseHelper<double>.CreateChecked(MinValue).Should().Be(Int256MinValueAsDouble);
 		}
 		[Fact]
@@ -911,6 +942,9 @@ namespace MissingValues.Tests.Core
 			NumberBaseHelper<int>.CreateSaturating(Int32MaxValue).Should().Be(int.MaxValue);
 			NumberBaseHelper<long>.CreateSaturating(Int64MaxValue).Should().Be(long.MaxValue);
 			NumberBaseHelper<Int128>.CreateSaturating(Int128MaxValue).Should().Be(Int128.MaxValue);
+			NumberBaseHelper<BigInteger>.CreateSaturating(MaxValue).Should()
+				.Be(BigInteger.Parse(
+					"57896044618658097711785492504343953926634992332820282019728792003956564819967"));
 			NumberBaseHelper<double>.CreateSaturating(MaxValue).Should().Be(Int256MaxValueAsDouble);
 
 			NumberBaseHelper<byte>.CreateSaturating(Zero).Should().Be(byte.MinValue);
@@ -918,6 +952,9 @@ namespace MissingValues.Tests.Core
 			NumberBaseHelper<int>.CreateSaturating(Int32MinValue).Should().Be(int.MinValue);
 			NumberBaseHelper<long>.CreateSaturating(Int64MinValue).Should().Be(long.MinValue);
 			NumberBaseHelper<Int128>.CreateSaturating(Int128MinValue).Should().Be(Int128.MinValue);
+			NumberBaseHelper<BigInteger>.CreateSaturating(MinValue).Should()
+				.Be(BigInteger.Parse(
+					"-57896044618658097711785492504343953926634992332820282019728792003956564819968"));
 			NumberBaseHelper<double>.CreateSaturating(MinValue).Should().Be(Int256MinValueAsDouble);
 		}
 		[Fact]
@@ -928,6 +965,9 @@ namespace MissingValues.Tests.Core
 			NumberBaseHelper<int>.CreateTruncating(Int32MaxValue).Should().Be(int.MaxValue);
 			NumberBaseHelper<long>.CreateTruncating(Int64MaxValue).Should().Be(long.MaxValue);
 			NumberBaseHelper<Int128>.CreateTruncating(Int128MaxValue).Should().Be(Int128.MaxValue);
+			NumberBaseHelper<BigInteger>.CreateTruncating(MaxValue).Should()
+				.Be(BigInteger.Parse(
+					"57896044618658097711785492504343953926634992332820282019728792003956564819967"));
 			NumberBaseHelper<double>.CreateTruncating(MaxValue).Should().Be(Int256MaxValueAsDouble);
 
 			NumberBaseHelper<byte>.CreateTruncating(Zero).Should().Be(byte.MinValue);
@@ -935,6 +975,9 @@ namespace MissingValues.Tests.Core
 			NumberBaseHelper<int>.CreateTruncating(Int32MinValue).Should().Be(int.MinValue);
 			NumberBaseHelper<long>.CreateTruncating(Int64MinValue).Should().Be(long.MinValue);
 			NumberBaseHelper<Int128>.CreateTruncating(Int128MinValue).Should().Be(Int128.MinValue);
+			NumberBaseHelper<BigInteger>.CreateTruncating(MinValue).Should()
+				.Be(BigInteger.Parse(
+					"-57896044618658097711785492504343953926634992332820282019728792003956564819968"));
 			NumberBaseHelper<double>.CreateTruncating(MinValue).Should().Be(Int256MinValueAsDouble);
 		}
 
@@ -1178,6 +1221,26 @@ namespace MissingValues.Tests.Core
 		public static void NegativeOneTest()
 		{
 			MathConstantsHelper.NegativeOne<Int>().Should().Be(NegativeOne);	
+		}
+		#endregion
+
+		#region IPowerFunctions
+		[Fact]
+		public void PowTest()
+		{
+			GenericFloatingPointFunctions.Pow(Zero, int.MaxValue).Should().Be(Zero);
+			GenericFloatingPointFunctions.Pow(One, int.MaxValue).Should().Be(One);
+			GenericFloatingPointFunctions.Pow(MaxValue, Zero).Should().Be(One);
+			GenericFloatingPointFunctions.Pow(MaxValue, One).Should().Be(MaxValue);
+			GenericFloatingPointFunctions.Pow(Two, Two).Should().Be(4);
+			GenericFloatingPointFunctions.Pow(Two, 4).Should().Be(16);
+			GenericFloatingPointFunctions.Pow(16, Two).Should().Be(256);
+			GenericFloatingPointFunctions.Pow(Two, 254)
+				.Should().Be(new Int(0x4000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000));
+
+			Assert.Throws<ArgumentOutOfRangeException>(() => GenericFloatingPointFunctions.Pow(Two, NegativeOne));
+			Assert.Throws<OverflowException>(() => GenericFloatingPointFunctions.Pow(Two, 255));
+			Assert.Throws<OverflowException>(() => GenericFloatingPointFunctions.Pow(Two + Two, 254));
 		}
 		#endregion
 	}

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Numerics;
 using System.Text;
 using System.Text.Json;
 using System.Text.Unicode;
@@ -53,6 +54,14 @@ namespace MissingValues.Tests.Core
 		{
 			UInt256.MinValue.Should().Be((UInt256)Zero);
 			UInt256.MaxValue.Should().Be((UInt256)UInt256MaxValue);
+		}
+
+		[Fact]
+		public void Cast_ToBigInteger()
+		{
+			BigInteger.One.Should().Be((BigInteger)One);
+			BigInteger.Parse("13407807929942597099574024998205846127479365820592393377723561443721764030073546976801874298166903427690031858186486050853753882811946569946433649006084095")
+				.Should().Be((BigInteger)MaxValue);
 		}
 
 		[Fact]

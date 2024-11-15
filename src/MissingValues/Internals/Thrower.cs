@@ -31,7 +31,7 @@ namespace MissingValues.Internals
 		}
 		internal enum ArithmethicOperation : byte
 		{
-			Addition, Subtraction, Multiplication, Division
+			Addition, Subtraction, Multiplication, Division, Exponentiation
 		}
 
 		[DoesNotReturn]

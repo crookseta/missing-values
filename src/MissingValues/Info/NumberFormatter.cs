@@ -108,14 +108,14 @@ namespace MissingValues.Info
 				{
 					digits = digitsArray = ArrayPool<byte>.Shared.Rent(NumberParser.QuadBufferLength);
 
-					number = new(digits[..NumberParser.QuadBufferLength]);
+					number = new(digits[..NumberParser.QuadBufferLength], true);
 					Ryu.Format<Quad, UInt128>(in quad, ref number, out exceptional);
 				}
 				else if (value is Octo octo)
 				{
 					digits = digitsArray = ArrayPool<byte>.Shared.Rent(NumberParser.OctoBufferLength);
 
-					number = new(digits[..NumberParser.OctoBufferLength]);
+					number = new(digits[..NumberParser.OctoBufferLength], true);
 					Ryu.Format<Octo, UInt256>(in octo, ref number, out exceptional);
 				}
 				else

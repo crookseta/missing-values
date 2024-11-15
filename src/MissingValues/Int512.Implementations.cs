@@ -19,6 +19,7 @@ namespace MissingValues
 		IBigInteger<Int512>,
 		IMinMaxValue<Int512>,
 		ISignedNumber<Int512>,
+		IPowerFunctions<Int512>,
 		IFormattableSignedInteger<Int512, UInt512>
 	{
 		private static UInt256 _upperMin => new UInt256(0x8000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
@@ -371,6 +372,10 @@ namespace MissingValues
 
 		static Int512 INumberBase<Int512>.MinMagnitudeNumber(Int512 x, Int512 y) => MinMagnitude(x, y);
 
+#if NET9_0_OR_GREATER
+		static Int512 INumberBase<Int512>.MultiplyAddEstimate(Int512 left, Int512 right, Int512 addend) => (left * right) + addend;
+#endif
+
 		/// <inheritdoc/>
 		public static Int512 Parse(ReadOnlySpan<char> s, NumberStyles style, IFormatProvider? provider)
 		{
@@ -441,6 +446,8 @@ namespace MissingValues
 
 		/// <inheritdoc/>
 		public static Int512 PopCount(Int512 value) => (Int512)(BitHelper.PopCount(in value));
+
+		static Int512 IPowerFunctions<Int512>.Pow(Int512 x, Int512 y) => Pow(x, checked((int)y));
 
 		/// <inheritdoc/>
 		public static Int512 RotateLeft(Int512 value, int rotateAmount) => (value << rotateAmount) | (value >>> (512 - rotateAmount));
@@ -759,6 +766,7 @@ namespace MissingValues
 					Int256 actual => (Int512)actual,
 					Int512 actual => actual,
 					nint actual => (Int512)actual,
+					BigInteger actual => (Int512)actual,
 					_ => BitHelper.DefaultConvert<Int512>(out converted)
 				};
 			}
@@ -797,6 +805,7 @@ namespace MissingValues
 				Int256 actual => actual,
 				Int512 actual => actual,
 				nint actual => actual,
+				BigInteger actual => (actual < (BigInteger)MinValue) ? MinValue : (actual > (BigInteger)MaxValue) ? MaxValue : (Int512)actual,
 				_ => BitHelper.DefaultConvert<Int512>(out converted)
 			};
 
@@ -834,6 +843,7 @@ namespace MissingValues
 				Int256 actual => actual,
 				Int512 actual => actual,
 				nint actual => actual,
+				BigInteger actual => (Int512)actual,
 				_ => BitHelper.DefaultConvert<Int512>(out converted)
 			};
 
@@ -870,6 +880,7 @@ namespace MissingValues
 					Int256 => (TOther)(object)(Int256)value,
 					Int512 => (TOther)(object)value,
 					nint => (TOther)(object)(nint)value,
+					BigInteger => (TOther)(object)(BigInteger)value,
 					_ => BitHelper.DefaultConvert<TOther>(out converted)
 				};
 			}
@@ -906,6 +917,7 @@ namespace MissingValues
 				Int256 => (TOther)(object)((value >= (Int512)Int256.MaxValue) ? Int256.MaxValue : (value <= (Int512)Int256.MinValue) ? Int128.MinValue : (Int256)value),
 				Int512 => (TOther)(object)value,
 				nint => (TOther)(object)((value >= (Int512)nint.MaxValue) ? nint.MaxValue : (value <= (Int512)nint.MinValue) ? nint.MinValue : (nint)value),
+				BigInteger => (TOther)(object)(BigInteger)value,
 				_ => BitHelper.DefaultConvert<TOther>(out converted)
 			};
 
@@ -940,6 +952,7 @@ namespace MissingValues
 				Int256 => (TOther)(object)(Int256)value,
 				Int512 => (TOther)(object)value,
 				nint => (TOther)(object)(nint)value,
+				BigInteger => (TOther)(object)(BigInteger)value,
 				_ => BitHelper.DefaultConvert<TOther>(out converted)
 			};
 
@@ -1035,6 +1048,7 @@ namespace MissingValues
 		int IFormattableInteger<Int512>.ToInt32() => (int)_p0;
 
 		UInt512 IFormattableSignedInteger<Int512, UInt512>.ToUnsigned() => (UInt512)this;
+		static int IFormattableInteger<Int512>.UnsignedCompare(in Int512 value1, in Int512 value2) => unchecked(((UInt512)value1).CompareTo((UInt512)value2));
 
 		/// <inheritdoc/>
 		public static Int512 operator +(in Int512 value) => value;

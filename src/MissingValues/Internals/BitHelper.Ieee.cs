@@ -1,6 +1,7 @@
 ﻿using MissingValues.Internals;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Numerics;
 using System.Runtime.CompilerServices;
@@ -11,6 +12,117 @@ namespace MissingValues
 {
 	internal static partial class BitHelper
 	{
+		public static Quad GetQuadFromParts(int sign, int exp, UInt128 man)
+		{
+			const int Bias = Quad.ExponentBias + Quad.BiasedExponentShift;
+			UInt128 bits;
+
+			if (man == 0)
+			{
+				bits = 0;
+			}
+			else
+			{
+				// Normalize so that 0x0010 0000 0000 0000 is the highest bit set.
+				int cbitShift = ((int)UInt128.LeadingZeroCount(man)) - Quad.BiasedExponentLength;
+				if (cbitShift < 0)
+					man >>= -cbitShift;
+				else
+					man <<= cbitShift;
+				exp -= cbitShift;
+
+				// Move the point to just behind the leading 1: 0x001.0 0000 0000 0000
+				// (112 bits) and skew the exponent (by 0x3FF == 1023).
+				exp += Bias;
+
+				if (exp >= Quad.MaxBiasedExponent)
+				{
+					// Infinity.
+					bits = Quad.PositiveInfinityBits;
+				}
+				else if (exp <= 0)
+				{
+					// Denormalized.
+					exp--;
+					if (exp < -Quad.BiasedExponentShift)
+					{
+						// Underflow to zero.
+						bits = 0;
+					}
+					else
+					{
+						bits = man >> -exp;
+						Debug.Assert(bits != 0);
+					}
+				}
+				else
+				{
+					// Mask off the implicit high bit.
+					bits = (man & Quad.TrailingSignificandMask) | ((UInt128)exp << Quad.BiasedExponentShift);
+				}
+			}
+
+			if (sign < 0)
+				bits |= Quad.SignMask;
+
+			return Quad.UInt128BitsToQuad(bits);
+		}
+		public static Octo GetOctoFromParts(int sign, int exp, UInt256 man)
+		{
+			const int Bias = Octo.ExponentBias + Octo.BiasedExponentShift;
+			UInt256 bits;
+
+			if (man == 0)
+			{
+				bits = 0;
+			}
+			else
+			{
+				// Normalize so that 0x0010 0000 0000 0000 is the highest bit set.
+				int cbitShift = (LeadingZeroCount(in man)) - Octo.BiasedExponentLength;
+				if (cbitShift < 0)
+					man >>= -cbitShift;
+				else
+					man <<= cbitShift;
+				exp -= cbitShift;
+
+				// Move the point to just behind the leading 1: 0x001.0 0000 0000 0000
+				// (112 bits) and skew the exponent (by 0x3FF == 1023).
+				exp += Bias;
+
+				if (exp >= Octo.MaxBiasedExponent)
+				{
+					// Infinity.
+					bits = Octo.PositiveInfinityBits;
+				}
+				else if (exp <= 0)
+				{
+					// Denormalized.
+					exp--;
+					if (exp < -Octo.BiasedExponentShift)
+					{
+						// Underflow to zero.
+						bits = 0;
+					}
+					else
+					{
+						bits = man >> -exp;
+						Debug.Assert(bits != 0);
+					}
+				}
+				else
+				{
+					// Mask off the implicit high bit.
+					bits = (man & Octo.TrailingSignificandMask) | ((UInt256)exp << Octo.BiasedExponentShift);
+				}
+			}
+
+			if (sign < 0)
+				bits |= Octo.SignMask;
+
+			return Octo.UInt256BitsToOcto(bits);
+		}
+
 		public static void GetDoubleParts(double dbl, out int sign, out int exp, out ulong man, out bool fFinite)
 		{
 			ulong bits = BitConverter.DoubleToUInt64Bits(dbl);
@@ -36,6 +148,62 @@ namespace MissingValues
 				fFinite = true;
 				man |= 0x0010000000000000;
 				exp -= 1075;
+			}
+		}
+		public static void GetQuadParts(Quad dbl, out int sign, out int exp, out UInt128 man, out bool fFinite)
+		{
+			const int Bias = Quad.ExponentBias + Quad.BiasedExponentShift;
+			UInt128 bits = Quad.QuadToUInt128Bits(dbl);
+
+			sign = 1 - ((int)(bits >> 126) & 2);
+			man = bits & Quad.TrailingSignificandMask;
+			exp = (int)(bits >> Quad.BiasedExponentShift) & Quad.MaxBiasedExponent;
+			if (exp == 0)
+			{
+				// Denormalized number.
+				fFinite = true;
+				if (man != UInt128.Zero)
+					exp = -(Bias - 1);
+			}
+			else if (exp == Quad.MaxBiasedExponent)
+			{
+				// NaN or Infinite.
+				fFinite = false;
+				exp = int.MaxValue;
+			}
+			else
+			{
+				fFinite = true;
+				man |= Quad.SignificandSignMask;
+				exp -= Bias;
+			}
+		}
+		public static void GetOctoParts(in Octo dbl, out int sign, out int exp, out UInt256 man, out bool fFinite)
+		{
+			const int Bias = Octo.ExponentBias + Octo.BiasedExponentShift;
+			UInt256 bits = Octo.OctoToUInt256Bits(dbl);
+
+			sign = 1 - ((int)(bits >> 254) & 2);
+			man = bits & Octo.TrailingSignificandMask;
+			exp = (int)(bits >> Octo.BiasedExponentShift) & Octo.MaxBiasedExponent;
+			if (exp == 0)
+			{
+				// Denormalized number.
+				fFinite = true;
+				if (man != UInt256.Zero)
+					exp = -(Bias - 1);
+			}
+			else if (exp == Octo.MaxBiasedExponent)
+			{
+				// NaN or Infinite.
+				fFinite = false;
+				exp = int.MaxValue;
+			}
+			else
+			{
+				fFinite = true;
+				man |= Octo.SignificandSignMask;
+				exp -= Bias;
 			}
 		}
 
