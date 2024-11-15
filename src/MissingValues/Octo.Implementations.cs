@@ -599,7 +599,7 @@ namespace MissingValues
 			if (biasedExponent == MinBiasedExponent)
 			{
 				// Subnormal values have 1 bit set when they're powers of 2
-				return UInt256.PopCount(trailingSignificand) == UInt256.One;
+				return BitHelper.PopCount(in trailingSignificand) == 1;
 			}
 			else if (biasedExponent == MaxBiasedExponent)
 			{

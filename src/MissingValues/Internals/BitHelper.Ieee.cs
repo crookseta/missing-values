@@ -79,7 +79,7 @@ namespace MissingValues
 			else
 			{
 				// Normalize so that 0x0010 0000 0000 0000 is the highest bit set.
-				int cbitShift = ((int)UInt256.LeadingZeroCount(man)) - Octo.BiasedExponentLength;
+				int cbitShift = (LeadingZeroCount(in man)) - Octo.BiasedExponentLength;
 				if (cbitShift < 0)
 					man >>= -cbitShift;
 				else
