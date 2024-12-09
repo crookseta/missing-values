@@ -244,14 +244,14 @@ namespace MissingValues
 		/// <param name="value">The number to convert.</param>
 		/// <returns>A 128-bit unsigned integer whose value is equivalent to <paramref name="value"/>.</returns>
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static unsafe UInt128 QuadToUInt128Bits(Quad value) => System.Runtime.CompilerServices.Unsafe.BitCast<Quad, UInt128>(value);
+		public static unsafe UInt128 QuadToUInt128Bits(Quad value) => new UInt128(value._upper, value._lower);
 		/// <summary>
 		/// Converts the specified quadruple-precision floating point number to a 128-bit signed integer.
 		/// </summary>
 		/// <param name="value">The number to convert.</param>
 		/// <returns>A 128-bit signed integer whose value is equivalent to <paramref name="value"/>.</returns>
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static unsafe Int128 QuadToInt128Bits(Quad value) => System.Runtime.CompilerServices.Unsafe.BitCast<Quad, Int128>(value);
+		public static unsafe Int128 QuadToInt128Bits(Quad value) => new Int128(value._upper, value._lower);
 
 		
 		internal static ushort ExtractBiasedExponentFromBits(UInt128 bits)
