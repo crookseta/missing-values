@@ -1145,9 +1145,9 @@ namespace MissingValues
 		{
 			if (Vector512.IsHardwareAccelerated)
 			{
-				var v = Unsafe.As<UInt512, Vector512<ulong>>(ref Unsafe.AsRef(in value));
+				var v = Unsafe.BitCast<UInt512, Vector512<ulong>>(value);
 				var result = ~v;
-				return Unsafe.As<Vector512<ulong>, UInt512>(ref result);
+				return Unsafe.BitCast<Vector512<ulong>, UInt512>(result);
 			}
 			else
 			{
@@ -1386,10 +1386,10 @@ namespace MissingValues
 		{
 			if (Vector512.IsHardwareAccelerated)
 			{
-				var v1 = Unsafe.As<UInt512, Vector512<ulong>>(ref Unsafe.AsRef(in left));
-				var v2 = Unsafe.As<UInt512, Vector512<ulong>>(ref Unsafe.AsRef(in right));
+				var v1 = Unsafe.BitCast<UInt512, Vector512<ulong>>(left);
+				var v2 = Unsafe.BitCast<UInt512, Vector512<ulong>>(right);
 				var result = v1 & v2;
-				return Unsafe.As<Vector512<ulong>, UInt512>(ref result);
+				return Unsafe.BitCast<Vector512<ulong>, UInt512>(result);
 			}
 			else
 			{
@@ -1402,10 +1402,10 @@ namespace MissingValues
 		{
 			if (Vector512.IsHardwareAccelerated)
 			{
-				var v1 = Unsafe.As<UInt512, Vector512<ulong>>(ref Unsafe.AsRef(in left));
-				var v2 = Unsafe.As<UInt512, Vector512<ulong>>(ref Unsafe.AsRef(in right));
+				var v1 = Unsafe.BitCast<UInt512, Vector512<ulong>>(left);
+				var v2 = Unsafe.BitCast<UInt512, Vector512<ulong>>(right);
 				var result = v1 | v2;
-				return Unsafe.As<Vector512<ulong>, UInt512>(ref result);
+				return Unsafe.BitCast<Vector512<ulong>, UInt512>(result);
 			}
 			else
 			{
@@ -1418,10 +1418,10 @@ namespace MissingValues
 		{
 			if (Vector512.IsHardwareAccelerated)
 			{
-				var v1 = Unsafe.As<UInt512, Vector512<ulong>>(ref Unsafe.AsRef(in left));
-				var v2 = Unsafe.As<UInt512, Vector512<ulong>>(ref Unsafe.AsRef(in right));
+				var v1 = Unsafe.BitCast<UInt512, Vector512<ulong>>(left);
+				var v2 = Unsafe.BitCast<UInt512, Vector512<ulong>>(right);
 				var result = v1 ^ v2;
-				return Unsafe.As<Vector512<ulong>, UInt512>(ref result);
+				return Unsafe.BitCast<Vector512<ulong>, UInt512>(result);
 			}
 			else
 			{
