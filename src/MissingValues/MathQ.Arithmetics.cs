@@ -69,7 +69,7 @@ namespace MissingValues
 					Quad.QuadToUInt128Bits(left), Quad.QuadToUInt128Bits(right), signA));
 			}
 		}
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]	
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		internal static Quad Sub(Quad left, Quad right)
 		{
 			// Source: berkeley-softfloat-3/source/f128_sub.c

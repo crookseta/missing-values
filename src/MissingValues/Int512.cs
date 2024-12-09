@@ -104,10 +104,14 @@ namespace MissingValues
 		/// <param name="lower">The lower 256-bits of the 512-bit value.</param>
 		public Int512(UInt256 upper, UInt256 lower)
 		{
-			lower.GetLowerParts(out _p1, out _p0);
-			lower.GetUpperParts(out _p3, out _p2);
-			upper.GetLowerParts(out _p5, out _p4);
-			upper.GetUpperParts(out _p7, out _p6);
+			_p0 = lower.Part0;
+			_p1 = lower.Part1;
+			_p2 = lower.Part2;
+			_p3 = lower.Part3;
+			_p4 = upper.Part0;
+			_p5 = upper.Part1;
+			_p6 = upper.Part2;
+			_p7 = upper.Part3;
 		}
 		/// <summary>
 		/// Initializes a new instance of the <see cref="Int512"/> struct.

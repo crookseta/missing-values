@@ -1,6 +1,7 @@
 ﻿using MissingValues.Info;
 using MissingValues.Internals;
 using System;
+using System.Buffers.Binary;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -985,19 +986,37 @@ namespace MissingValues
 
 		private void WriteBigEndianUnsafe(Span<byte> destination)
 		{
-			UInt256 lower = Lower;
-			UInt256 upper = Upper;
+			ulong p0 = _p0;
+			ulong p1 = _p1;
+			ulong p2 = _p2;
+			ulong p3 = _p3;
+			ulong p4 = _p4;
+			ulong p5 = _p5;
+			ulong p6 = _p6;
+			ulong p7 = _p7;
 
 			if (BitConverter.IsLittleEndian)
 			{
-				lower = BitHelper.ReverseEndianness(in lower);
-				upper = BitHelper.ReverseEndianness(in upper);
+				p0 = BinaryPrimitives.ReverseEndianness(p0);
+				p1 = BinaryPrimitives.ReverseEndianness(p1);
+				p2 = BinaryPrimitives.ReverseEndianness(p2);
+				p3 = BinaryPrimitives.ReverseEndianness(p3);
+				p4 = BinaryPrimitives.ReverseEndianness(p4);
+				p5 = BinaryPrimitives.ReverseEndianness(p5);
+				p6 = BinaryPrimitives.ReverseEndianness(p6);
+				p7 = BinaryPrimitives.ReverseEndianness(p7);
 			}
 
 			ref byte address = ref MemoryMarshal.GetReference(destination);
 
-			Unsafe.WriteUnaligned(ref address, upper);
-			Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref address, Unsafe.SizeOf<UInt256>()), lower);
+			Unsafe.WriteUnaligned(ref address, p7);
+			Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref address, sizeof(ulong)), p6);
+			Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref address, sizeof(ulong) * 2), p5);
+			Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref address, sizeof(ulong) * 3), p4);
+			Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref address, sizeof(ulong) * 4), p3);
+			Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref address, sizeof(ulong) * 5), p2);
+			Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref address, sizeof(ulong) * 6), p1);
+			Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref address, sizeof(ulong) * 7), p0);
 		}
 
 		bool IBinaryInteger<Int512>.TryWriteLittleEndian(Span<byte> destination, out int bytesWritten)
@@ -1028,19 +1047,37 @@ namespace MissingValues
 		{
 			Debug.Assert(destination.Length >= Size);
 
-			UInt256 lower = Lower;
-			UInt256 upper = Upper;
+			ulong p0 = _p0;
+			ulong p1 = _p1;
+			ulong p2 = _p2;
+			ulong p3 = _p3;
+			ulong p4 = _p4;
+			ulong p5 = _p5;
+			ulong p6 = _p6;
+			ulong p7 = _p7;
 
 			if (!BitConverter.IsLittleEndian)
 			{
-				lower = BitHelper.ReverseEndianness(in lower);
-				upper = BitHelper.ReverseEndianness(in upper);
+				p0 = BinaryPrimitives.ReverseEndianness(p0);
+				p1 = BinaryPrimitives.ReverseEndianness(p1);
+				p2 = BinaryPrimitives.ReverseEndianness(p2);
+				p3 = BinaryPrimitives.ReverseEndianness(p3);
+				p4 = BinaryPrimitives.ReverseEndianness(p4);
+				p5 = BinaryPrimitives.ReverseEndianness(p5);
+				p6 = BinaryPrimitives.ReverseEndianness(p6);
+				p7 = BinaryPrimitives.ReverseEndianness(p7);
 			}
 
 			ref byte address = ref MemoryMarshal.GetReference(destination);
 
-			Unsafe.WriteUnaligned(ref address, lower);
-			Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref address, Unsafe.SizeOf<UInt256>()), upper);
+			Unsafe.WriteUnaligned(ref address, p0);
+			Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref address, sizeof(ulong)), p1);
+			Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref address, sizeof(ulong) * 2), p2);
+			Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref address, sizeof(ulong) * 3), p3);
+			Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref address, sizeof(ulong) * 4), p4);
+			Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref address, sizeof(ulong) * 5), p5);
+			Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref address, sizeof(ulong) * 6), p6);
+			Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref address, sizeof(ulong) * 7), p7);
 		}
 
 		char IFormattableInteger<Int512>.ToChar() => (char)_p0;

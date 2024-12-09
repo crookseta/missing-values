@@ -599,7 +599,7 @@ namespace MissingValues
 			{
 				return value._p1 != 0 ? (Quad)value.Lower : (Quad)value._p0;
 			}
-			else if ((value.Upper >> 32) == UInt128.Zero) // value < (2^224)
+			else if ((value.Part3 == 0) && ((value.Part2 >> 32) == UInt128.Zero)) // value < (2^224)
 			{
 				// For values greater than MaxValue but less than 2^224 this takes advantage
 				// that we can represent both "halves" of the uint256 within the 112-bit mantissa of
@@ -627,7 +627,7 @@ namespace MissingValues
 				UInt128 twoPow144bits = Quad.QuadToUInt128Bits(twoPow144);
 				UInt128 twoPow256bits = Quad.QuadToUInt128Bits(twoPow256);
 
-				Quad lower = Quad.UInt128BitsToQuad(twoPow144bits | ((UInt128)(value >> 16) >> 16) | (value.Lower & 0xFFFF_FFFF)) - twoPow144;
+				Quad lower = Quad.UInt128BitsToQuad(twoPow144bits | ((UInt128)(value >> 16) >> 16) | (value.Part0 & 0xFFFF_FFFF)) - twoPow144;
 				Quad upper = Quad.UInt128BitsToQuad(twoPow256bits | (UInt128)(value >> 144)) - twoPow256;
 
 				return lower + upper;
@@ -651,7 +651,7 @@ namespace MissingValues
 			}
 
 
-			double lower = BitConverter.UInt64BitsToDouble(TwoPow204bits | ((ulong)(value.Lower >> 12) >> 12) | ((ulong)(value.Lower) & 0xFFFFFF)) - TwoPow204;
+			double lower = BitConverter.UInt64BitsToDouble(TwoPow204bits | ((ulong)(value.Lower >> 12) >> 12) | (value.Part0 & 0xFFFFFF)) - TwoPow204;
 			double upper = BitConverter.UInt64BitsToDouble(TwoPow256bits | (ulong)(value >> 204)) - TwoPow256;
 
 			return lower + upper;
@@ -1033,17 +1033,6 @@ namespace MissingValues
 			{
 				return MinValue;
 			}
-		}
-
-		internal void GetLowerParts(out ulong p1, out ulong p0)
-		{
-			p1 = _p1;
-			p0 = _p0;
-		}
-		internal void GetUpperParts(out ulong p3, out ulong p2)
-		{
-			p3 = _p3;
-			p2 = _p2;
 		}
 	}
 }

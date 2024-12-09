@@ -1261,7 +1261,7 @@ namespace MissingValues
 					if (expDiff < -1)
 					{
 						sigZ = sigC - sigZ;
-						sigZExtra = sig256Z.Lower.GetUpperBits() | sig256Z.Upper.GetLowerBits(); // TODO: Use _p1 and _p2 instead.
+						sigZExtra = sig256Z.Part1 | sig256Z.Part2;
 						if (sigZExtra != 0)
 						{
 							--sigZ;
@@ -1283,7 +1283,7 @@ namespace MissingValues
 				{
 					sigZ -= sigC;
 
-					if (sigZ == UInt128.Zero && sig256Z.Lower == UInt128.Zero)
+					if (sigZ == UInt128.Zero && (sig256Z.Part1 == 0 && sig256Z.Part0 == 0))
 					{
 						return Quad.PositiveZeroBits;
 					}
@@ -1312,7 +1312,8 @@ namespace MissingValues
 				}
 
 				sigZ = sig256Z.Upper;
-				GetUpperAndLowerBits(sig256Z.Lower, out sigZExtra, out ulong sig256Z0);
+				sigZExtra = sig256Z.Part1;
+				ulong sig256Z0 = sig256Z.Part0;
 				if (sigZ.GetUpperBits() != 0)
 				{
 					if (sig256Z0 != 0)
@@ -1355,7 +1356,7 @@ namespace MissingValues
 			}
 
 		sigZ:
-			sigZExtra = sig256Z.Lower.GetUpperBits() | sig256Z.Lower.GetLowerBits();
+			sigZExtra = sig256Z.Part1 | sig256Z.Part0;
 		shiftRightRoundPack:
 			sigZExtra = ((sigZ.GetLowerBits() << (64 - shiftDist)) | (sigZExtra != 0 ? 1UL : 0UL));
 			sigZ = sigZ >> shiftDist;
