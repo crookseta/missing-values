@@ -580,7 +580,7 @@ namespace MissingValues
 		/// Explicitly converts a <see cref="UInt512" /> value to a <see cref="Int512"/>.
 		/// </summary>
 		/// <param name="value">The value to convert.</param>
-		public static explicit operator Int512(in UInt512 value) => new Int512(value._p7, value._p6, value._p5, value._p4, value._p3, value._p2, value._p1, value._p0);
+		public static explicit operator Int512(in UInt512 value) => Unsafe.BitCast<UInt512, Int512>(value);
 		/// <summary>
 		/// Explicitly converts a <see cref="UInt512" /> value to a <see cref="Int512"/>.
 		/// </summary>
@@ -592,7 +592,7 @@ namespace MissingValues
 			{
 				Thrower.IntegerOverflow();
 			}
-			return new Int512(value._p7, value._p6, value._p5, value._p4, value._p3, value._p2, value._p1, value._p0);
+			return Unsafe.BitCast<UInt512, Int512>(value);
 		}
 		/// <summary>
 		/// Explicitly converts a <see cref="UInt512" /> value to a <see cref="nint"/>.

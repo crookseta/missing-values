@@ -490,7 +490,7 @@ namespace MissingValues
 		/// Explicitly converts a <see cref="UInt256" /> value to a <see cref="Int256"/>.
 		/// </summary>
 		/// <param name="value">The value to convert.</param>
-		public static explicit operator Int256(in UInt256 value) => new(value._p3, value._p2, value._p1, value._p0);
+		public static explicit operator Int256(in UInt256 value) => Unsafe.BitCast<UInt256, Int256>(value);
 		/// <summary>
 		/// Explicitly converts a <see cref="UInt256" /> value to a <see cref="Int256"/>.
 		/// </summary>
@@ -502,7 +502,7 @@ namespace MissingValues
 			{
 				Thrower.IntegerOverflow();
 			}
-			return new(value._p3, value._p2, value._p1, value._p0);
+			return Unsafe.BitCast<UInt256, Int256>(value);
 		}
 		/// <summary>
 		/// Explicitly converts a <see cref="UInt256" /> value to a <see cref="Int512"/>.
