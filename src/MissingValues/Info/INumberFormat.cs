@@ -1,4 +1,5 @@
 ﻿using MissingValues.Internals;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Runtime.CompilerServices;
@@ -18,18 +19,6 @@ internal interface INumberFormat
 
 internal readonly struct CurrencyFormat : INumberFormat
 {
-	internal static readonly byte[][] Utf8PosCurrencyFormats =
-	[
-		"$#"u8.ToArray(), "#$"u8.ToArray(), "$ #"u8.ToArray(), "# $"u8.ToArray()
-	];
-	internal static readonly byte[][] Utf8NegCurrencyFormats =
-	[
-		"($#)"u8.ToArray(), "-$#"u8.ToArray(), "$-#"u8.ToArray(), "$#-"u8.ToArray(),
-		"(#$)"u8.ToArray(), "-#$"u8.ToArray(), "#-$"u8.ToArray(), "#$-"u8.ToArray(),
-		"-# $"u8.ToArray(), "-$ #"u8.ToArray(), "# $-"u8.ToArray(), "$ #-"u8.ToArray(),
-		"$ -#"u8.ToArray(), "#- $"u8.ToArray(), "($ #)"u8.ToArray(), "(# $)"u8.ToArray(),
-		"$- #"u8.ToArray()
-	];
 	internal static string[] PosCurrencyFormats =>
 	[
 		"$#", "#$", "$ #", "# $"
@@ -43,7 +32,6 @@ internal readonly struct CurrencyFormat : INumberFormat
 		"$ -#", "#- $", "($ #)", "(# $)",
 		"$- #"
 	];
-
 
 	public static bool CanRound => true;
 
@@ -60,9 +48,9 @@ internal readonly struct CurrencyFormat : INumberFormat
 	public static void Format<TChar>(ref ValueListBuilder<TChar> vlb, ref NumberInfo number, int nMaxDigits, bool isUpper, NumberFormatInfo info) 
 		where TChar : unmanaged, IUtfCharacter<TChar>
 	{
-		var fmt = number.IsNegative ?
-			TChar.GetNegativeCurrencyFormat(info.CurrencyNegativePattern) :
-			TChar.GetPositiveCurrencyFormat(info.CurrencyPositivePattern);
+		ReadOnlySpan<char> fmt = number.IsNegative ?
+			NegCurrencyFormats[(info.CurrencyNegativePattern)] :
+			PosCurrencyFormats[(info.CurrencyPositivePattern)];
 
 		Span<TChar> currencyDecimalSeparator = stackalloc TChar[TChar.GetLength(info.CurrencyDecimalSeparator)];
 		Span<TChar> currencyGroupSeparator = stackalloc TChar[TChar.GetLength(info.CurrencyGroupSeparator)];
@@ -76,7 +64,7 @@ internal readonly struct CurrencyFormat : INumberFormat
 
         foreach (var ch in fmt)
         {
-			switch ((char)ch)
+			switch (ch)
 			{
 				case '#':
 					NumberFormatter.FormatGroupedNumeric(ref vlb, ref number, nMaxDigits, info.CurrencyGroupSizes, currencyDecimalSeparator, currencyGroupSeparator);
@@ -88,7 +76,7 @@ internal readonly struct CurrencyFormat : INumberFormat
 					vlb.Append(currencySymbol);
 					break;
 				default:
-					vlb.Append(ch);
+					vlb.Append((TChar)ch);
 					break;
 			}
 		}
@@ -213,10 +201,6 @@ internal readonly struct FixedFormat : INumberFormat
 }
 internal readonly struct NumericFormat : INumberFormat
 {
-	internal static readonly byte[][] Utf8NegNumberFormats =
-	[
-		"(#)"u8.ToArray(), "-#"u8.ToArray(), "- #"u8.ToArray(), "#-"u8.ToArray(), "# -"u8.ToArray(),
-	];
 	internal static readonly string[] NegNumberFormats =
 	[
 		"(#)", "-#", "- #", "#-", "# -",
@@ -236,9 +220,10 @@ internal readonly struct NumericFormat : INumberFormat
 
 	public static void Format<TChar>(ref ValueListBuilder<TChar> vlb, ref NumberInfo number, int nMaxDigits, bool isUpper, NumberFormatInfo info) where TChar : unmanaged, IUtfCharacter<TChar>
 	{
-		var fmt = number.IsNegative ?
-			TChar.GetNegativeNumberFormat(info.NumberNegativePattern) :
-			TChar.GetPositiveNumberFormat(0);
+		ReadOnlySpan<char> fmt = number.IsNegative ?
+			NegNumberFormats[(info.NumberNegativePattern)] :
+			['#'];
+
 
 		Span<TChar> numberDecimalSeparator = stackalloc TChar[TChar.GetLength(info.NumberDecimalSeparator)];
 		Span<TChar> numberGroupSeparator = stackalloc TChar[TChar.GetLength(info.NumberGroupSeparator)];
@@ -250,7 +235,7 @@ internal readonly struct NumericFormat : INumberFormat
 
 		foreach (var ch in fmt)
 		{
-			switch ((char)ch)
+			switch (ch)
 			{
 				case '#':
 					NumberFormatter.FormatGroupedNumeric(ref vlb, ref number, nMaxDigits, info.NumberGroupSizes, numberDecimalSeparator, numberGroupSeparator);
@@ -259,7 +244,7 @@ internal readonly struct NumericFormat : INumberFormat
 					vlb.Append(negativeSign);
 					break;
 				default:
-					vlb.Append(ch);
+					vlb.Append((TChar)ch);
 					break;
 			}
 		}

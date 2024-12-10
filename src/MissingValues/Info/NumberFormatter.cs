@@ -64,7 +64,6 @@ namespace MissingValues.Info
 			where TChar : unmanaged, IUtfCharacter<TChar>
 		{
 			scoped NumberInfo number;
-			scoped Span<byte> digits;
 			byte[]? digitsArray = null;
 			ValueListBuilder<TChar> builder = new ValueListBuilder<TChar>(stackalloc TChar[256]);
 
@@ -72,26 +71,22 @@ namespace MissingValues.Info
 			{
 				if (value is UInt256 uInt256)
 				{
-					digits = stackalloc byte[UInt256Precision];
-					number = new(digits);
+					number = new(stackalloc byte[UInt256Precision]);
 					UIntToNumber<UInt256, Int256>(in uInt256, ref number);
 				}
 				else if (value is Int256 int256)
 				{
-					digits = stackalloc byte[Int256Precision];
-					number = new(digits);
+					number = new(stackalloc byte[Int256Precision]);
 					IntToNumber<Int256, UInt256>(ref int256, ref number);
 				}
 				else if (value is UInt512 uInt512)
 				{
-					digits = stackalloc byte[UInt512Precision];
-					number = new(digits);
+					number = new(stackalloc byte[UInt512Precision]);
 					UIntToNumber<UInt512, Int512>(in uInt512, ref number);
 				}
 				else if (value is Int512 int512)
 				{
-					digits = stackalloc byte[Int512Precision];
-					number = new(digits);
+					number = new(stackalloc byte[Int512Precision]);
 					IntToNumber<Int512, UInt512>(ref int512, ref number);
 				}
 				else
@@ -106,16 +101,16 @@ namespace MissingValues.Info
 
 				if (value is Quad quad)
 				{
-					digits = digitsArray = ArrayPool<byte>.Shared.Rent(NumberParser.QuadBufferLength);
+					digitsArray = ArrayPool<byte>.Shared.Rent(NumberParser.QuadBufferLength);
 
-					number = new(digits[..NumberParser.QuadBufferLength], true);
+					number = new(digitsArray.AsSpan(0, NumberParser.QuadBufferLength), true);
 					Ryu.Format<Quad, UInt128>(in quad, ref number, out exceptional);
 				}
 				else if (value is Octo octo)
 				{
-					digits = digitsArray = ArrayPool<byte>.Shared.Rent(NumberParser.OctoBufferLength);
+					digitsArray = ArrayPool<byte>.Shared.Rent(NumberParser.OctoBufferLength);
 
-					number = new(digits[..NumberParser.OctoBufferLength], true);
+					number = new(digitsArray.AsSpan(0, NumberParser.OctoBufferLength), true);
 					Ryu.Format<Octo, UInt256>(in octo, ref number, out exceptional);
 				}
 				else
@@ -152,8 +147,13 @@ namespace MissingValues.Info
 					{
 						charsWritten = 0;
 					}
+
+					if (digitsArray is not null)
+					{
+						ArrayPool<byte>.Shared.Return(digitsArray);
+					}
+
 					return res;
-					
 				}
 			}
 
