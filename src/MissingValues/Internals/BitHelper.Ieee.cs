@@ -123,33 +123,6 @@ namespace MissingValues
 			return Octo.UInt256BitsToOcto(bits);
 		}
 
-		public static void GetDoubleParts(double dbl, out int sign, out int exp, out ulong man, out bool fFinite)
-		{
-			ulong bits = BitConverter.DoubleToUInt64Bits(dbl);
-
-			sign = 1 - ((int)(bits >> 62) & 2);
-			man = bits & 0x000FFFFFFFFFFFFF;
-			exp = (int)(bits >> 52) & 0x7FF;
-			if (exp == 0)
-			{
-				// Denormalized number.
-				fFinite = true;
-				if (man != 0)
-					exp = -1074;
-			}
-			else if (exp == 0x7FF)
-			{
-				// NaN or Infinite.
-				fFinite = false;
-				exp = int.MaxValue;
-			}
-			else
-			{
-				fFinite = true;
-				man |= 0x0010000000000000;
-				exp -= 1075;
-			}
-		}
 		public static void GetQuadParts(Quad dbl, out int sign, out int exp, out UInt128 man, out bool fFinite)
 		{
 			const int Bias = Quad.ExponentBias + Quad.BiasedExponentShift;
@@ -359,8 +332,6 @@ namespace MissingValues
 			return ((uint)(1 - shiftDist), sig << shiftDist);
 		}
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		internal static ulong FracQuadUI64(ulong a64) => ((a64) & 0x0000_FFFF_FFFF_FFFF);
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		internal static ulong PackToQuadUI64(bool sign, int exp, ulong sig64) => ((Convert.ToUInt64(sign) << 63) + ((ulong)(exp) << 48) + (sig64));
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		internal static UInt128 PackToQuad(bool sign, int exp, UInt128 sig) => ((new UInt128(sign ? 1UL << 63 : 0, 0)) + ((((UInt128)exp) << Quad.BiasedExponentShift) & Quad.BiasedExponentMask) + (sig));
@@ -389,32 +360,6 @@ namespace MissingValues
 			ext = a0 << (negDist & 127) | ((extra != UInt128.Zero) ? UInt128.One : UInt128.Zero);
 
 			return new UInt256(z64, z0);
-		}
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		internal static UInt512 ShortShiftRightJam(UInt512 a, int dist)
-		{
-			int negDist;
-			UInt256 z64;
-			UInt256 z0;
-
-			if (dist < 256)
-			{
-				negDist = (int)(uint)-dist;
-				z64 = a.Upper >> dist;
-				z0 = a.Upper << (negDist & 255) | a.Lower >> dist
-					| ((a.Lower << (negDist & 255)) != UInt256.Zero ? UInt256.One : UInt256.Zero);
-			}
-			else
-			{
-				z64 = default;
-				z0 =
-					(dist < 511)
-					? a.Upper >> (dist & 255)
-					| ((a.Upper & ((UInt256.One << (dist & 255)) - 1) | a.Lower) != UInt256.Zero ? UInt256.One : UInt256.Zero)
-					: ((a != UInt512.Zero) ? UInt256.One : UInt256.Zero);
-			}
-
-			return new UInt512(z64, z0);
 		}
 
 
