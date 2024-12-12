@@ -311,14 +311,14 @@ namespace MissingValues
 		/// <param name="bits">The number to convert.</param>
 		/// <returns>A octuple-precision floating point number whose bits are identical to <paramref name="bits"/>.</returns>
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static unsafe Octo UInt256BitsToOcto(UInt256 bits) => System.Runtime.CompilerServices.Unsafe.BitCast<UInt256, Octo>(bits);
+		public static Octo UInt256BitsToOcto(UInt256 bits) => System.Runtime.CompilerServices.Unsafe.BitCast<UInt256, Octo>(bits);
 		/// <summary>
 		/// Reinterprets the specified 256-bit signed integer to a octuple-precision floating point number.
 		/// </summary>
 		/// <param name="bits">The number to convert.</param>
 		/// <returns>A octuple-precision floating point number whose bits are identical to <paramref name="bits"/>.</returns>
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static unsafe Octo Int256BitsToOcto(Int256 bits) => System.Runtime.CompilerServices.Unsafe.BitCast<Int256, Octo>(bits);
+		public static Octo Int256BitsToOcto(Int256 bits) => System.Runtime.CompilerServices.Unsafe.BitCast<Int256, Octo>(bits);
 
 		/// <summary>
 		/// Converts the specified octuple-precision floating point number to a 256-bit unsigned integer.
@@ -326,14 +326,14 @@ namespace MissingValues
 		/// <param name="value">The number to convert.</param>
 		/// <returns>A 256-bit unsigned integer whose value is equivalent to <paramref name="value"/>.</returns>
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static unsafe UInt256 OctoToUInt256Bits(Octo value) => System.Runtime.CompilerServices.Unsafe.BitCast<Octo, UInt256>(value);
+		public static UInt256 OctoToUInt256Bits(Octo value) => System.Runtime.CompilerServices.Unsafe.BitCast<Octo, UInt256>(value);
 		/// <summary>
 		/// Converts the specified octuple-precision floating point number to a 256-bit signed integer.
 		/// </summary>
 		/// <param name="value">The number to convert.</param>
 		/// <returns>A 256-bit signed integer whose value is equivalent to <paramref name="value"/>.</returns>
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static unsafe Int256 OctoToInt256Bits(Octo value) => System.Runtime.CompilerServices.Unsafe.BitCast<Octo, Int256>(value);
+		public static Int256 OctoToInt256Bits(Octo value) => System.Runtime.CompilerServices.Unsafe.BitCast<Octo, Int256>(value);
 
 
 		internal static bool AreZero(in Octo x, in Octo y)

@@ -229,14 +229,14 @@ namespace MissingValues
 		/// <param name="bits">The number to convert.</param>
 		/// <returns>A quadruple-precision floating point number whose bits are identical to <paramref name="bits"/>.</returns>
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static unsafe Quad UInt128BitsToQuad(UInt128 bits) => System.Runtime.CompilerServices.Unsafe.BitCast<UInt128, Quad>(bits);
+		public static Quad UInt128BitsToQuad(UInt128 bits) => System.Runtime.CompilerServices.Unsafe.BitCast<UInt128, Quad>(bits);
 		/// <summary>
 		/// Reinterprets the specified 128-bit signed integer to a quadruple-precision floating point number.
 		/// </summary>
 		/// <param name="bits">The number to convert.</param>
 		/// <returns>A quadruple-precision floating point number whose bits are identical to <paramref name="bits"/>.</returns>
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static unsafe Quad Int128BitsToQuad(Int128 bits) => System.Runtime.CompilerServices.Unsafe.BitCast<Int128, Quad>(bits);
+		public static Quad Int128BitsToQuad(Int128 bits) => System.Runtime.CompilerServices.Unsafe.BitCast<Int128, Quad>(bits);
 
 		/// <summary>
 		/// Converts the specified quadruple-precision floating point number to a 128-bit unsigned integer.
@@ -244,14 +244,14 @@ namespace MissingValues
 		/// <param name="value">The number to convert.</param>
 		/// <returns>A 128-bit unsigned integer whose value is equivalent to <paramref name="value"/>.</returns>
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static unsafe UInt128 QuadToUInt128Bits(Quad value) => new UInt128(value._upper, value._lower);
+		public static UInt128 QuadToUInt128Bits(Quad value) => new UInt128(value._upper, value._lower);
 		/// <summary>
 		/// Converts the specified quadruple-precision floating point number to a 128-bit signed integer.
 		/// </summary>
 		/// <param name="value">The number to convert.</param>
 		/// <returns>A 128-bit signed integer whose value is equivalent to <paramref name="value"/>.</returns>
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static unsafe Int128 QuadToInt128Bits(Quad value) => new Int128(value._upper, value._lower);
+		public static Int128 QuadToInt128Bits(Quad value) => new Int128(value._upper, value._lower);
 
 		
 		internal static ushort ExtractBiasedExponentFromBits(UInt128 bits)
