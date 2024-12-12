@@ -580,7 +580,7 @@ namespace MissingValues
 		{
 			if (~(value._p7 | value._p6 | value._p5 | value._p4 | value._p3 | value._p2) == 0)
 			{
-				Int128 lower = new Int128(value._p1, value._p0);
+				Int128 lower = checked((Int128)(new UInt128(value._p1, value._p0)));
 				return lower;
 			}
 
@@ -655,7 +655,7 @@ namespace MissingValues
 
 			Span<byte> span = stackalloc byte[Size];
 			value.WriteLittleEndianUnsafe(span);
-			return new BigInteger(span, value >= 0);
+			return new BigInteger(span, (long)value._p7 >= 0);
 		}
 		// Floating
 		/// <summary>
@@ -1004,7 +1004,7 @@ namespace MissingValues
 
 			if ((0.0d > value + TwoPow511) || double.IsNaN(value) || (value > +TwoPow511))
 			{
-				throw new OverflowException();
+				Thrower.IntegerOverflow();
 			}
 			if (0.0 == TwoPow511 - value)
 			{

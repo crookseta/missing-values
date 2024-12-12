@@ -284,13 +284,13 @@ namespace MissingValues
 		/// <exception cref="OverflowException"><paramref name="value"/> is outside the range of <see cref="sbyte"/>.</exception>
 		public static explicit operator checked sbyte(in Int256 value)
 		{
-			if (~value.Upper == 0)
+			if (~(value._p3 | value._p2 | value._p1) == 0)
 			{
-				Int128 lower = (Int128)value.Lower;
+				long lower = (long)value._p0;
 				return checked((sbyte)lower);
 			}
 
-			if (value.Upper != 0)
+			if (value._p3 != 0 || value._p2 != 0 || value._p1 != 0)
 			{
 				Thrower.IntegerOverflow();
 			}
@@ -308,13 +308,13 @@ namespace MissingValues
 		/// <exception cref="OverflowException"><paramref name="value"/> is outside the range of <see cref="short"/>.</exception>
 		public static explicit operator checked short(in Int256 value)
 		{
-			if (~value.Upper == 0)
+			if (~(value._p3 | value._p2 | value._p1) == 0)
 			{
-				Int128 lower = (Int128)value.Lower;
+				long lower = (long)value._p0;
 				return checked((short)lower);
 			}
 
-			if (value.Upper != 0)
+			if (value._p3 != 0 || value._p2 != 0 || value._p1 != 0)
 			{
 				Thrower.IntegerOverflow();
 			}
@@ -332,17 +332,17 @@ namespace MissingValues
 		/// <exception cref="OverflowException"><paramref name="value"/> is outside the range of <see cref="int"/>.</exception>
 		public static explicit operator checked int(in Int256 value)
 		{
-			if (~value.Upper == 0)
+			if (~(value._p3 | value._p2 | value._p1) == 0)
 			{
-				Int128 lower = (Int128)value.Lower;
+				long lower = (long)value._p0;
 				return checked((int)lower);
 			}
 
-			if (value.Upper != 0)
+			if (value._p3 != 0 || value._p2 != 0 || value._p1 != 0)
 			{
 				Thrower.IntegerOverflow();
 			}
-			return checked((int)value.Lower);
+			return checked((int)value._p0);
 		}
 		/// <summary>
 		/// Explicitly converts a <see cref="Int256" /> value to a <see cref="long"/>.
@@ -356,17 +356,16 @@ namespace MissingValues
 		/// <exception cref="OverflowException"><paramref name="value"/> is outside the range of <see cref="long"/>.</exception>
 		public static explicit operator checked long(in Int256 value)
 		{
-			if (~value.Upper == 0)
+			if (~(value._p3 | value._p2 | value._p1) == 0)
 			{
-				Int128 lower = (Int128)value.Lower;
-				return checked((long)lower);
+				return checked((long)value._p0);
 			}
 
-			if (value.Upper != 0)
+			if (value._p3 != 0 || value._p2 != 0 || value._p1 != 0)
 			{
 				Thrower.IntegerOverflow();
 			}
-			return checked((long)value.Lower);
+			return checked((long)value._p0);
 		}
 		/// <summary>
 		/// Explicitly converts a <see cref="Int256" /> value to a <see cref="Int128"/>.
@@ -380,12 +379,12 @@ namespace MissingValues
 		/// <exception cref="OverflowException"><paramref name="value"/> is outside the range of <see cref="Int128"/>.</exception>
 		public static explicit operator checked Int128(in Int256 value)
 		{
-			if (~value.Upper == 0)
+			if (~(value._p3 | value._p2) == 0)
 			{
-				return (Int128)value.Lower;
+				return checked((Int128)value.Lower);
 			}
 
-			if (value.Upper != 0)
+			if (value._p3 != 0 || value._p2 != 0)
 			{
 				Thrower.IntegerOverflow();
 			}
@@ -395,7 +394,7 @@ namespace MissingValues
 		/// Implicitly converts a <see cref="Int256" /> value to a <see cref="Int512"/>.
 		/// </summary>
 		/// <param name="value">The value to convert.</param>
-		public static implicit operator Int512(in Int256 value) => new Int512(unchecked((UInt256)value));
+		public static implicit operator Int512(in Int256 value) => new Int512(0, 0, 0, 0, value._p3, value._p2, value._p1, value._p0);
 		/// <summary>
 		/// Explicitly converts a <see cref="Int256" /> value to a <see cref="nint"/>.
 		/// </summary>
@@ -408,17 +407,17 @@ namespace MissingValues
 		/// <exception cref="OverflowException"><paramref name="value"/> is outside the range of <see cref="nint"/>.</exception>
 		public static explicit operator checked nint(in Int256 value)
 		{
-			if (~value.Upper == 0)
+			if (~(value._p3 | value._p2 | value._p1) == 0)
 			{
-				Int128 lower = (Int128)value.Lower;
+				long lower = (long)value._p0;
 				return checked((nint)lower);
 			}
 
-			if (value.Upper != 0)
+			if (value._p3 != 0 || value._p2 != 0 || value._p1 != 0)
 			{
 				Thrower.IntegerOverflow();
 			}
-			return checked((nint)value.Lower);
+			return checked((nint)value._p0);
 		}
 		// Unsigned
 		/// <summary>
@@ -533,7 +532,7 @@ namespace MissingValues
 		/// Explicitly converts a <see cref="Int256" /> value to a <see cref="UInt512"/>.
 		/// </summary>
 		/// <param name="value">The value to convert.</param>
-		public static explicit operator UInt512(in Int256 value) => new(unchecked((UInt256)value));
+		public static explicit operator UInt512(in Int256 value) => new(0, 0, 0, 0, value._p3, value._p2, value._p1, value._p0);
 		/// <summary>
 		/// Explicitly converts a <see cref="Int256" /> value to a <see cref="UInt512"/>.
 		/// </summary>
@@ -545,7 +544,7 @@ namespace MissingValues
 			{
 				Thrower.IntegerOverflow();
 			}
-			return new(unchecked((UInt256)value));
+			return new(0, 0, 0, 0, value._p3, value._p2, value._p1, value._p0);
 		}
 		/// <summary>
 		/// Explicitly converts a <see cref="Int256" /> value to a <see cref="nuint"/>.
@@ -583,7 +582,7 @@ namespace MissingValues
 
 			Span<byte> span = stackalloc byte[Size];
 			value.WriteLittleEndianUnsafe(span);
-			return new BigInteger(span, value >= 0);
+			return new BigInteger(span, (long)value._p3 >= 0);
 		}
 		// Floating
 		/// <summary>
