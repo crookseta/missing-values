@@ -320,7 +320,7 @@ namespace MissingValues
 		public static Octo Exp(Octo x) => Quad.Exp((Quad)x);
 
 		/// <inheritdoc/>
-		public static Octo ExpM1(Octo x) => Quad.Exp((Quad)x) - One;
+		public static Octo ExpM1(Octo x) => Quad.ExpM1((Quad)x);
 
 		/// <inheritdoc/>
 		public static Octo Exp10(Octo x) => Quad.Exp10((Quad)x);
@@ -657,7 +657,7 @@ namespace MissingValues
 		}
 
 		/// <inheritdoc/>
-		public static Octo LogP1(Octo x) => Quad.Log((Quad)x + Quad.One);
+		public static Octo LogP1(Octo x) => Quad.LogP1((Quad)x);
 
 		/// <inheritdoc/>
 		public static Octo Log10(Octo x) => Quad.Log10((Quad)x);
