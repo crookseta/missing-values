@@ -988,7 +988,7 @@ namespace MissingValues
 
 				ulong bits = BitConverter.DoubleToUInt64Bits(value);
 
-				Int256 result = new Int256(new UInt128((bits << 12) >> 1 | 0x8000_0000_0000_0000, 0x0000_0000_0000_0000), UInt128.Zero);
+				Int256 result = new Int256((bits << 12) >> 1 | 0x8000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
 				result >>>= (1023 + 256 - 1 - (int)(bits >> 52));
 
 				if (isNegative)
