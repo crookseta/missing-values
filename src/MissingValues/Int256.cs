@@ -358,7 +358,7 @@ namespace MissingValues
 		{
 			if (~(value._p3 | value._p2 | value._p1) == 0)
 			{
-				return checked((long)value._p0);
+				return (long)value._p0;
 			}
 
 			if (value._p3 != 0 || value._p2 != 0 || value._p1 != 0)
@@ -381,7 +381,7 @@ namespace MissingValues
 		{
 			if (~(value._p3 | value._p2) == 0)
 			{
-				return checked((Int128)value.Lower);
+				return new Int128(value._p1, value._p0);
 			}
 
 			if (value._p3 != 0 || value._p2 != 0)

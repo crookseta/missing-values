@@ -580,7 +580,7 @@ namespace MissingValues
 		{
 			if (~(value._p7 | value._p6 | value._p5 | value._p4 | value._p3 | value._p2) == 0)
 			{
-				Int128 lower = checked((Int128)(new UInt128(value._p1, value._p0)));
+				Int128 lower = new Int128(value._p1, value._p0);
 				return lower;
 			}
 
