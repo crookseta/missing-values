@@ -1843,9 +1843,9 @@ namespace MissingValues
 		{
 			if (Vector256.IsHardwareAccelerated)
 			{
-				var v = Unsafe.As<Octo, Vector256<ulong>>(ref Unsafe.AsRef(in value));
+				var v = Unsafe.BitCast<Octo, Vector256<ulong>>(value);
 				var result = ~v;
-				return Unsafe.As<Vector256<ulong>, Octo>(ref result);
+				return Unsafe.BitCast<Vector256<ulong>, Octo>(result);
 			}
 			else
 			{
@@ -2069,17 +2069,17 @@ namespace MissingValues
 		{
 			if (Vector256.IsHardwareAccelerated)
 			{
-				var v1 = Unsafe.As<Octo, Vector256<ulong>>(ref Unsafe.AsRef(in left));
-				var v2 = Unsafe.As<Octo, Vector256<ulong>>(ref Unsafe.AsRef(in right));
+				var v1 = Unsafe.BitCast<Octo, Vector256<ulong>>(left);
+				var v2 = Unsafe.BitCast<Octo, Vector256<ulong>>(right);
 				var result = v1 & v2;
-				return Unsafe.As<Vector256<ulong>, Octo>(ref result);
+				return Unsafe.BitCast<Vector256<ulong>, Octo>(result);
 			}
 			else if (Avx2.IsSupported)
 			{
-				var v1 = Unsafe.As<Octo, Vector256<ulong>>(ref Unsafe.AsRef(in left));
-				var v2 = Unsafe.As<Octo, Vector256<ulong>>(ref Unsafe.AsRef(in right));
+				var v1 = Unsafe.BitCast<Octo, Vector256<ulong>>(left);
+				var v2 = Unsafe.BitCast<Octo, Vector256<ulong>>(right);
 				var result = Avx2.And(v1, v2);
-				return Unsafe.As<Vector256<ulong>, Octo>(ref result);
+				return Unsafe.BitCast<Vector256<ulong>, Octo>(result);
 			}
 			else
 			{
@@ -2092,17 +2092,17 @@ namespace MissingValues
 		{
 			if (Vector256.IsHardwareAccelerated)
 			{
-				var v1 = Unsafe.As<Octo, Vector256<ulong>>(ref Unsafe.AsRef(in left));
-				var v2 = Unsafe.As<Octo, Vector256<ulong>>(ref Unsafe.AsRef(in right));
+				var v1 = Unsafe.BitCast<Octo, Vector256<ulong>>(left);
+				var v2 = Unsafe.BitCast<Octo, Vector256<ulong>>(right);
 				var result = v1 | v2;
-				return Unsafe.As<Vector256<ulong>, Octo>(ref result);
+				return Unsafe.BitCast<Vector256<ulong>, Octo>(result);
 			}
 			else if (Avx2.IsSupported)
 			{
-				var v1 = Unsafe.As<Octo, Vector256<ulong>>(ref Unsafe.AsRef(in left));
-				var v2 = Unsafe.As<Octo, Vector256<ulong>>(ref Unsafe.AsRef(in right));
+				var v1 = Unsafe.BitCast<Octo, Vector256<ulong>>(left);
+				var v2 = Unsafe.BitCast<Octo, Vector256<ulong>>(right);
 				var result = Avx2.Or(v1, v2);
-				return Unsafe.As<Vector256<ulong>, Octo>(ref result);
+				return Unsafe.BitCast<Vector256<ulong>, Octo>(result);
 			}
 			else
 			{
@@ -2115,17 +2115,17 @@ namespace MissingValues
 		{
 			if (Vector256.IsHardwareAccelerated)
 			{
-				var v1 = Unsafe.As<Octo, Vector256<ulong>>(ref Unsafe.AsRef(in left));
-				var v2 = Unsafe.As<Octo, Vector256<ulong>>(ref Unsafe.AsRef(in right));
+				var v1 = Unsafe.BitCast<Octo, Vector256<ulong>>(left);
+				var v2 = Unsafe.BitCast<Octo, Vector256<ulong>>(right);
 				var result = v1 ^ v2;
-				return Unsafe.As<Vector256<ulong>, Octo>(ref result);
+				return Unsafe.BitCast<Vector256<ulong>, Octo>(result);
 			}
 			else if (Avx2.IsSupported)
 			{
-				var v1 = Unsafe.As<Octo, Vector256<ulong>>(ref Unsafe.AsRef(in left));
-				var v2 = Unsafe.As<Octo, Vector256<ulong>>(ref Unsafe.AsRef(in right));
+				var v1 = Unsafe.BitCast<Octo, Vector256<ulong>>(left);
+				var v2 = Unsafe.BitCast<Octo, Vector256<ulong>>(right);
 				var result = Avx2.Xor(v1, v2);
-				return Unsafe.As<Vector256<ulong>, Octo>(ref result);
+				return Unsafe.BitCast<Vector256<ulong>, Octo>(result);
 			}
 			else
 			{
