@@ -156,9 +156,9 @@ namespace MissingValues
 			const int Bias = Octo.ExponentBias + Octo.BiasedExponentShift;
 			UInt256 bits = Octo.OctoToUInt256Bits(dbl);
 
-			sign = 1 - ((int)(bits >> 254) & 2);
+			sign = 1 - ((int)(bits.Part3 >> 62) & 2);
 			man = bits & Octo.TrailingSignificandMask;
-			exp = (int)(bits >> Octo.BiasedExponentShift) & Octo.MaxBiasedExponent;
+			exp = (int)(bits.Part3 >> 44) & Octo.MaxBiasedExponent;
 			if (exp == 0)
 			{
 				// Denormalized number.

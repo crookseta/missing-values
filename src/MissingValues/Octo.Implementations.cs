@@ -1370,8 +1370,8 @@ namespace MissingValues
 				y = sigZ << 6;
 				y |= sigZExtra >> 122;
 				term = y - q;
-				y = (UInt256)BitHelper.Mul64ByShifted32To128(term.Part2, q) << 128;
-				term = (UInt256)BitHelper.Mul64ByShifted32To128(term.Part3, q) << 128;
+				y = new UInt256(BitHelper.Mul64ByShifted32To128(term.Part2, q), UInt128.Zero);
+				term = new UInt256(BitHelper.Mul64ByShifted32To128(term.Part3, q), UInt128.Zero);
 				term += y.Part3;
 				rem <<= 27;
 				term -= rem;
@@ -2014,7 +2014,7 @@ namespace MissingValues
 			UInt256 term;
 			for (int ix = Iterations; ;)
 			{
-				ulong q64 = (ulong)(uint)(rem >> 207) * recip32;
+				ulong q64 = (ulong)(uint)(rem.Part3 >> 15) * recip32;
 				q = (uint)((q64 + 0x8000_0000) >> 32);
 				if (--ix < 0)
 				{
@@ -2052,7 +2052,7 @@ namespace MissingValues
 				}
 			}
 
-			UInt128 sigZExtra = ((UInt128)q << 120);
+			UInt128 sigZExtra = new UInt128((ulong)q << 56, 0);
 			term = new UInt256(0, 0, 0, qs[1]) << 108;
 			UInt256 sigZ = new UInt256((ulong)qs[2] << 15, ((ulong)qs[0] << 25) + (q >> 4), 0, 0) + term;
 			return Octo.UInt256BitsToOcto(BitHelper.RoundPackToOcto(signZ, expZ, sigZ, sigZExtra));
