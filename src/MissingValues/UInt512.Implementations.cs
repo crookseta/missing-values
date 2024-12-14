@@ -768,29 +768,29 @@ namespace MissingValues
 				float => (TOther)(object)(float)value,
 				double => (TOther)(object)(double)value,
 				decimal => (TOther)(object)(decimal)value,
-				byte => (TOther)(object)(byte)value,
-				ushort => (TOther)(object)(ushort)value,
-				uint => (TOther)(object)(uint)value,
-				ulong => (TOther)(object)(ulong)value,
-				UInt128 => (TOther)(object)(UInt128)value,
-				UInt256 => (TOther)(object)(UInt256)value,
+				byte => (TOther)(object)((value >= 0xFF) ? byte.MaxValue : (byte)value),
+				ushort => (TOther)(object)((value >= 0xFFFF) ? ushort.MaxValue : (ushort)value),
+				uint => (TOther)(object)((value >= 0xFFFF_FFFF) ? uint.MaxValue : (uint)value),
+				ulong => (TOther)(object)((value >= 0xFFFF_FFFF_FFFF_FFFF) ? ulong.MaxValue : (ulong)value),
+				UInt128 => (TOther)(object)((value >= new UInt256(0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF)) ? UInt128.MaxValue : (UInt128)value),
+				UInt256 => (TOther)(object)((value >= new UInt256(0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF)) ? UInt256.MaxValue : (UInt256)value),
 				UInt512 => (TOther)(object)value,
 #if TARGET_32BIT
-				nuint => (TOther)(object)((value >= new UInt128(0x0000_0000_0000_0000, 0x0000_0000_7FFF_FFFF)) ? nuint.MaxValue : (nuint)value),
+				nuint => (TOther)(object)((value >= 0x0000_0000_FFFF_FFFF) ? nuint.MaxValue : (nuint)value),
 #else
-				nuint => (TOther)(object)((value >= new UInt128(0x0000_0000_0000_0000, 0x7FFF_FFFF_FFFF_FFFF)) ? nuint.MaxValue : (nuint)value),
+				nuint => (TOther)(object)((value >= 0xFFFF_FFFF_FFFF_FFFF) ? nuint.MaxValue : (nuint)value),
 #endif
-				sbyte => (TOther)(object)((value >= new UInt128(0x0000_0000_0000_0000, 0x0000_0000_0000_007F)) ? sbyte.MaxValue : (sbyte)value),
-				short => (TOther)(object)((value >= new UInt128(0x0000_0000_0000_0000, 0x0000_0000_0000_7FFF)) ? short.MaxValue : (short)value),
-				int => (TOther)(object)((value >= new UInt128(0x0000_0000_0000_0000, 0x0000_0000_7FFF_FFFF)) ? int.MaxValue : (int)value),
-				long => (TOther)(object)((value >= new UInt128(0x0000_0000_0000_0000, 0x7FFF_FFFF_FFFF_FFFF)) ? long.MaxValue : (long)value),
-				Int128 => (TOther)(object)((value >= new UInt128(0x7FFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF)) ? Int128.MaxValue : (Int128)value),
-				Int256 => (TOther)(object)((value >= new UInt256(new UInt128(0x7FFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF), new UInt128(0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF))) ? Int256.MaxValue : (Int256)value),
+				sbyte => (TOther)(object)((value >= 0x0000_0000_0000_007F) ? sbyte.MaxValue : (sbyte)value),
+				short => (TOther)(object)((value >= 0x0000_0000_0000_7FFF) ? short.MaxValue : (short)value),
+				int => (TOther)(object)((value >= 0x0000_0000_7FFF_FFFF) ? int.MaxValue : (int)value),
+				long => (TOther)(object)((value >= 0x7FFF_FFFF_FFFF_FFFF) ? long.MaxValue : (long)value),
+				Int128 => (TOther)(object)((value >= new UInt256(0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x7FFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF)) ? Int128.MaxValue : (Int128)value),
+				Int256 => (TOther)(object)((value >= new UInt256(0x7FFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF)) ? Int256.MaxValue : (Int256)value),
 				Int512 => (TOther)(object)((value >= new UInt512(0x7FFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF)) ? Int512.MaxValue : (Int512)value),
 #if TARGET_32BIT
-				nint => (TOther)(object)((value >= new UInt128(0x0000_0000_0000_0000, 0x0000_0000_7FFF_FFFF)) ? nint.MaxValue : (nint)value),
+				nint => (TOther)(object)((value >= 0x0000_0000_7FFF_FFFF) ? nint.MaxValue : (nint)value),
 #else
-				nint => (TOther)(object)((value >= new UInt128(0x0000_0000_0000_0000, 0x7FFF_FFFF_FFFF_FFFF)) ? nint.MaxValue : (nint)value),
+				nint => (TOther)(object)((value >= 0x7FFF_FFFF_FFFF_FFFF) ? nint.MaxValue : (nint)value),
 #endif
 				BigInteger => (TOther)(object)(BigInteger)value,
 				_ => BitHelper.DefaultConvert<TOther>(out converted)
@@ -803,32 +803,35 @@ namespace MissingValues
 		{
 			bool converted = true;
 			result = default;
-			result = result switch
+			unchecked
 			{
-				char => (TOther)(object)(char)value,
-				Half => (TOther)(object)(Half)value,
-				float => (TOther)(object)(float)value,
-				double => (TOther)(object)(double)value,
-				decimal => (TOther)(object)(decimal)value,
-				byte => (TOther)(object)(byte)value,
-				ushort => (TOther)(object)(ushort)value,
-				uint => (TOther)(object)(uint)value,
-				ulong => (TOther)(object)(ulong)value,
-				UInt128 => (TOther)(object)(UInt128)value,
-				UInt256 => (TOther)(object)(UInt256)value,
-				UInt512 => (TOther)(object)value,
-				nuint => (TOther)(object)(nuint)value,
-				sbyte => (TOther)(object)(sbyte)value,
-				short => (TOther)(object)(short)value,
-				int => (TOther)(object)(int)value,
-				long => (TOther)(object)(long)value,
-				Int128 => (TOther)(object)(Int128)value,
-				Int256 => (TOther)(object)(Int256)value,
-				Int512 => (TOther)(object)(Int512)value,
-				nint => (TOther)(object)(nint)value,
-				BigInteger => (TOther)(object)(BigInteger)value,
-				_ => BitHelper.DefaultConvert<TOther>(out converted)
-			};
+				result = result switch
+				{
+					char => (TOther)(object)(char)value,
+					Half => (TOther)(object)(Half)value,
+					float => (TOther)(object)(float)value,
+					double => (TOther)(object)(double)value,
+					decimal => (TOther)(object)(decimal)value,
+					byte => (TOther)(object)(byte)value,
+					ushort => (TOther)(object)(ushort)value,
+					uint => (TOther)(object)(uint)value,
+					ulong => (TOther)(object)(ulong)value,
+					UInt128 => (TOther)(object)(UInt128)value,
+					UInt256 => (TOther)(object)(UInt256)value,
+					UInt512 => (TOther)(object)value,
+					nuint => (TOther)(object)(nuint)value,
+					sbyte => (TOther)(object)(sbyte)value,
+					short => (TOther)(object)(short)value,
+					int => (TOther)(object)(int)value,
+					long => (TOther)(object)(long)value,
+					Int128 => (TOther)(object)(Int128)value,
+					Int256 => (TOther)(object)(Int256)value,
+					Int512 => (TOther)(object)(Int512)value,
+					nint => (TOther)(object)(nint)value,
+					BigInteger => (TOther)(object)(BigInteger)value,
+					_ => BitHelper.DefaultConvert<TOther>(out converted)
+				}; 
+			}
 			return converted;
 		}
 
