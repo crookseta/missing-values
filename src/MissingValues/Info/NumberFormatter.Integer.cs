@@ -11,11 +11,6 @@ internal interface IFormattableInteger<TSelf> : IFormattableNumber<TSelf>, IBigI
 		where TSelf : IFormattableInteger<TSelf>?
 {
 	/// <summary>
-	/// Converts a <typeparamref name="TSelf"/> to a <see cref="char"/>.
-	/// </summary>
-	/// <returns></returns>
-	char ToChar();
-	/// <summary>
 	/// Converts a <typeparamref name="TSelf"/> to a <see cref="int"/>.
 	/// </summary>
 	/// <returns></returns>
@@ -29,6 +24,10 @@ internal interface IFormattableInteger<TSelf> : IFormattableNumber<TSelf>, IBigI
 	abstract static TSelf GetHexValue(char value);
 
 	abstract static int UnsignedCompare(in TSelf value1, in TSelf value2);
+
+	abstract static int Log2Int32(in TSelf value);
+
+	abstract static int LeadingZeroCountInt32(in TSelf value);
 
 	static bool IFormattableNumber<TSelf>.IsBinaryInteger() => true;
 
@@ -209,12 +208,12 @@ internal static partial class NumberFormatter
 	internal static int CountHexDigits<T>(in T value)
 		where T : struct, IFormattableInteger<T>
 	{
-		return (T.Log2(value) >> 2).ToInt32() + 1;
+		return (T.Log2Int32(in value) >>> 2) + 1;
 	}
 	internal static int CountBinDigits<T>(in T value)
 		where T : struct, IFormattableInteger<T>
 	{
-		return T.MaxBinaryDigits - T.LeadingZeroCount(value).ToInt32();
+		return T.MaxBinaryDigits - T.LeadingZeroCountInt32(in value);
 	}
 
 	private static ref TChar UInt64ToDecChars<TChar>(ulong value, ref TChar bufferEnd)
@@ -227,8 +226,8 @@ internal static partial class NumberFormatter
 			while (value >= 100)
 			{
 				bufferEnd = ref Unsafe.Subtract(ref bufferEnd, 2);
-				(value, ulong remainder) = Math.DivRem(value, 100);
-				WriteTwoDigits((uint)remainder, ref bufferEnd);
+				(value, uint remainder) = Calculator.DivRemByUInt32(value, 100);
+				WriteTwoDigits(remainder, ref bufferEnd);
 			}
 
 			// If there are two digits remaining, store them.
@@ -248,18 +247,18 @@ internal static partial class NumberFormatter
 		where TChar : unmanaged, IUtfCharacter<TChar>
 	{
 		// Borrowed from https://github.com/dotnet/runtime/blob/main/src/libraries/System.Private.CoreLib/src/System/Number.Formatting.cs
-		ulong remainder;
+		uint remainder;
 		while (value >= 100)
 		{
 			bufferEnd = ref Unsafe.Subtract(ref bufferEnd, 2);
 			digits -= 2;
-			(value, remainder) = Math.DivRem(value, 100);
-			WriteTwoDigits((uint)remainder, ref bufferEnd);
+			(value, remainder) = Calculator.DivRemByUInt32(value, 100);
+			WriteTwoDigits(remainder, ref bufferEnd);
 		}
 		while (value != 0 || digits > 0)
 		{
 			digits--;
-			(value, remainder) = Math.DivRem(value, 10);
+			(value, remainder) = Calculator.DivRemByUInt32(value, 10);
 			bufferEnd = ref Unsafe.Subtract(ref bufferEnd, 1);
 			bufferEnd = (TChar)(remainder + '0');
 		}
@@ -361,7 +360,7 @@ internal static partial class NumberFormatter
 				}
 			}
 
-			*(--bufferEnd) = (TChar)(char)(value.ToChar() + '0');
+			*(--bufferEnd) = (TChar)(char)(value.ToInt32() + '0');
 		}
 
 		static void WriteTwoDigits(in T value, TChar* ptr)

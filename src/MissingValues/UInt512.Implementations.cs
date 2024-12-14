@@ -964,8 +964,6 @@ namespace MissingValues
 			Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref address, sizeof(ulong) * 7), p7);
 		}
 
-		char IFormattableInteger<UInt512>.ToChar() => (char)_p0;
-
 		int IFormattableInteger<UInt512>.ToInt32() => (int)_p0;
 
 		Int512 IFormattableUnsignedInteger<UInt512, Int512>.ToSigned() => (Int512)this;
@@ -1005,6 +1003,9 @@ namespace MissingValues
 			else if (value1 > value2) return 1;
 			else return 0;
 		}
+
+		static int IFormattableInteger<UInt512>.Log2Int32(in UInt512 value) => BitHelper.Log2(in value);
+		static int IFormattableInteger<UInt512>.LeadingZeroCountInt32(in UInt512 value) => BitHelper.LeadingZeroCount(in value);
 
 		/// <inheritdoc/>
 		public static UInt512 operator +(in UInt512 value) => value;

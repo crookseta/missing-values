@@ -1080,12 +1080,12 @@ namespace MissingValues
 			Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref address, sizeof(ulong) * 7), p7);
 		}
 
-		char IFormattableInteger<Int512>.ToChar() => (char)_p0;
-
 		int IFormattableInteger<Int512>.ToInt32() => (int)_p0;
 
 		UInt512 IFormattableSignedInteger<Int512, UInt512>.ToUnsigned() => (UInt512)this;
 		static int IFormattableInteger<Int512>.UnsignedCompare(in Int512 value1, in Int512 value2) => unchecked(((UInt512)value1).CompareTo((UInt512)value2));
+		static int IFormattableInteger<Int512>.Log2Int32(in Int512 value) => BitHelper.Log2(in value);
+		static int IFormattableInteger<Int512>.LeadingZeroCountInt32(in Int512 value) => BitHelper.LeadingZeroCount(in value);
 
 		/// <inheritdoc/>
 		public static Int512 operator +(in Int512 value) => value;

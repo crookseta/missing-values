@@ -919,8 +919,6 @@ namespace MissingValues
 			Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref address, sizeof(ulong) * 3), p3);
 		}
 
-		char IFormattableInteger<UInt256>.ToChar() => (char)_p0;
-
 		int IFormattableInteger<UInt256>.ToInt32() => (int)_p0;
 
 		static UInt256 IFormattableNumber<UInt256>.GetDecimalValue(char value)
@@ -982,6 +980,8 @@ namespace MissingValues
 			else if (value1 > value2) return 1;
 			else return 0;
 		}
+		static int IFormattableInteger<UInt256>.Log2Int32(in UInt256 value) => BitHelper.Log2(in value);
+		static int IFormattableInteger<UInt256>.LeadingZeroCountInt32(in UInt256 value) => BitHelper.LeadingZeroCount(in value);
 
 		/// <inheritdoc/>
 		public static UInt256 operator +(in UInt256 value) => value;

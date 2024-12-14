@@ -1068,8 +1068,6 @@ namespace MissingValues
 
 		UInt256 IFormattableSignedInteger<Int256, UInt256>.ToUnsigned() => (UInt256)this;
 
-		char IFormattableInteger<Int256>.ToChar() => (char)_p0;
-
 		int IFormattableInteger<Int256>.ToInt32() => (int)_p0;
 
 		static Int256 IFormattableNumber<Int256>.GetDecimalValue(char value)
@@ -1095,6 +1093,8 @@ namespace MissingValues
 		}
 
 		static int IFormattableInteger<Int256>.UnsignedCompare(in Int256 value1, in Int256 value2) => unchecked(((UInt256)value1).CompareTo((UInt256)value2));
+		static int IFormattableInteger<Int256>.Log2Int32(in Int256 value) => BitHelper.Log2(in value);
+		static int IFormattableInteger<Int256>.LeadingZeroCountInt32(in Int256 value) => BitHelper.LeadingZeroCount(in value);
 
 		/// <inheritdoc/>
 		public static Int256 operator +(in Int256 value) => value;
