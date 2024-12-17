@@ -185,7 +185,9 @@ namespace MissingValues
 					{
 						Thrower.DivideByZero();
 					}
-					DivRemFast(in left, (uint)right._p0, out quotient, out remainder);
+					Calculator.DivRem(in left, (uint)right._p0, out quotient, out var r);
+					remainder = r;
+					return;
 				}
 			}
 
@@ -206,19 +208,8 @@ namespace MissingValues
 
 			static void DivRemFast(in UInt512 quotient, uint divisor, out UInt512 quo, out UInt512 rem)
 			{
-				const int UIntCount = Size / sizeof(uint);
-
-				Span<uint> quotientSpan = stackalloc uint[UIntCount];
-				quotientSpan.Clear();
-				Unsafe.WriteUnaligned(ref Unsafe.As<uint, byte>(ref MemoryMarshal.GetReference(quotientSpan)), quotient);
-
-				Span<uint> rawBits = stackalloc uint[UIntCount];
-				rawBits.Clear();
-
-				Calculator.DivRem(quotientSpan[..((UIntCount) - (BitHelper.LeadingZeroCount(in quotient) / 32))], divisor, rawBits, out uint remainder);
-
-				quo = Unsafe.ReadUnaligned<UInt512>(ref Unsafe.As<uint, byte>(ref MemoryMarshal.GetReference(rawBits)));
-				rem = remainder;
+				Calculator.DivRem(in quotient, divisor, out quo, out uint r);
+				rem = r;
 			}
 			static void DivRemSlow(in UInt512 quotient, in UInt512 divisor, out UInt512 quo, out UInt512 rem)
 			{
@@ -1272,7 +1263,7 @@ namespace MissingValues
 					{
 						Thrower.DivideByZero();
 					}
-					return DivideFast(in left, (uint)right._p0);
+					return Calculator.Divide(in left, (uint)right);
 				}
 			}
 			
@@ -1283,21 +1274,6 @@ namespace MissingValues
 
 			return DivideSlow(left, right);
 
-			static UInt512 DivideFast(in UInt512 quotient, uint divisor)
-			{
-				const int UIntCount = Size / sizeof(uint);
-
-				Span<uint> quotientSpan = stackalloc uint[UIntCount];
-				quotientSpan.Clear();
-				Unsafe.WriteUnaligned(ref Unsafe.As<uint, byte>(ref MemoryMarshal.GetReference(quotientSpan)), quotient);
-
-				Span<uint> rawBits = stackalloc uint[UIntCount];
-				rawBits.Clear();
-
-				Calculator.Divide(quotientSpan[..((UIntCount) - (BitHelper.LeadingZeroCount(in quotient) / 32))], divisor, rawBits);
-
-				return Unsafe.ReadUnaligned<UInt512>(ref Unsafe.As<uint, byte>(ref MemoryMarshal.GetReference(rawBits)));
-			}
 			static UInt512 DivideSlow(in UInt512 quotient, in UInt512 divisor)
 			{
 				const int UIntCount = Size / sizeof(uint);
@@ -1333,7 +1309,7 @@ namespace MissingValues
 					{
 						Thrower.DivideByZero();
 					}
-					return RemainderFast(in left, (uint)right._p0);
+					return Calculator.Remainder(in left, (uint)right._p0);
 				}
 			}
 
@@ -1349,16 +1325,6 @@ namespace MissingValues
 
 			return RemainderSlow(in left, in right);
 
-			static UInt512 RemainderFast(in UInt512 quotient, uint divisor)
-			{
-				const int UIntCount = Size / sizeof(uint);
-
-				Span<uint> quotientSpan = stackalloc uint[UIntCount];
-				quotientSpan.Clear();
-				Unsafe.WriteUnaligned(ref Unsafe.As<uint, byte>(ref MemoryMarshal.GetReference(quotientSpan)), quotient);
-
-				return Calculator.Remainder(quotientSpan[..((UIntCount) - (BitHelper.LeadingZeroCount(in quotient) / 32))], divisor);
-			}
 			static UInt512 RemainderSlow(in UInt512 quotient, in UInt512 divisor)
 			{
 				const int UIntCount = Size / sizeof(uint);

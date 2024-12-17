@@ -1,4 +1,5 @@
 ﻿using BenchmarkDotNet.Attributes;
+using BenchmarkDotNet.Jobs;
 using MissingValues.Internals;
 using System;
 using System.Collections.Generic;
@@ -11,14 +12,16 @@ using System.Threading.Tasks;
 
 namespace MissingValues.Benchmarks
 {
+	[MarkdownExporter]
 	[MinColumn, MaxColumn, MeanColumn, MedianColumn]
-	[GenericTypeArguments(typeof(int))]
-	[GenericTypeArguments(typeof(long))]
 	[GenericTypeArguments(typeof(Int128))]
+	[GenericTypeArguments(typeof(UInt128))]
 	[GenericTypeArguments(typeof(Int256))]
+	[GenericTypeArguments(typeof(UInt256))]
 	[GenericTypeArguments(typeof(Int512))]
+	[GenericTypeArguments(typeof(UInt512))]
 	public class GenericIntegerBenchmarks<T>
-		where T : INumber<T>
+		where T : IBinaryInteger<T>
 	{
 		[Params(100, 10_000, 250_000, 750_000)]
 		public int Length;
@@ -51,7 +54,7 @@ namespace MissingValues.Benchmarks
 		{
 			for (int i = 0; i < Length; i++)
 			{
-				_destination[i] = _v1[i] + _v2[i];
+				_destination[i] = unchecked(_v1[i] + _v2[i]);
 			}
 			return _destination;
 		}
@@ -61,7 +64,7 @@ namespace MissingValues.Benchmarks
 		{
 			for (int i = 0; i < Length; i++)
 			{
-				_destination[i] = _v1[i] - _v2[i];
+				_destination[i] = unchecked(_v1[i] - _v2[i]);
 			}
 			return _destination;
 		}
@@ -71,7 +74,7 @@ namespace MissingValues.Benchmarks
 		{
 			for (int i = 0; i < Length; i++)
 			{
-				_destination[i] = _v1[i] * _v2[i];
+				_destination[i] = unchecked(_v1[i] * _v2[i]);
 			}
 			return _destination;
 		}
@@ -81,7 +84,55 @@ namespace MissingValues.Benchmarks
 		{
 			for (int i = 0; i < Length; i++)
 			{
-				_destination[i] = _v1[i] / _v2[i];
+				_destination[i] = unchecked(_v1[i] / _v2[i]);
+			}
+			return _destination;
+		}
+
+		[Benchmark]
+		public T[] Remainder_Integer()
+		{
+			for (int i = 0; i < Length; i++)
+			{
+				_destination[i] = unchecked(_v1[i] % _v2[i]);
+			}
+			return _destination;
+		}
+
+		[Benchmark]
+		public T[] DivRem_Integer()
+		{
+			for (int i = 0; i < Length; i++)
+			{
+				(_destination[i], _) = unchecked(T.DivRem(_v1[i], _v2[i]));
+			}
+			return _destination;
+		}
+
+		[Benchmark]
+		public T[] ShiftLeft_Integer()
+		{
+			int length = Length / 4;
+			for (int i = 0; i < length; i += 2)
+			{
+				_destination[i] = _v1[i] << 32;
+				_destination[i + 1] = _v2[i] << 64;
+				_destination[i + 2] = _v1[i] << 96;
+				_destination[i + 3] = _v2[i] << 128;
+			}
+			return _destination;
+		}
+
+		[Benchmark]
+		public T[] ShiftRight_Integer()
+		{
+			int length = Length / 4;
+			for (int i = 0; i < length; i += 2)
+			{
+				_destination[i] = _v1[i] >>> 32;
+				_destination[i + 1] = _v2[i] >>> 64;
+				_destination[i + 2] = _v1[i] >>> 96;
+				_destination[i + 3] = _v2[i] >>> 128;
 			}
 			return _destination;
 		}
