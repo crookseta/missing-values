@@ -70,6 +70,11 @@ internal interface IFormattableInteger<TSelf> : IFormattableNumber<TSelf>, IBigI
 	/// </summary>
 	abstract static TSelf TenPow3 { get; }
 
+	virtual static TSelf E19 
+	{
+		get => TSelf.CreateTruncating(10000000000000000000UL);
+	} 
+
 	/// <summary>
 	/// Gets the left-most digit of the maximum value of <typeparamref name="TSelf"/>.
 	/// </summary>

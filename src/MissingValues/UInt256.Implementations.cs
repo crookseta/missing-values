@@ -67,6 +67,8 @@ namespace MissingValues
 
 		static UInt256 IFormattableInteger<UInt256>.TenPow3 => new(1000);
 
+		static UInt256 IFormattableInteger<UInt256>.E19 => new UInt256(0, 0, 0, 10000000000000000000UL);
+
 		static UInt256 INumberBase<UInt256>.Abs(UInt256 value) => value;
 
 		/// <inheritdoc/>

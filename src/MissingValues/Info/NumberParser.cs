@@ -142,6 +142,29 @@ namespace MissingValues.Info
 			NumberStyles.AllowTrailingSign | NumberStyles.AllowDecimalPoint | NumberStyles.AllowThousands | NumberStyles.AllowExponent
 			| NumberStyles.AllowCurrencySymbol;
 
+		public static ReadOnlySpan<ulong> E19Table => [
+			1,
+			10,
+			100,
+			1000,
+			10000,
+			100000,
+			1000000,
+			10000000,
+			100000000,
+			1000000000,
+			10000000000,
+			100000000000,
+			1000000000000,
+			10000000000000,
+			100000000000000,
+			1000000000000000,
+			10000000000000000,
+			100000000000000000,
+			1000000000000000000,
+			10000000000000000000,
+			];
+
 		public static ParsingStatus ParseDecStringToUnsigned<T, TChar>(ReadOnlySpan<TChar> s, out T output)
 			where T : struct, IFormattableInteger<T>, IMinMaxValue<T>, IUnsignedNumber<T>
 			where TChar : unmanaged, IUtfCharacter<TChar>
@@ -152,19 +175,65 @@ namespace MissingValues.Info
 				return ParsingStatus.Overflow;
 			}
 
-			T acumulator = T.One;
-			output = T.GetDecimalValue((char)s[^1]);
+			T e19 = T.E19;
+			ulong r;
 
-			for (int i = 2; i <= s.Length; i++)
+			if (s.Length < 19 && TChar.TryParseInteger(s, out r))
 			{
-				acumulator = unchecked(acumulator * T.Ten);
-				var addon = T.GetDecimalValue((char)s[^i]) * acumulator;
-				if (T.MaxValue - output < addon)
+				output = T.CreateTruncating(r);
+				return ParsingStatus.Success;
+			}
+			else if (TChar.TryParseInteger(s[..19], out r))
+			{
+				output = T.CreateTruncating(r);
+			}
+			else
+			{
+				output = default;
+				return ParsingStatus.Failed;
+			}
+
+			int i = 19, length = s.Length - 19;
+
+			do
+			{
+				if (i > length)
+				{
+					break;
+				}
+				output *= e19;
+				ReadOnlySpan<TChar> slice = s[i..];
+				i += 19;
+				if (TChar.TryParseInteger(slice[..19], out r))
+				{
+					output += T.CreateTruncating(r);
+				}
+				else
+				{
+					output = default;
+					return ParsingStatus.Failed;
+				}
+			} while (true);
+
+			length = s.Length - i;
+			if (TChar.TryParseInteger(s[^length..], out r))
+			{
+				output *= T.CreateTruncating(E19Table[length]);
+				T addon = output + T.CreateTruncating(r);
+				if (addon < output)
 				{
 					output = default;
 					return ParsingStatus.Overflow;
 				}
-				output += addon;
+				else
+				{
+					output = addon;
+				}
+			}
+			else
+			{
+				output = default;
+				return ParsingStatus.Failed;
 			}
 
 			return ParsingStatus.Success;

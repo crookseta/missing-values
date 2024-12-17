@@ -59,6 +59,8 @@ namespace MissingValues
 
 		static UInt512 IFormattableInteger<UInt512>.TenPow3 => new UInt512(0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x3E8);
 
+		static UInt512 IFormattableInteger<UInt512>.E19 => new UInt512(0, 0, 0, 0, 0, 0, 0, 10000000000000000000UL);
+
 		static char IFormattableInteger<UInt512>.LastDecimalDigitOfMaxValue => '1';
 
 		static int IFormattableInteger<UInt512>.MaxDecimalDigits => 155;
