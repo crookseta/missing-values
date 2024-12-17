@@ -101,7 +101,7 @@ internal static class Calculator
 		}
 	}
 
-	public static UInt256 Multiply(in UInt256 left, uint right, out uint carry)
+	public static UInt256 Multiply(in UInt256 left, ulong right, out ulong carry)
 	{
 		// Based on: https://github.com/dotnet/runtime/blob/main/src/libraries/System.Runtime.Numerics/src/System/Numerics/BigIntegerCalculator.SquMul.cs
 
@@ -110,118 +110,69 @@ internal static class Calculator
 		// a_i * b + c <= 2^64 - 1 + (2^64 - 1)^2 < 2^128 - 1,
 		// we are safe regarding to overflows.
 
-		uint p7, p6, p5, p4, p3, p2, p1, p0;
+		ulong p3, p2, p1, p0;
 
-		ulong c = 0UL;
-		
-		ulong digits = ((ulong)unchecked((uint)(left.Part0)) * right) + c;
-		p0 = unchecked((uint)digits);
-		c = digits >> 32;
+		UInt128 c = default;
 
-		digits = ((left.Part0 >> 32) * right) + c;
-		p1 = unchecked((uint)digits);
-		c = digits >> 32;
-		
-		digits = ((ulong)unchecked((uint)(left.Part1)) * right) + c;
-		p2 = unchecked((uint)digits);
-		c = digits >> 32;
-		
-		digits = ((left.Part1 >> 32) * right) + c;
-		p3 = unchecked((uint)digits);
-		c = digits >> 32;
-		
-		digits = ((ulong)unchecked((uint)(left.Part2)) * right) + c;
-		p4 = unchecked((uint)digits);
-		c = digits >> 32;
-		
-		digits = ((left.Part2 >> 32) * right) + c;
-		p5 = unchecked((uint)digits);
-		c = digits >> 32;
-		
-		digits = ((ulong)unchecked((uint)(left.Part3)) * right) + c;
-		p6 = unchecked((uint)digits);
-		c = digits >> 32;
-		
-		digits = ((left.Part3 >> 32) * right) + c;
-		p7 = unchecked((uint)digits);
-		carry = (uint)(digits >> 32);
+		UInt128 digits = BigMul(left.Part0, right) + c;
+		p0 = unchecked((ulong)digits);
+		c = digits >> 64;
 
-		return new UInt256(((ulong)p7 << 32) | p6, ((ulong)p5 << 32) | p4, ((ulong)p3 << 32) | p2, ((ulong)p1 << 32) | p0);
+		digits = BigMul(left.Part1, right) + c;
+		p1 = unchecked((ulong)digits);
+		c = digits >> 64;
+
+		digits = BigMul(left.Part2, right) + c;
+		p2 = unchecked((ulong)digits);
+		c = digits >> 64;
+
+		digits = BigMul(left.Part3, right) + c;
+		p3 = unchecked((ulong)digits);
+		carry = (ulong)(digits >> 64);
+
+		return new UInt256(p3, p2, p1, p0);
 	}
-	public static UInt512 Multiply(in UInt512 left, uint right, out uint carry)
+	public static UInt512 Multiply(in UInt512 left, ulong right, out ulong carry)
 	{
-		uint p07, p06, p05, p04, p03, p02, p01, p00;
-		uint p15, p14, p13, p12, p11, p10, p09, p08;
+		ulong p7, p6, p5, p4, p3, p2, p1, p0;
 
-		ulong c = 0UL;
+		UInt128 c = default;
 
-		ulong digits = ((ulong)unchecked((uint)left.Part0) * right) + c;
-		p00 = unchecked((uint)digits);
-		c = digits >> 32;
-		
-		digits = ((left.Part0 >> 32) * right) + c;
-		p01 = unchecked((uint)digits);
-		c = digits >> 32;
-		
-		digits = ((ulong)unchecked((uint)left.Part1) * right) + c;
-		p02 = unchecked((uint)digits);
-		c = digits >> 32;
-		
-		digits = ((left.Part1 >> 32) * right) + c;
-		p03 = unchecked((uint)digits);
-		c = digits >> 32;
-		
-		digits = ((ulong)unchecked((uint)left.Part2) * right) + c;
-		p04 = unchecked((uint)digits);
-		c = digits >> 32;
-		
-		digits = ((left.Part2 >> 32) * right) + c;
-		p05 = unchecked((uint)digits);
-		c = digits >> 32;
-		
-		digits = ((ulong)unchecked((uint)left.Part3) * right) + c;
-		p06 = unchecked((uint)digits);
-		c = digits >> 32;
-		
-		digits = ((left.Part3 >> 32) * right) + c;
-		p07 = unchecked((uint)digits);
-		c = digits >> 32;
+		UInt128 digits = BigMul(left.Part0, right) + c;
+		p0 = unchecked((ulong)digits);
+		c = digits >> 64;
 
-		digits = ((ulong)unchecked((uint)left.Part4) * right) + c;
-		p08 = unchecked((uint)digits);
-		c = digits >> 32;
-		
-		digits = ((left.Part4 >> 32) * right) + c;
-		p09 = unchecked((uint)digits);
-		c = digits >> 32;
-		
-		digits = ((ulong)unchecked((uint)left.Part5) * right) + c;
-		p10 = unchecked((uint)digits);
-		c = digits >> 32;
-		
-		digits = ((left.Part5 >> 32) * right) + c;
-		p11 = unchecked((uint)digits);
-		c = digits >> 32;
-		
-		digits = ((ulong)unchecked((uint)left.Part6) * right) + c;
-		p12 = unchecked((uint)digits);
-		c = digits >> 32;
-		
-		digits = ((left.Part6 >> 32) * right) + c;
-		p13 = unchecked((uint)digits);
-		c = digits >> 32;
-		
-		digits = ((ulong)unchecked((uint)left.Part7) * right) + c;
-		p14 = unchecked((uint)digits);
-		c = digits >> 32;
+		digits = BigMul(left.Part1, right) + c;
+		p1 = unchecked((ulong)digits);
+		c = digits >> 64;
 
-		digits = ((left.Part7 >> 32) * right) + c;
-		p15 = unchecked((uint)digits);
-		carry = (uint)(digits >> 32);
+		digits = BigMul(left.Part2, right) + c;
+		p2 = unchecked((ulong)digits);
+		c = digits >> 64;
+
+		digits = BigMul(left.Part3, right) + c;
+		p3 = unchecked((ulong)digits);
+		c = digits >> 64;
+
+		digits = BigMul(left.Part4, right) + c;
+		p4 = unchecked((ulong)digits);
+		c = digits >> 64;
+
+		digits = BigMul(left.Part5, right) + c;
+		p5 = unchecked((ulong)digits);
+		c = digits >> 64;
+
+		digits = BigMul(left.Part6, right) + c;
+		p6 = unchecked((ulong)digits);
+		c = digits >> 64;
+
+		digits = BigMul(left.Part7, right) + c;
+		p7 = unchecked((ulong)digits);
+		carry = (ulong)(digits >> 64);
 
 		return new UInt512(
-			((ulong)p15 << 32) | p14, ((ulong)p13 << 32) | p12, ((ulong)p11 << 32) | p10, ((ulong)p09 << 32) | p08,
-			((ulong)p07 << 32) | p06, ((ulong)p05 << 32) | p04, ((ulong)p03 << 32) | p02, ((ulong)p01 << 32) | p00
+			p7, p6, p5, p4,
+			p3, p2, p1, p0
 			);
 	}
 	public static void Multiply(ReadOnlySpan<uint> left, ReadOnlySpan<uint> right, Span<uint> bits)
