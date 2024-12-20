@@ -316,7 +316,7 @@ internal static partial class NumberFormatter
 		{
 			var fd = FloatToDecimal<TFloat, FloatingDecimal<TSignificand>, TSignificand>(in value);
 			UInt256 significand = UInt256.CreateTruncating(fd.Mantissa);
-			UIntToNumber<UInt256, Int256>(in significand, ref number);
+			UIntToNumber<UInt256>(in significand, ref number);
 			number.Scale += fd.Exponent;
 			number.IsNegative = fd.Sign;
 			isExceptional = fd.Exponent == FDExceptionalExponent;
