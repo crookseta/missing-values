@@ -22,7 +22,7 @@ namespace MissingValues
 		IMinMaxValue<UInt256>,
 		IUnsignedNumber<UInt256>,
 		IPowerFunctions<UInt256>,
-		IFormattableUnsignedInteger<UInt256, Int256>
+		IFormattableUnsignedInteger<UInt256>
 	{
 		static UInt256 INumberBase<UInt256>.One => One;
 
@@ -53,7 +53,7 @@ namespace MissingValues
 
 		static int IFormattableInteger<UInt256>.MaxBinaryDigits => 256;
 
-		static UInt256 IFormattableUnsignedInteger<UInt256, Int256>.SignedMaxMagnitude => new(0x8000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
+		static UInt256 IFormattableUnsignedInteger<UInt256>.SignedMaxMagnitude => new(0x8000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
 
 		static UInt256 IFormattableInteger<UInt256>.TwoPow2 => new(4);
 
@@ -934,11 +934,6 @@ namespace MissingValues
 			throw new FormatException();
 		}
 
-		Int256 IFormattableUnsignedInteger<UInt256, Int256>.ToSigned()
-		{
-			return (Int256)this;
-		}
-
 		internal static int CountDigits(in UInt256 value)
 		{
 			if (value.Upper == 0)
@@ -964,7 +959,7 @@ namespace MissingValues
 
 			return digits;
 		}
-		static int IFormattableUnsignedInteger<UInt256, Int256>.CountDigits(in UInt256 value) => CountDigits(in value);
+		static int IFormattableUnsignedInteger<UInt256>.CountDigits(in UInt256 value) => CountDigits(in value);
 		static int IFormattableInteger<UInt256>.UnsignedCompare(in UInt256 value1, in UInt256 value2)
 		{
 			if (value1 < value2) return -1;

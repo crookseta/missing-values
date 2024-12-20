@@ -7,6 +7,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Numerics;
+using System.Runtime.CompilerServices;
 using System.Text;
 
 namespace MissingValues.Info
@@ -150,7 +151,7 @@ namespace MissingValues.Info
 			];
 
 		public static ParsingStatus ParseDecStringToUnsigned<T, TChar>(ReadOnlySpan<TChar> s, out T output)
-			where T : struct, IFormattableInteger<T>, IMinMaxValue<T>, IUnsignedNumber<T>
+			where T : struct, IFormattableUnsignedInteger<T>
 			where TChar : unmanaged, IUtfCharacter<TChar>
 		{
 			if (s.Length > T.MaxDecimalDigits && (char)s[0] > T.LastDecimalDigitOfMaxValue)
@@ -223,7 +224,7 @@ namespace MissingValues.Info
 			return ParsingStatus.Success;
 		}
 		public static ParsingStatus ParseStringToUnsigned<TInteger, TChar, TConverter>(ReadOnlySpan<TChar> s, out TInteger output)
-			where TInteger : struct, IFormattableInteger<TInteger>, IMinMaxValue<TInteger>, IUnsignedNumber<TInteger>
+			where TInteger : struct, IFormattableUnsignedInteger<TInteger>
 			where TChar : unmanaged, IUtfCharacter<TChar>
 			where TConverter : struct, IIntegerRadixConverter<TInteger>
 		{
@@ -280,7 +281,7 @@ namespace MissingValues.Info
 		}
 
 		public static ParsingStatus TryParseToUnsigned<T, TChar>(ReadOnlySpan<TChar> s, NumberStyles style, IFormatProvider? formatProvider, out T output)
-			where T : struct, IFormattableInteger<T>, IMinMaxValue<T>, IUnsignedNumber<T>
+			where T : struct, IFormattableUnsignedInteger<T>
 			where TChar : unmanaged, IUtfCharacter<TChar>
 		{
 			if (style.HasFlag(NumberStyles.AllowLeadingWhite))
@@ -346,10 +347,11 @@ namespace MissingValues.Info
 		}
 
 		public static ParsingStatus TryParseToSigned<TSigned, TUnsigned, TChar>(ReadOnlySpan<TChar> s, NumberStyles style, IFormatProvider? formatProvider, out TSigned output)
-			where TSigned : struct, IFormattableSignedInteger<TSigned, TUnsigned>, IMinMaxValue<TSigned>
-			where TUnsigned : struct, IFormattableUnsignedInteger<TUnsigned, TSigned>, IMinMaxValue<TUnsigned>
+			where TSigned : struct, IFormattableSignedInteger<TSigned>
+			where TUnsigned : struct, IFormattableUnsignedInteger<TUnsigned>
 			where TChar : unmanaged, IUtfCharacter<TChar>
 		{
+			Debug.Assert(Unsafe.SizeOf<TUnsigned>() == Unsafe.SizeOf<TSigned>());
 			if (style.HasFlag(NumberStyles.AllowLeadingWhite))
 			{
 				s = s.TrimStart(TChar.WhiteSpaceCharacter);
@@ -422,7 +424,7 @@ namespace MissingValues.Info
 				status = ParseDecStringToUnsigned(raw, out result);
 			}
 
-			output = result.ToSigned();
+			output = Unsafe.BitCast<TUnsigned, TSigned>(result);
 
 			if (isNegative)
 			{

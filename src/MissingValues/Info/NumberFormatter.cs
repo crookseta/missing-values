@@ -72,7 +72,7 @@ namespace MissingValues.Info
 				if (value is UInt256 uInt256)
 				{
 					number = new(stackalloc byte[UInt256Precision]);
-					UIntToNumber<UInt256, Int256>(in uInt256, ref number);
+					UIntToNumber<UInt256>(in uInt256, ref number);
 				}
 				else if (value is Int256 int256)
 				{
@@ -82,7 +82,7 @@ namespace MissingValues.Info
 				else if (value is UInt512 uInt512)
 				{
 					number = new(stackalloc byte[UInt512Precision]);
-					UIntToNumber<UInt512, Int512>(in uInt512, ref number);
+					UIntToNumber<UInt512>(in uInt512, ref number);
 				}
 				else if (value is Int512 int512)
 				{
@@ -215,22 +215,34 @@ namespace MissingValues.Info
 			}
 		}
 
-		private static void UIntToNumber<TUnsigned, TSigned>(in TUnsigned value, ref NumberInfo number)
-			where TUnsigned : struct, IFormattableUnsignedInteger<TUnsigned, TSigned>
-			where TSigned : struct, IFormattableSignedInteger<TSigned, TUnsigned>
+		private static void UIntToNumber<TUnsigned>(in TUnsigned value, ref NumberInfo number)
+			where TUnsigned : struct, IFormattableUnsignedInteger<TUnsigned>
 		{
 			int charsWritten = number.DigitsCount = TUnsigned.CountDigits(in value);
-			UnsignedIntegerToDecChars(value, MemoryMarshal.Cast<byte, Utf8Char>(number.Digits), charsWritten);
+
+			if (typeof(TUnsigned) == typeof(UInt256))
+			{
+				UInt256ToDecChars((UInt256)(object)value, MemoryMarshal.Cast<byte, Utf8Char>(number.Digits), charsWritten);
+			}
+			else if (typeof(TUnsigned) == typeof(UInt512))
+			{
+				UInt512ToDecChars((UInt512)(object)value, MemoryMarshal.Cast<byte, Utf8Char>(number.Digits), charsWritten);
+			}
+			else
+			{
+				Thrower.NotSupported();
+			}
 
 			number.Scale = charsWritten;
 			number.Digits[charsWritten] = (byte)'\0';
 
 		}
 		private static void IntToNumber<TSigned, TUnsigned>(ref TSigned value, ref NumberInfo number)
-			where TSigned : struct, IFormattableSignedInteger<TSigned, TUnsigned>
-			where TUnsigned : struct, IFormattableUnsignedInteger<TUnsigned, TSigned>
+			where TSigned : struct, IFormattableSignedInteger<TSigned>
+			where TUnsigned : struct, IFormattableUnsignedInteger<TUnsigned>
 		{
-			if (TSigned.IsPositive(value))
+			Debug.Assert(Unsafe.SizeOf<TUnsigned>() == Unsafe.SizeOf<TSigned>());
+			if (value >= TSigned.Zero)
 			{
 				number.IsNegative = false;
 			}
@@ -240,7 +252,7 @@ namespace MissingValues.Info
 				value = -value;
 			}
 
-			UIntToNumber<TUnsigned, TSigned>(value.ToUnsigned(), ref number);
+			UIntToNumber<TUnsigned>(Unsafe.BitCast<TSigned, TUnsigned>(value), ref number);
 		}
 
 		/// <summary>

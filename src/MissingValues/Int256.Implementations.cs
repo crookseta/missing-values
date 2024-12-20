@@ -23,7 +23,7 @@ namespace MissingValues
 		IMinMaxValue<Int256>,
 		ISignedNumber<Int256>,
 		IPowerFunctions<Int256>,
-		IFormattableSignedInteger<Int256, UInt256>
+		IFormattableSignedInteger<Int256>
 	{
 		private static UInt128 _upperMin => new UInt128(0x8000_0000_0000_0000, 0x0000_0000_0000_0000);
 		private static UInt128 _lowerMin => new UInt128(0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
@@ -1065,8 +1065,6 @@ namespace MissingValues
 			Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref address, sizeof(ulong) * 2), p2);
 			Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref address, sizeof(ulong) * 3), p3);
 		}
-
-		UInt256 IFormattableSignedInteger<Int256, UInt256>.ToUnsigned() => (UInt256)this;
 
 		int IFormattableInteger<Int256>.ToInt32() => (int)_p0;
 

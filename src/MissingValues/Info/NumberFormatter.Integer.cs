@@ -8,7 +8,7 @@ using System.Runtime.InteropServices;
 
 namespace MissingValues.Info;
 
-internal interface IFormattableInteger<TSelf> : IFormattableNumber<TSelf>, IBigInteger<TSelf>
+internal interface IFormattableInteger<TSelf> : IFormattableNumber<TSelf>, IBigInteger<TSelf>, IMinMaxValue<TSelf>
 		where TSelf : IFormattableInteger<TSelf>?
 {
 	/// <summary>
@@ -95,33 +95,20 @@ internal interface IFormattableInteger<TSelf> : IFormattableNumber<TSelf>, IBigI
 	abstract static bool IsUnsignedInteger { get; }
 }
 
-internal interface IFormattableSignedInteger<TSigned, TUnsigned> : IFormattableInteger<TSigned>, ISignedNumber<TSigned>
-	where TSigned : IFormattableSignedInteger<TSigned, TUnsigned>
-	where TUnsigned : IUnsignedNumber<TUnsigned>, IFormattableInteger<TUnsigned>
+internal interface IFormattableSignedInteger<TSigned> : IFormattableInteger<TSigned>, ISignedNumber<TSigned>
+	where TSigned : IFormattableSignedInteger<TSigned>
 {
-	/// <summary>
-	/// Returns the unsigned representation of the signed integer.
-	/// </summary>
-	/// <returns>The unsigned representation of the signed integer.</returns>
-	TUnsigned ToUnsigned();
-
 	static bool IFormattableInteger<TSigned>.IsUnsignedInteger => false;
 }
 
-internal interface IFormattableUnsignedInteger<TUnsigned, TSigned> : IFormattableInteger<TUnsigned>, IUnsignedNumber<TUnsigned>
-	where TUnsigned : IFormattableUnsignedInteger<TUnsigned, TSigned>
-	where TSigned : IFormattableInteger<TSigned>
+internal interface IFormattableUnsignedInteger<TUnsigned> : IFormattableInteger<TUnsigned>, IUnsignedNumber<TUnsigned>
+	where TUnsigned : IFormattableUnsignedInteger<TUnsigned>
 {
 	/// <summary>
 	/// Gets the absolute representation of the maximum representable value of <typeparamref name="TSigned"/>(Abs(TSigned.MinValue)).
 	/// </summary>
 	abstract static TUnsigned SignedMaxMagnitude { get; }
 
-	/// <summary>
-	/// Returns the signed representation of the unsigned integer.
-	/// </summary>
-	/// <returns>The signed representation of the unsigned integer.</returns>
-	TSigned ToSigned();
 	static abstract int CountDigits(in TUnsigned value);
 
 	static bool IFormattableInteger<TUnsigned>.IsUnsignedInteger => true;

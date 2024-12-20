@@ -21,7 +21,7 @@ namespace MissingValues
 		IMinMaxValue<Int512>,
 		ISignedNumber<Int512>,
 		IPowerFunctions<Int512>,
-		IFormattableSignedInteger<Int512, UInt512>
+		IFormattableSignedInteger<Int512>
 	{
 		private static UInt256 _upperMin => new UInt256(0x8000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
 		private static UInt256 _lowerMin => new UInt256(0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
@@ -1082,7 +1082,6 @@ namespace MissingValues
 
 		int IFormattableInteger<Int512>.ToInt32() => (int)_p0;
 
-		UInt512 IFormattableSignedInteger<Int512, UInt512>.ToUnsigned() => (UInt512)this;
 		static int IFormattableInteger<Int512>.UnsignedCompare(in Int512 value1, in Int512 value2) => unchecked(((UInt512)value1).CompareTo((UInt512)value2));
 		static int IFormattableInteger<Int512>.Log2Int32(in Int512 value) => BitHelper.Log2(in value);
 		static int IFormattableInteger<Int512>.LeadingZeroCountInt32(in Int512 value) => BitHelper.LeadingZeroCount(in value);

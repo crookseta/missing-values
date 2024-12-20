@@ -21,7 +21,7 @@ namespace MissingValues
 		IMinMaxValue<UInt512>,
 		IUnsignedNumber<UInt512>,
 		IPowerFunctions<UInt512>,
-		IFormattableUnsignedInteger<UInt512, Int512>
+		IFormattableUnsignedInteger<UInt512>
 	{
 		static UInt512 INumberBase<UInt512>.One => One;
 
@@ -37,7 +37,7 @@ namespace MissingValues
 
 		static UInt512 IMinMaxValue<UInt512>.MinValue => MinValue;
 
-		static UInt512 IFormattableUnsignedInteger<UInt512, Int512>.SignedMaxMagnitude => new UInt512(
+		static UInt512 IFormattableUnsignedInteger<UInt512>.SignedMaxMagnitude => new UInt512(
 			   0x8000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000,
 			   0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
 
@@ -962,9 +962,7 @@ namespace MissingValues
 
 		int IFormattableInteger<UInt512>.ToInt32() => (int)_p0;
 
-		Int512 IFormattableUnsignedInteger<UInt512, Int512>.ToSigned() => (Int512)this;
-
-		static int IFormattableUnsignedInteger<UInt512, Int512>.CountDigits(in UInt512 value) => CountDigits(in value);
+		static int IFormattableUnsignedInteger<UInt512>.CountDigits(in UInt512 value) => CountDigits(in value);
 
 		internal static int CountDigits(in UInt512 value)
 		{
