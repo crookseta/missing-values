@@ -955,18 +955,18 @@ namespace MissingValues
 		}
 
 		/// <inheritdoc/>
-		public string ToString(string? format, IFormatProvider? formatProvider)
+		public string ToString([StringSyntax(StringSyntaxAttribute.NumericFormat)] string? format, IFormatProvider? formatProvider)
 		{
 			return NumberFormatter.FormatInt256(in this, format, formatProvider);
 		}
 
 		/// <inheritdoc/>
-		public bool TryFormat(Span<char> destination, out int charsWritten, ReadOnlySpan<char> format, IFormatProvider? provider)
+		public bool TryFormat(Span<char> destination, out int charsWritten, [StringSyntax(StringSyntaxAttribute.NumericFormat)] ReadOnlySpan<char> format, IFormatProvider? provider)
 		{
 			return NumberFormatter.TryFormatInt256(in this, Utf16Char.CastFromCharSpan(destination), out charsWritten, format, provider);
 		}
 		/// <inheritdoc/>
-		public bool TryFormat(Span<byte> utf8Destination, out int bytesWritten, ReadOnlySpan<char> format, IFormatProvider? provider)
+		public bool TryFormat(Span<byte> utf8Destination, out int bytesWritten, [StringSyntax(StringSyntaxAttribute.NumericFormat)] ReadOnlySpan<char> format, IFormatProvider? provider)
 		{
 			return NumberFormatter.TryFormatInt256(in this, Utf8Char.CastFromByteSpan(utf8Destination), out bytesWritten, format, provider);
 		}

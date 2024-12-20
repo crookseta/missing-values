@@ -457,7 +457,7 @@ namespace MissingValues
 		public static Int512 RotateRight(Int512 value, int rotateAmount) => (value >>> rotateAmount) | (value << (512 - rotateAmount));
 
 		/// <inheritdoc/>
-		public string ToString(string? format, IFormatProvider? formatProvider)
+		public string ToString([StringSyntax(StringSyntaxAttribute.NumericFormat)] string? format, IFormatProvider? formatProvider)
 		{
 			return NumberFormatter.FormatInt512(in this, format, formatProvider);
 		}
@@ -466,13 +466,13 @@ namespace MissingValues
 		public static Int512 TrailingZeroCount(Int512 value) => BitHelper.TrailingZeroCount(in value);
 
 		/// <inheritdoc/>
-		public bool TryFormat(Span<char> destination, out int charsWritten, ReadOnlySpan<char> format, IFormatProvider? provider)
+		public bool TryFormat(Span<char> destination, out int charsWritten, [StringSyntax(StringSyntaxAttribute.NumericFormat)] ReadOnlySpan<char> format, IFormatProvider? provider)
 		{
 			return NumberFormatter.TryFormatInt512(in this, Utf16Char.CastFromCharSpan(destination), out charsWritten, format, provider);
 		}
 
 		/// <inheritdoc/>
-		public bool TryFormat(Span<byte> utf8Destination, out int bytesWritten, ReadOnlySpan<char> format, IFormatProvider? provider)
+		public bool TryFormat(Span<byte> utf8Destination, out int bytesWritten, [StringSyntax(StringSyntaxAttribute.NumericFormat)]  ReadOnlySpan<char> format, IFormatProvider? provider)
 		{
 			return NumberFormatter.TryFormatInt512(in this, Utf8Char.CastFromByteSpan(utf8Destination), out bytesWritten, format, provider);
 		}
