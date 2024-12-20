@@ -1177,33 +1177,35 @@ namespace MissingValues
 
 				return Calculator.Multiply(in left, right._p0, out _);
 			}
+			else if (left._p7 == 0 && left._p6 == 0 && left._p5 == 0 && left._p4 == 0 && left._p3 == 0 && left._p2 == 0 && left._p1 == 0)
+			{
+				return Calculator.Multiply(in right, left._p0, out _);
+			}
 
-			const int UIntCount = Size / sizeof(uint);
+			const int UIntCount = Size / sizeof(ulong);
 
-			Span<uint> leftSpan = stackalloc uint[UIntCount];
+			Span<ulong> leftSpan = stackalloc ulong[UIntCount];
 			leftSpan.Clear();
-			Unsafe.WriteUnaligned(ref Unsafe.As<uint, byte>(ref MemoryMarshal.GetReference(leftSpan)), left);
+			Unsafe.WriteUnaligned(ref Unsafe.As<ulong, byte>(ref MemoryMarshal.GetReference(leftSpan)), left);
 
-			Span<uint> rightSpan = stackalloc uint[UIntCount];
+			Span<ulong> rightSpan = stackalloc ulong[UIntCount];
 			rightSpan.Clear();
-			Unsafe.WriteUnaligned(ref Unsafe.As<uint, byte>(ref MemoryMarshal.GetReference(rightSpan)), right);
+			Unsafe.WriteUnaligned(ref Unsafe.As<ulong, byte>(ref MemoryMarshal.GetReference(rightSpan)), right);
 
-			Span<uint> rawBits = stackalloc uint[UIntCount * 2];
+			Span<ulong> rawBits = stackalloc ulong[UIntCount * 2];
 			rawBits.Clear();
 
 			Calculator.Multiply(
-				leftSpan[..(UIntCount - (BitHelper.LeadingZeroCount(in left) / 32))],
-				rightSpan[..(UIntCount - (BitHelper.LeadingZeroCount(in right) / 32))],
+				leftSpan[..(UIntCount - (BitHelper.LeadingZeroCount(in left) / 64))],
+				rightSpan[..(UIntCount - (BitHelper.LeadingZeroCount(in right) / 64))],
 				rawBits);
 
-			return Unsafe.ReadUnaligned<UInt512>(ref Unsafe.As<uint, byte>(ref MemoryMarshal.GetReference(rawBits)));
+			return Unsafe.ReadUnaligned<UInt512>(ref Unsafe.As<ulong, byte>(ref MemoryMarshal.GetReference(rawBits)));
 		}
 		
 		/// <inheritdoc/>
 		public static UInt512 operator checked *(in UInt512 left, in UInt512 right)
 		{
-			UInt512 lower;
-
 			if (right._p7 == 0 && right._p6 == 0 && right._p5 == 0 && right._p4 == 0 && right._p3 == 0 && right._p2 == 0 && right._p1 == 0)
 			{
 				if (left._p7 == 0 && left._p6 == 0 && left._p5 == 0 && left._p4 == 0 && left._p3 == 0 && left._p2 == 0 && left._p1 == 0)
@@ -1212,7 +1214,18 @@ namespace MissingValues
 					return new UInt512(0, 0, 0, 0, 0, 0, up, low);
 				}
 
-				lower = Calculator.Multiply(in left, right._p0, out ulong carry);
+				UInt512 lower = Calculator.Multiply(in left, right._p0, out ulong carry);
+
+				if (carry != 0)
+				{
+					Thrower.ArithmethicOverflow(Thrower.ArithmethicOperation.Multiplication);
+				}
+
+				return lower;
+			}
+			else if (left._p7 == 0 && left._p6 == 0 && left._p5 == 0 && left._p4 == 0 && left._p3 == 0 && left._p2 == 0 && left._p1 == 0)
+			{
+				UInt512 lower = Calculator.Multiply(in right, left._p0, out ulong carry);
 
 				if (carry != 0)
 				{
@@ -1222,22 +1235,22 @@ namespace MissingValues
 				return lower;
 			}
 
-			const int UIntCount = Size / sizeof(uint);
+			const int UIntCount = Size / sizeof(ulong);
 
-			Span<uint> leftSpan = stackalloc uint[UIntCount];
+			Span<ulong> leftSpan = stackalloc ulong[UIntCount];
 			leftSpan.Clear();
-			Unsafe.WriteUnaligned(ref Unsafe.As<uint, byte>(ref MemoryMarshal.GetReference(leftSpan)), left);
+			Unsafe.WriteUnaligned(ref Unsafe.As<ulong, byte>(ref MemoryMarshal.GetReference(leftSpan)), left);
 
-			Span<uint> rightSpan = stackalloc uint[UIntCount];
+			Span<ulong> rightSpan = stackalloc ulong[UIntCount];
 			rightSpan.Clear();
-			Unsafe.WriteUnaligned(ref Unsafe.As<uint, byte>(ref MemoryMarshal.GetReference(rightSpan)), right);
+			Unsafe.WriteUnaligned(ref Unsafe.As<ulong, byte>(ref MemoryMarshal.GetReference(rightSpan)), right);
 
-			Span<uint> rawBits = stackalloc uint[UIntCount * 2];
+			Span<ulong> rawBits = stackalloc ulong[UIntCount * 2];
 			rawBits.Clear();
 
 			Calculator.Multiply(
-				leftSpan[..(UIntCount - (BitHelper.LeadingZeroCount(in left) / 32))],
-				rightSpan[..(UIntCount - (BitHelper.LeadingZeroCount(in right) / 32))],
+				leftSpan[..(UIntCount - (BitHelper.LeadingZeroCount(in left) / 64))],
+				rightSpan[..(UIntCount - (BitHelper.LeadingZeroCount(in right) / 64))],
 				rawBits);
 			var overflowBits = rawBits[UIntCount..];
 
@@ -1249,7 +1262,7 @@ namespace MissingValues
 				}
 			}
 
-			return Unsafe.ReadUnaligned<UInt512>(ref Unsafe.As<uint, byte>(ref MemoryMarshal.GetReference(rawBits)));
+			return Unsafe.ReadUnaligned<UInt512>(ref Unsafe.As<ulong, byte>(ref MemoryMarshal.GetReference(rawBits)));
 		}
 
 		/// <inheritdoc/>

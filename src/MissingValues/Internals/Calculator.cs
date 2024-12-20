@@ -205,6 +205,36 @@ internal static class Calculator
 			Unsafe.Add(ref resultPtr, i + left.Length) = (uint)carry;
 		}
 	}
+	public static void Multiply(ReadOnlySpan<ulong> left, ReadOnlySpan<ulong> right, Span<ulong> bits)
+	{
+		// Based on: https://github.com/dotnet/runtime/blob/main/src/libraries/System.Runtime.Numerics/src/System/Numerics/BigIntegerCalculator.SquMul.cs
+		Debug.Assert(right.Length < 16);
+
+		// Switching to managed references helps eliminating
+		// index bounds check...
+		ref ulong resultPtr = ref MemoryMarshal.GetReference(bits);
+
+		// Multiplies the bits using the "grammar-school" method.
+		// Envisioning the "rhombus" of a pen-and-paper calculation
+		// should help getting the idea of these two loops...
+		// The inner multiplication operations are safe, because
+		// z_i+j + a_j * b_i + c <= 2(2^32 - 1) + (2^32 - 1)^2 =
+		// = 2^64 - 1 (which perfectly matches with ulong!).
+
+		for (int i = 0; i < right.Length; i++)
+		{
+			ulong rv = right[i];
+			UInt128 carry = UInt128.Zero;
+			for (int j = 0; j < left.Length; j++)
+			{
+				ref ulong elementPtr = ref Unsafe.Add(ref resultPtr, i + j);
+				UInt128 digits = elementPtr + carry + BigMul(left[j], rv);
+				elementPtr = unchecked((ulong)digits);
+				carry = digits >> 64;
+			}
+			Unsafe.Add(ref resultPtr, i + left.Length) = (ulong)carry;
+		}
+	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static void DivRem(in UInt256 left, uint right, out UInt256 quotient, out uint remainder)

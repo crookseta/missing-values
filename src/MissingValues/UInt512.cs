@@ -186,25 +186,25 @@ namespace MissingValues
 		/// <returns>The high 512-bit of the product of the specified numbers.</returns>
 		public static UInt512 BigMul(UInt512 left, UInt512 right, out UInt512 lower)
 		{
-			const int UIntCount = Size / sizeof(uint);
+			const int UIntCount = Size / sizeof(ulong);
 
-			Span<uint> leftSpan = stackalloc uint[UIntCount];
+			Span<ulong> leftSpan = stackalloc ulong[UIntCount];
 			leftSpan.Clear();
-			Unsafe.WriteUnaligned(ref Unsafe.As<uint, byte>(ref MemoryMarshal.GetReference(leftSpan)), left);
-			Span<uint> rightSpan = stackalloc uint[UIntCount];
+			Unsafe.WriteUnaligned(ref Unsafe.As<ulong, byte>(ref MemoryMarshal.GetReference(leftSpan)), left);
+			Span<ulong> rightSpan = stackalloc ulong[UIntCount];
 			rightSpan.Clear();
-			Unsafe.WriteUnaligned(ref Unsafe.As<uint, byte>(ref MemoryMarshal.GetReference(rightSpan)), right);
+			Unsafe.WriteUnaligned(ref Unsafe.As<ulong, byte>(ref MemoryMarshal.GetReference(rightSpan)), right);
 
-			Span<uint> rawBits = stackalloc uint[UIntCount * 2];
+			Span<ulong> rawBits = stackalloc ulong[UIntCount * 2];
 			rawBits.Clear();
 
 			Calculator.Multiply(
-				leftSpan[..(UIntCount - (BitHelper.LeadingZeroCount(in left) / 32))],
-				rightSpan[..(UIntCount - (BitHelper.LeadingZeroCount(in right) / 32))],
+				leftSpan[..(UIntCount - (BitHelper.LeadingZeroCount(in left) / 64))], 
+				rightSpan[..(UIntCount - (BitHelper.LeadingZeroCount(in right) / 64))], 
 				rawBits);
 
-			lower = Unsafe.ReadUnaligned<UInt512>(ref Unsafe.As<uint, byte>(ref MemoryMarshal.GetReference(rawBits)));
-			return Unsafe.ReadUnaligned<UInt512>(ref Unsafe.As<uint, byte>(ref Unsafe.Add(ref MemoryMarshal.GetReference(rawBits), UIntCount)));
+			lower = Unsafe.ReadUnaligned<UInt512>(ref Unsafe.As<ulong, byte>(ref MemoryMarshal.GetReference(rawBits)));
+			return Unsafe.ReadUnaligned<UInt512>(ref Unsafe.As<ulong, byte>(ref Unsafe.Add(ref MemoryMarshal.GetReference(rawBits), UIntCount)));
 		}
 
 		/// <summary>
