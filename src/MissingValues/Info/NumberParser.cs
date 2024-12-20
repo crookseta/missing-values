@@ -414,21 +414,48 @@ namespace MissingValues.Info
 			if (style.HasFlag(NumberStyles.AllowHexSpecifier))
 			{
 				status = ParseStringToUnsigned<TUnsigned, TChar, HexConverter<TUnsigned>>(raw, out result);
+				output = Unsafe.BitCast<TUnsigned, TSigned>(result);
+				return status;
 			}
 			else if (style.HasFlag(NumberStyles.AllowBinarySpecifier))
 			{
 				status = ParseStringToUnsigned<TUnsigned, TChar, BinConverter<TUnsigned>>(raw, out result);
+				output = Unsafe.BitCast<TUnsigned, TSigned>(result);
+				return status;
 			}
 			else
 			{
 				status = ParseDecStringToUnsigned(raw, out result);
 			}
 
-			output = Unsafe.BitCast<TUnsigned, TSigned>(result);
-
-			if (isNegative)
+			if (!status)
 			{
-				output = -output;
+				output = default;
+				return status;
+			}
+
+			if (result == TUnsigned.SignedMaxMagnitude)
+			{
+				if (!isNegative)
+				{
+					output = default;
+					return ParsingStatus.Overflow;
+				}
+				output = TSigned.MinValue;
+			}
+			else
+			{
+				output = Unsafe.BitCast<TUnsigned, TSigned>(result);
+
+				if (output < TSigned.Zero)
+				{
+					output = default;
+					return ParsingStatus.Overflow;
+				}
+				if (isNegative)
+				{
+					output = -output;
+				}
 			}
 
 			return status;
