@@ -2,6 +2,7 @@
 using System;
 using System.Buffers;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
@@ -20,6 +21,8 @@ namespace MissingValues.Info
 			static abstract TInteger FromChar<TChar>(TChar ch) where TChar : unmanaged, IUtfCharacter<TChar>;
 			static abstract uint MaxDigitValue { get; }
 			static abstract int MaxDigitCount { get; }
+			static abstract int MaxUInt64DigitCount { get; }
+			static abstract int BitsPerCharacter { get; }
 			static abstract TInteger ShiftLeftForNextDigit(in TInteger value);
 		}
 		private readonly struct HexConverter<TInteger> : IIntegerRadixConverter<TInteger>
@@ -30,6 +33,10 @@ namespace MissingValues.Info
 			public static uint MaxDigitValue => 0xF;
 
 			public static int MaxDigitCount => TInteger.MaxHexDigits;
+
+			public static int MaxUInt64DigitCount => 16;
+
+			public static int BitsPerCharacter => 4;
 
 			public static TInteger FromChar<TChar>(TChar ch)
 				where TChar : unmanaged, IUtfCharacter<TChar>
@@ -48,33 +55,6 @@ namespace MissingValues.Info
 				return value << 4;
 			}
 		}
-		private readonly struct OctalConverter<TInteger> : IIntegerRadixConverter<TInteger>
-			where TInteger : struct, IFormattableInteger<TInteger>
-		{
-			public static NumberStyles AllowedStyles => NumberStyles.None /* NumberStyles.OctalNumber */;
-
-			public static uint MaxDigitValue => 7;
-
-			public static int MaxDigitCount => (TInteger.MaxHexDigits / 8) * 11;
-
-			public static TInteger FromChar<TChar>(TChar ch)
-				where TChar : unmanaged, IUtfCharacter<TChar>
-			{
-				return TInteger.GetDecimalValue((char)ch);
-			}
-
-			public static bool IsValidChar<TChar>(TChar ch)
-				where TChar : unmanaged, IUtfCharacter<TChar>
-			{
-				uint c = (uint)ch;
-				return '0' <= c || c <= '7';
-			}
-
-			public static TInteger ShiftLeftForNextDigit(in TInteger value)
-			{
-				return value << 3;
-			}
-		}
 		private readonly struct BinConverter<TInteger> : IIntegerRadixConverter<TInteger>
 			where TInteger : struct, IFormattableInteger<TInteger>
 		{
@@ -83,6 +63,10 @@ namespace MissingValues.Info
 			public static uint MaxDigitValue => 0b1;
 
 			public static int MaxDigitCount => TInteger.MaxBinaryDigits;
+
+			public static int MaxUInt64DigitCount => 64;
+
+			public static int BitsPerCharacter => 1;
 
 			public static TInteger FromChar<TChar>(TChar ch)
 				where TChar : unmanaged, IUtfCharacter<TChar>
@@ -178,12 +162,12 @@ namespace MissingValues.Info
 			T e19 = T.E19;
 			ulong r;
 
-			if (s.Length < 19 && TChar.TryParseInteger(s, out r))
+			if (s.Length < 19 && TChar.TryParseInteger(s, NumberStyles.Integer, CultureInfo.CurrentCulture, out r))
 			{
 				output = T.CreateTruncating(r);
 				return ParsingStatus.Success;
 			}
-			else if (TChar.TryParseInteger(s[..19], out r))
+			else if (TChar.TryParseInteger(s[..19], NumberStyles.Integer, CultureInfo.CurrentCulture, out r))
 			{
 				output = T.CreateTruncating(r);
 			}
@@ -204,7 +188,7 @@ namespace MissingValues.Info
 				output *= e19;
 				ReadOnlySpan<TChar> slice = s[i..];
 				i += 19;
-				if (TChar.TryParseInteger(slice[..19], out r))
+				if (TChar.TryParseInteger(slice[..19], NumberStyles.Integer, CultureInfo.CurrentCulture, out r))
 				{
 					output += T.CreateTruncating(r);
 				}
@@ -216,7 +200,7 @@ namespace MissingValues.Info
 			} while (true);
 
 			length = s.Length - i;
-			if (TChar.TryParseInteger(s[^length..], out r))
+			if (TChar.TryParseInteger(s[^length..], NumberStyles.Integer, CultureInfo.CurrentCulture, out r))
 			{
 				output *= T.CreateTruncating(E19Table[length]);
 				T addon = output + T.CreateTruncating(r);
@@ -248,16 +232,50 @@ namespace MissingValues.Info
 				output = default;
 				return ParsingStatus.Overflow;
 			}
-
-			TInteger acumulator = TInteger.One;
-			output = TConverter.FromChar(s[^1]);
-
-			for (int i = 2; i <= s.Length; i++)
+			ulong temp;
+			int count = TConverter.MaxUInt64DigitCount;
+			if (s.Length <= count)
 			{
-				acumulator = TConverter.ShiftLeftForNextDigit(in acumulator);
-				output += TConverter.FromChar(s[^i]) * acumulator;
+				if (!TChar.TryParseInteger(s, TConverter.AllowedStyles, CultureInfo.CurrentCulture, out temp))
+				{
+					output = default;
+					return ParsingStatus.Failed;
+				}
+				output = TInteger.CreateTruncating(temp);
+				return ParsingStatus.Success;
 			}
 
+			if (!TChar.TryParseInteger(s[..count], TConverter.AllowedStyles, CultureInfo.CurrentCulture, out temp))
+			{
+				output = default;
+				return ParsingStatus.Failed;
+			}
+			output = TInteger.CreateTruncating(temp);
+			ReadOnlySpan<TChar> slice = s[count..];
+
+			while (count <= slice.Length)
+			{
+				output <<= 64;
+				if (!TChar.TryParseInteger(slice[..count], TConverter.AllowedStyles, CultureInfo.CurrentCulture, out temp))
+				{
+					output = default;
+					return ParsingStatus.Failed;
+				}
+				output |= TInteger.CreateTruncating(temp);
+				slice = slice[count..];
+			}
+
+			if (slice.Length != 0)
+			{
+				if (!TChar.TryParseInteger(slice, TConverter.AllowedStyles, CultureInfo.CurrentCulture, out temp))
+				{
+					output = default;
+					return ParsingStatus.Failed;
+				}
+				int shiftAmount = slice.Length * TConverter.BitsPerCharacter;
+				output <<= shiftAmount;
+				output |= TInteger.CreateTruncating(temp);
+			}
 			return ParsingStatus.Success;
 		}
 

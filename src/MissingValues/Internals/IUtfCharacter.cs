@@ -38,7 +38,7 @@ namespace MissingValues.Internals
 		abstract static void Copy(ReadOnlySpan<char> origin, Span<TSelf> destination);
 		abstract static void Copy(ReadOnlySpan<byte> origin, Span<TSelf> destination);
 
-		abstract static bool TryParseInteger<T>(ReadOnlySpan<TSelf> s, out T result) where T : struct, IBinaryInteger<T>;
+		abstract static bool TryParseInteger<T>(ReadOnlySpan<TSelf> s, NumberStyles style, IFormatProvider? provider, out T result) where T : struct, IBinaryInteger<T>;
 
 		abstract static int GetLength(ReadOnlySpan<char> s);
 		abstract static int GetLength(ReadOnlySpan<byte> utf8Text);
@@ -178,9 +178,9 @@ namespace MissingValues.Internals
 			return char.IsAsciiHexDigit(value._char);
 		}
 
-		public static bool TryParseInteger<T>(ReadOnlySpan<Utf16Char> s, out T result) where T : struct, IBinaryInteger<T>
+		public static bool TryParseInteger<T>(ReadOnlySpan<Utf16Char> s, NumberStyles style, IFormatProvider? provider, out T result) where T : struct, IBinaryInteger<T>
 		{
-			return T.TryParse(CastToCharSpan(s), NumberStyles.Integer, CultureInfo.CurrentCulture, out result);
+			return T.TryParse(CastToCharSpan(s), style, provider, out result);
 		}
 
 		public static Span<char> CastToCharSpan(Span<Utf16Char> chars)
@@ -387,9 +387,9 @@ namespace MissingValues.Internals
 			return _char.Equals(other._char);
 		}
 
-		public static bool TryParseInteger<T>(ReadOnlySpan<Utf8Char> s, out T result) where T : struct, IBinaryInteger<T>
+		public static bool TryParseInteger<T>(ReadOnlySpan<Utf8Char> s, NumberStyles style, IFormatProvider? provider, out T result) where T : struct, IBinaryInteger<T>
 		{
-			return T.TryParse(CastToByteSpan(s), NumberStyles.Integer, CultureInfo.CurrentCulture, out result);
+			return T.TryParse(CastToByteSpan(s), style, provider, out result);
 		}
 
 		static Span<char> IUtfCharacter<Utf8Char>.CastToCharSpan(Span<Utf8Char> chars)
