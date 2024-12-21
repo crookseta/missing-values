@@ -201,24 +201,27 @@ namespace MissingValues.Info
 			} while (true);
 
 			length = s.Length - i;
-			if (TChar.TryParseInteger(s[^length..], NumberStyles.Integer, CultureInfo.CurrentCulture, out r))
+			if (length != 0)
 			{
-				output *= T.CreateTruncating(E19Table[length]);
-				T addon = output + T.CreateTruncating(r);
-				if (addon < output)
+				if (TChar.TryParseInteger(s[^length..], NumberStyles.Integer, CultureInfo.CurrentCulture, out r))
 				{
-					output = default;
-					return ParsingStatus.Overflow;
+					output *= T.CreateTruncating(E19Table[length]);
+					T addon = output + T.CreateTruncating(r);
+					if (addon < output)
+					{
+						output = default;
+						return ParsingStatus.Overflow;
+					}
+					else
+					{
+						output = addon;
+					}
 				}
 				else
 				{
-					output = addon;
-				}
-			}
-			else
-			{
-				output = default;
-				return ParsingStatus.Failed;
+					output = default;
+					return ParsingStatus.Failed;
+				} 
 			}
 
 			return ParsingStatus.Success;
