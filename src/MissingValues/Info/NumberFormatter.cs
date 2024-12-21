@@ -64,7 +64,6 @@ namespace MissingValues.Info
 			where TChar : unmanaged, IUtfCharacter<TChar>
 		{
 			scoped NumberInfo number;
-			scoped Span<byte> digits;
 			byte[]? digitsArray = null;
 			ValueListBuilder<TChar> builder = new ValueListBuilder<TChar>(stackalloc TChar[256]);
 
@@ -72,26 +71,22 @@ namespace MissingValues.Info
 			{
 				if (value is UInt256 uInt256)
 				{
-					digits = stackalloc byte[UInt256Precision];
-					number = new(digits);
-					UIntToNumber<UInt256, Int256>(in uInt256, ref number);
+					number = new(stackalloc byte[UInt256Precision]);
+					UIntToNumber<UInt256>(in uInt256, ref number);
 				}
 				else if (value is Int256 int256)
 				{
-					digits = stackalloc byte[Int256Precision];
-					number = new(digits);
+					number = new(stackalloc byte[Int256Precision]);
 					IntToNumber<Int256, UInt256>(ref int256, ref number);
 				}
 				else if (value is UInt512 uInt512)
 				{
-					digits = stackalloc byte[UInt512Precision];
-					number = new(digits);
-					UIntToNumber<UInt512, Int512>(in uInt512, ref number);
+					number = new(stackalloc byte[UInt512Precision]);
+					UIntToNumber<UInt512>(in uInt512, ref number);
 				}
 				else if (value is Int512 int512)
 				{
-					digits = stackalloc byte[Int512Precision];
-					number = new(digits);
+					number = new(stackalloc byte[Int512Precision]);
 					IntToNumber<Int512, UInt512>(ref int512, ref number);
 				}
 				else
@@ -106,16 +101,16 @@ namespace MissingValues.Info
 
 				if (value is Quad quad)
 				{
-					digits = digitsArray = ArrayPool<byte>.Shared.Rent(NumberParser.QuadBufferLength);
+					digitsArray = ArrayPool<byte>.Shared.Rent(NumberParser.QuadBufferLength);
 
-					number = new(digits[..NumberParser.QuadBufferLength], true);
+					number = new(digitsArray.AsSpan(0, NumberParser.QuadBufferLength), true);
 					Ryu.Format<Quad, UInt128>(in quad, ref number, out exceptional);
 				}
 				else if (value is Octo octo)
 				{
-					digits = digitsArray = ArrayPool<byte>.Shared.Rent(NumberParser.OctoBufferLength);
+					digitsArray = ArrayPool<byte>.Shared.Rent(NumberParser.OctoBufferLength);
 
-					number = new(digits[..NumberParser.OctoBufferLength], true);
+					number = new(digitsArray.AsSpan(0, NumberParser.OctoBufferLength), true);
 					Ryu.Format<Octo, UInt256>(in octo, ref number, out exceptional);
 				}
 				else
@@ -152,8 +147,13 @@ namespace MissingValues.Info
 					{
 						charsWritten = 0;
 					}
+
+					if (digitsArray is not null)
+					{
+						ArrayPool<byte>.Shared.Return(digitsArray);
+					}
+
 					return res;
-					
 				}
 			}
 
@@ -215,22 +215,34 @@ namespace MissingValues.Info
 			}
 		}
 
-		private static void UIntToNumber<TUnsigned, TSigned>(in TUnsigned value, ref NumberInfo number)
-			where TUnsigned : struct, IFormattableUnsignedInteger<TUnsigned, TSigned>
-			where TSigned : struct, IFormattableSignedInteger<TSigned, TUnsigned>
+		private static void UIntToNumber<TUnsigned>(in TUnsigned value, ref NumberInfo number)
+			where TUnsigned : struct, IFormattableUnsignedInteger<TUnsigned>
 		{
 			int charsWritten = number.DigitsCount = TUnsigned.CountDigits(in value);
-			UnsignedIntegerToDecChars(value, MemoryMarshal.Cast<byte, Utf8Char>(number.Digits), charsWritten);
+
+			if (typeof(TUnsigned) == typeof(UInt256))
+			{
+				UInt256ToDecChars((UInt256)(object)value, MemoryMarshal.Cast<byte, Utf8Char>(number.Digits), charsWritten);
+			}
+			else if (typeof(TUnsigned) == typeof(UInt512))
+			{
+				UInt512ToDecChars((UInt512)(object)value, MemoryMarshal.Cast<byte, Utf8Char>(number.Digits), charsWritten);
+			}
+			else
+			{
+				Thrower.NotSupported();
+			}
 
 			number.Scale = charsWritten;
 			number.Digits[charsWritten] = (byte)'\0';
 
 		}
 		private static void IntToNumber<TSigned, TUnsigned>(ref TSigned value, ref NumberInfo number)
-			where TSigned : struct, IFormattableSignedInteger<TSigned, TUnsigned>
-			where TUnsigned : struct, IFormattableUnsignedInteger<TUnsigned, TSigned>
+			where TSigned : struct, IFormattableSignedInteger<TSigned>
+			where TUnsigned : struct, IFormattableUnsignedInteger<TUnsigned>
 		{
-			if (TSigned.IsPositive(value))
+			Debug.Assert(Unsafe.SizeOf<TUnsigned>() == Unsafe.SizeOf<TSigned>());
+			if (value >= TSigned.Zero)
 			{
 				number.IsNegative = false;
 			}
@@ -240,7 +252,7 @@ namespace MissingValues.Info
 				value = -value;
 			}
 
-			UIntToNumber<TUnsigned, TSigned>(value.ToUnsigned(), ref number);
+			UIntToNumber<TUnsigned>(Unsafe.BitCast<TSigned, TUnsigned>(value), ref number);
 		}
 
 		/// <summary>

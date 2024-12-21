@@ -1,6 +1,7 @@
 ﻿using MissingValues.Info;
 using MissingValues.Internals;
 using System;
+using System.Buffers.Binary;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
@@ -20,7 +21,7 @@ namespace MissingValues
 		IMinMaxValue<Int512>,
 		ISignedNumber<Int512>,
 		IPowerFunctions<Int512>,
-		IFormattableSignedInteger<Int512, UInt512>
+		IFormattableSignedInteger<Int512>
 	{
 		private static UInt256 _upperMin => new UInt256(0x8000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
 		private static UInt256 _lowerMin => new UInt256(0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
@@ -456,24 +457,24 @@ namespace MissingValues
 		public static Int512 RotateRight(Int512 value, int rotateAmount) => (value >>> rotateAmount) | (value << (512 - rotateAmount));
 
 		/// <inheritdoc/>
-		public string ToString(string? format, IFormatProvider? formatProvider)
+		public string ToString([StringSyntax(StringSyntaxAttribute.NumericFormat)] string? format, IFormatProvider? formatProvider)
 		{
-			return NumberFormatter.FormatInt512(in this, format, formatProvider);
+			return NumberFormatter.FormatInt<Int512, UInt512>(in this, format, formatProvider);
 		}
 
 		/// <inheritdoc/>
 		public static Int512 TrailingZeroCount(Int512 value) => BitHelper.TrailingZeroCount(in value);
 
 		/// <inheritdoc/>
-		public bool TryFormat(Span<char> destination, out int charsWritten, ReadOnlySpan<char> format, IFormatProvider? provider)
+		public bool TryFormat(Span<char> destination, out int charsWritten, [StringSyntax(StringSyntaxAttribute.NumericFormat)] ReadOnlySpan<char> format, IFormatProvider? provider)
 		{
-			return NumberFormatter.TryFormatInt512(in this, Utf16Char.CastFromCharSpan(destination), out charsWritten, format, provider);
+			return NumberFormatter.TryFormatInt<Int512, UInt512, Utf16Char>(in this, Utf16Char.CastFromCharSpan(destination), out charsWritten, format, provider);
 		}
 
 		/// <inheritdoc/>
-		public bool TryFormat(Span<byte> utf8Destination, out int bytesWritten, ReadOnlySpan<char> format, IFormatProvider? provider)
+		public bool TryFormat(Span<byte> utf8Destination, out int bytesWritten, [StringSyntax(StringSyntaxAttribute.NumericFormat)]  ReadOnlySpan<char> format, IFormatProvider? provider)
 		{
-			return NumberFormatter.TryFormatInt512(in this, Utf8Char.CastFromByteSpan(utf8Destination), out bytesWritten, format, provider);
+			return NumberFormatter.TryFormatInt<Int512, UInt512, Utf8Char>(in this, Utf8Char.CastFromByteSpan(utf8Destination), out bytesWritten, format, provider);
 		}
 
 		/// <inheritdoc/>
@@ -853,7 +854,7 @@ namespace MissingValues
 		static bool INumberBase<Int512>.TryConvertToChecked<TOther>(Int512 value, out TOther result)
 		{
 			bool converted = true;
-			result = default;
+			result = TOther.Zero;
 			checked
 			{
 				result = result switch
@@ -891,7 +892,7 @@ namespace MissingValues
 		static bool INumberBase<Int512>.TryConvertToSaturating<TOther>(Int512 value, out TOther result)
 		{
 			bool converted = true;
-			result = default;
+			result = TOther.Zero;
 
 			result = result switch
 			{
@@ -927,7 +928,7 @@ namespace MissingValues
 		static bool INumberBase<Int512>.TryConvertToTruncating<TOther>(Int512 value, out TOther result)
 		{
 			bool converted = true;
-			result = default!;
+			result = TOther.Zero;
 			result = result switch
 			{
 				char => (TOther)(object)(char)value,
@@ -985,19 +986,37 @@ namespace MissingValues
 
 		private void WriteBigEndianUnsafe(Span<byte> destination)
 		{
-			UInt256 lower = Lower;
-			UInt256 upper = Upper;
+			ulong p0 = _p0;
+			ulong p1 = _p1;
+			ulong p2 = _p2;
+			ulong p3 = _p3;
+			ulong p4 = _p4;
+			ulong p5 = _p5;
+			ulong p6 = _p6;
+			ulong p7 = _p7;
 
 			if (BitConverter.IsLittleEndian)
 			{
-				lower = BitHelper.ReverseEndianness(in lower);
-				upper = BitHelper.ReverseEndianness(in upper);
+				p0 = BinaryPrimitives.ReverseEndianness(p0);
+				p1 = BinaryPrimitives.ReverseEndianness(p1);
+				p2 = BinaryPrimitives.ReverseEndianness(p2);
+				p3 = BinaryPrimitives.ReverseEndianness(p3);
+				p4 = BinaryPrimitives.ReverseEndianness(p4);
+				p5 = BinaryPrimitives.ReverseEndianness(p5);
+				p6 = BinaryPrimitives.ReverseEndianness(p6);
+				p7 = BinaryPrimitives.ReverseEndianness(p7);
 			}
 
 			ref byte address = ref MemoryMarshal.GetReference(destination);
 
-			Unsafe.WriteUnaligned(ref address, upper);
-			Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref address, Unsafe.SizeOf<UInt256>()), lower);
+			Unsafe.WriteUnaligned(ref address, p7);
+			Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref address, sizeof(ulong)), p6);
+			Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref address, sizeof(ulong) * 2), p5);
+			Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref address, sizeof(ulong) * 3), p4);
+			Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref address, sizeof(ulong) * 4), p3);
+			Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref address, sizeof(ulong) * 5), p2);
+			Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref address, sizeof(ulong) * 6), p1);
+			Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref address, sizeof(ulong) * 7), p0);
 		}
 
 		bool IBinaryInteger<Int512>.TryWriteLittleEndian(Span<byte> destination, out int bytesWritten)
@@ -1028,27 +1047,44 @@ namespace MissingValues
 		{
 			Debug.Assert(destination.Length >= Size);
 
-			UInt256 lower = Lower;
-			UInt256 upper = Upper;
+			ulong p0 = _p0;
+			ulong p1 = _p1;
+			ulong p2 = _p2;
+			ulong p3 = _p3;
+			ulong p4 = _p4;
+			ulong p5 = _p5;
+			ulong p6 = _p6;
+			ulong p7 = _p7;
 
 			if (!BitConverter.IsLittleEndian)
 			{
-				lower = BitHelper.ReverseEndianness(in lower);
-				upper = BitHelper.ReverseEndianness(in upper);
+				p0 = BinaryPrimitives.ReverseEndianness(p0);
+				p1 = BinaryPrimitives.ReverseEndianness(p1);
+				p2 = BinaryPrimitives.ReverseEndianness(p2);
+				p3 = BinaryPrimitives.ReverseEndianness(p3);
+				p4 = BinaryPrimitives.ReverseEndianness(p4);
+				p5 = BinaryPrimitives.ReverseEndianness(p5);
+				p6 = BinaryPrimitives.ReverseEndianness(p6);
+				p7 = BinaryPrimitives.ReverseEndianness(p7);
 			}
 
 			ref byte address = ref MemoryMarshal.GetReference(destination);
 
-			Unsafe.WriteUnaligned(ref address, lower);
-			Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref address, Unsafe.SizeOf<UInt256>()), upper);
+			Unsafe.WriteUnaligned(ref address, p0);
+			Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref address, sizeof(ulong)), p1);
+			Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref address, sizeof(ulong) * 2), p2);
+			Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref address, sizeof(ulong) * 3), p3);
+			Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref address, sizeof(ulong) * 4), p4);
+			Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref address, sizeof(ulong) * 5), p5);
+			Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref address, sizeof(ulong) * 6), p6);
+			Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref address, sizeof(ulong) * 7), p7);
 		}
-
-		char IFormattableInteger<Int512>.ToChar() => (char)_p0;
 
 		int IFormattableInteger<Int512>.ToInt32() => (int)_p0;
 
-		UInt512 IFormattableSignedInteger<Int512, UInt512>.ToUnsigned() => (UInt512)this;
 		static int IFormattableInteger<Int512>.UnsignedCompare(in Int512 value1, in Int512 value2) => unchecked(((UInt512)value1).CompareTo((UInt512)value2));
+		static int IFormattableInteger<Int512>.Log2Int32(in Int512 value) => BitHelper.Log2(in value);
+		static int IFormattableInteger<Int512>.LeadingZeroCountInt32(in Int512 value) => BitHelper.LeadingZeroCount(in value);
 
 		/// <inheritdoc/>
 		public static Int512 operator +(in Int512 value) => value;
@@ -1157,9 +1193,9 @@ namespace MissingValues
 		{
 			if (Vector512.IsHardwareAccelerated)
 			{
-				var v = Unsafe.As<Int512, Vector512<ulong>>(ref Unsafe.AsRef(in value));
+				var v = Unsafe.BitCast<Int512, Vector512<ulong>>(value);
 				var result = ~v;
-				return Unsafe.As<Vector512<ulong>, Int512>(ref result);
+				return Unsafe.BitCast<Vector512<ulong>, Int512>(result);
 			}
 			else
 			{
@@ -1252,10 +1288,10 @@ namespace MissingValues
 		{
 			if (Vector512.IsHardwareAccelerated)
 			{
-				var v1 = Unsafe.As<Int512, Vector512<ulong>>(ref Unsafe.AsRef(in left));
-				var v2 = Unsafe.As<Int512, Vector512<ulong>>(ref Unsafe.AsRef(in right));
+				var v1 = Unsafe.BitCast<Int512, Vector512<ulong>>(left);
+				var v2 = Unsafe.BitCast<Int512, Vector512<ulong>>(right);
 				var result = v1 & v2;
-				return Unsafe.As<Vector512<ulong>, Int512>(ref result);
+				return Unsafe.BitCast<Vector512<ulong>, Int512>(result);
 			}
 			else
 			{
@@ -1268,10 +1304,10 @@ namespace MissingValues
 		{
 			if (Vector512.IsHardwareAccelerated)
 			{
-				var v1 = Unsafe.As<Int512, Vector512<ulong>>(ref Unsafe.AsRef(in left));
-				var v2 = Unsafe.As<Int512, Vector512<ulong>>(ref Unsafe.AsRef(in right));
+				var v1 = Unsafe.BitCast<Int512, Vector512<ulong>>(left);
+				var v2 = Unsafe.BitCast<Int512, Vector512<ulong>>(right);
 				var result = v1 | v2;
-				return Unsafe.As<Vector512<ulong>, Int512>(ref result);
+				return Unsafe.BitCast<Vector512<ulong>, Int512>(result);
 			}
 			else
 			{
@@ -1284,10 +1320,10 @@ namespace MissingValues
 		{
 			if (Vector512.IsHardwareAccelerated)
 			{
-				var v1 = Unsafe.As<Int512, Vector512<ulong>>(ref Unsafe.AsRef(in left));
-				var v2 = Unsafe.As<Int512, Vector512<ulong>>(ref Unsafe.AsRef(in right));
+				var v1 = Unsafe.BitCast<Int512, Vector512<ulong>>(left);
+				var v2 = Unsafe.BitCast<Int512, Vector512<ulong>>(right);
 				var result = v1 ^ v2;
-				return Unsafe.As<Vector512<ulong>, Int512>(ref result);
+				return Unsafe.BitCast<Vector512<ulong>, Int512>(result);
 			}
 			else
 			{

@@ -127,25 +127,25 @@ namespace MissingValues
 		/// <returns>The high 256-bit of the product of the specified numbers.</returns>
 		public static UInt256 BigMul(UInt256 left, UInt256 right, out UInt256 lower)
 		{
-			const int UIntCount = Size / sizeof(uint);
+			const int UIntCount = Size / sizeof(ulong);
 
-			Span<uint> leftSpan = stackalloc uint[UIntCount];
+			Span<ulong> leftSpan = stackalloc ulong[UIntCount];
 			leftSpan.Clear();
-			Unsafe.WriteUnaligned(ref Unsafe.As<uint, byte>(ref MemoryMarshal.GetReference(leftSpan)), left);
-			Span<uint> rightSpan = stackalloc uint[UIntCount];
+			Unsafe.WriteUnaligned(ref Unsafe.As<ulong, byte>(ref MemoryMarshal.GetReference(leftSpan)), left);
+			Span<ulong> rightSpan = stackalloc ulong[UIntCount];
 			rightSpan.Clear();
-			Unsafe.WriteUnaligned(ref Unsafe.As<uint, byte>(ref MemoryMarshal.GetReference(rightSpan)), right);
+			Unsafe.WriteUnaligned(ref Unsafe.As<ulong, byte>(ref MemoryMarshal.GetReference(rightSpan)), right);
 
-			Span<uint> rawBits = stackalloc uint[UIntCount * 2];
+			Span<ulong> rawBits = stackalloc ulong[UIntCount * 2];
 			rawBits.Clear();
 
 			Calculator.Multiply(
-				leftSpan[..(UIntCount - (BitHelper.LeadingZeroCount(in left) / 32))], 
-				rightSpan[..(UIntCount - (BitHelper.LeadingZeroCount(in right) / 32))], 
+				leftSpan[..(UIntCount - (BitHelper.LeadingZeroCount(in left) / 64))], 
+				rightSpan[..(UIntCount - (BitHelper.LeadingZeroCount(in right) / 64))], 
 				rawBits);
 
-			lower = Unsafe.ReadUnaligned<UInt256>(ref Unsafe.As<uint, byte>(ref MemoryMarshal.GetReference(rawBits)));
-			return Unsafe.ReadUnaligned<UInt256>(ref Unsafe.As<uint, byte>(ref Unsafe.Add(ref MemoryMarshal.GetReference(rawBits), UIntCount)));
+			lower = Unsafe.ReadUnaligned<UInt256>(ref Unsafe.As<ulong, byte>(ref MemoryMarshal.GetReference(rawBits)));
+			return Unsafe.ReadUnaligned<UInt256>(ref Unsafe.As<ulong, byte>(ref Unsafe.Add(ref MemoryMarshal.GetReference(rawBits), UIntCount)));
 		}
 
 		/// <summary>
@@ -490,7 +490,7 @@ namespace MissingValues
 		/// Explicitly converts a <see cref="UInt256" /> value to a <see cref="Int256"/>.
 		/// </summary>
 		/// <param name="value">The value to convert.</param>
-		public static explicit operator Int256(in UInt256 value) => new(value._p3, value._p2, value._p1, value._p0);
+		public static explicit operator Int256(in UInt256 value) => Unsafe.BitCast<UInt256, Int256>(value);
 		/// <summary>
 		/// Explicitly converts a <see cref="UInt256" /> value to a <see cref="Int256"/>.
 		/// </summary>
@@ -502,7 +502,7 @@ namespace MissingValues
 			{
 				Thrower.IntegerOverflow();
 			}
-			return new(value._p3, value._p2, value._p1, value._p0);
+			return Unsafe.BitCast<UInt256, Int256>(value);
 		}
 		/// <summary>
 		/// Explicitly converts a <see cref="UInt256" /> value to a <see cref="Int512"/>.
@@ -599,7 +599,7 @@ namespace MissingValues
 			{
 				return value._p1 != 0 ? (Quad)value.Lower : (Quad)value._p0;
 			}
-			else if ((value.Upper >> 32) == UInt128.Zero) // value < (2^224)
+			else if ((value.Part3 == 0) && ((value.Part2 >> 32) == UInt128.Zero)) // value < (2^224)
 			{
 				// For values greater than MaxValue but less than 2^224 this takes advantage
 				// that we can represent both "halves" of the uint256 within the 112-bit mantissa of
@@ -627,7 +627,7 @@ namespace MissingValues
 				UInt128 twoPow144bits = Quad.QuadToUInt128Bits(twoPow144);
 				UInt128 twoPow256bits = Quad.QuadToUInt128Bits(twoPow256);
 
-				Quad lower = Quad.UInt128BitsToQuad(twoPow144bits | ((UInt128)(value >> 16) >> 16) | (value.Lower & 0xFFFF_FFFF)) - twoPow144;
+				Quad lower = Quad.UInt128BitsToQuad(twoPow144bits | ((UInt128)(value >> 16) >> 16) | (value.Part0 & 0xFFFF_FFFF)) - twoPow144;
 				Quad upper = Quad.UInt128BitsToQuad(twoPow256bits | (UInt128)(value >> 144)) - twoPow256;
 
 				return lower + upper;
@@ -651,7 +651,7 @@ namespace MissingValues
 			}
 
 
-			double lower = BitConverter.UInt64BitsToDouble(TwoPow204bits | ((ulong)(value.Lower >> 12) >> 12) | ((ulong)(value.Lower) & 0xFFFFFF)) - TwoPow204;
+			double lower = BitConverter.UInt64BitsToDouble(TwoPow204bits | ((ulong)(value.Lower >> 12) >> 12) | (value.Part0 & 0xFFFFFF)) - TwoPow204;
 			double upper = BitConverter.UInt64BitsToDouble(TwoPow256bits | (ulong)(value >> 204)) - TwoPow256;
 
 			return lower + upper;
@@ -1033,17 +1033,6 @@ namespace MissingValues
 			{
 				return MinValue;
 			}
-		}
-
-		internal void GetLowerParts(out ulong p1, out ulong p0)
-		{
-			p1 = _p1;
-			p0 = _p0;
-		}
-		internal void GetUpperParts(out ulong p3, out ulong p2)
-		{
-			p3 = _p3;
-			p2 = _p2;
 		}
 	}
 }

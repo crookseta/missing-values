@@ -1,5 +1,6 @@
 ﻿using MissingValues.Internals;
 using System.Diagnostics;
+using System.Drawing;
 using System.Globalization;
 using System.Numerics;
 using System.Runtime.CompilerServices;
@@ -7,14 +8,9 @@ using System.Runtime.InteropServices;
 
 namespace MissingValues.Info;
 
-internal interface IFormattableInteger<TSelf> : IFormattableNumber<TSelf>, IBigInteger<TSelf>
+internal interface IFormattableInteger<TSelf> : IFormattableNumber<TSelf>, IBigInteger<TSelf>, IMinMaxValue<TSelf>
 		where TSelf : IFormattableInteger<TSelf>?
 {
-	/// <summary>
-	/// Converts a <typeparamref name="TSelf"/> to a <see cref="char"/>.
-	/// </summary>
-	/// <returns></returns>
-	char ToChar();
 	/// <summary>
 	/// Converts a <typeparamref name="TSelf"/> to a <see cref="int"/>.
 	/// </summary>
@@ -29,6 +25,10 @@ internal interface IFormattableInteger<TSelf> : IFormattableNumber<TSelf>, IBigI
 	abstract static TSelf GetHexValue(char value);
 
 	abstract static int UnsignedCompare(in TSelf value1, in TSelf value2);
+
+	abstract static int Log2Int32(in TSelf value);
+
+	abstract static int LeadingZeroCountInt32(in TSelf value);
 
 	static bool IFormattableNumber<TSelf>.IsBinaryInteger() => true;
 
@@ -71,6 +71,11 @@ internal interface IFormattableInteger<TSelf> : IFormattableNumber<TSelf>, IBigI
 	/// </summary>
 	abstract static TSelf TenPow3 { get; }
 
+	virtual static TSelf E19 
+	{
+		get => TSelf.CreateTruncating(10000000000000000000UL);
+	} 
+
 	/// <summary>
 	/// Gets the left-most digit of the maximum value of <typeparamref name="TSelf"/>.
 	/// </summary>
@@ -90,34 +95,23 @@ internal interface IFormattableInteger<TSelf> : IFormattableNumber<TSelf>, IBigI
 	abstract static bool IsUnsignedInteger { get; }
 }
 
-internal interface IFormattableSignedInteger<TSigned, TUnsigned> : IFormattableInteger<TSigned>, ISignedNumber<TSigned>
-	where TSigned : IFormattableSignedInteger<TSigned, TUnsigned>
-	where TUnsigned : IUnsignedNumber<TUnsigned>, IFormattableInteger<TUnsigned>
+internal interface IFormattableSignedInteger<TSigned> : IFormattableInteger<TSigned>, ISignedNumber<TSigned>
+	where TSigned : IFormattableSignedInteger<TSigned>
 {
-	/// <summary>
-	/// Returns the unsigned representation of the signed integer.
-	/// </summary>
-	/// <returns>The unsigned representation of the signed integer.</returns>
-	TUnsigned ToUnsigned();
-
 	static bool IFormattableInteger<TSigned>.IsUnsignedInteger => false;
 }
 
-internal interface IFormattableUnsignedInteger<TUnsigned, TSigned> : IFormattableInteger<TUnsigned>, IUnsignedNumber<TUnsigned>
-	where TUnsigned : IFormattableUnsignedInteger<TUnsigned, TSigned>
-	where TSigned : IFormattableInteger<TSigned>
+internal interface IFormattableUnsignedInteger<TUnsigned> : IFormattableInteger<TUnsigned>, IUnsignedNumber<TUnsigned>
+	where TUnsigned : IFormattableUnsignedInteger<TUnsigned>
 {
 	/// <summary>
 	/// Gets the absolute representation of the maximum representable value of <typeparamref name="TSigned"/>(Abs(TSigned.MinValue)).
 	/// </summary>
 	abstract static TUnsigned SignedMaxMagnitude { get; }
 
-	/// <summary>
-	/// Returns the signed representation of the unsigned integer.
-	/// </summary>
-	/// <returns>The signed representation of the unsigned integer.</returns>
-	TSigned ToSigned();
 	static abstract int CountDigits(in TUnsigned value);
+
+	static abstract void ToDecChars<TChar>(in TUnsigned number, Span<TChar> destination, int digits) where TChar : unmanaged, IUtfCharacter<TChar>;
 
 	static bool IFormattableInteger<TUnsigned>.IsUnsignedInteger => true;
 }
@@ -209,15 +203,15 @@ internal static partial class NumberFormatter
 	internal static int CountHexDigits<T>(in T value)
 		where T : struct, IFormattableInteger<T>
 	{
-		return (T.Log2(value) >> 2).ToInt32() + 1;
+		return (T.Log2Int32(in value) >>> 2) + 1;
 	}
 	internal static int CountBinDigits<T>(in T value)
 		where T : struct, IFormattableInteger<T>
 	{
-		return T.MaxBinaryDigits - T.LeadingZeroCount(value).ToInt32();
+		return T.MaxBinaryDigits - T.LeadingZeroCountInt32(in value);
 	}
 
-	private static ref TChar UInt64ToDecChars<TChar>(ulong value, ref TChar bufferEnd)
+	private static ref TChar UInt32ToDecChars<TChar>(uint value, ref TChar bufferEnd)
 		where TChar : unmanaged, IUtfCharacter<TChar>
 	{
 		// Borrowed from https://github.com/dotnet/runtime/blob/main/src/libraries/System.Private.CoreLib/src/System/Number.Formatting.cs
@@ -227,15 +221,15 @@ internal static partial class NumberFormatter
 			while (value >= 100)
 			{
 				bufferEnd = ref Unsafe.Subtract(ref bufferEnd, 2);
-				(value, ulong remainder) = Math.DivRem(value, 100);
-				WriteTwoDigits((uint)remainder, ref bufferEnd);
+				(value, uint remainder) = Math.DivRem(value, 100);
+				WriteTwoDigits(remainder, ref bufferEnd);
 			}
 
 			// If there are two digits remaining, store them.
 			if (value >= 10)
 			{
 				bufferEnd = ref Unsafe.Subtract(ref bufferEnd, 2);
-				WriteTwoDigits((uint)value, ref bufferEnd);
+				WriteTwoDigits(value, ref bufferEnd);
 				return ref bufferEnd;
 			}
 		}
@@ -244,17 +238,17 @@ internal static partial class NumberFormatter
 		bufferEnd = (TChar)(value + '0');
 		return ref bufferEnd;
 	}
-	private static ref TChar UInt64ToDecChars<TChar>(ulong value, ref TChar bufferEnd, int digits)
+	private static ref TChar UInt32ToDecChars<TChar>(uint value, ref TChar bufferEnd, int digits)
 		where TChar : unmanaged, IUtfCharacter<TChar>
 	{
 		// Borrowed from https://github.com/dotnet/runtime/blob/main/src/libraries/System.Private.CoreLib/src/System/Number.Formatting.cs
-		ulong remainder;
+		uint remainder;
 		while (value >= 100)
 		{
 			bufferEnd = ref Unsafe.Subtract(ref bufferEnd, 2);
 			digits -= 2;
 			(value, remainder) = Math.DivRem(value, 100);
-			WriteTwoDigits((uint)remainder, ref bufferEnd);
+			WriteTwoDigits(remainder, ref bufferEnd);
 		}
 		while (value != 0 || digits > 0)
 		{
@@ -266,6 +260,7 @@ internal static partial class NumberFormatter
 
 		return ref bufferEnd;
 	}
+
 	private static unsafe void WriteTwoDigits<TChar>(uint value, ref TChar ptr)
 		where TChar : unmanaged, IUtfCharacter<TChar>
 	{
@@ -275,111 +270,74 @@ internal static partial class NumberFormatter
 			(uint)sizeof(TChar) * 2
 			);
 	}
+
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	private static ulong UInt256DivMod1E19(ref UInt256 value)
+	private static uint UInt256DivMod1E9(ref UInt256 value)
 	{
-		UInt256 divisor = new UInt256(0, 0, 0, 10_000_000_000_000_000_000);
-		UInt256.DivRem(value, in divisor, out value, out UInt256 remainder);
-		return remainder.Part0;
+		Calculator.DivRem(value, 1_000_000_000U, out value, out uint remainder);
+		return remainder;
 	}
 	private static void UInt256ToDecChars<TChar>(UInt256 value, Span<TChar> destination)
 		where TChar : unmanaged, IUtfCharacter<TChar>
 	{
 		ref TChar bufferEnd = ref Unsafe.Add(ref MemoryMarshal.GetReference(destination), UInt256.CountDigits(in value));
 
-		while (value.Part3 != 0 || value.Part2 != 0 || value.Part1 != 0)
+		while (value.Part3 != 0 || value.Part2 != 0 || value.Part1 != 0 || value.Part0 > uint.MaxValue)
 		{
-			bufferEnd = ref UInt64ToDecChars(UInt256DivMod1E19(ref value), ref bufferEnd, 19);
+			bufferEnd = ref UInt32ToDecChars(UInt256DivMod1E9(ref value), ref bufferEnd, 9);
 		}
-		UInt64ToDecChars(value.Part0, ref bufferEnd);
+		UInt32ToDecChars((uint)value.Part0, ref bufferEnd);
 	}
-	private static void UInt256ToDecChars<TChar>(UInt256 value, Span<TChar> destination, int digits)
+	internal static void UInt256ToDecChars<TChar>(UInt256 value, Span<TChar> destination, int digits)
 		where TChar : unmanaged, IUtfCharacter<TChar>
 	{
 		ref TChar bufferEnd = ref Unsafe.Add(ref MemoryMarshal.GetReference(destination), digits);
 
-		while (value.Part3 != 0 || value.Part2 != 0 || value.Part1 != 0)
+		while (value.Part3 != 0 || value.Part2 != 0 || value.Part1 != 0 || value.Part0 > uint.MaxValue)
 		{
-			bufferEnd = ref UInt64ToDecChars(UInt256DivMod1E19(ref value), ref bufferEnd, 19);
-			digits -= 19;
+			bufferEnd = ref UInt32ToDecChars(UInt256DivMod1E9(ref value), ref bufferEnd, 9);
+			digits -= 9;
 		}
-		UInt64ToDecChars(value.Part0, ref bufferEnd, digits);
+		UInt32ToDecChars((uint)value.Part0, ref bufferEnd, digits);
 	}
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	private static ulong UInt512DivMod1E19(ref UInt512 value)
+	private static uint UInt512DivMod1E9(ref UInt512 value)
 	{
-		UInt512 divisor = new UInt512(0, 0, 0, 0, 0, 0, 0, 10_000_000_000_000_000_000);
-		UInt512.DivRem(value, in divisor, out value, out UInt512 remainder);
-		return remainder.Part0;
+		Calculator.DivRem(value, 1_000_000_000U, out value, out uint remainder);
+		return remainder;
 	}
 	private static void UInt512ToDecChars<TChar>(UInt512 value, Span<TChar> destination)
 		where TChar : unmanaged, IUtfCharacter<TChar>
 	{
 		ref TChar bufferEnd = ref Unsafe.Add(ref MemoryMarshal.GetReference(destination), UInt512.CountDigits(in value));
 
-		while (value.Part7 != 0 || value.Part6 != 0 || value.Part5 != 0 || value.Part4 != 0 || value.Part3 != 0 || value.Part2 != 0 || value.Part1 != 0)
+		while (value.Part7 != 0 || value.Part6 != 0 || value.Part5 != 0 || value.Part4 != 0 || value.Part3 != 0 || value.Part2 != 0 || value.Part1 != 0 || value.Part0 > uint.MaxValue)
 		{
-			bufferEnd = ref UInt64ToDecChars(UInt512DivMod1E19(ref value), ref bufferEnd, 19);
+			bufferEnd = ref UInt32ToDecChars(UInt512DivMod1E9(ref value), ref bufferEnd, 9);
 		}
-		UInt64ToDecChars(value.Part0, ref bufferEnd);
+		UInt32ToDecChars((uint)value.Part0, ref bufferEnd);
 	}
-	private static void UInt512ToDecChars<TChar>(UInt512 value, Span<TChar> destination, int digits)
+	internal static void UInt512ToDecChars<TChar>(UInt512 value, Span<TChar> destination, int digits)
 		where TChar : unmanaged, IUtfCharacter<TChar>
 	{
 		ref TChar bufferEnd = ref Unsafe.Add(ref MemoryMarshal.GetReference(destination), digits);
 
-		while (value.Part7 != 0 || value.Part6 != 0 || value.Part5 != 0 || value.Part4 != 0 || value.Part3 != 0 || value.Part2 != 0 || value.Part1 != 0)
+		while (value.Part7 != 0 || value.Part6 != 0 || value.Part5 != 0 || value.Part4 != 0 || value.Part3 != 0 || value.Part2 != 0 || value.Part1 != 0 || value.Part0 > uint.MaxValue)
 		{
-			bufferEnd = ref UInt64ToDecChars(UInt512DivMod1E19(ref value), ref bufferEnd, 19);
-			digits -= 19;
+			bufferEnd = ref UInt32ToDecChars(UInt512DivMod1E9(ref value), ref bufferEnd, 9);
+			digits -= 9;
 		}
-		UInt64ToDecChars(value.Part0, ref bufferEnd, digits);
-	}
-	internal static unsafe void UnsignedIntegerToDecChars<T, TChar>(T value, Span<TChar> destination, int digits)
-		where T : struct, IFormattableInteger<T>
-		where TChar : unmanaged, IUtfCharacter<TChar>
-	{
-		fixed(TChar* ptr = &MemoryMarshal.GetReference(destination))
-		{
-			TChar* bufferEnd = ptr + int.Min(digits, destination.Length);
-			if (value >= T.Ten)
-			{
-				T remainder;
-				T tenPow2 = T.TenPow2;
-				while (value >= tenPow2)
-				{
-					bufferEnd -= 2;
-					digits -= 2;
-					(value, remainder) = T.DivRem(value, tenPow2);
-					WriteTwoDigits(in remainder, bufferEnd);
-				}
-				if (value >= T.Ten)
-				{
-					bufferEnd -= 2;
-					WriteTwoDigits(in value, bufferEnd);
-					return;
-				}
-			}
-
-			*(--bufferEnd) = (TChar)(char)(value.ToChar() + '0');
-		}
-
-		static void WriteTwoDigits(in T value, TChar* ptr)
-		{
-			Unsafe.CopyBlockUnaligned(
-				ref *(byte*)ptr,
-				ref Unsafe.Add(ref MemoryMarshal.GetReference(TChar.TwoDigitsAsBytes), sizeof(TChar) * 2 * value.ToInt32()),
-				(uint)sizeof(TChar) * 2
-				);
-		}
+		UInt32ToDecChars((uint)value.Part0, ref bufferEnd, digits);
 	}
 	public static unsafe void UnsignedIntegerToHexChars<T, TChar>(in T value, char isUpper, Span<TChar> destination, int digits)
-		where T : struct, IFormattableInteger<T>
+		where T : unmanaged, IFormattableUnsignedInteger<T>
 		where TChar : unmanaged, IUtfCharacter<TChar>
 	{
 		destination[..digits].Fill((TChar)'0');
 		int hexBase = (isUpper - ('X' - 'A' + 10));
-		var value64 = MemoryMarshal.CreateReadOnlySpan(ref Unsafe.As<T, ulong>(ref Unsafe.AsRef(in value)), sizeof(T) /  sizeof(ulong));
+		Span<ulong> value64 = stackalloc ulong[sizeof(T) / sizeof(ulong)];
+		Unsafe.WriteUnaligned(ref Unsafe.As<ulong, byte>(ref MemoryMarshal.GetReference(value64)), value);
+		value64 = value64[..(value64.Length - (T.LeadingZeroCountInt32(in value) / 64))];
 
 		fixed (TChar* ptr = &MemoryMarshal.GetReference(destination))
 		{
@@ -405,10 +363,13 @@ internal static partial class NumberFormatter
 		}
 	}
 	public static unsafe void UnsignedIntegerToBinChars<T, TChar>(in T value, Span<TChar> destination, int digits)
-		where T : struct, IFormattableInteger<T>
+		where T : unmanaged, IFormattableUnsignedInteger<T>
 		where TChar : unmanaged, IUtfCharacter<TChar>
 	{
-		var value64 = MemoryMarshal.CreateReadOnlySpan(ref Unsafe.As<T, ulong>(ref Unsafe.AsRef(in value)), sizeof(T) /  sizeof(ulong));
+		destination[..digits].Fill((TChar)'0');
+		Span<ulong> value64 = stackalloc ulong[sizeof(T) / sizeof(ulong)];
+		Unsafe.WriteUnaligned(ref Unsafe.As<ulong, byte>(ref MemoryMarshal.GetReference(value64)), value);
+		value64 = value64[..(value64.Length - (T.LeadingZeroCountInt32(in value) / 64))];
 
 		fixed (TChar* ptr = &MemoryMarshal.GetReference(destination))
 		{
@@ -432,37 +393,39 @@ internal static partial class NumberFormatter
 		}
 	}
 	
-	public static string FormatInt256(in Int256 value, string? format, IFormatProvider? provider)
+	public static string FormatInt<TSigned, TUnsigned>(in TSigned value, string? format, IFormatProvider? provider)
+		where TSigned : unmanaged, IFormattableSignedInteger<TSigned>
+		where TUnsigned : unmanaged, IFormattableUnsignedInteger<TUnsigned>
 	{
 		if (string.IsNullOrEmpty(format))
 		{
-			if (value >= Int256.Zero)
+			if (value >= TSigned.Zero)
 			{
-				UInt256 ui = (UInt256)value;
-				return string.Create(UInt256.CountDigits(in ui), ui, (destination, number) =>
+				TUnsigned ui = TUnsigned.CreateTruncating(value);
+				return string.Create(TUnsigned.CountDigits(in ui), ui, (destination, number) =>
 				{
-					UInt256ToDecChars(number, Utf16Char.CastFromCharSpan(destination), destination.Length);
+					TUnsigned.ToDecChars(number, Utf16Char.CastFromCharSpan(destination), destination.Length);
 				});
 			}
 			else
 			{
-				Int256 abs = -value;
-				UInt256 ui = abs >= Int256.Zero ? (UInt256)abs : new UInt256(0x8000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
-				return NumberFormatInfo.GetInstance(provider).NegativeSign + string.Create(UInt256.CountDigits(in ui), ui, (destination, number) =>
+				TSigned abs = -value;
+				TUnsigned ui = abs >= TSigned.Zero ? TUnsigned.CreateTruncating(abs) : TUnsigned.SignedMaxMagnitude;
+				return NumberFormatInfo.GetInstance(provider).NegativeSign + string.Create(TUnsigned.CountDigits(in ui), ui, (destination, number) =>
 				{
-					UInt256ToDecChars(number, Utf16Char.CastFromCharSpan(destination), destination.Length);
+					TUnsigned.ToDecChars(number, Utf16Char.CastFromCharSpan(destination), destination.Length);
 				});
 			}
 		}
 
 		ReadOnlySpan<char> formatSpan = format;
 		char fmt = GetFormat(formatSpan, out int precision);
-		UInt256 u;
+		TUnsigned u;
 		switch (fmt)
 		{
 			case 'b':
 			case 'B':
-				u = unchecked((UInt256)value);
+				u = Unsafe.BitCast<TSigned, TUnsigned>(value);
 				precision = int.Max(precision, CountBinDigits(in u));
 				return string.Create(precision, u, (destination, number) =>
 				{
@@ -470,7 +433,7 @@ internal static partial class NumberFormatter
 				});
 			case 'x':
 			case 'X':
-				u = unchecked((UInt256)value);
+				u = Unsafe.BitCast<TSigned, TUnsigned>(value);
 				precision = int.Max(precision, CountHexDigits(in u));
 				return string.Create(precision, (u, fmt), (destination, number) =>
 				{
@@ -480,33 +443,35 @@ internal static partial class NumberFormatter
 			case 'D':
 			case 'g':
 			case 'G':
-				bool isNegative = value < Int256.Zero;
+				bool isNegative = value < TSigned.Zero;
 				if (!isNegative)
 				{
-					u = (UInt256)value;
+					u = TUnsigned.CreateTruncating(value);
 				}
 				else
 				{
-					Int256 abs = -value;
-					u = abs >= Int256.Zero ? unchecked((UInt256)abs): new UInt256(0x8000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
+					TSigned abs = -value;
+					u = abs >= TSigned.Zero ? TUnsigned.CreateTruncating(abs) : TUnsigned.SignedMaxMagnitude;
 				}
-				precision = int.Max(precision, UInt256.CountDigits(in u));
+				precision = int.Max(precision, TUnsigned.CountDigits(in u));
 				if (isNegative)
 				{
 					return NumberFormatInfo.GetInstance(provider).NegativeSign + string.Create(precision, u, (destination, number) =>
 					{
-						UInt256ToDecChars(number, Utf16Char.CastFromCharSpan(destination), destination.Length);
+						TUnsigned.ToDecChars(number, Utf16Char.CastFromCharSpan(destination), destination.Length);
 					});
 				}
 				return string.Create(precision, u, (destination, number) =>
 				{
-					UInt256ToDecChars(number, Utf16Char.CastFromCharSpan(destination), destination.Length);
+					TUnsigned.ToDecChars(number, Utf16Char.CastFromCharSpan(destination), destination.Length);
 				});
 			default:
 				return FormatNumber(in value, format!, NumberFormatInfo.GetInstance(provider));
 		}
 	}
-	public static bool TryFormatInt256<TChar>(in Int256 value, Span<TChar> destination, out int charsWritten, ReadOnlySpan<char> format, IFormatProvider? provider)
+	public static bool TryFormatInt<TSigned, TUnsigned, TChar>(in TSigned value, Span<TChar> destination, out int charsWritten, ReadOnlySpan<char> format, IFormatProvider? provider)
+		where TSigned : unmanaged, IFormattableSignedInteger<TSigned>
+		where TUnsigned : unmanaged, IFormattableUnsignedInteger<TUnsigned>
 		where TChar : unmanaged, IUtfCharacter<TChar>
 	{
 		int digits;
@@ -515,16 +480,16 @@ internal static partial class NumberFormatter
 
 		if (format.IsEmpty)
 		{
-			if (value >= Int256.Zero)
+			if (value >= TSigned.Zero)
 			{
-				UInt256 ui = (UInt256)value;
-				charsWritten = UInt256.CountDigits(in ui);
+				TUnsigned ui = TUnsigned.CreateTruncating(value);
+				charsWritten = TUnsigned.CountDigits(in ui);
 				if (destination.Length < charsWritten)
 				{
 					charsWritten = 0;
 					return false;
 				}
-				UInt256ToDecChars(ui, destination, charsWritten);
+				TUnsigned.ToDecChars(ui, destination, charsWritten);
 				return true;
 			}
 			else
@@ -533,9 +498,9 @@ internal static partial class NumberFormatter
 				negativeSign = stackalloc TChar[TChar.GetLength(info.NegativeSign)];
 				TChar.Copy(info.NegativeSign, negativeSign);
 
-				Int256 abs = -value;
-				UInt256 ui = abs >= Int256.Zero ? (UInt256)abs : new UInt256(0x8000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
-				digits = UInt256.CountDigits(in ui);
+				TSigned abs = -value;
+				TUnsigned ui = abs >= TSigned.Zero ? TUnsigned.CreateTruncating(abs) : TUnsigned.SignedMaxMagnitude;
+				digits = TUnsigned.CountDigits(in ui);
 				charsWritten = digits + negativeSign.Length;
 				if (destination.Length < charsWritten)
 				{
@@ -543,18 +508,18 @@ internal static partial class NumberFormatter
 					return false;
 				}
 				negativeSign.CopyTo(destination);
-				UInt256ToDecChars(ui, destination[negativeSign.Length..], digits);
+				TUnsigned.ToDecChars(ui, destination[negativeSign.Length..], digits);
 				return true;
 			}
 		}
 
 		char fmt = GetFormat(format, out int precision);
-		UInt256 u;
+		TUnsigned u;
 		switch (fmt)
 		{
 			case 'b':
 			case 'B':
-				u = unchecked((UInt256)value);
+				u = Unsafe.BitCast<TSigned, TUnsigned>(value);
 				charsWritten = int.Max(precision, CountBinDigits(in u));
 				if (destination.Length < charsWritten)
 				{
@@ -565,7 +530,7 @@ internal static partial class NumberFormatter
 				return true;
 			case 'x':
 			case 'X':
-				u = unchecked((UInt256)value);
+				u = Unsafe.BitCast<TSigned, TUnsigned>(value);
 				charsWritten = int.Max(precision, CountHexDigits(in u));
 				if (destination.Length < charsWritten)
 				{
@@ -578,17 +543,18 @@ internal static partial class NumberFormatter
 			case 'D':
 			case 'g':
 			case 'G':
-				bool isNegative = value < Int256.Zero;
+				bool isNegative = value < TSigned.Zero;
 				if (!isNegative)
 				{
-					u = (UInt256)value;
+					u = TUnsigned.CreateTruncating(value);
 				}
 				else
 				{
-					Int256 abs = -value;
-					u = abs >= Int256.Zero ? unchecked((UInt256)abs): new UInt256(0x8000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
+					TSigned abs = -value;
+					u = abs >= TSigned.Zero ? TUnsigned.CreateTruncating(abs)
+						: TUnsigned.SignedMaxMagnitude;
 				}
-				precision = int.Max(precision, UInt256.CountDigits(in u));
+				precision = int.Max(precision, TUnsigned.CountDigits(in u));
 				if (isNegative)
 				{
 					info = NumberFormatInfo.GetInstance(provider);
@@ -602,23 +568,24 @@ internal static partial class NumberFormatter
 						return false;
 					}
 					negativeSign.CopyTo(destination);
-					UInt256ToDecChars(u, destination[negativeSign.Length..], precision);
+					TUnsigned.ToDecChars(u, destination[negativeSign.Length..], precision);
 					return true;
 				}
 				charsWritten = precision;
-				UInt256ToDecChars(u, destination, precision);
+				TUnsigned.ToDecChars(u, destination, precision);
 				return true;
 			default:
-				return TryFormatNumber(in value, destination, out charsWritten, format!, NumberFormatInfo.GetInstance(provider));
+				return TryFormatNumber(in value, destination, out charsWritten, format, NumberFormatInfo.GetInstance(provider));
 		}
 	}
-	public static string FormatUInt256(in UInt256 value, string? format, IFormatProvider? provider)
+	public static string FormatUInt<TUnsigned>(in TUnsigned value, string? format, IFormatProvider? provider)
+		where TUnsigned : unmanaged, IFormattableUnsignedInteger<TUnsigned>
 	{
 		if (string.IsNullOrEmpty(format))
 		{
-			return string.Create(UInt256.CountDigits(in value), value, (destination, number) =>
+			return string.Create(TUnsigned.CountDigits(in value), value, (destination, number) =>
 			{
-				UInt256ToDecChars(number, Utf16Char.CastFromCharSpan(destination), destination.Length);
+				TUnsigned.ToDecChars(number, Utf16Char.CastFromCharSpan(destination), destination.Length);
 			});
 		}
 
@@ -644,21 +611,22 @@ internal static partial class NumberFormatter
 			case 'D':
 			case 'g':
 			case 'G':
-				precision = int.Max(precision, UInt256.CountDigits(in value));
+				precision = int.Max(precision, TUnsigned.CountDigits(in value));
 				return string.Create(precision, value, (destination, number) =>
 				{
-					UInt256ToDecChars(number, Utf16Char.CastFromCharSpan(destination), destination.Length);
+					TUnsigned.ToDecChars(number, Utf16Char.CastFromCharSpan(destination), destination.Length);
 				});
 			default:
 				return FormatNumber(in value, format!, NumberFormatInfo.GetInstance(provider));
 		}
 	}
-	public static bool TryFormatUInt256<TChar>(in UInt256 value, Span<TChar> destination, out int charsWritten, ReadOnlySpan<char> format, IFormatProvider? provider)
+	public static bool TryFormatUInt<TUnsigned, TChar>(in TUnsigned value, Span<TChar> destination, out int charsWritten, ReadOnlySpan<char> format, IFormatProvider? provider)
+		where TUnsigned : unmanaged, IFormattableUnsignedInteger<TUnsigned>
 		where TChar : unmanaged, IUtfCharacter<TChar>
 	{
 		if (format.IsEmpty)
 		{
-			charsWritten = UInt256.CountDigits(in value);
+			charsWritten = TUnsigned.CountDigits(in value);
 
 			if (destination.Length < charsWritten)
 			{
@@ -666,7 +634,7 @@ internal static partial class NumberFormatter
 				return false;
 			}
 
-			UInt256ToDecChars(value, destination, charsWritten);
+			TUnsigned.ToDecChars(value, destination, charsWritten);
 			return true;
 		}
 
@@ -701,7 +669,7 @@ internal static partial class NumberFormatter
 			case 'D':
 			case 'g':
 			case 'G':
-				charsWritten = int.Max(precision, UInt256.CountDigits(in value));
+				charsWritten = int.Max(precision, TUnsigned.CountDigits(in value));
 
 				if (destination.Length < charsWritten)
 				{
@@ -709,294 +677,7 @@ internal static partial class NumberFormatter
 					return false;
 				}
 
-				UInt256ToDecChars(value, destination, charsWritten);
-				return true;
-			default:
-				return TryFormatNumber(in value, destination, out charsWritten, format, NumberFormatInfo.GetInstance(provider));
-		}
-	}
-	public static string FormatInt512(in Int512 value, string? format, IFormatProvider? provider)
-	{
-		if (string.IsNullOrEmpty(format))
-		{
-			if (value >= Int512.Zero)
-			{
-				UInt512 ui = (UInt512)value;
-				return string.Create(UInt512.CountDigits(in ui), ui, (destination, number) =>
-				{
-					UInt512ToDecChars(number, Utf16Char.CastFromCharSpan(destination), destination.Length);
-				});
-			}
-			else
-			{
-				Int512 abs = -value;
-				UInt512 ui = abs >= Int512.Zero ? (UInt512)abs 
-					: new UInt512(0x8000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
-				return NumberFormatInfo.GetInstance(provider).NegativeSign + string.Create(UInt512.CountDigits(in ui), ui, (destination, number) =>
-				{
-					UInt512ToDecChars(number, Utf16Char.CastFromCharSpan(destination), destination.Length);
-				});
-			}
-		}
-
-		ReadOnlySpan<char> formatSpan = format;
-		char fmt = GetFormat(formatSpan, out int precision);
-		UInt512 u;
-		switch (fmt)
-		{
-			case 'b':
-			case 'B':
-				u = unchecked((UInt512)value);
-				precision = int.Max(precision, CountBinDigits(in u));
-				return string.Create(precision, u, (destination, number) =>
-				{
-					UnsignedIntegerToBinChars(in number, Utf16Char.CastFromCharSpan(destination), destination.Length);
-				});
-			case 'x':
-			case 'X':
-				u = unchecked((UInt512)value);
-				precision = int.Max(precision, CountHexDigits(in u));
-				return string.Create(precision, (u, fmt), (destination, number) =>
-				{
-					UnsignedIntegerToHexChars(in number.u, number.fmt, Utf16Char.CastFromCharSpan(destination), destination.Length);
-				});
-			case 'd':
-			case 'D':
-			case 'g':
-			case 'G':
-				bool isNegative = value < Int512.Zero;
-				if (!isNegative)
-				{
-					u = (UInt512)value;
-				}
-				else
-				{
-					Int512 abs = -value;
-					u = abs >= Int512.Zero ? unchecked((UInt512)abs)
-						: new UInt512(0x8000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
-				}
-				precision = int.Max(precision, UInt512.CountDigits(in u));
-				if (isNegative)
-				{
-					return NumberFormatInfo.GetInstance(provider).NegativeSign + string.Create(precision, u, (destination, number) =>
-					{
-						UInt512ToDecChars(number, Utf16Char.CastFromCharSpan(destination), destination.Length);
-					});
-				}
-				return string.Create(precision, u, (destination, number) =>
-				{
-					UInt512ToDecChars(number, Utf16Char.CastFromCharSpan(destination), destination.Length);
-				});
-			default:
-				return FormatNumber(in value, format!, NumberFormatInfo.GetInstance(provider));
-		}
-	}
-	public static bool TryFormatInt512<TChar>(in Int512 value, Span<TChar> destination, out int charsWritten, ReadOnlySpan<char> format, IFormatProvider? provider)
-		where TChar : unmanaged, IUtfCharacter<TChar>
-	{
-		int digits;
-		scoped Span<TChar> negativeSign;
-		NumberFormatInfo info;
-
-		if (format.IsEmpty)
-		{
-			if (value >= Int512.Zero)
-			{
-				UInt512 ui = (UInt512)value;
-				charsWritten = UInt512.CountDigits(in ui);
-				if (destination.Length < charsWritten)
-				{
-					charsWritten = 0;
-					return false;
-				}
-				UInt512ToDecChars(ui, destination, charsWritten);
-				return true;
-			}
-			else
-			{
-				info = NumberFormatInfo.GetInstance(provider);
-				negativeSign = stackalloc TChar[TChar.GetLength(info.NegativeSign)];
-				TChar.Copy(info.NegativeSign, negativeSign);
-
-				Int512 abs = -value;
-				UInt512 ui = abs >= Int512.Zero ? (UInt512)abs 
-					: new UInt512(0x8000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
-				digits = UInt512.CountDigits(in ui);
-				charsWritten = digits + negativeSign.Length;
-				if (destination.Length < charsWritten)
-				{
-					charsWritten = 0;
-					return false;
-				}
-				negativeSign.CopyTo(destination);
-				UInt512ToDecChars(ui, destination[negativeSign.Length..], digits);
-				return true;
-			}
-		}
-
-		char fmt = GetFormat(format, out int precision);
-		UInt512 u;
-		switch (fmt)
-		{
-			case 'b':
-			case 'B':
-				u = unchecked((UInt512)value);
-				charsWritten = int.Max(precision, CountBinDigits(in u));
-				if (destination.Length < charsWritten)
-				{
-					charsWritten = 0;
-					return false;
-				}
-				UnsignedIntegerToBinChars(in u, destination, charsWritten);
-				return true;
-			case 'x':
-			case 'X':
-				u = unchecked((UInt512)value);
-				charsWritten = int.Max(precision, CountHexDigits(in u));
-				if (destination.Length < charsWritten)
-				{
-					charsWritten = 0;
-					return false;
-				}
-				UnsignedIntegerToHexChars(in u, fmt, destination, charsWritten);
-				return true;
-			case 'd':
-			case 'D':
-			case 'g':
-			case 'G':
-				bool isNegative = value < Int512.Zero;
-				if (!isNegative)
-				{
-					u = (UInt512)value;
-				}
-				else
-				{
-					Int512 abs = -value;
-					u = abs >= Int512.Zero ? unchecked((UInt512)abs)
-						: new UInt512(0x8000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
-				}
-				precision = int.Max(precision, UInt512.CountDigits(in u));
-				if (isNegative)
-				{
-					info = NumberFormatInfo.GetInstance(provider);
-					negativeSign = stackalloc TChar[TChar.GetLength(info.NegativeSign)];
-					TChar.Copy(info.NegativeSign, negativeSign);
-
-					charsWritten = precision + negativeSign.Length;
-					if (destination.Length < charsWritten)
-					{
-						charsWritten = 0;
-						return false;
-					}
-					negativeSign.CopyTo(destination);
-					UInt512ToDecChars(u, destination[negativeSign.Length..], precision);
-					return true;
-				}
-				charsWritten = precision;
-				UInt512ToDecChars(u, destination, precision);
-				return true;
-			default:
-				return TryFormatNumber(in value, destination, out charsWritten, format, NumberFormatInfo.GetInstance(provider));
-		}
-	}
-	public static string FormatUInt512(in UInt512 value, string? format, IFormatProvider? provider)
-	{
-		if (string.IsNullOrEmpty(format))
-		{
-			return string.Create(UInt512.CountDigits(in value), value, (destination, number) =>
-			{
-				UInt512ToDecChars(number, Utf16Char.CastFromCharSpan(destination), destination.Length);
-			});
-		}
-
-		ReadOnlySpan<char> formatSpan = format;
-		char fmt = GetFormat(formatSpan, out int precision);
-		switch (fmt)
-		{
-			case 'b':
-			case 'B':
-				precision = int.Max(precision, CountBinDigits(in value));
-				return string.Create(precision, value, (destination, number) =>
-				{
-					UnsignedIntegerToBinChars(in number, Utf16Char.CastFromCharSpan(destination), destination.Length);
-				});
-			case 'x':
-			case 'X':
-				precision = int.Max(precision, CountHexDigits(in value));
-				return string.Create(precision, (value, fmt), (destination, number) =>
-				{
-					UnsignedIntegerToHexChars(in number.value, number.fmt, Utf16Char.CastFromCharSpan(destination), destination.Length);
-				});
-			case 'd':
-			case 'D':
-			case 'g':
-			case 'G':
-				precision = int.Max(precision, UInt512.CountDigits(in value));
-				return string.Create(precision, value, (destination, number) =>
-				{
-					UInt512ToDecChars(number, Utf16Char.CastFromCharSpan(destination), destination.Length);
-				});
-			default:
-				return FormatNumber(in value, format!, NumberFormatInfo.GetInstance(provider));
-		}
-	}
-	public static bool TryFormatUInt512<TChar>(in UInt512 value, Span<TChar> destination, out int charsWritten, ReadOnlySpan<char> format, IFormatProvider? provider)
-		where TChar : unmanaged, IUtfCharacter<TChar>
-	{
-		if (format.IsEmpty)
-		{
-			charsWritten = UInt512.CountDigits(in value);
-
-			if (destination.Length < charsWritten)
-			{
-				charsWritten = 0;
-				return false;
-			}
-
-			UInt512ToDecChars(value, destination, charsWritten);
-			return true;
-		}
-
-		char fmt = GetFormat(format, out int precision);
-		switch (fmt)
-		{
-			case 'b':
-			case 'B':
-				charsWritten = int.Max(precision, CountBinDigits(in value));
-
-				if (destination.Length < charsWritten)
-				{
-					charsWritten = 0;
-					return false;
-				}
-
-				UnsignedIntegerToBinChars(in value, destination, charsWritten);
-				return true;
-			case 'x':
-			case 'X':
-				charsWritten = int.Max(precision, CountHexDigits(in value));
-
-				if (destination.Length < charsWritten)
-				{
-					charsWritten = 0;
-					return false;
-				}
-
-				UnsignedIntegerToHexChars(in value, fmt, destination, charsWritten);
-				return true;
-			case 'd':
-			case 'D':
-			case 'g':
-			case 'G':
-				charsWritten = int.Max(precision, UInt512.CountDigits(in value));
-
-				if (destination.Length < charsWritten)
-				{
-					charsWritten = 0;
-					return false;
-				}
-
-				UInt512ToDecChars(value, destination, charsWritten);
+				TUnsigned.ToDecChars(value, destination, charsWritten);
 				return true;
 			default:
 				return TryFormatNumber(in value, destination, out charsWritten, format, NumberFormatInfo.GetInstance(provider));

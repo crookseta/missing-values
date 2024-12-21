@@ -23,7 +23,7 @@ namespace MissingValues
 		IMinMaxValue<Int256>,
 		ISignedNumber<Int256>,
 		IPowerFunctions<Int256>,
-		IFormattableSignedInteger<Int256, UInt256>
+		IFormattableSignedInteger<Int256>
 	{
 		private static UInt128 _upperMin => new UInt128(0x8000_0000_0000_0000, 0x0000_0000_0000_0000);
 		private static UInt128 _lowerMin => new UInt128(0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
@@ -736,7 +736,7 @@ namespace MissingValues
 		static bool INumberBase<Int256>.TryConvertToChecked<TOther>(Int256 value, out TOther result)
 		{
 			bool converted = true;
-			result = default!;
+			result = TOther.Zero;
 			checked
 			{
 				result = result switch
@@ -773,7 +773,7 @@ namespace MissingValues
 		static bool INumberBase<Int256>.TryConvertToSaturating<TOther>(Int256 value, out TOther result)
 		{
 			bool converted = true;
-			result = default!;
+			result = TOther.Zero;
 
 			result = result switch
 			{
@@ -808,7 +808,7 @@ namespace MissingValues
 		static bool INumberBase<Int256>.TryConvertToTruncating<TOther>(Int256 value, out TOther result)
 		{
 			bool converted = true;
-			result = default!;
+			result = TOther.Zero;
 			result = result switch
 			{
 				char => (TOther)(object)(char)value,
@@ -955,20 +955,20 @@ namespace MissingValues
 		}
 
 		/// <inheritdoc/>
-		public string ToString(string? format, IFormatProvider? formatProvider)
+		public string ToString([StringSyntax(StringSyntaxAttribute.NumericFormat)] string? format, IFormatProvider? formatProvider)
 		{
-			return NumberFormatter.FormatInt256(in this, format, formatProvider);
+			return NumberFormatter.FormatInt<Int256, UInt256>(in this, format, formatProvider);
 		}
 
 		/// <inheritdoc/>
-		public bool TryFormat(Span<char> destination, out int charsWritten, ReadOnlySpan<char> format, IFormatProvider? provider)
+		public bool TryFormat(Span<char> destination, out int charsWritten, [StringSyntax(StringSyntaxAttribute.NumericFormat)] ReadOnlySpan<char> format, IFormatProvider? provider)
 		{
-			return NumberFormatter.TryFormatInt256(in this, Utf16Char.CastFromCharSpan(destination), out charsWritten, format, provider);
+			return NumberFormatter.TryFormatInt<Int256, UInt256, Utf16Char>(in this, Utf16Char.CastFromCharSpan(destination), out charsWritten, format, provider);
 		}
 		/// <inheritdoc/>
-		public bool TryFormat(Span<byte> utf8Destination, out int bytesWritten, ReadOnlySpan<char> format, IFormatProvider? provider)
+		public bool TryFormat(Span<byte> utf8Destination, out int bytesWritten, [StringSyntax(StringSyntaxAttribute.NumericFormat)] ReadOnlySpan<char> format, IFormatProvider? provider)
 		{
-			return NumberFormatter.TryFormatInt256(in this, Utf8Char.CastFromByteSpan(utf8Destination), out bytesWritten, format, provider);
+			return NumberFormatter.TryFormatInt<Int256, UInt256, Utf8Char>(in this, Utf8Char.CastFromByteSpan(utf8Destination), out bytesWritten, format, provider);
 		}
 
 		bool IBinaryInteger<Int256>.TryWriteBigEndian(Span<byte> destination, out int bytesWritten)
@@ -1021,42 +1021,50 @@ namespace MissingValues
 
 		private void WriteBigEndianUnsafe(Span<byte> destination)
 		{
-			UInt128 lower = Lower;
-			UInt128 upper = Upper;
+			ulong p0 = _p0;
+			ulong p1 = _p1;
+			ulong p2 = _p2;
+			ulong p3 = _p3;
 
 			if (BitConverter.IsLittleEndian)
 			{
-				lower = BinaryPrimitives.ReverseEndianness(lower);
-				upper = BinaryPrimitives.ReverseEndianness(upper);
+				p0 = BinaryPrimitives.ReverseEndianness(p0);
+				p1 = BinaryPrimitives.ReverseEndianness(p1);
+				p2 = BinaryPrimitives.ReverseEndianness(p2);
+				p3 = BinaryPrimitives.ReverseEndianness(p3);
 			}
 
 			ref byte address = ref MemoryMarshal.GetReference(destination);
 
-			Unsafe.WriteUnaligned(ref address, upper);
-			Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref address, Unsafe.SizeOf<UInt128>()), lower);
+			Unsafe.WriteUnaligned(ref address, p3);
+			Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref address, sizeof(ulong)), p2);
+			Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref address, sizeof(ulong) * 2), p1);
+			Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref address, sizeof(ulong) * 3), p0);
 		}
 		private void WriteLittleEndianUnsafe(Span<byte> destination)
 		{
 			Debug.Assert(destination.Length >= Size);
 
-			UInt128 lower = Lower;
-			UInt128 upper = Upper;
+			ulong p0 = _p0;
+			ulong p1 = _p1;
+			ulong p2 = _p2;
+			ulong p3 = _p3;
 
 			if (!BitConverter.IsLittleEndian)
 			{
-				lower = BinaryPrimitives.ReverseEndianness(lower);
-				upper = BinaryPrimitives.ReverseEndianness(upper);
+				p0 = BinaryPrimitives.ReverseEndianness(p0);
+				p1 = BinaryPrimitives.ReverseEndianness(p1);
+				p2 = BinaryPrimitives.ReverseEndianness(p2);
+				p3 = BinaryPrimitives.ReverseEndianness(p3);
 			}
 
 			ref byte address = ref MemoryMarshal.GetReference(destination);
 
-			Unsafe.WriteUnaligned(ref address, lower);
-			Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref address, Unsafe.SizeOf<UInt128>()), upper);
+			Unsafe.WriteUnaligned(ref address, p0);
+			Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref address, sizeof(ulong)), p1);
+			Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref address, sizeof(ulong) * 2), p2);
+			Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref address, sizeof(ulong) * 3), p3);
 		}
-
-		UInt256 IFormattableSignedInteger<Int256, UInt256>.ToUnsigned() => (UInt256)this;
-
-		char IFormattableInteger<Int256>.ToChar() => (char)_p0;
 
 		int IFormattableInteger<Int256>.ToInt32() => (int)_p0;
 
@@ -1083,6 +1091,8 @@ namespace MissingValues
 		}
 
 		static int IFormattableInteger<Int256>.UnsignedCompare(in Int256 value1, in Int256 value2) => unchecked(((UInt256)value1).CompareTo((UInt256)value2));
+		static int IFormattableInteger<Int256>.Log2Int32(in Int256 value) => BitHelper.Log2(in value);
+		static int IFormattableInteger<Int256>.LeadingZeroCountInt32(in Int256 value) => BitHelper.LeadingZeroCount(in value);
 
 		/// <inheritdoc/>
 		public static Int256 operator +(in Int256 value) => value;
@@ -1172,9 +1182,9 @@ namespace MissingValues
 		{
 			if (Vector256.IsHardwareAccelerated)
 			{
-				var v = Unsafe.As<Int256, Vector256<ulong>>(ref Unsafe.AsRef(in value));
+				var v = Unsafe.BitCast<Int256, Vector256<ulong>>(value);
 				var result = ~v;
-				return Unsafe.As<Vector256<ulong>, Int256>(ref result);
+				return Unsafe.BitCast<Vector256<ulong>, Int256>(result);
 			}
 			else
 			{
@@ -1267,17 +1277,17 @@ namespace MissingValues
 		{
 			if (Vector256.IsHardwareAccelerated)
 			{
-				var v1 = Unsafe.As<Int256, Vector256<ulong>>(ref Unsafe.AsRef(in left));
-				var v2 = Unsafe.As<Int256, Vector256<ulong>>(ref Unsafe.AsRef(in right));
+				var v1 = Unsafe.BitCast<Int256, Vector256<ulong>>(left);
+				var v2 = Unsafe.BitCast<Int256, Vector256<ulong>>(right);
 				var result = v1 & v2;
-				return Unsafe.As<Vector256<ulong>, Int256>(ref result);
+				return Unsafe.BitCast<Vector256<ulong>, Int256>(result);
 			}
 			else if (Avx2.IsSupported)
 			{
-				var v1 = Unsafe.As<Int256, Vector256<ulong>>(ref Unsafe.AsRef(in left));
-				var v2 = Unsafe.As<Int256, Vector256<ulong>>(ref Unsafe.AsRef(in right));
+				var v1 = Unsafe.BitCast<Int256, Vector256<ulong>>(left);
+				var v2 = Unsafe.BitCast<Int256, Vector256<ulong>>(right);
 				var result = Avx2.And(v1, v2);
-				return Unsafe.As<Vector256<ulong>, Int256>(ref result);
+				return Unsafe.BitCast<Vector256<ulong>, Int256>(result);
 			}
 			else
 			{
@@ -1290,17 +1300,17 @@ namespace MissingValues
 		{
 			if (Vector256.IsHardwareAccelerated)
 			{
-				var v1 = Unsafe.As<Int256, Vector256<ulong>>(ref Unsafe.AsRef(in left));
-				var v2 = Unsafe.As<Int256, Vector256<ulong>>(ref Unsafe.AsRef(in right));
+				var v1 = Unsafe.BitCast<Int256, Vector256<ulong>>(left);
+				var v2 = Unsafe.BitCast<Int256, Vector256<ulong>>(right);
 				var result = v1 | v2;
-				return Unsafe.As<Vector256<ulong>, Int256>(ref result);
+				return Unsafe.BitCast<Vector256<ulong>, Int256>(result);
 			}
 			else if (Avx2.IsSupported)
 			{
-				var v1 = Unsafe.As<Int256, Vector256<ulong>>(ref Unsafe.AsRef(in left));
-				var v2 = Unsafe.As<Int256, Vector256<ulong>>(ref Unsafe.AsRef(in right));
+				var v1 = Unsafe.BitCast<Int256, Vector256<ulong>>(left);
+				var v2 = Unsafe.BitCast<Int256, Vector256<ulong>>(right);
 				var result = Avx2.Or(v1, v2);
-				return Unsafe.As<Vector256<ulong>, Int256>(ref result);
+				return Unsafe.BitCast<Vector256<ulong>, Int256>(result);
 			}
 			else
 			{
@@ -1313,17 +1323,17 @@ namespace MissingValues
 		{
 			if (Vector256.IsHardwareAccelerated)
 			{
-				var v1 = Unsafe.As<Int256, Vector256<ulong>>(ref Unsafe.AsRef(in left));
-				var v2 = Unsafe.As<Int256, Vector256<ulong>>(ref Unsafe.AsRef(in right));
+				var v1 = Unsafe.BitCast<Int256, Vector256<ulong>>(left);
+				var v2 = Unsafe.BitCast<Int256, Vector256<ulong>>(right);
 				var result = v1 ^ v2;
-				return Unsafe.As<Vector256<ulong>, Int256>(ref result);
+				return Unsafe.BitCast<Vector256<ulong>, Int256>(result);
 			}
 			else if (Avx2.IsSupported)
 			{
-				var v1 = Unsafe.As<Int256, Vector256<ulong>>(ref Unsafe.AsRef(in left));
-				var v2 = Unsafe.As<Int256, Vector256<ulong>>(ref Unsafe.AsRef(in right));
+				var v1 = Unsafe.BitCast<Int256, Vector256<ulong>>(left);
+				var v2 = Unsafe.BitCast<Int256, Vector256<ulong>>(right);
 				var result = Avx2.Xor(v1, v2);
-				return Unsafe.As<Vector256<ulong>, Int256>(ref result);
+				return Unsafe.BitCast<Vector256<ulong>, Int256>(result);
 			}
 			else
 			{

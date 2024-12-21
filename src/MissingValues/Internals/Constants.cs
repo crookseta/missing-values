@@ -934,12 +934,12 @@ internal static class Constants
 		/// </summary>
 		public static Quad PIO2_3T => new Quad(0xBF28_59C4_EC64_DDAE, 0xB5F7_8671_CBFB_2210);
 
-		public static ReadOnlySpan<int> INIT_JK => new int[]
-		{
+		public static ReadOnlySpan<int> INIT_JK =>
+		[
 			3, 4, 4, 6
-		};
-		public static ReadOnlySpan<int> IPIO2 => new int[]
-		{
+		];
+		public static ReadOnlySpan<int> IPIO2 =>
+		[
 			0xA2F983, 0x6E4E44, 0x1529FC, 0x2757D1, 0xF534DD, 0xC0DB62,
 			0x95993C, 0x439041, 0xFE5163, 0xABDEBB, 0xC561B7, 0x246E3A,
 			0x424DD2, 0xE00649, 0x2EEA09, 0xD1921C, 0xFE1DEB, 0x1CB129,
@@ -1055,10 +1055,10 @@ internal static class Constants
 			0x4D7E6F, 0x5119A5, 0xABF9B5, 0xD6DF82, 0x61DD96, 0x023616,
 			0x9F3AC4, 0xA1A283, 0x6DED72, 0x7A8D39, 0xA9B882, 0x5C326B,
 			0x5B2746, 0xED3400, 0x7700D2, 0x55F4FC, 0x4D5901, 0x8071E0,
-		};
+		];
 
-		public static ReadOnlySpan<double> PIO2 => new double[]
-		{
+		public static ReadOnlySpan<double> PIO2 =>
+		[
 			1.57079625129699707031e+00,
 			7.54978941586159635335e-08,
 			5.39030252995776476554e-15,
@@ -1067,7 +1067,7 @@ internal static class Constants
 			1.22933308981111328932e-36,
 			2.73370053816464559624e-44,
 			2.16741683877804819444e-51,
-		};
+		];
 	}
 	public static class Pow
 	{

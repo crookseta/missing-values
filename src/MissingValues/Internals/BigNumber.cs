@@ -883,10 +883,10 @@ internal unsafe ref partial struct BigNumber
 		}
 		else
 		{
-			result._blocks[0] = (ulong)(value.Lower);
-			result._blocks[1] = (ulong)(value.Lower >> 64);
-			result._blocks[2] = (ulong)(value.Upper);
-			result._blocks[3] = (ulong)(value.Upper >> 64);
+			result._blocks[0] = value.Part0;
+			result._blocks[1] = value.Part1;
+			result._blocks[2] = value.Part2;
+			result._blocks[3] = value.Part3;
 
 			result._length = 4;
 		}

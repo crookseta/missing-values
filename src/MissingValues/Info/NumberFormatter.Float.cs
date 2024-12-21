@@ -157,7 +157,7 @@ internal static partial class NumberFormatter
 		Span<TChar> actualValue = buffer.TrimEnd(TChar.NullCharacter);
 
 		int eIndex = actualValue.IndexOf((TChar)'E');
-		if (eIndex <= 0 || !TChar.TryParseInteger(actualValue[(eIndex + 1)..], out int exponent))
+		if (eIndex <= 0 || !TChar.TryParseInteger(actualValue[(eIndex + 1)..], NumberStyles.Integer, CultureInfo.CurrentCulture, out int exponent))
 		{
 			exponent = 0;
 		}

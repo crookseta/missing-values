@@ -22,7 +22,7 @@ namespace MissingValues
 		IMinMaxValue<UInt256>,
 		IUnsignedNumber<UInt256>,
 		IPowerFunctions<UInt256>,
-		IFormattableUnsignedInteger<UInt256, Int256>
+		IFormattableUnsignedInteger<UInt256>
 	{
 		static UInt256 INumberBase<UInt256>.One => One;
 
@@ -53,7 +53,7 @@ namespace MissingValues
 
 		static int IFormattableInteger<UInt256>.MaxBinaryDigits => 256;
 
-		static UInt256 IFormattableUnsignedInteger<UInt256, Int256>.SignedMaxMagnitude => new(0x8000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
+		static UInt256 IFormattableUnsignedInteger<UInt256>.SignedMaxMagnitude => new(0x8000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
 
 		static UInt256 IFormattableInteger<UInt256>.TwoPow2 => new(4);
 
@@ -66,6 +66,8 @@ namespace MissingValues
 		static UInt256 IFormattableInteger<UInt256>.SixteenPow3 => new(4096);
 
 		static UInt256 IFormattableInteger<UInt256>.TenPow3 => new(1000);
+
+		static UInt256 IFormattableInteger<UInt256>.E19 => new UInt256(0, 0, 0, 10000000000000000000UL);
 
 		static UInt256 INumberBase<UInt256>.Abs(UInt256 value) => value;
 
@@ -183,54 +185,49 @@ namespace MissingValues
 					{
 						Thrower.DivideByZero();
 					}
-					DivRemFast(in left, (uint)right._p0, out quotient, out remainder);
+					Calculator.DivRem(in left, (uint)right._p0, out quotient, out var r);
+					remainder = r;
+					return;
 				}
 			}
 
-			if (right >= left)
+			if (right == left)
 			{
-				quotient = (right == left) ? One : Zero;
-				remainder = (left - (quotient * right));
+				quotient = One;
+				remainder = Zero;
+				return;
+			}
+			if (right > left)
+			{
+				quotient = Zero;
+				remainder = left;
+				return;
 			}
 
 			DivRemSlow(in left, in right, out quotient, out remainder);
 
-			unsafe static void DivRemFast(in UInt256 quotient, uint divisor, out UInt256 quo, out UInt256 rem)
+			static void DivRemSlow(in UInt256 quotient, in UInt256 divisor, out UInt256 quo, out UInt256 rem)
 			{
 				const int UIntCount = Size / sizeof(uint);
 
-				uint* pLeft = stackalloc uint[UIntCount];
-				Unsafe.WriteUnaligned(ref *(byte*)(pLeft), quotient);
-				Span<uint> left = new Span<uint>(pLeft, (UIntCount) - (BitHelper.LeadingZeroCount(in quotient) / 32));
+				Span<uint> quotientSpan = stackalloc uint[UIntCount];
+				quotientSpan.Clear();
+				Unsafe.WriteUnaligned(ref Unsafe.As<uint, byte>(ref MemoryMarshal.GetReference(quotientSpan)), quotient);
 
-				Span<uint> rawBits = stackalloc uint[UIntCount];
-				rawBits.Clear();
-
-				Calculator.DivRem(left, divisor, rawBits, out uint remainder);
-
-				quo = Unsafe.ReadUnaligned<UInt256>(ref Unsafe.As<uint, byte>(ref MemoryMarshal.GetReference(rawBits)));
-				rem = remainder;
-			}
-			unsafe static void DivRemSlow(in UInt256 quotient, in UInt256 divisor, out UInt256 quo, out UInt256 rem)
-			{
-				const int UIntCount = Size / sizeof(uint);
-
-				uint* pLeft = stackalloc uint[UIntCount];
-				Unsafe.WriteUnaligned(ref *(byte*)(pLeft), quotient);
-				Span<uint> left = new Span<uint>(pLeft, (UIntCount) - (BitHelper.LeadingZeroCount(in quotient) / 32));
-
-
-				uint* pRight = stackalloc uint[UIntCount];
-				Unsafe.WriteUnaligned(ref *(byte*)(pRight), divisor);
-				Span<uint> right = new Span<uint>(pRight, (UIntCount) - (BitHelper.LeadingZeroCount(in divisor) / 32));
-
+				Span<uint> divisorSpan = stackalloc uint[UIntCount];
+				divisorSpan.Clear();
+				Unsafe.WriteUnaligned(ref Unsafe.As<uint, byte>(ref MemoryMarshal.GetReference(divisorSpan)), divisor);
 
 				Span<uint> quoBits = stackalloc uint[UIntCount];
 				quoBits.Clear();
 				Span<uint> remBits = stackalloc uint[UIntCount];
 				remBits.Clear();
 
-				Calculator.DivRem(left, right, quoBits, remBits);
+				Calculator.DivRem(
+					quotientSpan[..((UIntCount) - (BitHelper.LeadingZeroCount(in quotient) / 32))],
+					divisorSpan[..((UIntCount) - (BitHelper.LeadingZeroCount(in divisor) / 32))],
+					quoBits, 
+					remBits);
 
 				quo = Unsafe.ReadUnaligned<UInt256>(ref Unsafe.As<uint, byte>(ref MemoryMarshal.GetReference(quoBits)));
 				rem = Unsafe.ReadUnaligned<UInt256>(ref Unsafe.As<uint, byte>(ref MemoryMarshal.GetReference(remBits)));
@@ -680,7 +677,7 @@ namespace MissingValues
 		static bool INumberBase<UInt256>.TryConvertToChecked<TOther>(UInt256 value, out TOther result)
 		{
 			bool converted = true;
-			result = default;
+			result = TOther.Zero;
 			checked
 			{
 				result = result switch
@@ -717,7 +714,7 @@ namespace MissingValues
 		static bool INumberBase<UInt256>.TryConvertToSaturating<TOther>(UInt256 value, out TOther result)
 		{
 			bool converted = true;
-			result = default;
+			result = TOther.Zero;
 			result = result switch
 			{
 				char => (TOther)(object)(char)value,
@@ -725,29 +722,29 @@ namespace MissingValues
 				float => (TOther)(object)(float)value,
 				double => (TOther)(object)(double)value,
 				decimal => (TOther)(object)(decimal)value,
-				byte => (TOther)(object)(byte)value,
-				ushort => (TOther)(object)(ushort)value,
-				uint => (TOther)(object)(uint)value,
-				ulong => (TOther)(object)(ulong)value,
-				UInt128 => (TOther)(object)(UInt128)value,
+				byte => (TOther)(object)((value >= 0xFF) ? byte.MaxValue : (byte)value),
+				ushort => (TOther)(object)((value >= 0xFFFF) ? ushort.MaxValue : (ushort)value),
+				uint => (TOther)(object)((value >= 0xFFFF_FFFF) ? uint.MaxValue : (uint)value),
+				ulong => (TOther)(object)((value >= 0xFFFF_FFFF_FFFF_FFFF) ? ulong.MaxValue : (ulong)value),
+				UInt128 => (TOther)(object)((value >= new UInt256(0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF)) ? UInt128.MaxValue : (UInt128)value),
 				UInt256 => (TOther)(object)value,
 				UInt512 => (TOther)(object)(UInt512)value,
 #if TARGET_32BIT
-				nuint => (TOther)(object)((value >= new UInt128(0x0000_0000_0000_0000, 0x0000_0000_7FFF_FFFF)) ? nuint.MaxValue : (nuint)value),
+				nuint => (TOther)(object)((value >= 0xFFFF_FFFF) ? nuint.MaxValue : (nuint)value),
 #else
-				nuint => (TOther)(object)((value >= new UInt128(0x0000_0000_0000_0000, 0x7FFF_FFFF_FFFF_FFFF)) ? nuint.MaxValue : (nuint)value),
+				nuint => (TOther)(object)((value >= 0xFFFF_FFFF_FFFF_FFFF) ? nuint.MaxValue : (nuint)value),
 #endif
-				sbyte => (TOther)(object)((value >= new UInt128(0x0000_0000_0000_0000, 0x0000_0000_0000_007F)) ? sbyte.MaxValue : (sbyte)value),
-				short => (TOther)(object)((value >= new UInt128(0x0000_0000_0000_0000, 0x0000_0000_0000_7FFF)) ? short.MaxValue : (short)value),
-				int => (TOther)(object)((value >= new UInt128(0x0000_0000_0000_0000, 0x0000_0000_7FFF_FFFF)) ? int.MaxValue : (int)value),
-				long => (TOther)(object)((value >= new UInt128(0x0000_0000_0000_0000, 0x7FFF_FFFF_FFFF_FFFF)) ? long.MaxValue : (long)value),
-				Int128 => (TOther)(object)((value >= new UInt128(0x7FFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF)) ? Int128.MaxValue : (Int128)value),
-				Int256 => (TOther)(object)((value >= new UInt256(new UInt128(0x7FFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF), new UInt128(0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF))) ? Int256.MaxValue : (Int256)value),
+				sbyte => (TOther)(object)((value >= 0x7F) ? sbyte.MaxValue : (sbyte)value),
+				short => (TOther)(object)((value >= 0x7FFF) ? short.MaxValue : (short)value),
+				int => (TOther)(object)((value >= 0x7FFF_FFFF) ? int.MaxValue : (int)value),
+				long => (TOther)(object)((value >= 0x7FFF_FFFF_FFFF_FFFF) ? long.MaxValue : (long)value),
+				Int128 => (TOther)(object)((value >= new UInt256(0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x7FFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF)) ? Int128.MaxValue : (Int128)value),
+				Int256 => (TOther)(object)((value >= new UInt256(0x7FFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF)) ? Int256.MaxValue : (Int256)value),
 				Int512 => (TOther)(object)(Int512)value,
 #if TARGET_32BIT
-				nint => (TOther)(object)((value >= new UInt128(0x0000_0000_0000_0000, 0x0000_0000_7FFF_FFFF)) ? nint.MaxValue : (nint)value),
+				nint => (TOther)(object)((value >= 0x7FFF_FFFF) ? nint.MaxValue : (nint)value),
 #else
-				nint => (TOther)(object)((value >= new UInt128(0x0000_0000_0000_0000, 0x7FFF_FFFF_FFFF_FFFF)) ? nint.MaxValue : (nint)value),
+				nint => (TOther)(object)((value >= 0x7FFF_FFFF_FFFF_FFFF) ? nint.MaxValue : (nint)value),
 #endif
 				BigInteger => (TOther)(object)(BigInteger)value,
 				_ => BitHelper.DefaultConvert<TOther>(out converted)
@@ -759,33 +756,36 @@ namespace MissingValues
 		static bool INumberBase<UInt256>.TryConvertToTruncating<TOther>(UInt256 value, out TOther result)
 		{
 			bool converted = true;
-			result = default;
-			result = result switch
+			result = TOther.Zero;
+			unchecked
 			{
-				char => (TOther)(object)(char)value,
-				Half => (TOther)(object)(Half)value,
-				float => (TOther)(object)(float)value,
-				double => (TOther)(object)(double)value,
-				decimal => (TOther)(object)(decimal)value,
-				byte => (TOther)(object)(byte)value,
-				ushort => (TOther)(object)(ushort)value,
-				uint => (TOther)(object)(uint)value,
-				ulong => (TOther)(object)(ulong)value,
-				UInt128 => (TOther)(object)(UInt128)value,
-				UInt256 => (TOther)(object)value,
-				UInt512 => (TOther)(object)(UInt512)value,
-				nuint => (TOther)(object)(nuint)value,
-				sbyte => (TOther)(object)(sbyte)value,
-				short => (TOther)(object)(short)value,
-				int => (TOther)(object)(int)value,
-				long => (TOther)(object)(long)value,
-				Int128 => (TOther)(object)(Int128)value,
-				Int256 => (TOther)(object)(Int256)value,
-				Int512 => (TOther)(object)(Int512)value,
-				nint => (TOther)(object)(nint)value,
-				BigInteger => (TOther)(object)(BigInteger)value,
-				_ => BitHelper.DefaultConvert<TOther>(out converted)
-			};
+				result = result switch
+				{
+					char => (TOther)(object)(char)value,
+					Half => (TOther)(object)(Half)value,
+					float => (TOther)(object)(float)value,
+					double => (TOther)(object)(double)value,
+					decimal => (TOther)(object)(decimal)value,
+					byte => (TOther)(object)(byte)value,
+					ushort => (TOther)(object)(ushort)value,
+					uint => (TOther)(object)(uint)value,
+					ulong => (TOther)(object)(ulong)value,
+					UInt128 => (TOther)(object)(UInt128)value,
+					UInt256 => (TOther)(object)value,
+					UInt512 => (TOther)(object)(UInt512)value,
+					nuint => (TOther)(object)(nuint)value,
+					sbyte => (TOther)(object)(sbyte)value,
+					short => (TOther)(object)(short)value,
+					int => (TOther)(object)(int)value,
+					long => (TOther)(object)(long)value,
+					Int128 => (TOther)(object)(Int128)value,
+					Int256 => (TOther)(object)(Int256)value,
+					Int512 => (TOther)(object)(Int512)value,
+					nint => (TOther)(object)(nint)value,
+					BigInteger => (TOther)(object)(BigInteger)value,
+					_ => BitHelper.DefaultConvert<TOther>(out converted)
+				}; 
+			}
 			return converted;
 		}
 
@@ -800,19 +800,19 @@ namespace MissingValues
 		/// <inheritdoc/>
 		public string ToString([StringSyntax(StringSyntaxAttribute.NumericFormat)] string? format, IFormatProvider? formatProvider)
 		{
-			return NumberFormatter.FormatUInt256(in this, format, formatProvider);
+			return NumberFormatter.FormatUInt(in this, format, formatProvider);
 		}
 
 		/// <inheritdoc/>
 		public bool TryFormat(Span<char> destination, out int charsWritten, [StringSyntax(StringSyntaxAttribute.NumericFormat)] ReadOnlySpan<char> format, IFormatProvider? provider)
 		{
-			return NumberFormatter.TryFormatUInt256(in this, Utf16Char.CastFromCharSpan(destination), out charsWritten, format, provider);
+			return NumberFormatter.TryFormatUInt(in this, Utf16Char.CastFromCharSpan(destination), out charsWritten, format, provider);
 		}
 
 		/// <inheritdoc/>
 		public bool TryFormat(Span<byte> utf8Destination, out int bytesWritten, [StringSyntax(StringSyntaxAttribute.NumericFormat)] ReadOnlySpan<char> format, IFormatProvider? provider)
 		{
-			return NumberFormatter.TryFormatUInt256(in this, Utf8Char.CastFromByteSpan(utf8Destination), out bytesWritten, format, provider);
+			return NumberFormatter.TryFormatUInt(in this, Utf8Char.CastFromByteSpan(utf8Destination), out bytesWritten, format, provider);
 		}
 
 		bool IBinaryInteger<UInt256>.TryWriteBigEndian(Span<byte> destination, out int bytesWritten)
@@ -865,40 +865,50 @@ namespace MissingValues
 
 		private void WriteBigEndianUnsafe(Span<byte> destination)
 		{
-			UInt128 lower = Lower;
-			UInt128 upper = Upper;
+			ulong p0 = _p0;
+			ulong p1 = _p1;
+			ulong p2 = _p2;
+			ulong p3 = _p3;
 
 			if (BitConverter.IsLittleEndian)
 			{
-				lower = BinaryPrimitives.ReverseEndianness(lower);
-				upper = BinaryPrimitives.ReverseEndianness(upper);
+				p0 = BinaryPrimitives.ReverseEndianness(p0);
+				p1 = BinaryPrimitives.ReverseEndianness(p1);
+				p2 = BinaryPrimitives.ReverseEndianness(p2);
+				p3 = BinaryPrimitives.ReverseEndianness(p3);
 			}
 
 			ref byte address = ref MemoryMarshal.GetReference(destination);
 
-			Unsafe.WriteUnaligned(ref address, upper);
-			Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref address, Unsafe.SizeOf<UInt128>()), lower);
+			Unsafe.WriteUnaligned(ref address, p3);
+			Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref address, sizeof(ulong)), p2);
+			Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref address, sizeof(ulong) * 2), p1);
+			Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref address, sizeof(ulong) * 3), p0);
 		}
 		private void WriteLittleEndianUnsafe(Span<byte> destination)
 		{
 			Debug.Assert(destination.Length >= Size);
 
-			UInt128 lower = Lower;
-			UInt128 upper = Upper;
+			ulong p0 = _p0;
+			ulong p1 = _p1;
+			ulong p2 = _p2;
+			ulong p3 = _p3;
 
 			if (!BitConverter.IsLittleEndian)
 			{
-				lower = BinaryPrimitives.ReverseEndianness(lower);
-				upper = BinaryPrimitives.ReverseEndianness(upper);
+				p0 = BinaryPrimitives.ReverseEndianness(p0);
+				p1 = BinaryPrimitives.ReverseEndianness(p1);
+				p2 = BinaryPrimitives.ReverseEndianness(p2);
+				p3 = BinaryPrimitives.ReverseEndianness(p3);
 			}
 
 			ref byte address = ref MemoryMarshal.GetReference(destination);
 
-			Unsafe.WriteUnaligned(ref address, lower);
-			Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref address, Unsafe.SizeOf<UInt128>()), upper);
+			Unsafe.WriteUnaligned(ref address, p0);
+			Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref address, sizeof(ulong)), p1);
+			Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref address, sizeof(ulong) * 2), p2);
+			Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref address, sizeof(ulong) * 3), p3);
 		}
-
-		char IFormattableInteger<UInt256>.ToChar() => (char)_p0;
 
 		int IFormattableInteger<UInt256>.ToInt32() => (int)_p0;
 
@@ -922,11 +932,6 @@ namespace MissingValues
 				return (UInt256)(char.ToLowerInvariant(value) - 'W'); // 'W' = 87
 			}
 			throw new FormatException();
-		}
-
-		Int256 IFormattableUnsignedInteger<UInt256, Int256>.ToSigned()
-		{
-			return (Int256)this;
 		}
 
 		internal static int CountDigits(in UInt256 value)
@@ -954,13 +959,16 @@ namespace MissingValues
 
 			return digits;
 		}
-		static int IFormattableUnsignedInteger<UInt256, Int256>.CountDigits(in UInt256 value) => CountDigits(in value);
+		static int IFormattableUnsignedInteger<UInt256>.CountDigits(in UInt256 value) => CountDigits(in value);
 		static int IFormattableInteger<UInt256>.UnsignedCompare(in UInt256 value1, in UInt256 value2)
 		{
 			if (value1 < value2) return -1;
 			else if (value1 > value2) return 1;
 			else return 0;
 		}
+		static int IFormattableInteger<UInt256>.Log2Int32(in UInt256 value) => BitHelper.Log2(in value);
+		static int IFormattableInteger<UInt256>.LeadingZeroCountInt32(in UInt256 value) => BitHelper.LeadingZeroCount(in value);
+		static void IFormattableUnsignedInteger<UInt256>.ToDecChars<TChar>(in UInt256 number, Span<TChar> destination, int digits) => NumberFormatter.UInt256ToDecChars(number, destination, digits);
 
 		/// <inheritdoc/>
 		public static UInt256 operator +(in UInt256 value) => value;
@@ -1051,8 +1059,8 @@ namespace MissingValues
 		{
 			if (Vector256.IsHardwareAccelerated)
 			{
-				var v = Vector256.OnesComplement(Unsafe.As<UInt256, Vector256<ulong>>(ref Unsafe.AsRef(in value)));
-				return Unsafe.As<Vector256<ulong>, UInt256>(ref v);
+				var v = Vector256.OnesComplement(Unsafe.BitCast<UInt256, Vector256<ulong>>(value));
+				return Unsafe.BitCast<Vector256<ulong>, UInt256>(v);
 			}
 			else
 			{
@@ -1075,78 +1083,87 @@ namespace MissingValues
 		{
 			if (right._p3 == 0 && right._p2 == 0 && right._p1 == 0)
 			{
-				if (right._p0 <= uint.MaxValue)
-				{
-					return Calculator.Multiply(in left, unchecked((uint)right._p0), out _);
-				}
 				if (left._p3 == 0 && left._p2 == 0 && left._p1 == 0)
 				{
 					ulong up = Math.BigMul(left._p0, right._p0, out ulong low);
 					return new UInt256(0, 0, up, low);
 				}
+
+				return Calculator.Multiply(in left, right._p0, out _);
+			}
+			else if (left._p3 == 0 && left._p2 == 0 && left._p1 == 0)
+			{
+				return Calculator.Multiply(in right, left._p0, out _);
 			}
 
-			const int UIntCount = Size / sizeof(uint);
+			const int UIntCount = Size / sizeof(ulong);
 
-			Span<uint> leftSpan = stackalloc uint[UIntCount];
+			Span<ulong> leftSpan = stackalloc ulong[UIntCount];
 			leftSpan.Clear();
-			Unsafe.WriteUnaligned(ref Unsafe.As<uint, byte>(ref MemoryMarshal.GetReference(leftSpan)), left);
+			Unsafe.WriteUnaligned(ref Unsafe.As<ulong, byte>(ref MemoryMarshal.GetReference(leftSpan)), left);
 
-			Span<uint> rightSpan = stackalloc uint[UIntCount];
+			Span<ulong> rightSpan = stackalloc ulong[UIntCount];
 			rightSpan.Clear();
-			Unsafe.WriteUnaligned(ref Unsafe.As<uint, byte>(ref MemoryMarshal.GetReference(rightSpan)), right);
+			Unsafe.WriteUnaligned(ref Unsafe.As<ulong, byte>(ref MemoryMarshal.GetReference(rightSpan)), right);
 
-			Span<uint> rawBits = stackalloc uint[UIntCount * 2];
+			Span<ulong> rawBits = stackalloc ulong[UIntCount * 2];
 			rawBits.Clear();
 
 			Calculator.Multiply(
-				leftSpan[..(UIntCount - (BitHelper.LeadingZeroCount(in left) / 32))],
-				rightSpan[..(UIntCount - (BitHelper.LeadingZeroCount(in right) / 32))],
+				leftSpan[..(UIntCount - (BitHelper.LeadingZeroCount(in left) / 64))],
+				rightSpan[..(UIntCount - (BitHelper.LeadingZeroCount(in right) / 64))],
 				rawBits);
 
-			return Unsafe.ReadUnaligned<UInt256>(ref Unsafe.As<uint, byte>(ref MemoryMarshal.GetReference(rawBits)));
+			return Unsafe.ReadUnaligned<UInt256>(ref Unsafe.As<ulong, byte>(ref MemoryMarshal.GetReference(rawBits)));
 		}
 		/// <inheritdoc/>
 		public static UInt256 operator checked *(in UInt256 left, in UInt256 right)
 		{
-			UInt256 lower;
-
 			if (right._p3 == 0 && right._p2 == 0 && right._p1 == 0)
 			{
-				if (right._p0 <= uint.MaxValue)
-				{
-					lower = Calculator.Multiply(in left, unchecked((uint)right._p0), out uint carry);
-
-					if (carry != 0)
-					{
-						Thrower.ArithmethicOverflow(Thrower.ArithmethicOperation.Multiplication);
-					}
-
-					return lower;
-				}
 				if (left._p3 == 0 && left._p2 == 0 && left._p1 == 0)
 				{
 					ulong up = Math.BigMul(left._p0, right._p0, out ulong low);
 					return new UInt256(0, 0, up, low);
 				}
+
+				UInt256 lower = Calculator.Multiply(in left, right._p0, out ulong carry);
+
+				if (carry != 0)
+				{
+					Thrower.ArithmethicOverflow(Thrower.ArithmethicOperation.Multiplication);
+				}
+
+				return lower;
+			}
+			else if (left._p3 == 0 && left._p2 == 0 && left._p1 == 0)
+			{
+				UInt256 lower = Calculator.Multiply(in right, left._p0, out ulong carry);
+
+				if (carry != 0)
+				{
+					Thrower.ArithmethicOverflow(Thrower.ArithmethicOperation.Multiplication);
+				}
+
+				return lower;
 			}
 
-			const int UIntCount = Size / sizeof(uint);
+			const int UIntCount = Size / sizeof(ulong);
 
-			Span<uint> leftSpan = stackalloc uint[UIntCount];
+			Span<ulong> leftSpan = stackalloc ulong[UIntCount];
 			leftSpan.Clear();
-			Unsafe.WriteUnaligned(ref Unsafe.As<uint, byte>(ref MemoryMarshal.GetReference(leftSpan)), left);
+			Unsafe.WriteUnaligned(ref Unsafe.As<ulong, byte>(ref MemoryMarshal.GetReference(leftSpan)), left);
 
-			Span<uint> rightSpan = stackalloc uint[UIntCount];
+			Span<ulong> rightSpan = stackalloc ulong[UIntCount];
 			rightSpan.Clear();
-			Unsafe.WriteUnaligned(ref Unsafe.As<uint, byte>(ref MemoryMarshal.GetReference(rightSpan)), right);
+			Unsafe.WriteUnaligned(ref Unsafe.As<ulong, byte>(ref MemoryMarshal.GetReference(rightSpan)), right);
 
-			Span<uint> rawBits = stackalloc uint[UIntCount * 2];
+			Span<ulong> rawBits = stackalloc ulong[UIntCount * 2];
 			rawBits.Clear();
 
 			Calculator.Multiply(
-				leftSpan[..(UIntCount - (BitHelper.LeadingZeroCount(in left) / 32))],
-				rightSpan[..(UIntCount - (BitHelper.LeadingZeroCount(in right) / 32))],
+				leftSpan[..(UIntCount - (BitHelper.LeadingZeroCount(in left) / 64))],
+				rightSpan[..(UIntCount - (BitHelper.LeadingZeroCount(in right) / 64))],
 				rawBits);
 			var overflowBits = rawBits[UIntCount..];
 
@@ -1158,7 +1175,7 @@ namespace MissingValues
 				}
 			}
 
-			return Unsafe.ReadUnaligned<UInt256>(ref Unsafe.As<uint, byte>(ref MemoryMarshal.GetReference(rawBits)));
+			return Unsafe.ReadUnaligned<UInt256>(ref Unsafe.As<ulong, byte>(ref MemoryMarshal.GetReference(rawBits)));
 		}
 
 		/// <inheritdoc/>
@@ -1172,7 +1189,7 @@ namespace MissingValues
 					{
 						Thrower.DivideByZero();
 					}
-					return DivideFast(in left, (uint)right._p0);
+					return Calculator.Divide(in left, (uint)right);
 				}
 			}
 
@@ -1183,39 +1200,25 @@ namespace MissingValues
 
 			return DivideSlow(in left, in right);
 
-			unsafe static UInt256 DivideFast(in UInt256 quotient, uint divisor)
+			static UInt256 DivideSlow(in UInt256 quotient, in UInt256 divisor)
 			{
 				const int UIntCount = Size / sizeof(uint);
 
-				uint* pLeft = stackalloc uint[UIntCount];
-				Unsafe.WriteUnaligned(ref *(byte*)(pLeft), quotient);
-				Span<uint> left = new Span<uint>(pLeft, (UIntCount) - (BitHelper.LeadingZeroCount(in quotient) / 32));
+				Span<uint> quotientSpan = stackalloc uint[UIntCount];
+				quotientSpan.Clear();
+				Unsafe.WriteUnaligned(ref Unsafe.As<uint, byte>(ref MemoryMarshal.GetReference(quotientSpan)), quotient);
+
+				Span<uint> divisorSpan = stackalloc uint[UIntCount];
+				divisorSpan.Clear();
+				Unsafe.WriteUnaligned(ref Unsafe.As<uint, byte>(ref MemoryMarshal.GetReference(divisorSpan)), divisor);
 
 				Span<uint> rawBits = stackalloc uint[UIntCount];
 				rawBits.Clear();
 
-				Calculator.Divide(left, divisor, rawBits);
-
-				return Unsafe.ReadUnaligned<UInt256>(ref Unsafe.As<uint, byte>(ref MemoryMarshal.GetReference(rawBits)));
-			}
-			unsafe static UInt256 DivideSlow(in UInt256 quotient, in UInt256 divisor)
-			{
-				const int UIntCount = Size / sizeof(uint);
-
-				uint* pLeft = stackalloc uint[UIntCount];
-				Unsafe.WriteUnaligned(ref *(byte*)(pLeft), quotient);
-				Span<uint> left = new Span<uint>(pLeft, (UIntCount) - (BitHelper.LeadingZeroCount(in quotient) / 32));
-
-
-				uint* pRight = stackalloc uint[UIntCount];
-				Unsafe.WriteUnaligned(ref *(byte*)(pRight), divisor);
-				Span<uint> right = new Span<uint>(pRight, (UIntCount) - (BitHelper.LeadingZeroCount(in divisor) / 32));
-
-
-				Span<uint> rawBits = stackalloc uint[UIntCount];
-				rawBits.Clear();
-
-				Calculator.Divide(left, right, rawBits);
+				Calculator.Divide(
+					quotientSpan[..((UIntCount) - (BitHelper.LeadingZeroCount(in quotient) / 32))],
+					divisorSpan[..((UIntCount) - (BitHelper.LeadingZeroCount(in divisor) / 32))], 
+					rawBits);
 
 				return Unsafe.ReadUnaligned<UInt256>(ref Unsafe.As<uint, byte>(ref MemoryMarshal.GetReference(rawBits)));
 			}
@@ -1232,46 +1235,41 @@ namespace MissingValues
 					{
 						Thrower.DivideByZero();
 					}
-					return RemainderFast(in left, (uint)right._p0);
+					return Calculator.Remainder(in left, (uint)right._p0);
 				}
 			}
 
-			if (right >= left)
+			if (right == left)
 			{
-				UInt256 quotient = (right == left) ? One : Zero;
-				return left - (quotient * right);
+				return Zero;
+			}
+
+			if (right > left)
+			{
+				return left;
 			}
 
 			return RemainderSlow(in left, in right);
 
-			unsafe static UInt256 RemainderFast(in UInt256 quotient, uint divisor)
+			static UInt256 RemainderSlow(in UInt256 quotient, in UInt256 divisor)
 			{
 				const int UIntCount = Size / sizeof(uint);
 
-				uint* pLeft = stackalloc uint[UIntCount];
-				Unsafe.WriteUnaligned(ref *(byte*)(pLeft), quotient);
-				Span<uint> left = new Span<uint>(pLeft, (UIntCount) - (BitHelper.LeadingZeroCount(in quotient) / 32));
+				Span<uint> quotientSpan = stackalloc uint[UIntCount];
+				quotientSpan.Clear();
+				Unsafe.WriteUnaligned(ref Unsafe.As<uint, byte>(ref MemoryMarshal.GetReference(quotientSpan)), quotient);
 
-				return Calculator.Remainder(left, divisor);
-			}
-			unsafe static UInt256 RemainderSlow(in UInt256 quotient, in UInt256 divisor)
-			{
-				const int UIntCount = Size / sizeof(uint);
-
-				uint* pLeft = stackalloc uint[UIntCount];
-				Unsafe.WriteUnaligned(ref *(byte*)(pLeft), quotient);
-				Span<uint> left = new Span<uint>(pLeft, (UIntCount) - (BitHelper.LeadingZeroCount(in quotient) / 32));
-
-
-				uint* pRight = stackalloc uint[UIntCount];
-				Unsafe.WriteUnaligned(ref *(byte*)(pRight), divisor);
-				Span<uint> right = new Span<uint>(pRight, (UIntCount) - (BitHelper.LeadingZeroCount(in divisor) / 32));
-
+				Span<uint> divisorSpan = stackalloc uint[UIntCount];
+				divisorSpan.Clear();
+				Unsafe.WriteUnaligned(ref Unsafe.As<uint, byte>(ref MemoryMarshal.GetReference(divisorSpan)), divisor);
 
 				Span<uint> rawBits = stackalloc uint[UIntCount];
 				rawBits.Clear();
 
-				Calculator.Remainder(left, right, rawBits);
+				Calculator.Remainder(
+					quotientSpan[..((UIntCount) - (BitHelper.LeadingZeroCount(in quotient) / 32))],
+					divisorSpan[..((UIntCount) - (BitHelper.LeadingZeroCount(in divisor) / 32))],
+					rawBits);
 
 				return Unsafe.ReadUnaligned<UInt256>(ref Unsafe.As<uint, byte>(ref MemoryMarshal.GetReference(rawBits)));
 			}
@@ -1282,17 +1280,17 @@ namespace MissingValues
 		{
 			if (Vector256.IsHardwareAccelerated)
 			{
-				var v1 = Unsafe.As<UInt256, Vector256<ulong>>(ref Unsafe.AsRef(in left));
-				var v2 = Unsafe.As<UInt256, Vector256<ulong>>(ref Unsafe.AsRef(in right));
+				var v1 = Unsafe.BitCast<UInt256, Vector256<ulong>>(left);
+				var v2 = Unsafe.BitCast<UInt256, Vector256<ulong>>(right);
 				var result = v1 & v2;
-				return Unsafe.As<Vector256<ulong>, UInt256>(ref result);
+				return Unsafe.BitCast<Vector256<ulong>, UInt256>(result);
 			}
 			else if (Avx2.IsSupported)
 			{
-				var v1 = Unsafe.As<UInt256, Vector256<ulong>>(ref Unsafe.AsRef(in left));
-				var v2 = Unsafe.As<UInt256, Vector256<ulong>>(ref Unsafe.AsRef(in right));
+				var v1 = Unsafe.BitCast<UInt256, Vector256<ulong>>(left);
+				var v2 = Unsafe.BitCast<UInt256, Vector256<ulong>>(right);
 				var result = Avx2.And(v1, v2);
-				return Unsafe.As<Vector256<ulong>, UInt256>(ref result);
+				return Unsafe.BitCast<Vector256<ulong>, UInt256>(result);
 			}
 			else
 			{
@@ -1305,17 +1303,17 @@ namespace MissingValues
 		{
 			if (Vector256.IsHardwareAccelerated)
 			{
-				var v1 = Unsafe.As<UInt256, Vector256<ulong>>(ref Unsafe.AsRef(in left));
-				var v2 = Unsafe.As<UInt256, Vector256<ulong>>(ref Unsafe.AsRef(in right));
+				var v1 = Unsafe.BitCast<UInt256, Vector256<ulong>>(left);
+				var v2 = Unsafe.BitCast<UInt256, Vector256<ulong>>(right);
 				var result = v1 | v2;
-				return Unsafe.As<Vector256<ulong>, UInt256>(ref result);
+				return Unsafe.BitCast<Vector256<ulong>, UInt256>(result);
 			}
 			else if (Avx2.IsSupported)
 			{
-				var v1 = Unsafe.As<UInt256, Vector256<ulong>>(ref Unsafe.AsRef(in left));
-				var v2 = Unsafe.As<UInt256, Vector256<ulong>>(ref Unsafe.AsRef(in right));
+				var v1 = Unsafe.BitCast<UInt256, Vector256<ulong>>(left);
+				var v2 = Unsafe.BitCast<UInt256, Vector256<ulong>>(right);
 				var result = Avx2.Or(v1, v2);
-				return Unsafe.As<Vector256<ulong>, UInt256>(ref result);
+				return Unsafe.BitCast<Vector256<ulong>, UInt256>(result);
 			}
 			else
 			{
@@ -1328,17 +1326,17 @@ namespace MissingValues
 		{
 			if (Vector256.IsHardwareAccelerated)
 			{
-				var v1 = Unsafe.As<UInt256, Vector256<ulong>>(ref Unsafe.AsRef(in left));
-				var v2 = Unsafe.As<UInt256, Vector256<ulong>>(ref Unsafe.AsRef(in right));
+				var v1 = Unsafe.BitCast<UInt256, Vector256<ulong>>(left);
+				var v2 = Unsafe.BitCast<UInt256, Vector256<ulong>>(right);
 				var result = v1 ^ v2;
-				return Unsafe.As<Vector256<ulong>, UInt256>(ref result);
+				return Unsafe.BitCast<Vector256<ulong>, UInt256>(result);
 			}
 			else if (Avx2.IsSupported)
 			{
-				var v1 = Unsafe.As<UInt256, Vector256<ulong>>(ref Unsafe.AsRef(in left));
-				var v2 = Unsafe.As<UInt256, Vector256<ulong>>(ref Unsafe.AsRef(in right));
+				var v1 = Unsafe.BitCast<UInt256, Vector256<ulong>>(left);
+				var v2 = Unsafe.BitCast<UInt256, Vector256<ulong>>(right);
 				var result = Avx2.Xor(v1, v2);
-				return Unsafe.As<Vector256<ulong>, UInt256>(ref result);
+				return Unsafe.BitCast<Vector256<ulong>, UInt256>(result);
 			}
 			else
 			{

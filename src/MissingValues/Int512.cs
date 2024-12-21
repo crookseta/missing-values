@@ -104,10 +104,14 @@ namespace MissingValues
 		/// <param name="lower">The lower 256-bits of the 512-bit value.</param>
 		public Int512(UInt256 upper, UInt256 lower)
 		{
-			lower.GetLowerParts(out _p1, out _p0);
-			lower.GetUpperParts(out _p3, out _p2);
-			upper.GetLowerParts(out _p5, out _p4);
-			upper.GetUpperParts(out _p7, out _p6);
+			_p0 = lower.Part0;
+			_p1 = lower.Part1;
+			_p2 = lower.Part2;
+			_p3 = lower.Part3;
+			_p4 = upper.Part0;
+			_p5 = upper.Part1;
+			_p6 = upper.Part2;
+			_p7 = upper.Part3;
 		}
 		/// <summary>
 		/// Initializes a new instance of the <see cref="Int512"/> struct.
@@ -433,7 +437,7 @@ namespace MissingValues
 		/// Explicitly converts a <see cref="Int512" /> value to a <see cref="UInt512"/>.
 		/// </summary>
 		/// <param name="value">The value to convert.</param>
-		public static explicit operator UInt512(in Int512 value) => new(value._p7, value._p6, value._p5, value._p4, value._p3, value._p2, value._p1, value._p0);
+		public static explicit operator UInt512(in Int512 value) => Unsafe.BitCast<Int512, UInt512>(value);
 		/// <summary>
 		/// Explicitly converts a <see cref="Int512" /> value to a <see cref="UInt512"/>.
 		/// </summary>
@@ -445,7 +449,7 @@ namespace MissingValues
 			{
 				Thrower.IntegerOverflow();
 			}
-			return new(value._p7, value._p6, value._p5, value._p4, value._p3, value._p2, value._p1, value._p0);
+			return Unsafe.BitCast<Int512, UInt512>(value);
 		}
 		/// <summary>
 		/// Explicitly converts a <see cref="Int512" /> value to a <see cref="nuint"/>.
@@ -651,7 +655,7 @@ namespace MissingValues
 
 			Span<byte> span = stackalloc byte[Size];
 			value.WriteLittleEndianUnsafe(span);
-			return new BigInteger(span, value >= 0);
+			return new BigInteger(span, (long)value._p7 >= 0);
 		}
 		// Floating
 		/// <summary>
@@ -1000,7 +1004,7 @@ namespace MissingValues
 
 			if ((0.0d > value + TwoPow511) || double.IsNaN(value) || (value > +TwoPow511))
 			{
-				throw new OverflowException();
+				Thrower.IntegerOverflow();
 			}
 			if (0.0 == TwoPow511 - value)
 			{
@@ -1057,7 +1061,8 @@ namespace MissingValues
 
 				ulong bits = BitConverter.DoubleToUInt64Bits(value);
 
-				Int512 result = new Int512(new UInt256(new UInt128((bits << 12) >> 1 | 0x8000_0000_0000_0000, 0x0000_0000_0000_0000), UInt128.Zero), UInt256.Zero);
+				Int512 result = new Int512((bits << 12) >> 1 | 0x8000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 
+					0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
 				result >>>= (1023 + 512 - 1 - (int)(bits >> 52));
 
 				if (isNegative)

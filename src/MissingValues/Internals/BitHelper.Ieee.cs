@@ -123,33 +123,6 @@ namespace MissingValues
 			return Octo.UInt256BitsToOcto(bits);
 		}
 
-		public static void GetDoubleParts(double dbl, out int sign, out int exp, out ulong man, out bool fFinite)
-		{
-			ulong bits = BitConverter.DoubleToUInt64Bits(dbl);
-
-			sign = 1 - ((int)(bits >> 62) & 2);
-			man = bits & 0x000FFFFFFFFFFFFF;
-			exp = (int)(bits >> 52) & 0x7FF;
-			if (exp == 0)
-			{
-				// Denormalized number.
-				fFinite = true;
-				if (man != 0)
-					exp = -1074;
-			}
-			else if (exp == 0x7FF)
-			{
-				// NaN or Infinite.
-				fFinite = false;
-				exp = int.MaxValue;
-			}
-			else
-			{
-				fFinite = true;
-				man |= 0x0010000000000000;
-				exp -= 1075;
-			}
-		}
 		public static void GetQuadParts(Quad dbl, out int sign, out int exp, out UInt128 man, out bool fFinite)
 		{
 			const int Bias = Quad.ExponentBias + Quad.BiasedExponentShift;
@@ -183,9 +156,9 @@ namespace MissingValues
 			const int Bias = Octo.ExponentBias + Octo.BiasedExponentShift;
 			UInt256 bits = Octo.OctoToUInt256Bits(dbl);
 
-			sign = 1 - ((int)(bits >> 254) & 2);
+			sign = 1 - ((int)(bits.Part3 >> 62) & 2);
 			man = bits & Octo.TrailingSignificandMask;
-			exp = (int)(bits >> Octo.BiasedExponentShift) & Octo.MaxBiasedExponent;
+			exp = (int)(bits.Part3 >> 44) & Octo.MaxBiasedExponent;
 			if (exp == 0)
 			{
 				// Denormalized number.
@@ -359,8 +332,6 @@ namespace MissingValues
 			return ((uint)(1 - shiftDist), sig << shiftDist);
 		}
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		internal static ulong FracQuadUI64(ulong a64) => ((a64) & 0x0000_FFFF_FFFF_FFFF);
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		internal static ulong PackToQuadUI64(bool sign, int exp, ulong sig64) => ((Convert.ToUInt64(sign) << 63) + ((ulong)(exp) << 48) + (sig64));
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		internal static UInt128 PackToQuad(bool sign, int exp, UInt128 sig) => ((new UInt128(sign ? 1UL << 63 : 0, 0)) + ((((UInt128)exp) << Quad.BiasedExponentShift) & Quad.BiasedExponentMask) + (sig));
@@ -389,32 +360,6 @@ namespace MissingValues
 			ext = a0 << (negDist & 127) | ((extra != UInt128.Zero) ? UInt128.One : UInt128.Zero);
 
 			return new UInt256(z64, z0);
-		}
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		internal static UInt512 ShortShiftRightJam(UInt512 a, int dist)
-		{
-			int negDist;
-			UInt256 z64;
-			UInt256 z0;
-
-			if (dist < 256)
-			{
-				negDist = (int)(uint)-dist;
-				z64 = a.Upper >> dist;
-				z0 = a.Upper << (negDist & 255) | a.Lower >> dist
-					| ((a.Lower << (negDist & 255)) != UInt256.Zero ? UInt256.One : UInt256.Zero);
-			}
-			else
-			{
-				z64 = default;
-				z0 =
-					(dist < 511)
-					? a.Upper >> (dist & 255)
-					| ((a.Upper & ((UInt256.One << (dist & 255)) - 1) | a.Lower) != UInt256.Zero ? UInt256.One : UInt256.Zero)
-					: ((a != UInt512.Zero) ? UInt256.One : UInt256.Zero);
-			}
-
-			return new UInt512(z64, z0);
 		}
 
 
@@ -1261,7 +1206,7 @@ namespace MissingValues
 					if (expDiff < -1)
 					{
 						sigZ = sigC - sigZ;
-						sigZExtra = sig256Z.Lower.GetUpperBits() | sig256Z.Upper.GetLowerBits(); // TODO: Use _p1 and _p2 instead.
+						sigZExtra = sig256Z.Part1 | sig256Z.Part2;
 						if (sigZExtra != 0)
 						{
 							--sigZ;
@@ -1283,7 +1228,7 @@ namespace MissingValues
 				{
 					sigZ -= sigC;
 
-					if (sigZ == UInt128.Zero && sig256Z.Lower == UInt128.Zero)
+					if (sigZ == UInt128.Zero && (sig256Z.Part1 == 0 && sig256Z.Part0 == 0))
 					{
 						return Quad.PositiveZeroBits;
 					}
@@ -1312,7 +1257,8 @@ namespace MissingValues
 				}
 
 				sigZ = sig256Z.Upper;
-				GetUpperAndLowerBits(sig256Z.Lower, out sigZExtra, out ulong sig256Z0);
+				sigZExtra = sig256Z.Part1;
+				ulong sig256Z0 = sig256Z.Part0;
 				if (sigZ.GetUpperBits() != 0)
 				{
 					if (sig256Z0 != 0)
@@ -1355,7 +1301,7 @@ namespace MissingValues
 			}
 
 		sigZ:
-			sigZExtra = sig256Z.Lower.GetUpperBits() | sig256Z.Lower.GetLowerBits();
+			sigZExtra = sig256Z.Part1 | sig256Z.Part0;
 		shiftRightRoundPack:
 			sigZExtra = ((sigZ.GetLowerBits() << (64 - shiftDist)) | (sigZExtra != 0 ? 1UL : 0UL));
 			sigZ = sigZ >> shiftDist;

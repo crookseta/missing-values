@@ -13,6 +13,40 @@ namespace MissingValues.Tests.Core
 	public partial class UInt512Test
 	{
 		#region Readonly Variables
+		private const string MaxValueBin =
+			"11111111111111111111111111111111"
+			+ "11111111111111111111111111111111"
+			+ "11111111111111111111111111111111"
+			+ "11111111111111111111111111111111"
+			+ "11111111111111111111111111111111"
+			+ "11111111111111111111111111111111"
+			+ "11111111111111111111111111111111"
+			+ "11111111111111111111111111111111"
+			+ "11111111111111111111111111111111"
+			+ "11111111111111111111111111111111"
+			+ "11111111111111111111111111111111"
+			+ "11111111111111111111111111111111"
+			+ "11111111111111111111111111111111"
+			+ "11111111111111111111111111111111"
+			+ "11111111111111111111111111111111"
+			+ "11111111111111111111111111111111";
+		private ReadOnlySpan<byte> MaxValueBinUtf8 =>
+			"11111111111111111111111111111111"u8
+			+ "11111111111111111111111111111111"u8
+			+ "11111111111111111111111111111111"u8
+			+ "11111111111111111111111111111111"u8
+			+ "11111111111111111111111111111111"u8
+			+ "11111111111111111111111111111111"u8
+			+ "11111111111111111111111111111111"u8
+			+ "11111111111111111111111111111111"u8
+			+ "11111111111111111111111111111111"u8
+			+ "11111111111111111111111111111111"u8
+			+ "11111111111111111111111111111111"u8
+			+ "11111111111111111111111111111111"u8
+			+ "11111111111111111111111111111111"u8
+			+ "11111111111111111111111111111111"u8
+			+ "11111111111111111111111111111111"u8
+			+ "11111111111111111111111111111111"u8;
 		private const double MaxValueAsDouble = 13407807929942597099574024998205846127479365820592393377723561443721764030073546976801874298166903427690031858186486050853753882811946569946433649006084095.0;
 
 		private static readonly UInt ByteMaxValue = new(
@@ -1035,6 +1069,9 @@ namespace MissingValues.Tests.Core
 			NumberBaseHelper<UInt>.Parse("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF", System.Globalization.NumberStyles.HexNumber, CultureInfo.CurrentCulture)
 				.Should().Be(MaxValue)
 				.And.BeRankedEquallyTo(MaxValue);
+			NumberBaseHelper<UInt>.Parse(MaxValueBin, System.Globalization.NumberStyles.BinaryNumber, CultureInfo.CurrentCulture)
+				.Should().Be(MaxValue)
+				.And.BeRankedEquallyTo(MaxValue);
 
 			Assert.Throws<OverflowException>(() => NumberBaseHelper<UInt>.Parse("13407807929942597099574024998205846127479365820592393377723561443721764030073546976801874298166903427690031858186486050853753882811946569946433649006084096", System.Globalization.NumberStyles.Integer, CultureInfo.CurrentCulture));
 		}
@@ -1047,6 +1084,10 @@ namespace MissingValues.Tests.Core
 			parsedValue.Should().Be(MaxValue)
 				.And.BeRankedEquallyTo(MaxValue);
 			NumberBaseHelper<UInt>.TryParse("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF", System.Globalization.NumberStyles.HexNumber, CultureInfo.CurrentCulture, out parsedValue)
+				.Should().BeTrue();
+			parsedValue.Should().Be(MaxValue)
+				.And.BeRankedEquallyTo(MaxValue);
+			NumberBaseHelper<UInt>.TryParse(MaxValueBin, System.Globalization.NumberStyles.BinaryNumber, CultureInfo.CurrentCulture, out parsedValue)
 				.Should().BeTrue();
 			parsedValue.Should().Be(MaxValue)
 				.And.BeRankedEquallyTo(MaxValue);
@@ -1065,6 +1106,9 @@ namespace MissingValues.Tests.Core
 			NumberBaseHelper<UInt>.Parse("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"u8, System.Globalization.NumberStyles.HexNumber, CultureInfo.CurrentCulture)
 				.Should().Be(MaxValue)
 				.And.BeRankedEquallyTo(MaxValue);
+			NumberBaseHelper<UInt>.Parse(MaxValueBinUtf8, System.Globalization.NumberStyles.BinaryNumber, CultureInfo.CurrentCulture)
+				.Should().Be(MaxValue)
+				.And.BeRankedEquallyTo(MaxValue);
 
 			Assert.Throws<OverflowException>(() => NumberBaseHelper<UInt>.Parse("13407807929942597099574024998205846127479365820592393377723561443721764030073546976801874298166903427690031858186486050853753882811946569946433649006084096"u8, System.Globalization.NumberStyles.Integer, CultureInfo.CurrentCulture));
 		}
@@ -1077,6 +1121,10 @@ namespace MissingValues.Tests.Core
 			parsedValue.Should().Be(MaxValue)
 				.And.BeRankedEquallyTo(MaxValue);
 			NumberBaseHelper<UInt>.TryParse("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"u8, System.Globalization.NumberStyles.HexNumber, CultureInfo.CurrentCulture, out parsedValue)
+				.Should().BeTrue();
+			parsedValue.Should().Be(MaxValue)
+				.And.BeRankedEquallyTo(MaxValue);
+			NumberBaseHelper<UInt>.TryParse(MaxValueBinUtf8, System.Globalization.NumberStyles.BinaryNumber, CultureInfo.CurrentCulture, out parsedValue)
 				.Should().BeTrue();
 			parsedValue.Should().Be(MaxValue)
 				.And.BeRankedEquallyTo(MaxValue);

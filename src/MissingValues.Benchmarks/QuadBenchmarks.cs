@@ -13,6 +13,9 @@ namespace MissingValues.Benchmarks
 	{
 		private static readonly Random rnd = new Random(7);
 
+		[SimpleJob(RuntimeMoniker.Net80)]
+		[SimpleJob(RuntimeMoniker.Net90)]
+		[HideColumns("Job", "Error", "StdDev")]
 		public class MathOperators
 		{
 			private Quad q;
@@ -126,6 +129,9 @@ namespace MissingValues.Benchmarks
 			}
 		}
 		[MemoryDiagnoser]
+		[SimpleJob(RuntimeMoniker.Net80)]
+		[SimpleJob(RuntimeMoniker.Net90)]
+		[HideColumns("Job", "Error", "StdDev")]
 		public class Parsing
 		{
 			private string[] _lines;
