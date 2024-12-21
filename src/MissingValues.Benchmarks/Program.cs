@@ -12,11 +12,7 @@ using System.Windows.Markup;
 using MissingValues.Internals;
 
 #if DEBUG
-
-UInt512 b = UInt512.MaxValue / UInt512.Parse("10000000000000000000000000000000000000000");
-UInt256 a = UInt256.Parse("100000000000000000000000000000000000000");
-UInt512 c = UInt512.Parse("13407807929942597099574024998205846127479365820592393377723561443721764030073");
-
+Console.WriteLine("Hello World!");
 #else
 BenchmarkSwitcher.FromAssembly(typeof(Program).Assembly).Run(args);
 #endif

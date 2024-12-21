@@ -12,15 +12,15 @@ using System.Threading.Tasks;
 
 namespace MissingValues.Benchmarks
 {
-	[MarkdownExporter]
+	[SimpleJob(RuntimeMoniker.Net80)]
+	[SimpleJob(RuntimeMoniker.Net90)]
+	[HideColumns("Job", "Error", "StdDev")]
 	[MinColumn, MaxColumn, MeanColumn, MedianColumn]
-	[GenericTypeArguments(typeof(Int128))]
-	[GenericTypeArguments(typeof(UInt128))]
 	[GenericTypeArguments(typeof(Int256))]
 	[GenericTypeArguments(typeof(UInt256))]
 	[GenericTypeArguments(typeof(Int512))]
 	[GenericTypeArguments(typeof(UInt512))]
-	public class GenericIntegerBenchmarks<T>
+	public class GenericAritmethicBenchmarks<T>
 		where T : IBinaryInteger<T>
 	{
 		[Params(100, 10_000, 250_000, 750_000)]
@@ -28,7 +28,6 @@ namespace MissingValues.Benchmarks
 
 		private T[] _v1, _v2;
 		private T[] _destination;
-		private string[] _toString;
 
 		[GlobalSetup]
 		public void Setup()
@@ -46,7 +45,6 @@ namespace MissingValues.Benchmarks
 			Random.Shared.GetItems(_v1, _v2.AsSpan());
 
 			_destination = new T[Length];
-			_toString = new string[Length];
 		}
 
 		[Benchmark]
@@ -135,16 +133,6 @@ namespace MissingValues.Benchmarks
 				_destination[i + 3] = _v2[i] >>> 128;
 			}
 			return _destination;
-		}
-
-		[Benchmark]
-		public string[] ToString_Integer()
-		{
-			for (int i = 0; i < Length; i++)
-			{
-				_toString[i] = _v1[i].ToString()!;
-			}
-			return _toString;
 		}
 	}
 }

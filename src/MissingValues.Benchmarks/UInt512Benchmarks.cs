@@ -1,4 +1,5 @@
 ﻿using BenchmarkDotNet.Attributes;
+using BenchmarkDotNet.Jobs;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -10,6 +11,9 @@ namespace MissingValues.Benchmarks
 {
 	public class UInt512Benchmarks
 	{
+		[SimpleJob(RuntimeMoniker.Net80)]
+		[SimpleJob(RuntimeMoniker.Net90)]
+		[HideColumns("Job", "Error", "StdDev")]
 		[MinColumn, MaxColumn, MeanColumn, MedianColumn]
 		public class MathOperators
 		{
@@ -140,6 +144,9 @@ namespace MissingValues.Benchmarks
 		}
 
 		[MemoryDiagnoser]
+		[SimpleJob(RuntimeMoniker.Net80)]
+		[SimpleJob(RuntimeMoniker.Net90)]
+		[HideColumns("Job", "Error", "StdDev")]
 		public class ParsingAndFormatting
 		{
 			[Benchmark]
