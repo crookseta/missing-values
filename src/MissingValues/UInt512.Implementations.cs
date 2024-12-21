@@ -607,7 +607,7 @@ namespace MissingValues
 		/// <inheritdoc/>
 		public string ToString([StringSyntax(StringSyntaxAttribute.NumericFormat)] string? format, IFormatProvider? formatProvider)
 		{
-			return NumberFormatter.FormatUInt512(in this, format, formatProvider);
+			return NumberFormatter.FormatUInt(in this, format, formatProvider);
 		}
 
 		static bool INumberBase<UInt512>.TryConvertFromChecked<TOther>(TOther value, out UInt512 result) => TryConvertFromChecked(value, out result);
@@ -831,13 +831,13 @@ namespace MissingValues
 		/// <inheritdoc/>
 		public bool TryFormat(Span<char> destination, out int charsWritten, [StringSyntax(StringSyntaxAttribute.NumericFormat)] ReadOnlySpan<char> format, IFormatProvider? provider)
 		{
-			return NumberFormatter.TryFormatUInt512(in this, Utf16Char.CastFromCharSpan(destination), out charsWritten, format, provider);
+			return NumberFormatter.TryFormatUInt(in this, Utf16Char.CastFromCharSpan(destination), out charsWritten, format, provider);
 		}
 
 		/// <inheritdoc/>
 		public bool TryFormat(Span<byte> utf8Destination, out int bytesWritten, [StringSyntax(StringSyntaxAttribute.NumericFormat)] ReadOnlySpan<char> format, IFormatProvider? provider)
 		{
-			return NumberFormatter.TryFormatUInt512(in this, Utf8Char.CastFromByteSpan(utf8Destination), out bytesWritten, format, provider);
+			return NumberFormatter.TryFormatUInt(in this, Utf8Char.CastFromByteSpan(utf8Destination), out bytesWritten, format, provider);
 		}
 
 		bool IBinaryInteger<UInt512>.TryWriteBigEndian(Span<byte> destination, out int bytesWritten)
@@ -1000,6 +1000,7 @@ namespace MissingValues
 
 		static int IFormattableInteger<UInt512>.Log2Int32(in UInt512 value) => BitHelper.Log2(in value);
 		static int IFormattableInteger<UInt512>.LeadingZeroCountInt32(in UInt512 value) => BitHelper.LeadingZeroCount(in value);
+		static void IFormattableUnsignedInteger<UInt512>.ToDecChars<TChar>(in UInt512 number, Span<TChar> destination, int digits) => NumberFormatter.UInt512ToDecChars(number, destination, digits);
 
 		/// <inheritdoc/>
 		public static UInt512 operator +(in UInt512 value) => value;

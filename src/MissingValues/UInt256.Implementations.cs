@@ -800,19 +800,19 @@ namespace MissingValues
 		/// <inheritdoc/>
 		public string ToString([StringSyntax(StringSyntaxAttribute.NumericFormat)] string? format, IFormatProvider? formatProvider)
 		{
-			return NumberFormatter.FormatUInt256(in this, format, formatProvider);
+			return NumberFormatter.FormatUInt(in this, format, formatProvider);
 		}
 
 		/// <inheritdoc/>
 		public bool TryFormat(Span<char> destination, out int charsWritten, [StringSyntax(StringSyntaxAttribute.NumericFormat)] ReadOnlySpan<char> format, IFormatProvider? provider)
 		{
-			return NumberFormatter.TryFormatUInt256(in this, Utf16Char.CastFromCharSpan(destination), out charsWritten, format, provider);
+			return NumberFormatter.TryFormatUInt(in this, Utf16Char.CastFromCharSpan(destination), out charsWritten, format, provider);
 		}
 
 		/// <inheritdoc/>
 		public bool TryFormat(Span<byte> utf8Destination, out int bytesWritten, [StringSyntax(StringSyntaxAttribute.NumericFormat)] ReadOnlySpan<char> format, IFormatProvider? provider)
 		{
-			return NumberFormatter.TryFormatUInt256(in this, Utf8Char.CastFromByteSpan(utf8Destination), out bytesWritten, format, provider);
+			return NumberFormatter.TryFormatUInt(in this, Utf8Char.CastFromByteSpan(utf8Destination), out bytesWritten, format, provider);
 		}
 
 		bool IBinaryInteger<UInt256>.TryWriteBigEndian(Span<byte> destination, out int bytesWritten)
@@ -968,6 +968,7 @@ namespace MissingValues
 		}
 		static int IFormattableInteger<UInt256>.Log2Int32(in UInt256 value) => BitHelper.Log2(in value);
 		static int IFormattableInteger<UInt256>.LeadingZeroCountInt32(in UInt256 value) => BitHelper.LeadingZeroCount(in value);
+		static void IFormattableUnsignedInteger<UInt256>.ToDecChars<TChar>(in UInt256 number, Span<TChar> destination, int digits) => NumberFormatter.UInt256ToDecChars(number, destination, digits);
 
 		/// <inheritdoc/>
 		public static UInt256 operator +(in UInt256 value) => value;
