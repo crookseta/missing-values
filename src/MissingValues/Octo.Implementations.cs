@@ -387,7 +387,7 @@ namespace MissingValues
 
 			if (expA == 0x7FFFF)
 			{
-				if ((sigA != UInt128.Zero) || ((expB == 0x7FFFF) && (sigB != UInt128.Zero)))
+				if ((sigA != UInt256.Zero) || ((expB == 0x7FFFF) && (sigB != UInt256.Zero)))
 				{
 					return BitHelper.CreateOctoNaN(Octo.IsNegative(right), sigB);
 				}
@@ -395,7 +395,7 @@ namespace MissingValues
 			}
 			if (expB == 0x7FFFF)
 			{
-				if (sigB != UInt128.Zero)
+				if (sigB != UInt256.Zero)
 				{
 					return BitHelper.CreateOctoNaN(Octo.IsNegative(right), sigB);
 				}
@@ -404,7 +404,7 @@ namespace MissingValues
 
 			if (expB == 0)
 			{
-				if (sigB == UInt128.Zero)
+				if (sigB == UInt256.Zero)
 				{
 					return Quad.NaN;
 				}

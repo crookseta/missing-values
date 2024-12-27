@@ -738,7 +738,7 @@ namespace MissingValues.Internals
 			}
 			else // typeof(TBits) == typeof(UInt256)
 			{
-				// Otherwise, we need to read five blocks and combine them into a 128-bit mantissa
+				// Otherwise, we need to read five blocks and combine them into a 256-bit mantissa
 				exponent = baseExponent + ((int)(bottomBlockIndex) * 64);
 
 				int bottomBlockShift = (int)(topBlockBits);
