@@ -1555,8 +1555,8 @@ namespace MissingValues
 		{
 			if (Vector512.IsHardwareAccelerated)
 			{
-				var v1 = Unsafe.As<UInt512, Vector512<ulong>>(ref Unsafe.AsRef(in left));
-				var v2 = Unsafe.As<UInt512, Vector512<ulong>>(ref Unsafe.AsRef(in right));
+				var v1 = Unsafe.BitCast<UInt512, Vector512<ulong>>(left);
+				var v2 = Unsafe.BitCast<UInt512, Vector512<ulong>>(right);
 				return v1 == v2;
 			}
 			else
@@ -1571,8 +1571,8 @@ namespace MissingValues
 		{
 			if (Vector512.IsHardwareAccelerated)
 			{
-				var v1 = Unsafe.As<UInt512, Vector512<ulong>>(ref Unsafe.AsRef(in left));
-				var v2 = Unsafe.As<UInt512, Vector512<ulong>>(ref Unsafe.AsRef(in right));
+				var v1 = Unsafe.BitCast<UInt512, Vector512<ulong>>(left);
+				var v2 = Unsafe.BitCast<UInt512, Vector512<ulong>>(right);
 				return v1 != v2;
 			}
 			else
