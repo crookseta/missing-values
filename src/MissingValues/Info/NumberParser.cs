@@ -313,7 +313,7 @@ namespace MissingValues.Info
 
 			if ((style & SPECIAL) != 0)
 			{
-				NumberInfo number = new NumberInfo(stackalloc byte[IntBufferLength], true);
+				NumberInfo number = new NumberInfo(stackalloc byte[IntBufferLength]);
 				NumberFormatInfo info = NumberFormatInfo.GetInstance(formatProvider);
 				if (!NumberInfo.TryParse(s, ref number, info, style) 
 					|| !NumberInfo.TryConvertToInteger(ref number, out output))
@@ -393,7 +393,7 @@ namespace MissingValues.Info
 
 			if ((style & SPECIAL) != 0)
 			{
-				NumberInfo number = new NumberInfo(stackalloc byte[IntBufferLength], true);
+				NumberInfo number = new NumberInfo(stackalloc byte[IntBufferLength]);
 				NumberFormatInfo info = NumberFormatInfo.GetInstance(formatProvider);
 				if (!NumberInfo.TryParse(s, ref number, info, style)
 					|| !NumberInfo.TryConvertToInteger(ref number, out output))
