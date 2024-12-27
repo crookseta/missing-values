@@ -1066,8 +1066,6 @@ namespace MissingValues
 			Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref address, sizeof(ulong) * 3), p3);
 		}
 
-		int IFormattableInteger<Int256>.ToInt32() => (int)_p0;
-
 		static Int256 IFormattableNumber<Int256>.GetDecimalValue(char value)
 		{
 			if (!char.IsDigit(value))

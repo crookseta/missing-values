@@ -960,8 +960,6 @@ namespace MissingValues
 			Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref address, sizeof(ulong) * 7), p7);
 		}
 
-		int IFormattableInteger<UInt512>.ToInt32() => (int)_p0;
-
 		static int IFormattableUnsignedInteger<UInt512>.CountDigits(in UInt512 value) => CountDigits(in value);
 
 		internal static int CountDigits(in UInt512 value)

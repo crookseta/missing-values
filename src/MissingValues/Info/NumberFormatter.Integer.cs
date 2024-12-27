@@ -12,12 +12,6 @@ internal interface IFormattableInteger<TSelf> : IFormattableNumber<TSelf>, IBigI
 		where TSelf : IFormattableInteger<TSelf>?
 {
 	/// <summary>
-	/// Converts a <typeparamref name="TSelf"/> to a <see cref="int"/>.
-	/// </summary>
-	/// <returns></returns>
-	int ToInt32();
-
-	/// <summary>
 	/// Converts the specified hexadecimal character to a <typeparamref name="TSelf"/>.
 	/// </summary>
 	/// <param name="value">A hexadecimal character.</param>
