@@ -716,7 +716,7 @@ namespace MissingValues
 		static bool INumberBase<UInt512>.TryConvertToChecked<TOther>(UInt512 value, out TOther result)
 		{
 			bool converted = true;
-			result = default;
+			result = TOther.Zero;
 			checked
 			{
 				result = result switch
@@ -753,7 +753,7 @@ namespace MissingValues
 		static bool INumberBase<UInt512>.TryConvertToSaturating<TOther>(UInt512 value, out TOther result)
 		{
 			bool converted = true;
-			result = default;
+			result = TOther.Zero;
 			result = result switch
 			{
 				char => (TOther)(object)(char)value,
@@ -795,7 +795,7 @@ namespace MissingValues
 		static bool INumberBase<UInt512>.TryConvertToTruncating<TOther>(UInt512 value, out TOther result)
 		{
 			bool converted = true;
-			result = default;
+			result = TOther.Zero;
 			unchecked
 			{
 				result = result switch
