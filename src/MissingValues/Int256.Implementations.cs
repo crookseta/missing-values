@@ -709,8 +709,8 @@ namespace MissingValues
 			result = value switch
 			{
 				char actual => actual,
-				Half actual => (actual == Half.PositiveInfinity) ? MaxValue : (actual == Half.NegativeInfinity) ? MinValue : (Int256)actual,
-				float actual => (actual == float.PositiveInfinity) ? MaxValue : (actual == float.NegativeInfinity) ? MinValue : (Int256)actual,
+				Half actual => (Half.IsPositiveInfinity(actual)) ? MaxValue : (Half.IsNegativeInfinity(actual)) ? MinValue : (Int256)actual,
+				float actual => (float.IsPositiveInfinity(actual)) ? MaxValue : (float.IsNegativeInfinity(actual)) ? MinValue : (Int256)actual,
 				double actual => (actual <= -TwoPow255) ? MinValue : (actual > +TwoPow255) ? MaxValue : (Int256)actual,
 				decimal actual => (Int128)actual,
 				byte actual => (Int256)actual,
