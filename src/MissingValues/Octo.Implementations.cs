@@ -908,7 +908,7 @@ namespace MissingValues
 		{
 			if (!TryParse(utf8Text, style, provider, out Octo result))
 			{
-				Thrower.ParsingError<Octo>(utf8Text.ToString());
+				Thrower.ParsingError<Octo>(utf8Text);
 			}
 			return result;
 		}
@@ -918,7 +918,7 @@ namespace MissingValues
 		{
 			if (!TryParse(utf8Text, NumberStyles.Float, provider, out Octo result))
 			{
-				Thrower.ParsingError<Octo>(utf8Text.ToString());
+				Thrower.ParsingError<Octo>(utf8Text);
 			}
 			return result;
 		}

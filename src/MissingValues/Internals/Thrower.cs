@@ -95,6 +95,12 @@ namespace MissingValues.Internals
 			throw new FormatException($"Could not parse '{input}' as {typeof(T)}.\n" + extraContext);
 		}
 		[DoesNotReturn]
+		public static void ParsingError<T>(ReadOnlySpan<byte> input, string extraContext = "")
+			where T : IParsable<T>
+		{
+			ParsingError<T>(Encoding.UTF8.GetString(input), extraContext);
+		}
+		[DoesNotReturn]
 		public static void ParsingError<T>(string input, ParsingErrorType errorType)
 			where T : IParsable<T>
 		{

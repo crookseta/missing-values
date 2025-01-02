@@ -403,7 +403,7 @@ namespace MissingValues
 		{
 			if (!TryParse(utf8Text, style, provider, out Quad result))
 			{
-				Thrower.ParsingError<Quad>(utf8Text.ToString());
+				Thrower.ParsingError<Quad>(utf8Text);
 			}
 			return result;
 		}
@@ -413,7 +413,7 @@ namespace MissingValues
 		{
 			if (!TryParse(utf8Text, NumberStyles.Float, provider, out Quad result))
 			{
-				Thrower.ParsingError<Quad>(utf8Text.ToString());
+				Thrower.ParsingError<Quad>(utf8Text);
 			}
 			return result;
 		}
