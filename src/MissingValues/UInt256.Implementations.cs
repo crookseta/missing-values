@@ -199,8 +199,8 @@ namespace MissingValues
 			}
 			if (right > left)
 			{
-				quotient = Zero;
 				remainder = left;
+				quotient = Zero;
 				return;
 			}
 

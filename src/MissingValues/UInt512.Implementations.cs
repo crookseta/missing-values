@@ -199,18 +199,12 @@ namespace MissingValues
 			}
 			if (right > left)
 			{
-				quotient = Zero;
 				remainder = left;
+				quotient = Zero;
 				return;
 			}
 
 			DivRemSlow(in left, in right, out quotient, out remainder);
-
-			static void DivRemFast(in UInt512 quotient, uint divisor, out UInt512 quo, out UInt512 rem)
-			{
-				Calculator.DivRem(in quotient, divisor, out quo, out uint r);
-				rem = r;
-			}
 			static void DivRemSlow(in UInt512 quotient, in UInt512 divisor, out UInt512 quo, out UInt512 rem)
 			{
 				const int UIntCount = Size / sizeof(uint);

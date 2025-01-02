@@ -90,6 +90,33 @@ namespace MissingValues.Tests.Core
 		}
 
 		[Fact]
+		public void Internal_DivRemTest()
+		{
+			const long Left = 101_000_000_000;
+			const long Right = 10_000_000_000;
+			const long Quotient = 10;
+			const long Remainder = 1_000_000_000;
+
+			UInt a = Left;
+			UInt b = Right;
+
+			UInt.DivRem(in a, in b, out UInt quotient, out UInt remainder);
+
+			quotient.Should().Be(Quotient);
+			remainder.Should().Be(Remainder);
+
+			UInt.DivRem(in a, in b, out a, out remainder);
+
+			a.Should().Be(Quotient);
+			remainder.Should().Be(Remainder);
+
+			UInt.DivRem(Left, in b, out quotient, out b);
+
+			quotient.Should().Be(Quotient);
+			b.Should().Be(Remainder);
+		}
+
+		[Fact]
 		public void BasicParseTest()
 		{
 			UInt.Parse("115792089237316195423570985008687907853269984665640564039457584007913129639935")
