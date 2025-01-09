@@ -1,18 +1,12 @@
 ﻿using MissingValues.Info;
 using MissingValues.Internals;
-using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
-using System.Linq;
 using System.Numerics;
-using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using System.Text;
 using System.Text.Json.Serialization;
-using System.Threading.Tasks;
 
 namespace MissingValues
 {
@@ -253,7 +247,7 @@ namespace MissingValues
 		[EditorBrowsable(EditorBrowsableState.Never)]
 		public static Int128 QuadToInt128Bits(Quad value) => new Int128(value._upper, value._lower);
 
-		
+
 		internal static ushort ExtractBiasedExponentFromBits(UInt128 bits)
 		{
 			return (ushort)((bits >> BiasedExponentShift) & ShiftedBiasedExponentMask);
@@ -271,12 +265,12 @@ namespace MissingValues
 		{
 			return ((QuadToUInt128Bits(x) | QuadToUInt128Bits(y)) & ~SignMask) == UInt128.Zero;
 		}
-		
+
 		internal static bool IsNaNOrZero(Quad value)
 		{
 			return ((QuadToUInt128Bits(value) - 1) & ~SignMask) >= PositiveInfinityBits;
 		}
-		
+
 		internal static UInt128 StripSign(Quad value)
 		{
 			return QuadToUInt128Bits(value) & ~SignMask;
@@ -1133,10 +1127,10 @@ namespace MissingValues
 
 			bool isNegative = Quad.IsNegative(value);
 
-            if (isNegative)
-            {
-                value = -value;
-            }
+			if (isNegative)
+			{
+				value = -value;
+			}
 
 			if (value >= Quad.One)
 			{
@@ -1178,10 +1172,10 @@ namespace MissingValues
 
 			bool isNegative = Quad.IsNegative(value);
 
-            if (isNegative)
-            {
-                value = -value;
-            }
+			if (isNegative)
+			{
+				value = -value;
+			}
 
 			if (value >= Quad.One)
 			{
@@ -1322,11 +1316,11 @@ namespace MissingValues
 
 			BitHelper.GetQuadParts(value, out int sign, out int exp, out var man, out _);
 
-            if (man == UInt128.Zero)
-            {
+			if (man == UInt128.Zero)
+			{
 				return BigInteger.Zero;
-            }
-			
+			}
+
 			if (exp <= 0)
 			{
 				if (exp <= -kcbitUInt128)
@@ -1361,7 +1355,7 @@ namespace MissingValues
 
 				return sign > 0 ? new BigInteger(MemoryMarshal.Cast<ulong, byte>(bits), true) : -(new BigInteger(MemoryMarshal.Cast<ulong, byte>(bits)));
 			}
-        }
+		}
 		// Floating
 		/// <summary>
 		/// Explicitly converts a <see cref="Quad" /> value to a <see cref="decimal"/>.
@@ -1381,14 +1375,14 @@ namespace MissingValues
 			int exp = value.BiasedExponent;
 			UInt128 sig = value.TrailingSignificand;
 
-            if (exp == MaxBiasedExponent)
-            {
+			if (exp == MaxBiasedExponent)
+			{
 				if (sig != UInt128.Zero)
 				{
 					return BitHelper.CreateOctoNaN(sign, (UInt256)sig << 124);
 				}
 				return sign ? Octo.NegativeInfinity : Octo.PositiveInfinity;
-            }
+			}
 
 			if (exp == 0)
 			{
@@ -1401,7 +1395,7 @@ namespace MissingValues
 			}
 
 			return new Octo(sign, (uint)(exp + 0x3_C000), (UInt256)sig << 124);
-        }
+		}
 		/// <summary>
 		/// Explicitly converts a <see cref="Quad" /> value to a <see cref="double"/>.
 		/// </summary>
@@ -1668,8 +1662,8 @@ namespace MissingValues
 				var remainder = bits[pow2Length..];
 				bits64 = stackalloc ulong[++length];
 				bits[..pow2Length].CopyTo(MemoryMarshal.AsBytes(bits64));
-                for (int i = remainder.Length - 1, shift = 64 - 8; i >= 0; i--, shift -= 8)
-                {
+				for (int i = remainder.Length - 1, shift = 64 - 8; i >= 0; i--, shift -= 8)
+				{
 					bits64[^1] = (ulong)remainder[i] << shift;
 				}
 			}

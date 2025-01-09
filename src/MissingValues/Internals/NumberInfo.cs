@@ -1,16 +1,11 @@
 ﻿using MissingValues.Info;
-using System;
 using System.Buffers.Binary;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
-using System.Linq;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace MissingValues.Internals
 {
@@ -19,12 +14,12 @@ namespace MissingValues.Internals
 	{
 		private TInt _state;
 
-        private State(TInt state)
-        {
+		private State(TInt state)
+		{
 			_state = state;
-        }
+		}
 
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public void Add(TInt state)
 		{
 			_state |= state;
@@ -69,8 +64,8 @@ namespace MissingValues.Internals
 		public bool HasNonZeroTail;
 		public Span<byte> Digits;
 
-        public NumberInfo(Span<byte> digits)
-        {
+		public NumberInfo(Span<byte> digits)
+		{
 			DigitsCount = 0;
 			Scale = 0;
 			IsNegative = false;
@@ -79,8 +74,8 @@ namespace MissingValues.Internals
 			Digits = digits;
 			Digits[0] = (byte)'\0';
 		}
-        public NumberInfo(Span<byte> digits, bool isFloating)
-        {
+		public NumberInfo(Span<byte> digits, bool isFloating)
+		{
 			DigitsCount = 0;
 			Scale = 0;
 			IsNegative = false;
@@ -189,10 +184,10 @@ namespace MissingValues.Internals
 		public static unsafe bool TryParse<TChar>(ReadOnlySpan<TChar> s, ref NumberInfo info, NumberFormatInfo formatInfo, NumberStyles styles)
 			where TChar : unmanaged, IUtfCharacter<TChar>
 		{
-			fixed(TChar* stringPointer = &MemoryMarshal.GetReference(s))
+			fixed (TChar* stringPointer = &MemoryMarshal.GetReference(s))
 			{
 				TChar* p = stringPointer;
-				if(!TryParse(ref p, p + s.Length, ref info, formatInfo, styles)
+				if (!TryParse(ref p, p + s.Length, ref info, formatInfo, styles)
 					|| ((int)(p - stringPointer) < s.Length && !TrailingZeros(s, (int)(p - stringPointer))))
 				{
 					return false;
@@ -465,7 +460,7 @@ namespace MissingValues.Internals
 					if (!state.Contains(StateNonZero))
 					{
 						number.Scale = 0;
-						
+
 						if ((!number.IsFloating) && !state.Contains(StateDecimal))
 						{
 							number.IsNegative = false;
@@ -714,10 +709,10 @@ namespace MissingValues.Internals
 					goto END;
 				}
 			}
-			if(typeof(TBits) == typeof(UInt128))
+			if (typeof(TBits) == typeof(UInt128))
 			{
 				// Otherwise, we need to read three blocks and combine them into a 128-bit mantissa
-			
+
 				exponent = baseExponent + ((int)(middleBlockIndex) * 64);
 				int bottomBlockShift = (int)(topBlockBits);
 				int topBlockShift = size - bottomBlockShift;
@@ -1067,7 +1062,7 @@ namespace MissingValues.Internals
 					while (true)
 					{
 						uint cp = (p < pEnd) ? (uint)(*p) : '\0';
-						uint val = (uint)(*str);
+						uint val = *str;
 
 						if ((cp != val) && !(IsSpaceReplacingChar(val) && (cp == '\u0020')))
 						{
@@ -1104,7 +1099,7 @@ namespace MissingValues.Internals
 					while (true)
 					{
 						uint cp = (p < pEnd) ? (uint)(*p) : '\0';
-						uint val = (uint)(*str);
+						uint val = *str;
 
 						if ((cp != val) && !(IsSpaceReplacingChar(val) && (cp == '\u0020')))
 						{

@@ -1,10 +1,6 @@
 ﻿using MissingValues.Internals;
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
-using System.Linq;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -105,7 +101,7 @@ internal static partial class NumberFormatter
 				this[7] = S7;
 			}
 		}
-		
+
 		private record struct FloatingDecimal<TSignificand>(TSignificand Mantissa, int Exponent, bool Sign) : IBinaryFloatingPointDecimalFormat<FloatingDecimal<TSignificand>, TSignificand>
 			where TSignificand : unmanaged, IBinaryInteger<TSignificand>, IUnsignedNumber<TSignificand>
 		{
@@ -677,7 +673,7 @@ internal static partial class NumberFormatter
 					result[0] = mul[0];
 					result[1] = mul[1];
 					result[2] = mul[2];
-					result[3] = mul[3]; 
+					result[3] = mul[3];
 				}
 				else
 				{
@@ -721,7 +717,7 @@ internal static partial class NumberFormatter
 					result[0] = mul[0] + 1;
 					result[1] = mul[1];
 					result[2] = mul[2];
-					result[3] = mul[3]; 
+					result[3] = mul[3];
 				}
 				else
 				{
@@ -824,21 +820,21 @@ internal static partial class NumberFormatter
 			UInt256 b12 = MathQ.BigMul(a128[1], b128[2]);           // 384
 			UInt256 b13 = MathQ.BigMul(a128[1], b128[3]);           // 512
 
-			UInt256 s0 = b00;												// 0
-			UInt256 s1 = b01 + b10;											// 64
-			UInt256 c1 = s1 < b01 ? UInt256.One : UInt256.Zero;				// 196
-			UInt256 s2 = b02 + b11;											// 128
-			UInt256 c2 = s2 < b02 ? UInt256.One : UInt256.Zero;				// 256
-			UInt256 s3 = b03 + b12;											// 196
-			UInt256 c3 = s3 < b03 ? UInt256.One : UInt256.Zero;				// 324
+			UInt256 s0 = b00;                                               // 0
+			UInt256 s1 = b01 + b10;                                         // 64
+			UInt256 c1 = s1 < b01 ? UInt256.One : UInt256.Zero;             // 196
+			UInt256 s2 = b02 + b11;                                         // 128
+			UInt256 c2 = s2 < b02 ? UInt256.One : UInt256.Zero;             // 256
+			UInt256 s3 = b03 + b12;                                         // 196
+			UInt256 c3 = s3 < b03 ? UInt256.One : UInt256.Zero;             // 324
 
-			UInt256 p0 = s0 + (s1 << 128);									// 0
-			UInt256 d0 = p0 < b00 ? UInt256.One : UInt256.Zero;				// 128
-			UInt256 q1 = s2 + (s1 >> 128) + (s3 << 128);					// 128
-			UInt256 d1 = q1 < s2 ? UInt256.One : UInt256.Zero;				// 256
-			UInt256 p1 = q1 + (c1 << 128) + d0;								// 128
-			UInt256 d2 = p1 < q1 ? UInt256.One : UInt256.Zero;				// 256
-			UInt256 p2 = b13 + (s3 >> 128) + c2 + (c3 << 128) + d1 + d2;	// 256
+			UInt256 p0 = s0 + (s1 << 128);                                  // 0
+			UInt256 d0 = p0 < b00 ? UInt256.One : UInt256.Zero;             // 128
+			UInt256 q1 = s2 + (s1 >> 128) + (s3 << 128);                    // 128
+			UInt256 d1 = q1 < s2 ? UInt256.One : UInt256.Zero;              // 256
+			UInt256 p1 = q1 + (c1 << 128) + d0;                             // 128
+			UInt256 d2 = p1 < q1 ? UInt256.One : UInt256.Zero;              // 256
+			UInt256 p2 = b13 + (s3 >> 128) + c2 + (c3 << 128) + d1 + d2;    // 256
 
 			UInt256 r0, r1;
 			if (shift < 256)

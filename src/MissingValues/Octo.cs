@@ -1,18 +1,13 @@
 ﻿using MissingValues.Info;
 using MissingValues.Internals;
-using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
-using System.Linq;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using System.Text;
 using System.Text.Json.Serialization;
-using System.Threading.Tasks;
 
 namespace MissingValues
 {
@@ -259,7 +254,7 @@ namespace MissingValues
 		/// <param name="sig">An <see cref="UInt256"/> representing the significand part of the floating-point number.</param>
 		public Octo(bool sign, uint exp, UInt256 sig)
 		{
-			var bits = (sig & TrailingSignificandMask) | new UInt256((sign ? 0x8000_0000_0000_0000 : 0) | ((ulong)(exp & 0x7FFFF) << 44),0,0,0);
+			var bits = (sig & TrailingSignificandMask) | new UInt256((sign ? 0x8000_0000_0000_0000 : 0) | ((ulong)(exp & 0x7FFFF) << 44), 0, 0, 0);
 			_bits0 = bits.Part0;
 			_bits1 = bits.Part1;
 			_bits2 = bits.Part2;

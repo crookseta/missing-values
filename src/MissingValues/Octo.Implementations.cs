@@ -1,17 +1,14 @@
 ﻿using MissingValues.Info;
 using MissingValues.Internals;
-using System;
 using System.Buffers.Binary;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
-using System.Dynamic;
 using System.Globalization;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using System.Runtime.Intrinsics.X86;
 using System.Runtime.Intrinsics;
+using System.Runtime.Intrinsics.X86;
 
 namespace MissingValues
 {
@@ -274,7 +271,7 @@ namespace MissingValues
 
 			return result;
 		}
-		
+
 		/// <inheritdoc/>
 		public static Octo CreateSaturating<TOther>(TOther value)
 			where TOther : INumberBase<TOther>
@@ -291,7 +288,7 @@ namespace MissingValues
 
 			return result;
 		}
-		
+
 		/// <inheritdoc/>
 		public static Octo CreateTruncating<TOther>(TOther value)
 			where TOther : INumberBase<TOther>
@@ -538,7 +535,7 @@ namespace MissingValues
 		public static bool IsFinite(Octo value)
 		{
 			Int256 bits = Octo.OctoToInt256Bits(value);
-			return (bits & new Int256(0x7FFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF)) 
+			return (bits & new Int256(0x7FFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF))
 				< new Int256(0x7FFF_F000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
 		}
 
@@ -1580,9 +1577,9 @@ namespace MissingValues
 				uint => (TOther)(object)((value >= uint.MaxValue) ? uint.MaxValue : (value <= Octo.Zero) ? uint.MinValue : (uint)value),
 				ulong => (TOther)(object)((value >= ulong.MaxValue) ? ulong.MaxValue : (value <= Octo.Zero) ? ulong.MinValue : (ulong)value),
 				UInt128 => (TOther)(object)((value >= UInt128.MaxValue) ? UInt128.MaxValue : (value <= Octo.Zero) ? UInt128.MinValue : (UInt128)value),
-				UInt256 => (TOther)(object)((value >= new Octo(0x400F_F000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000)) ? UInt256.MaxValue 
+				UInt256 => (TOther)(object)((value >= new Octo(0x400F_F000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000)) ? UInt256.MaxValue
 				: (value <= Quad.Zero) ? UInt256.MinValue : (UInt256)value),
-				UInt512 => (TOther)(object)((value >= new Octo(0x401F_F000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000)) ? UInt512.MaxValue 
+				UInt512 => (TOther)(object)((value >= new Octo(0x401F_F000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000)) ? UInt512.MaxValue
 				: (value <= Quad.Zero) ? UInt512.MinValue : (UInt512)value),
 				nuint => (TOther)(object)((value >= nuint.MaxValue) ? nuint.MaxValue : (value <= nuint.MinValue) ? nuint.MinValue : (nuint)value),
 				sbyte => (TOther)(object)((value >= sbyte.MaxValue) ? sbyte.MaxValue : (value <= sbyte.MinValue) ? sbyte.MinValue : (sbyte)value),
@@ -1590,9 +1587,9 @@ namespace MissingValues
 				int => (TOther)(object)((value >= int.MaxValue) ? int.MaxValue : (value <= int.MinValue) ? int.MinValue : (int)value),
 				long => (TOther)(object)((value >= long.MaxValue) ? long.MaxValue : (value <= long.MinValue) ? long.MinValue : (long)value),
 				Int128 => (TOther)(object)((value >= Int128.MaxValue) ? Int128.MaxValue : (value <= Int128.MinValue) ? Int128.MinValue : (Int128)value),
-				Int256 => (TOther)(object)((value >= new Octo(0x400F_E000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000)) ? Int256.MaxValue 
+				Int256 => (TOther)(object)((value >= new Octo(0x400F_E000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000)) ? Int256.MaxValue
 				: (value <= new Octo(0xC00F_E000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000)) ? Int256.MinValue : (Int256)value),
-				Int512 => (TOther)(object)((value >= new Octo(0x401F_E000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000)) ? Int512.MaxValue 
+				Int512 => (TOther)(object)((value >= new Octo(0x401F_E000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000)) ? Int512.MaxValue
 				: (value <= new Octo(0xC01F_E000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000)) ? Int512.MinValue : (Int512)value),
 				nint => (TOther)(object)((value >= nint.MaxValue) ? nint.MaxValue : (value <= nint.MinValue) ? nint.MinValue : (nint)value),
 				BigInteger => (TOther)(object)(BigInteger)value,

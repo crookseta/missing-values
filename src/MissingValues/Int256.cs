@@ -1,18 +1,13 @@
 ﻿using MissingValues.Info;
 using MissingValues.Internals;
-using System;
 using System.Buffers;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
-using System.Linq;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using System.Text;
 using System.Text.Json.Serialization;
-using System.Threading.Tasks;
 
 namespace MissingValues
 {
@@ -159,7 +154,7 @@ namespace MissingValues
 			{
 				return value;
 			}
-			
+
 			uint power = checked((uint)exponent);
 			int size;
 			uint[]? bitsArray = null;
@@ -182,7 +177,7 @@ namespace MissingValues
 
 				size = Calculator.PowBound(power, 1);
 
-				bits = (size <= Calculator.StackAllocThreshold 
+				bits = (size <= Calculator.StackAllocThreshold
 					? stackalloc uint[Calculator.StackAllocThreshold]
 					: bitsArray = ArrayPool<uint>.Shared.Rent(size));
 				bits.Clear();
@@ -226,12 +221,12 @@ namespace MissingValues
 
 			Int256 result = Unsafe.ReadUnaligned<Int256>(ref Unsafe.As<uint, byte>(ref MemoryMarshal.GetReference(bits[..UIntCount])));
 
-            if (bitsArray is not null)
-            {
-                ArrayPool<uint>.Shared.Return(bitsArray);
-            }
+			if (bitsArray is not null)
+			{
+				ArrayPool<uint>.Shared.Return(bitsArray);
+			}
 
-            return result;
+			return result;
 		}
 
 		/// <summary>Parses a span of characters into a value.</summary>
@@ -731,27 +726,27 @@ namespace MissingValues
 		/// Explicitly converts a <see cref="byte" /> value to a <see cref="Int256"/>.
 		/// </summary>
 		/// <param name="value">The value to convert.</param>
-		public static explicit operator Int256(byte value) => new Int256(0,0,0, value);
+		public static explicit operator Int256(byte value) => new Int256(0, 0, 0, value);
 		/// <summary>
 		/// Explicitly converts a <see cref="ushort" /> value to a <see cref="Int256"/>.
 		/// </summary>
 		/// <param name="value">The value to convert.</param>
-		public static explicit operator Int256(ushort value) => new Int256(0,0,0, value);
+		public static explicit operator Int256(ushort value) => new Int256(0, 0, 0, value);
 		/// <summary>
 		/// Explicitly converts a <see cref="uint" /> value to a <see cref="Int256"/>.
 		/// </summary>
 		/// <param name="value">The value to convert.</param>
-		public static explicit operator Int256(uint value) => new Int256(0,0,0, value);
+		public static explicit operator Int256(uint value) => new Int256(0, 0, 0, value);
 		/// <summary>
 		/// Explicitly converts a <see cref="nuint" /> value to a <see cref="Int256"/>.
 		/// </summary>
 		/// <param name="value">The value to convert.</param>
-		public static explicit operator Int256(nuint value) => new Int256(0,0,0, value);
+		public static explicit operator Int256(nuint value) => new Int256(0, 0, 0, value);
 		/// <summary>
 		/// Explicitly converts a <see cref="ulong" /> value to a <see cref="Int256"/>.
 		/// </summary>
 		/// <param name="value">The value to convert.</param>
-		public static explicit operator Int256(ulong value) => new Int256(0,0,0, value);
+		public static explicit operator Int256(ulong value) => new Int256(0, 0, 0, value);
 		/// <summary>
 		/// Explicitly converts a <see cref="UInt128" /> value to a <see cref="Int256"/>.
 		/// </summary>

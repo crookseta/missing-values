@@ -1,18 +1,13 @@
 ﻿using MissingValues.Info;
 using MissingValues.Internals;
-using System;
 using System.Buffers;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
-using System.Linq;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using System.Text;
 using System.Text.Json.Serialization;
-using System.Threading.Tasks;
 
 namespace MissingValues
 {
@@ -125,8 +120,8 @@ namespace MissingValues
 		/// <param name="ul">The second 128-bits of the 512-bit value.</param>
 		/// <param name="lu">The third 128-bits of the 512-bit value.</param>
 		/// <param name="ll">The fourth 128-bits of the 512-bit value.</param>
-        public UInt512(UInt128 uu, UInt128 ul, UInt128 lu, UInt128 ll)
-        {
+		public UInt512(UInt128 uu, UInt128 ul, UInt128 lu, UInt128 ll)
+		{
 			_p0 = (ulong)ll;
 			_p1 = (ulong)(ll >>> 64);
 			_p2 = (ulong)lu;
@@ -135,7 +130,7 @@ namespace MissingValues
 			_p5 = (ulong)(ul >>> 64);
 			_p6 = (ulong)uu;
 			_p7 = (ulong)(uu >>> 64);
-        }
+		}
 		/// <summary>
 		/// Initializes a new instance of the <see cref="UInt512" /> struct.
 		/// </summary>
@@ -199,8 +194,8 @@ namespace MissingValues
 			rawBits.Clear();
 
 			Calculator.Multiply(
-				leftSpan[..(UIntCount - (BitHelper.LeadingZeroCount(in left) / 64))], 
-				rightSpan[..(UIntCount - (BitHelper.LeadingZeroCount(in right) / 64))], 
+				leftSpan[..(UIntCount - (BitHelper.LeadingZeroCount(in left) / 64))],
+				rightSpan[..(UIntCount - (BitHelper.LeadingZeroCount(in right) / 64))],
 				rawBits);
 
 			lower = Unsafe.ReadUnaligned<UInt512>(ref Unsafe.As<ulong, byte>(ref MemoryMarshal.GetReference(rawBits)));

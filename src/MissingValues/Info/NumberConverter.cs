@@ -1,15 +1,10 @@
 ﻿using MissingValues.Internals;
-using System;
 using System.Buffers;
-using System.Collections.Generic;
 using System.Globalization;
-using System.Linq;
 using System.Numerics;
-using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.Unicode;
-using System.Threading.Tasks;
 
 namespace MissingValues.Info
 {
@@ -65,7 +60,7 @@ namespace MissingValues.Info
 
 			if (rentedBuffer is not null)
 			{
-                ArrayPool<byte>.Shared.Return(rentedBuffer);
+				ArrayPool<byte>.Shared.Return(rentedBuffer);
 			}
 
 			return result;
@@ -104,15 +99,15 @@ namespace MissingValues.Info
 		}
 
 		private static void Format<T>(
-			Span<byte> destination, 
-			in T value, 
-			out int written) 
+			Span<byte> destination,
+			in T value,
+			out int written)
 			where T : struct, INumberBase<T>
 		{
 			value.TryFormat(destination, out written, ReadOnlySpan<char>.Empty, CultureInfo.InvariantCulture);
 		}
 		private static bool TryParse<T>(
-			ReadOnlySpan<byte> s, 
+			ReadOnlySpan<byte> s,
 			out T value
 			)
 			where T : struct, INumberBase<T>

@@ -1,18 +1,13 @@
 ﻿using MissingValues.Info;
 using MissingValues.Internals;
-using System;
 using System.Buffers.Binary;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
-using System.Linq;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace MissingValues
 {
@@ -41,7 +36,7 @@ namespace MissingValues
 			   0x8000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000,
 			   0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
 
-		static UInt512 IFormattableInteger<UInt512>.Two => new UInt512(0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x2);
+		static UInt512 IFormattableInteger<UInt512>.Two => new UInt512(0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x2);
 
 		static UInt512 IFormattableInteger<UInt512>.Sixteen => new UInt512(0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x10);
 
@@ -49,15 +44,15 @@ namespace MissingValues
 
 		static UInt512 IFormattableInteger<UInt512>.TwoPow2 => new UInt512(0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x4);
 
-		static UInt512 IFormattableInteger<UInt512>.SixteenPow2 => new UInt512(0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x100);
+		static UInt512 IFormattableInteger<UInt512>.SixteenPow2 => new UInt512(0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x100);
 
-		static UInt512 IFormattableInteger<UInt512>.TenPow2 => new UInt512(0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x64);
+		static UInt512 IFormattableInteger<UInt512>.TenPow2 => new UInt512(0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x64);
 
-		static UInt512 IFormattableInteger<UInt512>.TwoPow3 => new UInt512(0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x8);
+		static UInt512 IFormattableInteger<UInt512>.TwoPow3 => new UInt512(0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x8);
 
-		static UInt512 IFormattableInteger<UInt512>.SixteenPow3 => new UInt512(0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x1000);
+		static UInt512 IFormattableInteger<UInt512>.SixteenPow3 => new UInt512(0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x1000);
 
-		static UInt512 IFormattableInteger<UInt512>.TenPow3 => new UInt512(0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x3E8);
+		static UInt512 IFormattableInteger<UInt512>.TenPow3 => new UInt512(0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x3E8);
 
 		static UInt512 IFormattableInteger<UInt512>.E19 => new UInt512(0, 0, 0, 0, 0, 0, 0, 10000000000000000000UL);
 
@@ -813,7 +808,7 @@ namespace MissingValues
 					nint => (TOther)(object)(nint)value,
 					BigInteger => (TOther)(object)(BigInteger)value,
 					_ => BitHelper.DefaultConvert<TOther>(out converted)
-				}; 
+				};
 			}
 			return converted;
 		}
@@ -1010,16 +1005,16 @@ namespace MissingValues
 
 			ulong part3 = left._p3 + right._p3 + carry;
 			carry = (part3 < left._p3 || (carry == 1 && part3 == left._p3)) ? 1UL : 0UL;
-			
+
 			ulong part4 = left._p4 + right._p4 + carry;
 			carry = (part4 < left._p4 || (carry == 1 && part4 == left._p4)) ? 1UL : 0UL;
-			
+
 			ulong part5 = left._p5 + right._p5 + carry;
 			carry = (part5 < left._p5 || (carry == 1 && part5 == left._p5)) ? 1UL : 0UL;
-			
+
 			ulong part6 = left._p6 + right._p6 + carry;
 			carry = (part6 < left._p6 || (carry == 1 && part6 == left._p6)) ? 1UL : 0UL;
-			
+
 			ulong part7 = left._p7 + right._p7 + carry;
 
 			return new UInt512(part7, part6, part5, part4, part3, part2, part1, part0);
@@ -1189,7 +1184,7 @@ namespace MissingValues
 
 			return Unsafe.ReadUnaligned<UInt512>(ref Unsafe.As<ulong, byte>(ref MemoryMarshal.GetReference(rawBits)));
 		}
-		
+
 		/// <inheritdoc/>
 		public static UInt512 operator checked *(in UInt512 left, in UInt512 right)
 		{
@@ -1268,7 +1263,7 @@ namespace MissingValues
 					return Calculator.Divide(in left, (uint)right);
 				}
 			}
-			
+
 			if (right >= left)
 			{
 				return (right == left) ? One : Zero;
@@ -1580,12 +1575,12 @@ namespace MissingValues
 		public static bool operator >(in UInt512 left, in UInt512 right)
 		{
 			return (left._p7 > right._p7)
-				|| (left._p7 == right._p7 && ((left._p6 > right._p6) 
+				|| (left._p7 == right._p7 && ((left._p6 > right._p6)
 				|| (left._p6 == right._p6 && ((left._p5 > right._p5)
 				|| (left._p5 == right._p5 && ((left._p4 > right._p4)
 				|| (left._p4 == right._p4 && ((left._p3 > right._p3)
 				|| (left._p3 == right._p3 && ((left._p2 > right._p2)
-				|| (left._p2 == right._p2 && ((left._p1 > right._p1) 
+				|| (left._p2 == right._p2 && ((left._p1 > right._p1)
 				|| (left._p1 == right._p1 && (left._p0 > right._p0))))))))))))));
 		}
 

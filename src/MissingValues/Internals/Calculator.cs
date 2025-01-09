@@ -1,4 +1,3 @@
-using System.Buffers;
 using System.Diagnostics;
 using System.Numerics;
 using System.Runtime.CompilerServices;
@@ -391,7 +390,7 @@ internal static class Calculator
 			value = (carry << 32) | (uint)left.Part4;
 			(digit, carry) = DivRemByUInt32(value, right);
 			p08 = (uint)digit;
-			
+
 			value = (carry << 32) | (left.Part3 >> 32);
 			(digit, carry) = DivRemByUInt32(value, right);
 			p07 = (uint)digit;
@@ -452,7 +451,7 @@ internal static class Calculator
 			value = (carry << 32) | (uint)left.Part4;
 			(digit, carry) = DivRemByUInt32(value, right);
 			p08 = (uint)digit;
-			
+
 			value = (carry << 32) | (left.Part3 >> 32);
 			(digit, carry) = DivRemByUInt32(value, right);
 			p07 = (uint)digit;
@@ -499,7 +498,7 @@ internal static class Calculator
 			value = (carry << 32) | (uint)left.Part5;
 			(digit, carry) = DivRemByUInt32(value, right);
 			p10 = (uint)digit;
-			
+
 			value = (carry << 32) | (left.Part4 >> 32);
 			(digit, carry) = DivRemByUInt32(value, right);
 			p09 = (uint)digit;
@@ -507,7 +506,7 @@ internal static class Calculator
 			value = (carry << 32) | (uint)left.Part4;
 			(digit, carry) = DivRemByUInt32(value, right);
 			p08 = (uint)digit;
-			
+
 			value = (carry << 32) | (left.Part3 >> 32);
 			(digit, carry) = DivRemByUInt32(value, right);
 			p07 = (uint)digit;
@@ -556,7 +555,7 @@ internal static class Calculator
 			value = (carry << 32) | (uint)left.Part4;
 			(digit, carry) = DivRemByUInt32(value, right);
 			p08 = (uint)digit;
-			
+
 			value = (carry << 32) | (left.Part3 >> 32);
 			(digit, carry) = DivRemByUInt32(value, right);
 			p07 = (uint)digit;
@@ -1392,16 +1391,16 @@ internal static class Calculator
 
 			value = (carry << 32) | (uint)left.Part2;
 			carry = value % right;
-			
+
 			value = (carry << 32) | (left.Part1 >> 32);
 			carry = value % right;
-			
+
 			value = (carry << 32) | (uint)left.Part1;
 			carry = value % right;
-			
+
 			value = (carry << 32) | (left.Part0 >> 32);
 			carry = value % right;
-			
+
 			value = (carry << 32) | (uint)left.Part0;
 			carry = value % right;
 		}
@@ -1409,34 +1408,34 @@ internal static class Calculator
 		{
 			value = (left.Part2 >> 32);
 			carry = value % right;
-			
+
 			value = (carry << 32) | (uint)left.Part2;
 			carry = value % right;
-			
+
 			value = (carry << 32) | (left.Part1 >> 32);
 			carry = value % right;
-			
+
 			value = (carry << 32) | (uint)left.Part1;
 			carry = value % right;
-			
+
 			value = (carry << 32) | (left.Part0 >> 32);
 			carry = value % right;
-			
+
 			value = (carry << 32) | (uint)left.Part0;
 			carry = value % right;
-			
+
 		}
 		else if (left.Part1 != 0)
 		{
 			value = (left.Part1 >> 32);
 			carry = value % right;
-			
+
 			value = (carry << 32) | (uint)left.Part1;
 			carry = value % right;
-			
+
 			value = (carry << 32) | (left.Part0 >> 32);
 			carry = value % right;
-			
+
 			value = (carry << 32) | (uint)left.Part0;
 			carry = value % right;
 		}
@@ -1470,19 +1469,19 @@ internal static class Calculator
 
 			value = (carry << 32) | (uint)left.Part6;
 			carry = value % right;
-			
+
 			value = (carry << 32) | (left.Part5 >> 32);
 			carry = value % right;
 
 			value = (carry << 32) | (uint)left.Part5;
 			carry = value % right;
-			
+
 			value = (carry << 32) | (left.Part4 >> 32);
 			carry = value % right;
 
 			value = (carry << 32) | (uint)left.Part4;
 			carry = value % right;
-			
+
 			value = (carry << 32) | (left.Part3 >> 32);
 			carry = value % right;
 
@@ -1494,16 +1493,16 @@ internal static class Calculator
 
 			value = (carry << 32) | (uint)left.Part2;
 			carry = value % right;
-			
+
 			value = (carry << 32) | (left.Part1 >> 32);
 			carry = value % right;
-			
+
 			value = (carry << 32) | (uint)left.Part1;
 			carry = value % right;
-			
+
 			value = (carry << 32) | (left.Part0 >> 32);
 			carry = value % right;
-			
+
 			value = (carry << 32) | (uint)left.Part0;
 			carry = value % right;
 		}
@@ -1514,19 +1513,19 @@ internal static class Calculator
 
 			value = (carry << 32) | (uint)left.Part6;
 			carry = value % right;
-			
+
 			value = (carry << 32) | (left.Part5 >> 32);
 			carry = value % right;
 
 			value = (carry << 32) | (uint)left.Part5;
 			carry = value % right;
-			
+
 			value = (carry << 32) | (left.Part4 >> 32);
 			carry = value % right;
 
 			value = (carry << 32) | (uint)left.Part4;
 			carry = value % right;
-			
+
 			value = (carry << 32) | (left.Part3 >> 32);
 			carry = value % right;
 
@@ -1538,16 +1537,16 @@ internal static class Calculator
 
 			value = (carry << 32) | (uint)left.Part2;
 			carry = value % right;
-			
+
 			value = (carry << 32) | (left.Part1 >> 32);
 			carry = value % right;
-			
+
 			value = (carry << 32) | (uint)left.Part1;
 			carry = value % right;
-			
+
 			value = (carry << 32) | (left.Part0 >> 32);
 			carry = value % right;
-			
+
 			value = (carry << 32) | (uint)left.Part0;
 			carry = value % right;
 		}
@@ -1558,13 +1557,13 @@ internal static class Calculator
 
 			value = (carry << 32) | (uint)left.Part5;
 			carry = value % right;
-			
+
 			value = (carry << 32) | (left.Part4 >> 32);
 			carry = value % right;
 
 			value = (carry << 32) | (uint)left.Part4;
 			carry = value % right;
-			
+
 			value = (carry << 32) | (left.Part3 >> 32);
 			carry = value % right;
 
@@ -1576,16 +1575,16 @@ internal static class Calculator
 
 			value = (carry << 32) | (uint)left.Part2;
 			carry = value % right;
-			
+
 			value = (carry << 32) | (left.Part1 >> 32);
 			carry = value % right;
-			
+
 			value = (carry << 32) | (uint)left.Part1;
 			carry = value % right;
-			
+
 			value = (carry << 32) | (left.Part0 >> 32);
 			carry = value % right;
-			
+
 			value = (carry << 32) | (uint)left.Part0;
 			carry = value % right;
 		}
@@ -1596,7 +1595,7 @@ internal static class Calculator
 
 			value = (carry << 32) | (uint)left.Part4;
 			carry = value % right;
-			
+
 			value = (carry << 32) | (left.Part3 >> 32);
 			carry = value % right;
 
@@ -1608,16 +1607,16 @@ internal static class Calculator
 
 			value = (carry << 32) | (uint)left.Part2;
 			carry = value % right;
-			
+
 			value = (carry << 32) | (left.Part1 >> 32);
 			carry = value % right;
-			
+
 			value = (carry << 32) | (uint)left.Part1;
 			carry = value % right;
-			
+
 			value = (carry << 32) | (left.Part0 >> 32);
 			carry = value % right;
-			
+
 			value = (carry << 32) | (uint)left.Part0;
 			carry = value % right;
 		}
@@ -1634,16 +1633,16 @@ internal static class Calculator
 
 			value = (carry << 32) | (uint)left.Part2;
 			carry = value % right;
-			
+
 			value = (carry << 32) | (left.Part1 >> 32);
 			carry = value % right;
-			
+
 			value = (carry << 32) | (uint)left.Part1;
 			carry = value % right;
-			
+
 			value = (carry << 32) | (left.Part0 >> 32);
 			carry = value % right;
-			
+
 			value = (carry << 32) | (uint)left.Part0;
 			carry = value % right;
 		}
@@ -1651,34 +1650,34 @@ internal static class Calculator
 		{
 			value = (left.Part2 >> 32);
 			carry = value % right;
-			
+
 			value = (carry << 32) | (uint)left.Part2;
 			carry = value % right;
-			
+
 			value = (carry << 32) | (left.Part1 >> 32);
 			carry = value % right;
-			
+
 			value = (carry << 32) | (uint)left.Part1;
 			carry = value % right;
-			
+
 			value = (carry << 32) | (left.Part0 >> 32);
 			carry = value % right;
-			
+
 			value = (carry << 32) | (uint)left.Part0;
 			carry = value % right;
-			
+
 		}
 		else if (left.Part1 != 0)
 		{
 			value = (left.Part1 >> 32);
 			carry = value % right;
-			
+
 			value = (carry << 32) | (uint)left.Part1;
 			carry = value % right;
-			
+
 			value = (carry << 32) | (left.Part0 >> 32);
 			carry = value % right;
-			
+
 			value = (carry << 32) | (uint)left.Part0;
 			carry = value % right;
 		}

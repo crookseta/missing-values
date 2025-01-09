@@ -1,9 +1,7 @@
 ﻿using MissingValues.Internals;
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Runtime.CompilerServices;
-using System.Runtime.Intrinsics.X86;
 
 namespace MissingValues.Info;
 
@@ -45,7 +43,7 @@ internal readonly struct CurrencyFormat : INumberFormat
 		return true;
 	}
 
-	public static void Format<TChar>(ref ValueListBuilder<TChar> vlb, ref NumberInfo number, int nMaxDigits, bool isUpper, NumberFormatInfo info) 
+	public static void Format<TChar>(ref ValueListBuilder<TChar> vlb, ref NumberInfo number, int nMaxDigits, bool isUpper, NumberFormatInfo info)
 		where TChar : unmanaged, IUtfCharacter<TChar>
 	{
 		ReadOnlySpan<char> fmt = number.IsNegative ?
@@ -62,8 +60,8 @@ internal readonly struct CurrencyFormat : INumberFormat
 		TChar.Copy(info.NegativeSign, negativeSign);
 		TChar.Copy(info.CurrencySymbol, currencySymbol);
 
-        foreach (var ch in fmt)
-        {
+		foreach (var ch in fmt)
+		{
 			switch (ch)
 			{
 				case '#':
@@ -132,7 +130,7 @@ internal readonly struct EngineeringFormat : INumberFormat
 			vlb.Append(numberDecimalSeparator);
 		}
 
-		while(--nMaxDigits > 0)
+		while (--nMaxDigits > 0)
 		{
 			vlb.Append((TChar)((dig != 0) ? (char)(dig) : '0'));
 			dig = ref Unsafe.Add(ref dig, 1);

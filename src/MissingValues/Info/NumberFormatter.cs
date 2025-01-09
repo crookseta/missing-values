@@ -1,11 +1,7 @@
 ﻿using MissingValues.Internals;
-using System;
 using System.Buffers;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
-using System.Linq;
-using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
@@ -13,7 +9,7 @@ namespace MissingValues.Info
 {
 	internal static partial class NumberFormatter
 	{
-        private const int UInt256Precision = 78;
+		private const int UInt256Precision = 78;
 		private const int Int256Precision = UInt256Precision;
 		private const int UInt512Precision = 155;
 		private const int Int512Precision = UInt512Precision;
@@ -56,8 +52,8 @@ namespace MissingValues.Info
 		}
 		private static bool TryFormatNumber<TNumber, TChar>(
 			in TNumber value,
-			Span<TChar> destination, 
-			out int charsWritten, 
+			Span<TChar> destination,
+			out int charsWritten,
 			ReadOnlySpan<char> format,
 			NumberFormatInfo provider)
 			where TNumber : struct, IFormattableNumber<TNumber>
@@ -139,7 +135,7 @@ namespace MissingValues.Info
 						TChar.Copy(provider.PositiveInfinitySymbol, sign);
 					}
 					bool res;
-					if(res = sign.TryCopyTo(destination))
+					if (res = sign.TryCopyTo(destination))
 					{
 						charsWritten = sign.Length;
 					}

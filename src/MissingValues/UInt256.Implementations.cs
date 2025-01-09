@@ -1,23 +1,18 @@
 ﻿using MissingValues.Info;
 using MissingValues.Internals;
-using System;
 using System.Buffers.Binary;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
-using System.Linq;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics;
 using System.Runtime.Intrinsics.X86;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace MissingValues
 {
-	public readonly partial struct UInt256 : 
+	public readonly partial struct UInt256 :
 		IBigInteger<UInt256>,
 		IMinMaxValue<UInt256>,
 		IUnsignedNumber<UInt256>,
@@ -102,7 +97,7 @@ namespace MissingValues
 		/// <inheritdoc/>
 		public int CompareTo(object? obj)
 		{
-			if(obj is UInt256 value)
+			if (obj is UInt256 value)
 			{
 				return CompareTo(value);
 			}
@@ -596,7 +591,7 @@ namespace MissingValues
 					Int512 actual => (UInt256)actual,
 					BigInteger actual => (UInt256)actual,
 					_ => BitHelper.DefaultConvert<UInt256>(out converted)
-				}; 
+				};
 			}
 			return converted;
 		}
@@ -779,7 +774,7 @@ namespace MissingValues
 					nint => (TOther)(object)(nint)value,
 					BigInteger => (TOther)(object)(BigInteger)value,
 					_ => BitHelper.DefaultConvert<TOther>(out converted)
-				}; 
+				};
 			}
 			return converted;
 		}
@@ -1450,7 +1445,7 @@ namespace MissingValues
 				|| (left._p3 == right._p3 && ((left._p2 < right._p2)
 				|| (left._p2 == right._p2 && ((left._p1 < right._p1)
 				|| (left._p1 == right._p1 && (left._p0 < right._p0))))));
-			
+
 		}
 
 		/// <inheritdoc/>
@@ -1492,7 +1487,7 @@ namespace MissingValues
 			{
 				return value;
 			}
-			
+
 			if (shiftAmount < 64)
 			{
 				ulong part0 = (value._p0 >> shiftAmount) | (value._p1 << (64 - shiftAmount));

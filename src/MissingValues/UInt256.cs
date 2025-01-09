@@ -1,11 +1,8 @@
 ﻿using MissingValues.Info;
 using MissingValues.Internals;
-using System;
 using System.Buffers;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
-using System.Linq;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -140,8 +137,8 @@ namespace MissingValues
 			rawBits.Clear();
 
 			Calculator.Multiply(
-				leftSpan[..(UIntCount - (BitHelper.LeadingZeroCount(in left) / 64))], 
-				rightSpan[..(UIntCount - (BitHelper.LeadingZeroCount(in right) / 64))], 
+				leftSpan[..(UIntCount - (BitHelper.LeadingZeroCount(in left) / 64))],
+				rightSpan[..(UIntCount - (BitHelper.LeadingZeroCount(in right) / 64))],
 				rawBits);
 
 			lower = Unsafe.ReadUnaligned<UInt256>(ref Unsafe.As<ulong, byte>(ref MemoryMarshal.GetReference(rawBits)));
@@ -647,7 +644,7 @@ namespace MissingValues
 
 			if (value.Upper == 0)
 			{
-				return value._p1 != 0 ? (double)value.Lower : (double)value._p0;
+				return value._p1 != 0 ? (double)value.Lower : value._p0;
 			}
 
 

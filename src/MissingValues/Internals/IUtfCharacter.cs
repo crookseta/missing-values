@@ -1,17 +1,9 @@
-﻿using MissingValues.Info;
-using System;
-using System.Buffers.Text;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
-using System.Linq;
+﻿using System.Globalization;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Unicode;
-using System.Threading.Tasks;
 
 namespace MissingValues.Internals
 {
@@ -69,7 +61,7 @@ namespace MissingValues.Internals
 
 		public static Utf16Char NullCharacter => (Utf16Char)'\0';
 
-		public static ReadOnlySpan<Utf16Char> Digits => new Utf16Char[] 
+		public static ReadOnlySpan<Utf16Char> Digits => new Utf16Char[]
 		{
 			(Utf16Char)'0',
 			(Utf16Char)'1',
@@ -257,7 +249,7 @@ namespace MissingValues.Internals
 
 		public static Utf8Char WhiteSpaceCharacter => (Utf8Char)(byte)' ';
 
-		private static ReadOnlySpan<byte> DigitsUtf8 => 
+		private static ReadOnlySpan<byte> DigitsUtf8 =>
 		[
 			(byte)'0',
 			(byte)'1',
@@ -278,7 +270,7 @@ namespace MissingValues.Internals
 		];
 		public static ReadOnlySpan<Utf8Char> Digits => CastFromByteSpan("0123456789ABCDEF"u8);
 
-		public static ReadOnlySpan<byte> TwoDigitsAsBytes => 
+		public static ReadOnlySpan<byte> TwoDigitsAsBytes =>
 										"00010203040506070809"u8 +
 										"10111213141516171819"u8 +
 										"20212223242526272829"u8 +

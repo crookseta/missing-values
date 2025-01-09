@@ -1,10 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
+﻿using System.Globalization;
 using System.Numerics;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace MissingValues.Info
 {
@@ -16,10 +11,7 @@ namespace MissingValues.Info
 		/// </summary>
 		/// <param name="value">A numeric Unicode character.</param>
 		/// <returns>The numeric value of <paramref name="value"/> if it represents a number; otherwise, 0</returns>
-		virtual static TSelf GetDecimalValue(char value)
-		{
-			return TSelf.CreateChecked(CharUnicodeInfo.GetDecimalDigitValue(value));
-		}
+		static virtual TSelf GetDecimalValue(char value) => TSelf.CreateChecked(CharUnicodeInfo.GetDecimalDigitValue(value));
 
 		abstract static bool IsBinaryInteger();
 	}

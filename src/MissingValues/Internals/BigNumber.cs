@@ -1,7 +1,7 @@
 ﻿using System.Diagnostics;
 using System.Numerics;
-using System.Runtime.InteropServices;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Text;
 
 namespace MissingValues.Internals;
@@ -662,7 +662,7 @@ internal unsafe ref partial struct BigNumber
 			exponent >>= 1;
 		}
 
-        SetValue(out result, ref lhs);
+		SetValue(out result, ref lhs);
 	}
 
 	private static ulong AddDivisor(ref BigNumber lhs, int lhsStartIndex, ref BigNumber rhs)
@@ -722,7 +722,7 @@ internal unsafe ref partial struct BigNumber
 
 	private static ulong SubtractDivisor(ref BigNumber lhs, int lhsStartIndex, ref BigNumber rhs, UInt128 q)
 	{
-		int lhsLength = (int)lhs._length - (int)lhsStartIndex;
+		int lhsLength = (int)lhs._length - lhsStartIndex;
 		int rhsLength = (int)rhs._length;
 
 		Debug.Assert(lhsLength >= 0);

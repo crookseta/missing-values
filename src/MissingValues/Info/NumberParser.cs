@@ -1,11 +1,8 @@
 ﻿using MissingValues.Internals;
-using System;
 using System.Buffers;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
-using System.Linq;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -123,7 +120,7 @@ namespace MissingValues.Info
 
 		#region Integer
 		private const int IntBufferLength = 154 + 2;
-		private const NumberStyles SPECIAL = 
+		private const NumberStyles SPECIAL =
 			NumberStyles.AllowTrailingSign | NumberStyles.AllowDecimalPoint | NumberStyles.AllowThousands | NumberStyles.AllowExponent
 			| NumberStyles.AllowCurrencySymbol;
 
@@ -221,7 +218,7 @@ namespace MissingValues.Info
 				{
 					output = default;
 					return ParsingStatus.Failed;
-				} 
+				}
 			}
 
 			return ParsingStatus.Success;
@@ -315,7 +312,7 @@ namespace MissingValues.Info
 			{
 				NumberInfo number = new NumberInfo(stackalloc byte[IntBufferLength]);
 				NumberFormatInfo info = NumberFormatInfo.GetInstance(formatProvider);
-				if (!NumberInfo.TryParse(s, ref number, info, style) 
+				if (!NumberInfo.TryParse(s, ref number, info, style)
 					|| !NumberInfo.TryConvertToInteger(ref number, out output))
 				{
 					output = default;

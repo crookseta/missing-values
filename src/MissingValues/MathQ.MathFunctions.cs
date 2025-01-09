@@ -1,14 +1,7 @@
 ﻿using MissingValues.Internals;
-using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Globalization;
-using System.IO.Compression;
-using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace MissingValues
 {
@@ -64,8 +57,8 @@ namespace MissingValues
 		private static Quad LN2 => new Quad(0x3FFE_62E4_2FEF_A39E, 0xF357_ADEB_B905_E4BD);
 
 		private static Quad RoundLimit => new Quad(0x4073_3426_172C_74D8, 0x22B8_78FE_8000_0000); // 1E35
-		internal static ReadOnlySpan<Quad> RoundPower10 => new Quad[MaxRoundingDigits + 1] 
-		{ 
+		internal static ReadOnlySpan<Quad> RoundPower10 => new Quad[MaxRoundingDigits + 1]
+		{
 			new Quad(0x3FFF_0000_0000_0000, 0x0000_0000_0000_0000), // 1E00
 			new Quad(0x4002_4000_0000_0000, 0x0000_0000_0000_0000), // 1E01
 			new Quad(0x4005_9000_0000_0000, 0x0000_0000_0000_0000), // 1E02
@@ -456,7 +449,7 @@ namespace MissingValues
 				return y;
 			}
 
-			ex = x.BiasedExponent; 
+			ex = x.BiasedExponent;
 			ey = y.BiasedExponent;
 			m = (int)(2 * (x._upper >> 63) | (y._upper >> 63));
 
@@ -477,7 +470,7 @@ namespace MissingValues
 			}
 			if (x == Quad.Zero)
 			{
-				return ((m & 1) != 0)  ? -PIO2_HI : PIO2_HI;
+				return ((m & 1) != 0) ? -PIO2_HI : PIO2_HI;
 			}
 			if (ex == 0x7FFF)
 			{
@@ -717,10 +710,10 @@ namespace MissingValues
 			 * error < 0.667 ulps
 			 */
 
-			s = t * t;				// t*t is exact
-			r = x / s;				// error <= 0.5 ulps; |r| < |t|
-			w = t + t;				// t+t is exact
-			r = (r - t) / (w + r);	// r-t is exact; w+r ~= 3*t
+			s = t * t;              // t*t is exact
+			r = x / s;              // error <= 0.5 ulps; |r| < |t|
+			w = t + t;              // t+t is exact
+			r = (r - t) / (w + r);  // r-t is exact; w+r ~= 3*t
 			t = t + t * r;          // error <= 0.5 + 0.5/3 + epsilon
 
 			return t * v;
@@ -829,7 +822,7 @@ namespace MissingValues
 				n = ((uint)(long)fn & 0x7FFF_FFFF);
 				r = x - fn * Constants.RemPio.PIO2_1;
 				w = fn * Constants.RemPio.PIO2_1T; // 1st round good to 180 bit
-														// Matters with directed rounding
+												   // Matters with directed rounding
 				Quad temp = r - w;
 				if (temp < -Pio4)
 				{
@@ -838,7 +831,7 @@ namespace MissingValues
 					r = x - fn * Constants.RemPio.PIO2_1;
 					w = fn * Constants.RemPio.PIO2_1T;
 				}
-				else if(temp > Pio4)
+				else if (temp > Pio4)
 				{
 					n++;
 					fn++;
@@ -882,7 +875,7 @@ namespace MissingValues
 
 			for (i = 0; i < NX - 1; i++)
 			{
-				tx[i] = (double)(int)z;
+				tx[i] = (int)z;
 				z = (z - tx[i]) * new Quad(0x4017_0000_0000_0000, 0x0000_0000_0000_0000);
 			}
 			tx[i] = (double)z;
@@ -925,7 +918,7 @@ namespace MissingValues
 				/* set up f[0] to f[jx+jk] where f[jx+jk] = ipio2[jv+jk] */
 				j = jv - jx; m = jx + jk;
 				for (i = 0; i <= m; i++, j++)
-					f[i] = j < 0 ? 0.0 : (double)Constants.RemPio.IPIO2[j];
+					f[i] = j < 0 ? 0.0 : Constants.RemPio.IPIO2[j];
 
 				/* compute q[0],q[1],...q[jk] */
 				for (i = 0; i <= jk; i++)
@@ -940,12 +933,12 @@ namespace MissingValues
 				/* distill q[] into iq[] reversingly */
 				for (i = 0, j = jz, z = q[jz]; j > 0; i++, j--)
 				{
-					fw = (double)(int)(5.9604644775390625E-8 * z);
+					fw = (int)(5.9604644775390625E-8 * z);
 					iq[i] = (int)(z - 1.6777216E7 * fw);
 					z = q[j - 1] + fw;
 				}
 				// compute n
-				z = Math.ScaleB(z, q0);		// actual value of z
+				z = Math.ScaleB(z, q0);     // actual value of z
 				z -= 8.0 * Math.Floor(z * 0.125);   // trim off integer >= 8 
 				n = (int)z;
 				z -= n;
@@ -957,9 +950,9 @@ namespace MissingValues
 					iq[jz - 1] -= i << (24 - q0);
 					ih = iq[jz - 1] >> (23 - q0);
 				}
-				else if (q0 == 0) 
+				else if (q0 == 0)
 					ih = iq[jz - 1] >> 23;
-				else if (z >= 0.5) 
+				else if (z >= 0.5)
 					ih = 2;
 
 				if (ih > 0)
@@ -1008,7 +1001,7 @@ namespace MissingValues
 
 						for (i = jz + 1; i <= jz + k; i++)
 						{  /* add q[jz+1] to q[jz+k] */
-							f[jx + i] = (double)Constants.RemPio.IPIO2[jv + i];
+							f[jx + i] = Constants.RemPio.IPIO2[jv + i];
 							for (j = 0, fw = 0.0; j <= jx; j++)
 								fw += x[j] * f[jx + i - j];
 							q[i] = fw;
@@ -1032,14 +1025,14 @@ namespace MissingValues
 				else
 				{ /* break z into 24-bit if necessary */
 					z = Math.ScaleB(z, -q0);
-					if (z >= 1.6777216E7) 
+					if (z >= 1.6777216E7)
 					{
-						fw = (double)(int)(5.9604644775390625E-8 * z);
+						fw = (int)(5.9604644775390625E-8 * z);
 						iq[jz] = (int)(z - 1.6777216E7 * fw);
 						jz += 1;
 						q0 += 24;
 						iq[jz] = (int)fw;
-					} 
+					}
 					else
 						iq[jz] = (int)z;
 				}
@@ -1048,7 +1041,7 @@ namespace MissingValues
 				fw = Math.ScaleB(1.0, q0);
 				for (i = jz; i >= 0; i--)
 				{
-					q[i] = fw * (double)iq[i];
+					q[i] = fw * iq[i];
 					fw *= 5.9604644775390625E-8;
 				}
 
@@ -1191,7 +1184,7 @@ namespace MissingValues
 			// |x| < log(2)
 			if (exponent < 0x3FFF - 1 || x < new Quad(0x3FFE_62E4_2FEF_A39E, 0xF357_93C7_6730_07E6))
 			{
-				if (exponent < 0x3FFF-32)
+				if (exponent < 0x3FFF - 32)
 				{
 					return Quad.One;
 				}
@@ -2372,7 +2365,7 @@ namespace MissingValues
 					}
 				}
 			}
-			else if(n < Quad.MinExponent)
+			else if (n < Quad.MinExponent)
 			{
 				Quad minExp = new Quad(0x0001_0000_0000_0000, 0x0000_0000_0000_0000);
 				Quad b113 = new Quad(0x4070_0000_0000_0000, 0x0000_0000_0000_0000);
@@ -2615,7 +2608,7 @@ namespace MissingValues
 			sig |= new UInt128(0x0001000000000000, 0x0);
 			uint sig32 = (uint)(sig >> 81);
 			uint recipSqrt32 = BitHelper.SqrtReciprocalApproximate((uint)exp, sig32);
-			uint sig32Z = (uint)(((ulong) sig32 * recipSqrt32) >> 32);
+			uint sig32Z = (uint)(((ulong)sig32 * recipSqrt32) >> 32);
 			UInt128 rem;
 			if (exp != 0)
 			{

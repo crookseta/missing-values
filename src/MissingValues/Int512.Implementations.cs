@@ -1,18 +1,13 @@
 ﻿using MissingValues.Info;
 using MissingValues.Internals;
-using System;
 using System.Buffers.Binary;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
-using System.Linq;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace MissingValues
 {
@@ -187,7 +182,7 @@ namespace MissingValues
 
 			return result;
 		}
-		
+
 		/// <inheritdoc/>
 		public static Int512 CreateTruncating<TOther>(TOther value)
 			where TOther : INumberBase<TOther>
@@ -212,7 +207,7 @@ namespace MissingValues
 			Int512 quotient = left / right;
 			return (quotient, left - (quotient * right));
 		}
-		
+
 		/// <inheritdoc/>
 		public bool Equals(Int512 other) => this == other;
 
@@ -235,7 +230,7 @@ namespace MissingValues
 		static bool INumberBase<Int512>.IsCanonical(Int512 value) => true;
 
 		static bool INumberBase<Int512>.IsComplexNumber(Int512 value) => false;
-		
+
 		/// <inheritdoc/>
 		public static bool IsEvenInteger(Int512 value) => (value._p0 & 1) == 0;
 
@@ -472,7 +467,7 @@ namespace MissingValues
 		}
 
 		/// <inheritdoc/>
-		public bool TryFormat(Span<byte> utf8Destination, out int bytesWritten, [StringSyntax(StringSyntaxAttribute.NumericFormat)]  ReadOnlySpan<char> format, IFormatProvider? provider)
+		public bool TryFormat(Span<byte> utf8Destination, out int bytesWritten, [StringSyntax(StringSyntaxAttribute.NumericFormat)] ReadOnlySpan<char> format, IFormatProvider? provider)
 		{
 			return NumberFormatter.TryFormatInt<Int512, UInt512, Utf8Char>(in this, Utf8Char.CastFromByteSpan(utf8Destination), out bytesWritten, format, provider);
 		}
@@ -1104,16 +1099,16 @@ namespace MissingValues
 
 			ulong part3 = left._p3 + right._p3 + carry;
 			carry = (part3 < left._p3 || (carry == 1 && part3 == left._p3)) ? 1UL : 0UL;
-			
+
 			ulong part4 = left._p4 + right._p4 + carry;
 			carry = (part4 < left._p4 || (carry == 1 && part4 == left._p4)) ? 1UL : 0UL;
-			
+
 			ulong part5 = left._p5 + right._p5 + carry;
 			carry = (part5 < left._p5 || (carry == 1 && part5 == left._p5)) ? 1UL : 0UL;
-			
+
 			ulong part6 = left._p6 + right._p6 + carry;
 			carry = (part6 < left._p6 || (carry == 1 && part6 == left._p6)) ? 1UL : 0UL;
-			
+
 			ulong part7 = left._p7 + right._p7 + carry;
 			return new Int512(part7, part6, part5, part4, part3, part2, part1, part0);
 		}

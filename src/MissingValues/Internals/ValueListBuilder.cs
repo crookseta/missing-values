@@ -1,12 +1,7 @@
-﻿using System;
-using System.Buffers;
-using System.Collections.Generic;
+﻿using System.Buffers;
 using System.Diagnostics;
-using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace MissingValues.Internals
 {
@@ -113,7 +108,7 @@ namespace MissingValues.Internals
 
 			int pos = _pos;
 			Span<T> span = _span;
-			if ((ulong)(uint)pos + (ulong)(uint)length <= (ulong)(uint)span.Length) // same guard condition as in Span<T>.Slice on 64-bit
+			if ((uint)pos + (ulong)(uint)length <= (uint)span.Length) // same guard condition as in Span<T>.Slice on 64-bit
 			{
 				_pos = pos + length;
 				return span.Slice(pos, length);

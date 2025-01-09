@@ -1,12 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Globalization;
-using System.Linq;
 using System.Numerics;
 using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace MissingValues.Internals
 {
@@ -24,7 +19,7 @@ namespace MissingValues.Internals
 			{
 				uint e = Quad.ExtractBiasedExponentFromBits(Quad.QuadToUInt128Bits(quad));
 				UInt256 s = Quad.ExtractTrailingSignificandFromBits(Quad.QuadToUInt128Bits(quad));
-				_exponent =  Unsafe.As<uint, UInt32Wrapper>(ref e);
+				_exponent = Unsafe.As<uint, UInt32Wrapper>(ref e);
 				_significand = Unsafe.As<UInt256, UInt256Wrapper>(ref s);
 			}
 			else if (floating is Octo octo)
@@ -38,7 +33,7 @@ namespace MissingValues.Internals
 			{
 				throw new NotSupportedException();
 			}
-        }
+		}
 
 		public bool Sign => _sign;
 		public UInt32Wrapper Exponent => _exponent;

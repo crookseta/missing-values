@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Runtime.InteropServices;
 
 namespace MissingValues.Internals;
 
@@ -1145,27 +1140,25 @@ internal static class Constants
 		[StructLayout(LayoutKind.Explicit, Size = 16)]
 		public unsafe struct QuadShape
 		{
-			[FieldOffset(0)]public Quad Value;
+			[FieldOffset(0)] public Quad Value;
 
 #if BIGENDIAN
-			[FieldOffset(0)]public ulong Upper;
-			[FieldOffset(8)]public ulong Lower;
+			[FieldOffset(0)] public ulong Upper;
+			[FieldOffset(8)] public ulong Lower;
 
-			[FieldOffset(0)]public uint UpperHi;
-			[FieldOffset(4)]public uint UpperLo;
-			[FieldOffset(8)]public uint LowerHi;
-			[FieldOffset(12)]public uint LowerLo;
+			[FieldOffset(0)] public uint UpperHi;
+			[FieldOffset(4)] public uint UpperLo;
+			[FieldOffset(8)] public uint LowerHi;
+			[FieldOffset(12)] public uint LowerLo;
 #else
-			[FieldOffset(0)]public ulong Lower;
-			[FieldOffset(8)]public ulong Upper;
+			[FieldOffset(0)] public ulong Lower;
+			[FieldOffset(8)] public ulong Upper;
 
 			[FieldOffset(0)] public uint LowerLo;
 			[FieldOffset(4)] public uint LowerHi;
 			[FieldOffset(8)] public uint UpperLo;
 			[FieldOffset(12)] public uint UpperHi;
 #endif
-
-
 		}
 	}
 }

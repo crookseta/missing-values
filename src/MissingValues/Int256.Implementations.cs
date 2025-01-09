@@ -1,20 +1,15 @@
-﻿using MissingValues.Internals;
-using System;
+﻿using MissingValues.Info;
+using MissingValues.Internals;
 using System.Buffers.Binary;
-using System.Collections.Generic;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
-using System.Linq;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using System.Runtime.Intrinsics.X86;
 using System.Runtime.Intrinsics;
+using System.Runtime.Intrinsics.X86;
 using System.Text;
-using System.Threading.Tasks;
-using System.Text.Unicode;
-using MissingValues.Info;
 
 namespace MissingValues
 {
@@ -1125,7 +1120,7 @@ namespace MissingValues
 
 			uint sign = (uint)(left._p3 >> 63);
 
-			if (sign == (uint)(right._p3 >> 63) && 
+			if (sign == (uint)(right._p3 >> 63) &&
 				sign != (uint)(result._p3 >> 63))
 			{
 				Thrower.ArithmethicOverflow(Thrower.ArithmethicOperation.Addition);
