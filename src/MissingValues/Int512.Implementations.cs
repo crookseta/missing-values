@@ -452,6 +452,23 @@ namespace MissingValues
 		public static Int512 RotateRight(Int512 value, int rotateAmount) => (value >>> rotateAmount) | (value << (512 - rotateAmount));
 
 		/// <inheritdoc/>
+		public static int Sign(Int512 value)
+		{
+			if ((long)value._p7 < 0)
+			{
+				return -1;
+			}
+			else if (value != Zero)
+			{
+				return 1;
+			}
+			else
+			{
+				return 0;
+			}
+		}
+
+		/// <inheritdoc/>
 		public string ToString([StringSyntax(StringSyntaxAttribute.NumericFormat)] string? format, IFormatProvider? formatProvider)
 		{
 			return NumberFormatter.FormatInt<Int512, UInt512>(in this, format, formatProvider);
