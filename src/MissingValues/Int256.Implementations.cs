@@ -353,8 +353,7 @@ namespace MissingValues
 			var status = NumberParser.TryParseToSigned<Int256, UInt256, Utf8Char>(Utf8Char.CastFromByteSpan(utf8Text), style, provider, out Int256 output);
 			if (!status)
 			{
-				string input = new string(Encoding.UTF8.GetChars(utf8Text.ToArray()));
-				status.Throw<Int256>(input);
+				status.Throw<Int256>(utf8Text);
 			}
 			return output;
 		}
@@ -364,8 +363,7 @@ namespace MissingValues
 			var status = NumberParser.TryParseToSigned<Int256, UInt256, Utf8Char>(Utf8Char.CastFromByteSpan(utf8Text), NumberStyles.Integer, provider, out Int256 output);
 			if (!status)
 			{
-				string input = new string(Encoding.UTF8.GetChars(utf8Text.ToArray()));
-				status.Throw<Int256>(input);
+				status.Throw<Int256>(utf8Text);
 			}
 			return output;
 		}
