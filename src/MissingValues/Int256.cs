@@ -586,7 +586,7 @@ namespace MissingValues
 		/// <param name="value">The value to convert.</param>
 		public static explicit operator decimal(in Int256 value)
 		{
-			if (IsNegative(value))
+			if ((long)value._p3 < 0)
 			{
 				Int256 abs = -value;
 				return -(decimal)(double)(UInt256)(abs);
@@ -599,7 +599,7 @@ namespace MissingValues
 		/// <param name="value">The value to convert.</param>
 		public static explicit operator Octo(in Int256 value)
 		{
-			if (IsNegative(value))
+			if ((long)value._p3 < 0)
 			{
 				Int256 abs = -value;
 				return -(Octo)(UInt256)(abs);
@@ -612,7 +612,7 @@ namespace MissingValues
 		/// <param name="value">The value to convert.</param>
 		public static explicit operator Quad(in Int256 value)
 		{
-			if (IsNegative(value))
+			if ((long)value._p3 < 0)
 			{
 				Int256 abs = -value;
 				return -(Quad)(UInt256)(abs);
@@ -625,7 +625,7 @@ namespace MissingValues
 		/// <param name="value">The value to convert.</param>
 		public static explicit operator double(in Int256 value)
 		{
-			if (IsNegative(value))
+			if ((long)value._p3 < 0)
 			{
 				Int256 abs = -value;
 				return -(double)(UInt256)(abs);
@@ -638,7 +638,7 @@ namespace MissingValues
 		/// <param name="value">The value to convert.</param>
 		public static explicit operator float(in Int256 value)
 		{
-			if (IsNegative(value))
+			if ((long)value._p3 < 0)
 			{
 				Int256 abs = -value;
 				return -(float)(UInt256)(abs);
@@ -651,7 +651,7 @@ namespace MissingValues
 		/// <param name="value">The value to convert.</param>
 		public static explicit operator Half(in Int256 value)
 		{
-			if (IsNegative(value))
+			if ((long)value._p3 < 0)
 			{
 				Int256 abs = -value;
 				return -(Half)(UInt256)(abs);

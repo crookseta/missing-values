@@ -71,11 +71,11 @@ namespace MissingValues
 		/// <inheritdoc/>
 		public static Int512 Abs(Int512 value)
 		{
-			if (IsNegative(value))
+			if ((long)value._p7 < 0)
 			{
 				value = -value;
 
-				if (IsNegative(value))
+				if ((long)value._p7 < 0)
 				{
 					Thrower.MinimumSignedAbsoluteValue<Int512>();
 				}
@@ -131,14 +131,14 @@ namespace MissingValues
 		{
 			var absValue = value;
 
-			if (IsNegative(absValue))
+			if ((long)absValue._p7 < 0)
 			{
 				absValue = -absValue;
 			}
 
-			if (IsPositive(sign))
+			if ((long)sign._p7 >= 0)
 			{
-				if (IsNegative(absValue))
+				if ((long)absValue._p7 < 0)
 				{
 					Thrower.MinimumSignedAbsoluteValue<Int512>();
 				}
@@ -217,7 +217,7 @@ namespace MissingValues
 		{
 			Int512 value = this;
 
-			if (IsPositive(value))
+			if ((long)value._p7 >= 0)
 			{
 				return (Size * 8) - BitHelper.LeadingZeroCount(in value);
 			}
@@ -260,7 +260,7 @@ namespace MissingValues
 		static bool INumberBase<Int512>.IsPositiveInfinity(Int512 value) => false;
 
 		/// <inheritdoc/>
-		public static bool IsPow2(Int512 value) => (BitHelper.PopCount(in value) == 1) && IsPositive(value);
+		public static bool IsPow2(Int512 value) => (BitHelper.PopCount(in value) == 1) && (long)value._p7 >= 0;
 
 		static bool INumberBase<Int512>.IsRealNumber(Int512 value) => true;
 
@@ -284,11 +284,11 @@ namespace MissingValues
 		{
 			Int512 absX = x;
 
-			if (IsNegative(absX))
+			if ((long)absX._p7 < 0)
 			{
 				absX = -absX;
 
-				if (IsNegative(absX))
+				if ((long)absX._p7 < 0)
 				{
 					return x;
 				}
@@ -296,11 +296,11 @@ namespace MissingValues
 
 			Int512 absY = y;
 
-			if (IsNegative(absY))
+			if ((long)absY._p7 < 0)
 			{
 				absY = -absY;
 
-				if (IsNegative(absY))
+				if ((long)absY._p7 < 0)
 				{
 					return y;
 				}
@@ -313,7 +313,7 @@ namespace MissingValues
 
 			if (absX == absY)
 			{
-				return IsNegative(x) ? y : x;
+				return (long)x._p7 < 0 ? y : x;
 			}
 
 			return y;
@@ -331,11 +331,11 @@ namespace MissingValues
 		{
 			Int512 absX = x;
 
-			if (IsNegative(absX))
+			if ((long)absX._p7 < 0)
 			{
 				absX = -absX;
 
-				if (IsNegative(absX))
+				if ((long)absX._p7 < 0)
 				{
 					return y;
 				}
@@ -343,11 +343,11 @@ namespace MissingValues
 
 			Int512 absY = y;
 
-			if (IsNegative(absY))
+			if ((long)absY._p7 < 0)
 			{
 				absY = -absY;
 
-				if (IsNegative(absY))
+				if ((long)absY._p7 < 0)
 				{
 					return x;
 				}
@@ -360,7 +360,7 @@ namespace MissingValues
 
 			if (absX == absY)
 			{
-				return IsNegative(x) ? x : y;
+				return (long)x._p7 < 0 ? x : y;
 			}
 
 			return y;
@@ -1249,12 +1249,12 @@ namespace MissingValues
 
 			Int512 a = left, b = right;
 
-			if (IsNegative(left))
+			if ((long)left._p7 < 0)
 			{
 				a = ~left + One;
 			}
 
-			if (IsNegative(right))
+			if ((long)right._p7 < 0)
 			{
 				b = ~right + One;
 			}

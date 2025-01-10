@@ -659,7 +659,7 @@ namespace MissingValues
 		/// <param name="value">The value to convert.</param>
 		public static explicit operator decimal(in Int512 value)
 		{
-			if (IsNegative(value))
+			if ((long)value._p7 < 0)
 			{
 				Int512 abs = -value;
 				return -(decimal)(UInt512)(abs);
@@ -672,7 +672,7 @@ namespace MissingValues
 		/// <param name="value">The value to convert.</param>
 		public static explicit operator Octo(in Int512 value)
 		{
-			if (IsNegative(value))
+			if ((long)value._p7 < 0)
 			{
 				Int512 abs = -value;
 				return -(Octo)(UInt512)(abs);
@@ -685,7 +685,7 @@ namespace MissingValues
 		/// <param name="value">The value to convert.</param>
 		public static explicit operator Quad(in Int512 value)
 		{
-			if (IsNegative(value))
+			if ((long)value._p7 < 0)
 			{
 				Int512 abs = -value;
 				return -(Quad)(UInt512)(abs);
@@ -698,7 +698,7 @@ namespace MissingValues
 		/// <param name="value">The value to convert.</param>
 		public static explicit operator double(in Int512 value)
 		{
-			if (IsNegative(value))
+			if ((long)value._p7 < 0)
 			{
 				Int512 abs = -value;
 				return -(double)(UInt512)(abs);
@@ -711,7 +711,7 @@ namespace MissingValues
 		/// <param name="value">The value to convert.</param>
 		public static explicit operator float(in Int512 value)
 		{
-			if (IsNegative(value))
+			if ((long)value._p7 < 0)
 			{
 				Int512 abs = -value;
 				return -(float)(UInt512)(abs);
@@ -724,7 +724,7 @@ namespace MissingValues
 		/// <param name="value">The value to convert.</param>
 		public static explicit operator Half(in Int512 value)
 		{
-			if (IsNegative(value))
+			if ((long)value._p7 < 0)
 			{
 				Int512 abs = -value;
 				return -(Half)(UInt512)(abs);

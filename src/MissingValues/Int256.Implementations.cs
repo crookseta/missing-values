@@ -73,11 +73,11 @@ namespace MissingValues
 		/// <inheritdoc/>
 		public static Int256 Abs(Int256 value)
 		{
-			if (IsNegative(value))
+			if ((long)value._p3 < 0)
 			{
 				value = -value;
 
-				if (IsNegative(value))
+				if ((long)value._p3 < 0)
 				{
 					Thrower.MinimumSignedAbsoluteValue<Int256>();
 				}
@@ -125,7 +125,7 @@ namespace MissingValues
 		static bool INumberBase<Int256>.IsPositiveInfinity(Int256 value) => false;
 
 		/// <inheritdoc/>
-		public static bool IsPow2(Int256 value) => (BitHelper.PopCount(in value) == 1) && IsPositive(value);
+		public static bool IsPow2(Int256 value) => (BitHelper.PopCount(in value) == 1) && ((long)value._p3 >= 0);
 
 		static bool INumberBase<Int256>.IsRealNumber(Int256 value) => true;
 
@@ -158,14 +158,14 @@ namespace MissingValues
 		{
 			var absValue = value;
 
-			if (IsNegative(absValue))
+			if ((long)absValue._p3 < 0)
 			{
 				absValue = -absValue;
 			}
 
-			if (IsPositive(sign))
+			if ((long)sign._p3 >= 0)
 			{
-				if (IsNegative(absValue))
+				if ((long)absValue._p3 < 0)
 				{
 					Thrower.MinimumSignedAbsoluteValue<Int256>();
 				}
@@ -191,11 +191,11 @@ namespace MissingValues
 		{
 			Int256 absX = x;
 
-			if (IsNegative(absX))
+			if ((long)absX._p3 < 0)
 			{
 				absX = -absX;
 
-				if (IsNegative(absX))
+				if ((long)absX._p3 < 0)
 				{
 					return x;
 				}
@@ -203,11 +203,11 @@ namespace MissingValues
 
 			Int256 absY = y;
 
-			if (IsNegative(absY))
+			if ((long)absY._p3 < 0)
 			{
 				absY = -absY;
 
-				if (IsNegative(absY))
+				if ((long)absY._p3 < 0)
 				{
 					return y;
 				}
@@ -220,7 +220,7 @@ namespace MissingValues
 
 			if (absX == absY)
 			{
-				return IsNegative(x) ? y : x;
+				return (long)x._p3 < 0 ? y : x;
 			}
 
 			return y;
@@ -233,11 +233,11 @@ namespace MissingValues
 		{
 			Int256 absX = x;
 
-			if (IsNegative(absX))
+			if ((long)absX._p3 < 0)
 			{
 				absX = -absX;
 
-				if (IsNegative(absX))
+				if ((long)absX._p3 < 0)
 				{
 					return y;
 				}
@@ -245,11 +245,11 @@ namespace MissingValues
 
 			Int256 absY = y;
 
-			if (IsNegative(absY))
+			if ((long)absY._p3 < 0)
 			{
 				absY = -absY;
 
-				if (IsNegative(absY))
+				if ((long)absY._p3 < 0)
 				{
 					return x;
 				}
@@ -262,7 +262,7 @@ namespace MissingValues
 
 			if (absX == absY)
 			{
-				return IsNegative(x) ? x : y;
+				return (long)x._p3 < 0 ? x : y;
 			}
 
 			return y;
@@ -287,11 +287,11 @@ namespace MissingValues
 		/// <inheritdoc/>
 		public static int Sign(Int256 value)
 		{
-			if (IsNegative(value))
+			if ((long)value._p3 < 0)
 			{
 				return -1;
 			}
-			else if (value != default)
+			else if (value != Zero)
 			{
 				return 1;
 			}
@@ -937,7 +937,7 @@ namespace MissingValues
 		{
 			Int256 value = this;
 
-			if (IsPositive(value))
+			if ((long)value._p3 >= 0)
 			{
 				return (Size * 8) - BitHelper.LeadingZeroCount(in value);
 			}
@@ -1236,12 +1236,12 @@ namespace MissingValues
 
 			Int256 a = left, b = right;
 
-			if (IsNegative(left))
+			if ((long)left._p3 < 0)
 			{
 				a = ~left + One;
 			}
 
-			if (IsNegative(right))
+			if ((long)right._p3 < 0)
 			{
 				b = ~right + One;
 			}
