@@ -15,7 +15,6 @@ namespace MissingValues.Benchmarks
 	[SimpleJob(RuntimeMoniker.Net80)]
 	[SimpleJob(RuntimeMoniker.Net90)]
 	[HideColumns("Job", "Error", "StdDev")]
-	[MinColumn, MaxColumn, MeanColumn, MedianColumn]
 	[GenericTypeArguments(typeof(Int256))]
 	[GenericTypeArguments(typeof(UInt256))]
 	[GenericTypeArguments(typeof(Int512))]
