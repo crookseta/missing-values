@@ -711,7 +711,7 @@ namespace MissingValues
 				uint actual => (Int256)actual,
 				ulong actual => (Int256)actual,
 				UInt128 actual => (Int256)actual,
-				UInt256 actual => (actual > (UInt256)MaxValue) ? MaxValue : (Int256)actual,
+				UInt256 actual => (Int256)actual,
 				nuint actual => (Int256)actual,
 				sbyte actual => actual,
 				short actual => actual,
@@ -913,7 +913,7 @@ namespace MissingValues
 			{
 				result = v;
 			}
-			else if (!Int256.TryConvertFromTruncating(value, out result) && !TOther.TryConvertToTruncating<Int256>(value, out result))
+			else if (!TryConvertFromTruncating(value, out result) && !TOther.TryConvertToTruncating(value, out result))
 			{
 				Thrower.NotSupported<Int256, TOther>();
 			}
