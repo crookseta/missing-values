@@ -17,19 +17,30 @@ namespace MissingValues.Tests.Core
 		private const double Int256MaxValueAsDouble = 57896044618658097711785492504343953926634992332820282019728792003956564819967.0;
 		private const double Int256MinValueAsDouble = -57896044618658097711785492504343953926634992332820282019728792003956564819968.0d;
 
+		private static readonly Int SByteMaxValue = new(new(0x0000_0000_0000_0000, 0x0000_0000_0000_007F));
+		private static readonly Int SByteMinValue = new(new(0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF), new(0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FF80));
+
 		private static readonly Int ByteMaxValue = new(new(0x0000_0000_0000_0000, 0x0000_0000_0000_00FF));
 
 		private static readonly Int Int16MaxValue = new(new(0x0000_0000_0000_0000, 0x0000_0000_0000_7FFF));
 		private static readonly Int Int16MinValue = new(new(0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF), new(0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_8000));
 
+		private static readonly Int UInt16MaxValue = new(new(0x0000_0000_0000_0000, 0x0000_0000_0000_FFFF));
+
 		private static readonly Int Int32MaxValue = new(new(0x0000_0000_0000_0000, 0x0000_0000_7FFF_FFFF));
 		private static readonly Int Int32MinValue = new(new(0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF), new(0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_8000_0000));
+
+		private static readonly Int UInt32MaxValue = new(new(0x0000_0000_0000_0000, 0x0000_0000_FFFF_FFFF));
 
 		private static readonly Int Int64MaxValue = new(new(0x0000_0000_0000_0000, 0x7FFF_FFFF_FFFF_FFFF));
 		private static readonly Int Int64MinValue = new(new(0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF), new(0xFFFF_FFFF_FFFF_FFFF, 0x8000_0000_0000_0000));
 
+		private static readonly Int UInt64MaxValue = new(new(0x0000_0000_0000_0000, 0xFFFF_FFFF_FFFF_FFFF));
+
 		private static readonly Int Int128MaxValue = new(new(0x7FFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF));
 		private static readonly Int Int128MinValue = new(new(0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF), new(0x8000_0000_0000_0000, 0x0000_0000_0000_0000));
+
+		private static readonly Int UInt128MaxValue = new(new(0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF));
 
 		private static readonly Int NegativeOne = Int.NegativeOne;
 		private static readonly Int NegativeTwo = new(new(0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF), new(0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFE));
@@ -888,27 +899,39 @@ namespace MissingValues.Tests.Core
 		[Fact]
 		public static void CreateTruncatingToInt256Test()
 		{
+			NumberBaseHelper<Int>.CreateTruncating(sbyte.MaxValue).Should().Be(SByteMaxValue);
 			NumberBaseHelper<Int>.CreateTruncating(byte.MaxValue).Should().Be(ByteMaxValue);
 			NumberBaseHelper<Int>.CreateTruncating(short.MaxValue).Should().Be(Int16MaxValue);
+			NumberBaseHelper<Int>.CreateTruncating(ushort.MaxValue).Should().Be(UInt16MaxValue);
 			NumberBaseHelper<Int>.CreateTruncating(int.MaxValue).Should().Be(Int32MaxValue);
+			NumberBaseHelper<Int>.CreateTruncating(uint.MaxValue).Should().Be(UInt32MaxValue);
 			NumberBaseHelper<Int>.CreateTruncating(long.MaxValue).Should().Be(Int64MaxValue);
+			NumberBaseHelper<Int>.CreateTruncating(ulong.MaxValue).Should().Be(UInt64MaxValue);
 			NumberBaseHelper<Int>.CreateTruncating(Int128.MaxValue).Should().Be(Int128MaxValue);
+			NumberBaseHelper<Int>.CreateTruncating(UInt128.MaxValue).Should().Be(UInt128MaxValue);
 			NumberBaseHelper<Int>
 				.CreateTruncating(BigInteger.Parse(
 					"57896044618658097711785492504343953926634992332820282019728792003956564819967"))
 				.Should().Be(MaxValue);
 			NumberBaseHelper<Int>.CreateTruncating(Int256MaxValueAsDouble).Should().Be(MaxValue);
+			NumberBaseHelper<Int>.CreateTruncating(UInt256.MaxValue).Should().Be(NegativeOne);
 
+			NumberBaseHelper<Int>.CreateTruncating(sbyte.MinValue).Should().Be(SByteMinValue);
 			NumberBaseHelper<Int>.CreateTruncating(byte.MinValue).Should().Be(Zero);
 			NumberBaseHelper<Int>.CreateTruncating(short.MinValue).Should().Be(Int16MinValue);
+			NumberBaseHelper<Int>.CreateTruncating(ushort.MinValue).Should().Be(Zero);
 			NumberBaseHelper<Int>.CreateTruncating(int.MinValue).Should().Be(Int32MinValue);
+			NumberBaseHelper<Int>.CreateTruncating(uint.MinValue).Should().Be(Zero);
 			NumberBaseHelper<Int>.CreateTruncating(long.MinValue).Should().Be(Int64MinValue);
+			NumberBaseHelper<Int>.CreateTruncating(ulong.MinValue).Should().Be(Zero);
 			NumberBaseHelper<Int>.CreateTruncating(Int128.MinValue).Should().Be(Int128MinValue);
+			NumberBaseHelper<Int>.CreateTruncating(UInt128.MinValue).Should().Be(Zero);
 			NumberBaseHelper<Int>
 				.CreateTruncating(BigInteger.Parse(
 					"-57896044618658097711785492504343953926634992332820282019728792003956564819968"))
 				.Should().Be(MinValue);
 			NumberBaseHelper<Int>.CreateTruncating(Int256MinValueAsDouble).Should().Be(MinValue);
+			NumberBaseHelper<Int>.CreateTruncating(UInt256.MinValue).Should().Be(Zero);
 		}
 
 		[Fact]
