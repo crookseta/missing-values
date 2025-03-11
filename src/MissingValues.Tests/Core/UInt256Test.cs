@@ -145,6 +145,19 @@ namespace MissingValues.Tests.Core
 		[Fact]
 		public void ToHexStringTest()
 		{
+			One.ToString("X", CultureInfo.CurrentCulture)
+				.Should().Be("1");
+			((UInt)byte.MaxValue).ToString("X", CultureInfo.CurrentCulture)
+				.Should().Be("FF");
+			((UInt)ushort.MaxValue).ToString("X", CultureInfo.CurrentCulture)
+				.Should().Be("FFFF");
+			((UInt)uint.MaxValue).ToString("X", CultureInfo.CurrentCulture)
+				.Should().Be("FFFFFFFF");
+			((UInt)ulong.MaxValue).ToString("X", CultureInfo.CurrentCulture)
+				.Should().Be("FFFFFFFFFFFFFFFF");
+			((UInt)UInt128.MaxValue).ToString("X", CultureInfo.CurrentCulture)
+				.Should().Be("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF");
+
 			Zero.ToString("X64", CultureInfo.CurrentCulture)
 				.Should().Be("0000000000000000000000000000000000000000000000000000000000000000");
 			MaxValue.ToString("x64", CultureInfo.CurrentCulture)
@@ -155,6 +168,19 @@ namespace MissingValues.Tests.Core
 		[Fact]
 		public void ToBinStringTest()
 		{
+			One.ToString("B", CultureInfo.CurrentCulture)
+				.Should().Be("1");
+			((UInt)byte.MaxValue).ToString("B", CultureInfo.CurrentCulture)
+				.Should().Be("11111111");
+			((UInt)ushort.MaxValue).ToString("B", CultureInfo.CurrentCulture)
+				.Should().Be("1111111111111111");
+			((UInt)uint.MaxValue).ToString("B", CultureInfo.CurrentCulture)
+				.Should().Be("11111111111111111111111111111111");
+			((UInt)ulong.MaxValue).ToString("B", CultureInfo.CurrentCulture)
+				.Should().Be("1111111111111111111111111111111111111111111111111111111111111111");
+			((UInt)UInt128.MaxValue).ToString("B", CultureInfo.CurrentCulture)
+				.Should().Be("11111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111");
+
 			Zero.ToString("B256", CultureInfo.CurrentCulture)
 				.Should().Be("0000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000");
 			MaxValue.ToString("B256", CultureInfo.CurrentCulture)

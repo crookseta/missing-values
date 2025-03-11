@@ -1,4 +1,5 @@
 ﻿using MissingValues.Internals;
+using System;
 using System.Diagnostics;
 using System.Globalization;
 using System.Numerics;
@@ -336,13 +337,28 @@ internal static partial class NumberFormatter
 		{
 			TChar* bufferEnd = ptr + digits;
 			int maxDigitsPerChunk = 16;
-			int digitsLeft = digits;
+			ulong v;
+
+			if (value64.Length == 1)
+			{
+				v = value64[0];
+
+				while (--digits >= 0 || v != 0)
+				{
+					byte digit = (byte)(v & 0xF);
+					*(--bufferEnd) = (TChar)(char)(digit + (digit < 10 ? (byte)'0' : hexBase));
+					v >>= 4;
+				}
+
+				return;
+			}
 
 			for (int i = 0; i < value64.Length && digits > 0; i++)
 			{
-				ulong v = value64[i];
+				int digitsLeft = Math.Min(digits, maxDigitsPerChunk);
+				v = value64[i];
 
-				while ((digits - digitsLeft) < maxDigitsPerChunk || v != 0)
+				while (digitsLeft > 0 || v != 0)
 				{
 					byte digit = (byte)(v & 0xF);
 					*(--bufferEnd) = (TChar)(char)(digit + (digit < 10 ? (byte)'0' : hexBase));
@@ -351,7 +367,6 @@ internal static partial class NumberFormatter
 				}
 
 				digits -= maxDigitsPerChunk;
-				maxDigitsPerChunk = Math.Min(digits, maxDigitsPerChunk);
 			}
 		}
 	}
@@ -368,12 +383,27 @@ internal static partial class NumberFormatter
 		{
 			TChar* bufferEnd = ptr + digits;
 			int maxDigitsPerChunk = 64;
-			int digitsLeft = digits;
+			ulong v;
+
+			if (value64.Length == 1)
+			{
+				v = value64[0];
+
+				while (--digits >= 0 || v != 0)
+				{
+					*(--bufferEnd) = (TChar)(char)('0' + (v & 0x1));
+					v >>= 1;
+				}
+
+				return;
+			}
 
 			for (int i = 0; i < value64.Length && digits > 0; i++)
 			{
-				ulong v = value64[i];
-				while ((digits - digitsLeft) < maxDigitsPerChunk || v != 0)
+				int digitsLeft = Math.Min(digits, maxDigitsPerChunk);
+				v = value64[i];
+
+				while (digitsLeft > 0 || v != 0)
 				{
 					*(--bufferEnd) = (TChar)(char)('0' + (v & 0x1));
 					digitsLeft--;
@@ -381,7 +411,6 @@ internal static partial class NumberFormatter
 				}
 
 				digits -= maxDigitsPerChunk;
-				maxDigitsPerChunk = Math.Min(digits, maxDigitsPerChunk);
 			}
 		}
 	}
