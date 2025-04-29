@@ -190,13 +190,13 @@ namespace MissingValues
 					return Zero;
 				}
 
-				lower = Calculator.Multiply(in left, right._p0, out _);
-				return Zero;
+				lower = Calculator.Multiply(in left, right._p0, out var carry);
+				return carry;
 			}
 			else if (left._p7 == 0 && left._p6 == 0 && left._p5 == 0 && left._p4 == 0 && left._p3 == 0 && left._p2 == 0 && left._p1 == 0)
 			{
-				lower = Calculator.Multiply(in right, left._p0, out _);
-				return Zero;
+				lower = Calculator.Multiply(in right, left._p0, out var carry);
+				return carry;
 			}
 			
 			const int UIntCount = Size / sizeof(ulong);
