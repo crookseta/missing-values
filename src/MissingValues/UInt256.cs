@@ -124,6 +124,23 @@ namespace MissingValues
 		/// <returns>The high 256-bit of the product of the specified numbers.</returns>
 		public static UInt256 BigMul(UInt256 left, UInt256 right, out UInt256 lower)
 		{
+			if (right._p3 == 0 && right._p2 == 0 && right._p1 == 0)
+			{
+				if (left._p3 == 0 && left._p2 == 0 && left._p1 == 0)
+				{
+					ulong up = Math.BigMul(left._p0, right._p0, out ulong low);
+					lower = new UInt256(0, 0, up, low);
+				}
+
+				lower = Calculator.Multiply(in left, right._p0, out _);
+				return Zero;
+			}
+			else if (left._p3 == 0 && left._p2 == 0 && left._p1 == 0)
+			{
+				lower = Calculator.Multiply(in right, left._p0, out _);
+				return Zero;
+			}
+			
 			const int UIntCount = Size / sizeof(ulong);
 
 			Span<ulong> leftSpan = stackalloc ulong[UIntCount];

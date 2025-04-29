@@ -181,6 +181,24 @@ namespace MissingValues
 		/// <returns>The high 512-bit of the product of the specified numbers.</returns>
 		public static UInt512 BigMul(UInt512 left, UInt512 right, out UInt512 lower)
 		{
+			if (right._p7 == 0 && right._p6 == 0 && right._p5 == 0 && right._p4 == 0 && right._p3 == 0 && right._p2 == 0 && right._p1 == 0)
+			{
+				if (left._p7 == 0 && left._p6 == 0 && left._p5 == 0 && left._p4 == 0 && left._p3 == 0 && left._p2 == 0 && left._p1 == 0)
+				{
+					ulong up = Math.BigMul(left._p0, right._p0, out ulong low);
+					lower = new UInt512(0, 0, 0, 0, 0, 0, up, low);
+					return Zero;
+				}
+
+				lower = Calculator.Multiply(in left, right._p0, out _);
+				return Zero;
+			}
+			else if (left._p7 == 0 && left._p6 == 0 && left._p5 == 0 && left._p4 == 0 && left._p3 == 0 && left._p2 == 0 && left._p1 == 0)
+			{
+				lower = Calculator.Multiply(in right, left._p0, out _);
+				return Zero;
+			}
+			
 			const int UIntCount = Size / sizeof(ulong);
 
 			Span<ulong> leftSpan = stackalloc ulong[UIntCount];

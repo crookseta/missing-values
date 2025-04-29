@@ -172,17 +172,17 @@ namespace MissingValues
 		}
 		internal static void DivRem(in UInt512 left, in UInt512 right, out UInt512 quotient, out UInt512 remainder)
 		{
-			const int UIntCount = Size / sizeof(uint);
+			const int UIntCount = Size / sizeof(ulong);
 
 			if (right._p7 == 0 && right._p6 == 0 && right._p5 == 0 && right._p4 == 0)
 			{
-				if (right._p3 == 0 && right._p2 == 0 && right._p1 == 0 && right._p0 <= uint.MaxValue)
+				if (right._p3 == 0 && right._p2 == 0 && right._p1 == 0)
 				{
 					if (right._p0 == 0)
 					{
 						Thrower.DivideByZero();
 					}
-					Calculator.DivRem(in left, (uint)right._p0, out quotient, out var r);
+					Calculator.DivRem(in left, right._p0, out quotient, out var r);
 					remainder = r;
 					return;
 				}
@@ -201,27 +201,27 @@ namespace MissingValues
 				return;
 			}
 
-			Span<uint> quotientSpan = stackalloc uint[UIntCount];
+			Span<ulong> quotientSpan = stackalloc ulong[UIntCount];
 			quotientSpan.Clear();
-			Unsafe.WriteUnaligned(ref Unsafe.As<uint, byte>(ref MemoryMarshal.GetReference(quotientSpan)), left);
+			Unsafe.WriteUnaligned(ref Unsafe.As<ulong, byte>(ref MemoryMarshal.GetReference(quotientSpan)), left);
 
-			Span<uint> divisorSpan = stackalloc uint[UIntCount];
+			Span<ulong> divisorSpan = stackalloc ulong[UIntCount];
 			divisorSpan.Clear();
-			Unsafe.WriteUnaligned(ref Unsafe.As<uint, byte>(ref MemoryMarshal.GetReference(divisorSpan)), right);
+			Unsafe.WriteUnaligned(ref Unsafe.As<ulong, byte>(ref MemoryMarshal.GetReference(divisorSpan)), right);
 
-			Span<uint> quoBits = stackalloc uint[UIntCount];
+			Span<ulong> quoBits = stackalloc ulong[UIntCount];
 			quoBits.Clear();
-			Span<uint> remBits = stackalloc uint[UIntCount];
+			Span<ulong> remBits = stackalloc ulong[UIntCount];
 			remBits.Clear();
 
 			Calculator.DivRem(
-				quotientSpan[..((UIntCount) - (BitHelper.LeadingZeroCount(in left) / 32))],
-				divisorSpan[..((UIntCount) - (BitHelper.LeadingZeroCount(in right) / 32))],
+				quotientSpan[..BitHelper.GetTrimLength(in left)],
+				divisorSpan[..BitHelper.GetTrimLength(in right)],
 				quoBits,
 				remBits);
 
-			quotient = Unsafe.ReadUnaligned<UInt512>(ref Unsafe.As<uint, byte>(ref MemoryMarshal.GetReference(quoBits)));
-			remainder = Unsafe.ReadUnaligned<UInt512>(ref Unsafe.As<uint, byte>(ref MemoryMarshal.GetReference(remBits)));
+			quotient = Unsafe.ReadUnaligned<UInt512>(ref Unsafe.As<ulong, byte>(ref MemoryMarshal.GetReference(quoBits)));
+			remainder = Unsafe.ReadUnaligned<UInt512>(ref Unsafe.As<ulong, byte>(ref MemoryMarshal.GetReference(remBits)));
 		}
 
 		/// <inheritdoc/>
@@ -1250,17 +1250,17 @@ namespace MissingValues
 		/// <inheritdoc/>
 		public static UInt512 operator /(in UInt512 left, in UInt512 right)
 		{
-			const int UIntCount = Size / sizeof(uint);
+			const int UIntCount = Size / sizeof(ulong);
 
 			if (right._p7 == 0 && right._p6 == 0 && right._p5 == 0 && right._p4 == 0)
 			{
-				if (right._p3 == 0 && right._p2 == 0 && right._p1 == 0 && right._p0 <= uint.MaxValue)
+				if (right._p3 == 0 && right._p2 == 0 && right._p1 == 0)
 				{
 					if (right._p0 == 0)
 					{
 						Thrower.DivideByZero();
 					}
-					return Calculator.Divide(in left, (uint)right);
+					return Calculator.Divide(in left, right._p0);
 				}
 			}
 
@@ -1269,39 +1269,39 @@ namespace MissingValues
 				return (right == left) ? One : Zero;
 			}
 
-			Span<uint> quotientSpan = stackalloc uint[UIntCount];
+			Span<ulong> quotientSpan = stackalloc ulong[UIntCount];
 			quotientSpan.Clear();
-			Unsafe.WriteUnaligned(ref Unsafe.As<uint, byte>(ref MemoryMarshal.GetReference(quotientSpan)), left);
+			Unsafe.WriteUnaligned(ref Unsafe.As<ulong, byte>(ref MemoryMarshal.GetReference(quotientSpan)), left);
 
-			Span<uint> divisorSpan = stackalloc uint[UIntCount];
+			Span<ulong> divisorSpan = stackalloc ulong[UIntCount];
 			divisorSpan.Clear();
-			Unsafe.WriteUnaligned(ref Unsafe.As<uint, byte>(ref MemoryMarshal.GetReference(divisorSpan)), right);
+			Unsafe.WriteUnaligned(ref Unsafe.As<ulong, byte>(ref MemoryMarshal.GetReference(divisorSpan)), right);
 
-			Span<uint> rawBits = stackalloc uint[UIntCount];
+			Span<ulong> rawBits = stackalloc ulong[UIntCount];
 			rawBits.Clear();
 
 			Calculator.Divide(
-				quotientSpan[..((UIntCount) - (BitHelper.LeadingZeroCount(in left) / 32))],
-				divisorSpan[..((UIntCount) - (BitHelper.LeadingZeroCount(in right) / 32))],
+				quotientSpan[..BitHelper.GetTrimLength(in left)],
+				divisorSpan[..BitHelper.GetTrimLength(in right)],
 				rawBits);
 
-			return Unsafe.ReadUnaligned<UInt512>(ref Unsafe.As<uint, byte>(ref MemoryMarshal.GetReference(rawBits)));
+			return Unsafe.ReadUnaligned<UInt512>(ref Unsafe.As<ulong, byte>(ref MemoryMarshal.GetReference(rawBits)));
 		}
 
 		/// <inheritdoc/>
 		public static UInt512 operator %(in UInt512 left, in UInt512 right)
 		{
-			const int UIntCount = Size / sizeof(uint);
+			const int UIntCount = Size / sizeof(ulong);
 
 			if (right._p7 == 0 && right._p6 == 0 && right._p5 == 0 && right._p4 == 0)
 			{
-				if (right._p3 == 0 && right._p2 == 0 && right._p1 == 0 && right._p0 <= uint.MaxValue)
+				if (right._p3 == 0 && right._p2 == 0 && right._p1 == 0)
 				{
 					if (right._p0 == 0)
 					{
 						Thrower.DivideByZero();
 					}
-					return Calculator.Remainder(in left, (uint)right._p0);
+					return Calculator.Remainder(in left, right._p0);
 				}
 			}
 
@@ -1315,23 +1315,23 @@ namespace MissingValues
 				return left;
 			}
 
-			Span<uint> quotientSpan = stackalloc uint[UIntCount];
+			Span<ulong> quotientSpan = stackalloc ulong[UIntCount];
 			quotientSpan.Clear();
-			Unsafe.WriteUnaligned(ref Unsafe.As<uint, byte>(ref MemoryMarshal.GetReference(quotientSpan)), left);
+			Unsafe.WriteUnaligned(ref Unsafe.As<ulong, byte>(ref MemoryMarshal.GetReference(quotientSpan)), left);
 
-			Span<uint> divisorSpan = stackalloc uint[UIntCount];
+			Span<ulong> divisorSpan = stackalloc ulong[UIntCount];
 			divisorSpan.Clear();
-			Unsafe.WriteUnaligned(ref Unsafe.As<uint, byte>(ref MemoryMarshal.GetReference(divisorSpan)), right);
+			Unsafe.WriteUnaligned(ref Unsafe.As<ulong, byte>(ref MemoryMarshal.GetReference(divisorSpan)), right);
 
-			Span<uint> rawBits = stackalloc uint[UIntCount];
+			Span<ulong> rawBits = stackalloc ulong[UIntCount];
 			rawBits.Clear();
 
 			Calculator.Remainder(
-				quotientSpan[..((UIntCount) - (BitHelper.LeadingZeroCount(in left) / 32))],
-				divisorSpan[..((UIntCount) - (BitHelper.LeadingZeroCount(in right) / 32))],
+				quotientSpan[..BitHelper.GetTrimLength(in left)],
+				divisorSpan[..BitHelper.GetTrimLength(in right)],
 				rawBits);
 
-			return Unsafe.ReadUnaligned<UInt512>(ref Unsafe.As<uint, byte>(ref MemoryMarshal.GetReference(rawBits)));
+			return Unsafe.ReadUnaligned<UInt512>(ref Unsafe.As<ulong, byte>(ref MemoryMarshal.GetReference(rawBits)));
 		}
 
 		/// <inheritdoc/>
