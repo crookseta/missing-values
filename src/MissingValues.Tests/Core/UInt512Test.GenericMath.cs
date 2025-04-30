@@ -186,6 +186,19 @@ namespace MissingValues.Tests.Core
 				  HalfMaxValue,
 				  MathOperatorsHelper.DivisionOperation<UInt, UInt, UInt>(MaxValue, Two));
 			Assert.Equal(
+				  new UInt(0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000,
+					  0x7FFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF),
+				  MathOperatorsHelper.DivisionOperation<UInt, UInt, UInt>(
+					  UInt256.MaxValue, 
+					  Two));
+			Assert.Equal(
+				  new UInt(0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000,
+					  0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x7FFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF),
+				  MathOperatorsHelper.DivisionOperation<UInt, UInt, UInt>(
+					  UInt128.MaxValue, 
+					  Two));
+			
+			Assert.Equal(
 				  new(0x028F_5C28_F5C2_8F5C, 0x28F5_C28F_5C28_F5C2, 0x8F5C_28F5_C28F_5C28, 0xF5C2_8F5C_28F5_C28F,
 				  0x5C28_F5C2_8F5C_28F5, 0xC28F_5C28_F5C2_8F5C, 0x28F5_C28F_5C28_F5C2, 0x8F5C_28F5_C28F_5C28),
 				  MaxValue / 100);

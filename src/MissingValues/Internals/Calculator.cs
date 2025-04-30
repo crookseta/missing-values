@@ -279,7 +279,7 @@ internal static class Calculator
 			Unsafe.Add(ref resultPtr, i + left.Length) = (ulong)carry;
 		}
 	}
-	private static void Multiply(ref ulong left, int leftLength, ref ulong right, int rightLength, Span<ulong> bits)
+	public static void Multiply(ref ulong left, int leftLength, ref ulong right, int rightLength, Span<ulong> bits)
 	{
 		// Based on: https://github.com/dotnet/runtime/blob/main/src/libraries/System.Runtime.Numerics/src/System/Numerics/BigIntegerCalculator.SquMul.cs
 		Debug.Assert(leftLength < 16);
@@ -299,15 +299,15 @@ internal static class Calculator
 		for (int i = 0; i < rightLength; i++)
 		{
 			ulong rv = Unsafe.Add(ref right, i);
-			ulong carry = 0;
+			UInt128 carry = 0;
 			for (int j = 0; j < leftLength; j++)
 			{
 				ref ulong elementPtr = ref Unsafe.Add(ref resultPtr, i + j);
-				UInt128 digits = (elementPtr + carry) + BigMul(Unsafe.Add(ref left, j), rv);
+				UInt128 digits = elementPtr + carry + BigMul(Unsafe.Add(ref left, j), rv);
 				elementPtr = unchecked((ulong)digits);
-				carry = (ulong)(digits >> 64);
+				carry = digits >> 64;
 			}
-			Unsafe.Add(ref resultPtr, i + leftLength) = carry;
+			Unsafe.Add(ref resultPtr, i + leftLength) = (ulong)carry;
 		}
 	}
 
