@@ -366,7 +366,57 @@ namespace MissingValues
 
 			return 1;
 		}
+		internal static int GetTrimLength(in Int256 value)
+		{
+			if (value.Part3 != 0)
+			{
+				return 4;
+			}
+			if (value.Part2 != 0)
+			{
+				return 3;
+			}
+			if (value.Part1 != 0)
+			{
+				return 2;
+			}
+
+			return 1;
+		}
 		internal static int GetTrimLength(in UInt512 value)
+		{
+			if (value.Part7 != 0)
+			{
+				return 8;
+			}
+			if (value.Part6 != 0)
+			{
+				return 7;
+			}
+			if (value.Part5 != 0)
+			{
+				return 6;
+			}
+			if (value.Part4 != 0)
+			{
+				return 5;
+			}
+			if (value.Part3 != 0)
+			{
+				return 4;
+			}
+			if (value.Part2 != 0)
+			{
+				return 3;
+			}
+			if (value.Part1 != 0)
+			{
+				return 2;
+			}
+
+			return 1;
+		}
+		internal static int GetTrimLength(in Int512 value)
 		{
 			if (value.Part7 != 0)
 			{

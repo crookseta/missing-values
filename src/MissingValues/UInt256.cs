@@ -179,7 +179,7 @@ namespace MissingValues
 		/// </exception>
 		public static UInt256 Pow(UInt256 value, int exponent)
 		{
-			const int UIntCount = Size / sizeof(uint);
+			const int UIntCount = Size / sizeof(ulong);
 
 			ArgumentOutOfRangeException.ThrowIfNegative(exponent);
 
@@ -194,10 +194,10 @@ namespace MissingValues
 
 			uint power = checked((uint)exponent);
 			int size;
-			uint[]? bitsArray = null;
-			scoped Span<uint> bits;
+			ulong[]? bitsArray = null;
+			scoped Span<ulong> bits;
 
-			if (value._p3 == 0 && value._p2 == 0 && value._p1 == 0 && value._p0 <= uint.MaxValue)
+			if (value._p3 == 0 && value._p2 == 0 && value._p1 == 0)
 			{
 				if (value._p0 == 1)
 					return value;
@@ -212,11 +212,11 @@ namespace MissingValues
 				size = Calculator.PowBound(power, 1);
 
 				bits = (size <= Calculator.StackAllocThreshold
-					? stackalloc uint[Calculator.StackAllocThreshold]
-					: bitsArray = ArrayPool<uint>.Shared.Rent(size));
+					? stackalloc ulong[Calculator.StackAllocThreshold]
+					: bitsArray = ArrayPool<ulong>.Shared.Rent(size));
 				bits.Clear();
 
-				Calculator.Pow(unchecked((uint)value._p0), power, bits[..size]);
+				Calculator.Pow(value._p0, power, bits[..size]);
 			}
 			else
 			{
@@ -225,16 +225,16 @@ namespace MissingValues
 					Thrower.ArithmethicOverflow(Thrower.ArithmethicOperation.Exponentiation);
 				}
 
-				int valueLength = (UIntCount - (BitHelper.LeadingZeroCount(in value) / 32));
+				int valueLength = BitHelper.GetTrimLength(in value);
 				size = Calculator.PowBound(power, valueLength);
 
-				Span<uint> valueSpan = stackalloc uint[UIntCount];
+				Span<ulong> valueSpan = stackalloc ulong[UIntCount];
 				valueSpan.Clear();
-				Unsafe.WriteUnaligned(ref Unsafe.As<uint, byte>(ref MemoryMarshal.GetReference(valueSpan)), value);
+				Unsafe.WriteUnaligned(ref Unsafe.As<ulong, byte>(ref MemoryMarshal.GetReference(valueSpan)), value);
 
 				bits = (size <= Calculator.StackAllocThreshold
-					? stackalloc uint[Calculator.StackAllocThreshold]
-					: bitsArray = ArrayPool<uint>.Shared.Rent(size));
+					? stackalloc ulong[Calculator.StackAllocThreshold]
+					: bitsArray = ArrayPool<ulong>.Shared.Rent(size));
 				bits.Clear();
 
 				Calculator.Pow(valueSpan[..valueLength], power, bits[..size]);
@@ -242,7 +242,7 @@ namespace MissingValues
 
 			if (size > UIntCount)
 			{
-				Span<uint> overflow = bits[UIntCount..];
+				Span<ulong> overflow = bits[UIntCount..];
 
 				for (int i = 0; i < overflow.Length; i++)
 				{
@@ -253,11 +253,11 @@ namespace MissingValues
 				}
 			}
 
-			UInt256 result = Unsafe.ReadUnaligned<UInt256>(ref Unsafe.As<uint, byte>(ref MemoryMarshal.GetReference(bits[..UIntCount])));
+			UInt256 result = Unsafe.ReadUnaligned<UInt256>(ref Unsafe.As<ulong, byte>(ref MemoryMarshal.GetReference(bits[..UIntCount])));
 
 			if (bitsArray is not null)
 			{
-				ArrayPool<uint>.Shared.Return(bitsArray);
+				ArrayPool<ulong>.Shared.Return(bitsArray);
 			}
 
 			return result;
