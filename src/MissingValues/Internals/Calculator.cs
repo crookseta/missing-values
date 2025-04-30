@@ -1607,9 +1607,9 @@ internal static class Calculator
 			(digit, carry) = DivRemByUInt64(value, right);
 			p01 = (ulong)digit;
 
-			value = new UInt128(carry, left.Part1);
+			value = new UInt128(carry, left.Part0);
 			(digit, _) = DivRemByUInt64(value, right);
-			p00 = (uint)digit;
+			p00 = (ulong)digit;
 		}
 		else if (left.Part6 != 0)
 		{
@@ -1639,9 +1639,9 @@ internal static class Calculator
 			(digit, carry) = DivRemByUInt64(value, right);
 			p01 = (ulong)digit;
 
-			value = new UInt128(carry, left.Part1);
+			value = new UInt128(carry, left.Part0);
 			(digit, _) = DivRemByUInt64(value, right);
-			p00 = (uint)digit;
+			p00 = (ulong)digit;
 		}
 		else if (left.Part5 != 0)
 		{
@@ -1668,9 +1668,9 @@ internal static class Calculator
 			(digit, carry) = DivRemByUInt64(value, right);
 			p01 = (ulong)digit;
 
-			value = new UInt128(carry, left.Part1);
+			value = new UInt128(carry, left.Part0);
 			(digit, _) = DivRemByUInt64(value, right);
-			p00 = (uint)digit;
+			p00 = (ulong)digit;
 		}
 		else if (left.Part4 != 0)
 		{
@@ -1694,9 +1694,9 @@ internal static class Calculator
 			(digit, carry) = DivRemByUInt64(value, right);
 			p01 = (ulong)digit;
 
-			value = new UInt128(carry, left.Part1);
+			value = new UInt128(carry, left.Part0);
 			(digit, _) = DivRemByUInt64(value, right);
-			p00 = (uint)digit;
+			p00 = (ulong)digit;
 		}
 		else if (left.Part3 != 0)
 		{
@@ -1717,9 +1717,9 @@ internal static class Calculator
 			(digit, carry) = DivRemByUInt64(value, right);
 			p01 = (ulong)digit;
 
-			value = new UInt128(carry, left.Part1);
+			value = new UInt128(carry, left.Part0);
 			(digit, _) = DivRemByUInt64(value, right);
-			p00 = (uint)digit;
+			p00 = (ulong)digit;
 		}
 		else if (left.Part2 != 0)
 		{
@@ -1737,9 +1737,9 @@ internal static class Calculator
 			(digit, carry) = DivRemByUInt64(value, right);
 			p01 = (ulong)digit;
 
-			value = new UInt128(carry, left.Part1);
+			value = new UInt128(carry, left.Part0);
 			(digit, _) = DivRemByUInt64(value, right);
-			p00 = (uint)digit;
+			p00 = (ulong)digit;
 		}
 		else
 		{
@@ -2164,7 +2164,7 @@ internal static class Calculator
 		}
 		else
 		{
-			carry = DivRemByUInt64(new UInt128(left.Part0, left.Part0), right).Remainder;
+			carry = DivRemByUInt64(new UInt128(left.Part1, left.Part0), right).Remainder;
 		}
 
 		return carry;
