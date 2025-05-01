@@ -101,49 +101,6 @@ internal static class Calculator
 		return left / right;
 	}
 
-	public static void Square(ReadOnlySpan<uint> value, Span<uint> bits)
-	{
-		// Based on: https://github.com/dotnet/runtime/blob/main/src/libraries/System.Runtime.Numerics/src/System/Numerics/BigIntegerCalculator.SquMul.cs
-
-		Debug.Assert(bits.Length == value.Length + value.Length);
-
-		// Executes different algorithms for computing z = a * a
-		// based on the actual length of a. If a is "small" enough
-		// we stick to the classic "grammar-school" method; for the
-		// rest we switch to implementations with less complexity
-		// albeit more overhead (which needs to pay off!).
-
-		// Switching to managed references helps eliminating
-		// index bounds check...
-		ref uint resultPtr = ref MemoryMarshal.GetReference(bits);
-
-		// Squares the bits using the "grammar-school" method.
-		// Envisioning the "rhombus" of a pen-and-paper calculation
-		// we see that computing z_i+j += a_j * a_i can be optimized
-		// since a_j * a_i = a_i * a_j (we're squaring after all!).
-		// Thus, we directly get z_i+j += 2 * a_j * a_i + c.
-
-		// ATTENTION: an ordinary multiplication is safe, because
-		// z_i+j + a_j * a_i + c <= 2(2^32 - 1) + (2^32 - 1)^2 =
-		// = 2^64 - 1 (which perfectly matches with ulong!). But
-		// here we would need an UInt65... Hence, we split these
-		// operation and do some extra shifts.
-		for (int i = 0; i < value.Length; i++)
-		{
-			ulong carry = 0UL;
-			uint v = value[i];
-			for (int j = 0; j < i; j++)
-			{
-				ulong digit1 = Unsafe.Add(ref resultPtr, i + j) + carry;
-				ulong digit2 = (ulong)value[j] * v;
-				Unsafe.Add(ref resultPtr, i + j) = unchecked((uint)(digit1 + (digit2 << 1)));
-				carry = (digit2 + (digit1 >> 1)) >> 31;
-			}
-			ulong digits = (ulong)v * v + carry;
-			Unsafe.Add(ref resultPtr, i + i) = unchecked((uint)digits);
-			Unsafe.Add(ref resultPtr, i + i + 1) = (uint)(digits >> 32);
-		}
-	}
 	public static void Square(ref ulong value, int valueLength, Span<ulong> bits)
 	{
 		// Based on: https://github.com/dotnet/runtime/blob/main/src/libraries/System.Runtime.Numerics/src/System/Numerics/BigIntegerCalculator.SquMul.cs
@@ -173,7 +130,7 @@ internal static class Calculator
 		// operation and do some extra shifts.
 		for (int i = 0; i < valueLength; i++)
 		{
-			UInt128 carry = 0UL;
+			UInt128 carry = default;
 			ulong v = Unsafe.Add(ref value, i);
 			for (int j = 0; j < i; j++)
 			{
@@ -262,41 +219,11 @@ internal static class Calculator
 			p3, p2, p1, p0
 			);
 	}
-	public static void Multiply(ReadOnlySpan<uint> left, ReadOnlySpan<uint> right, Span<uint> bits)
-	{
-		// Based on: https://github.com/dotnet/runtime/blob/main/src/libraries/System.Runtime.Numerics/src/System/Numerics/BigIntegerCalculator.SquMul.cs
-		Debug.Assert(right.Length < 32);
-
-		// Switching to managed references helps eliminating
-		// index bounds check...
-		ref uint resultPtr = ref MemoryMarshal.GetReference(bits);
-
-		// Multiplies the bits using the "grammar-school" method.
-		// Envisioning the "rhombus" of a pen-and-paper calculation
-		// should help getting the idea of these two loops...
-		// The inner multiplication operations are safe, because
-		// z_i+j + a_j * b_i + c <= 2(2^32 - 1) + (2^32 - 1)^2 =
-		// = 2^64 - 1 (which perfectly matches with ulong!).
-
-		for (int i = 0; i < right.Length; i++)
-		{
-			uint rv = right[i];
-			ulong carry = 0UL;
-			for (int j = 0; j < left.Length; j++)
-			{
-				ref uint elementPtr = ref Unsafe.Add(ref resultPtr, i + j);
-				ulong digits = elementPtr + carry + (ulong)left[j] * rv;
-				elementPtr = unchecked((uint)digits);
-				carry = digits >> 32;
-			}
-			Unsafe.Add(ref resultPtr, i + left.Length) = (uint)carry;
-		}
-	}
 	public static void Multiply(ref ulong left, int leftLength, ref ulong right, int rightLength, Span<ulong> bits)
 	{
 		// Based on: https://github.com/dotnet/runtime/blob/main/src/libraries/System.Runtime.Numerics/src/System/Numerics/BigIntegerCalculator.SquMul.cs
-		Debug.Assert(leftLength < 16);
-		Debug.Assert(rightLength < 16);
+		Debug.Assert(leftLength < 32);
+		Debug.Assert(rightLength < 32);
 
 		// Switching to managed references helps eliminating
 		// index bounds check...
@@ -312,7 +239,7 @@ internal static class Calculator
 		for (int i = 0; i < rightLength; i++)
 		{
 			ulong rv = Unsafe.Add(ref right, i);
-			UInt128 carry = 0;
+			UInt128 carry = default;
 			for (int j = 0; j < leftLength; j++)
 			{
 				ref ulong elementPtr = ref Unsafe.Add(ref resultPtr, i + j);
@@ -828,8 +755,8 @@ internal static class Calculator
 		// block of the divisor. Thus, guessing digits of the quotient
 		// will be more precise. Additionally we'll get r = a % b.
 
-		ulong divHi = right[right.Length - 1];
-		ulong divLo = right.Length > 1 ? right[right.Length - 2] : 0;
+		ulong divHi = right[^1];
+		ulong divLo = right.Length > 1 ? right[^2] : 0;
 
 		// We measure the leading zeros of the divisor
 		int shift = BitOperations.LeadingZeroCount(divHi);
@@ -838,7 +765,7 @@ internal static class Calculator
 		// And, we make sure the most significant bit is set
 		if (shift > 0)
 		{
-			ulong divNx = right.Length > 2 ? right[right.Length - 3] : 0;
+			ulong divNx = right.Length > 2 ? right[^3] : 0;
 
 			divHi = (divHi << shift) | (divLo >> backShift);
 			divLo = (divLo << shift) | (divNx >> backShift);
