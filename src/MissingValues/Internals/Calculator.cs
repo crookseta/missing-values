@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Runtime.Intrinsics.Arm;
 using System.Runtime.Intrinsics.X86;
 
 namespace MissingValues.Internals;
@@ -13,6 +14,20 @@ internal static class Calculator
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static UInt128 BigMul(ulong a, ulong b)
 	{
+		if (ArmBase.Arm64.IsSupported)
+		{
+			return new UInt128(ArmBase.Arm64.MultiplyHigh(a, b), a * b);
+		}
+		else if (Bmi2.X64.IsSupported)
+		{
+			/*
+			 * Using Bmi2.X64.MultiplyNoFlags(ulong left, ulong right, ulong* low) is actually
+			 * slower than simply getting the lower product directly and getting the high
+			 * product with Bmi2.X64.MultiplyNoFlags(ulong left, ulong right).
+			 * https://github.com/dotnet/runtime/issues/11782#issuecomment-2174501863
+			 */
+			return new UInt128(Bmi2.X64.MultiplyNoFlags(a, b), a * b);
+		}
 #if NET9_0_OR_GREATER
 		return Math.BigMul(a, b);
 #else
@@ -532,7 +547,7 @@ internal static class Calculator
 			p1 = (ulong)digit;
 
 			value = new UInt128(carry, left.Part0);
-			(digit, _) = DivRemByUInt64(value, right);
+			digit = DivideByUInt64(value, right);
 			p0 = (ulong)digit;
 		}
 		else if (left.Part2 != 0)
@@ -548,12 +563,12 @@ internal static class Calculator
 			p1 = (ulong)digit;
 
 			value = new UInt128(carry, left.Part0);
-			(digit, _) = DivRemByUInt64(value, right);
+			digit = DivideByUInt64(value, right);
 			p0 = (ulong)digit;
 		}
 		else
 		{
-			(value, _) = DivRemByUInt64(new UInt128(left.Part1, left.Part0), right);
+			value = DivideByUInt64(new UInt128(left.Part1, left.Part0), right);
 
 			return new UInt256(0, 0, (ulong)(value >> 64), (ulong)value);
 		}
@@ -602,7 +617,7 @@ internal static class Calculator
 			p01 = (ulong)digit;
 
 			value = new UInt128(carry, left.Part0);
-			(digit, _) = DivRemByUInt64(value, right);
+			digit = DivideByUInt64(value, right);
 			p00 = (ulong)digit;
 		}
 		else if (left.Part6 != 0)
@@ -634,7 +649,7 @@ internal static class Calculator
 			p01 = (ulong)digit;
 
 			value = new UInt128(carry, left.Part0);
-			(digit, _) = DivRemByUInt64(value, right);
+			digit = DivideByUInt64(value, right);
 			p00 = (ulong)digit;
 		}
 		else if (left.Part5 != 0)
@@ -663,7 +678,7 @@ internal static class Calculator
 			p01 = (ulong)digit;
 
 			value = new UInt128(carry, left.Part0);
-			(digit, _) = DivRemByUInt64(value, right);
+			digit = DivideByUInt64(value, right);
 			p00 = (ulong)digit;
 		}
 		else if (left.Part4 != 0)
@@ -689,7 +704,7 @@ internal static class Calculator
 			p01 = (ulong)digit;
 
 			value = new UInt128(carry, left.Part0);
-			(digit, _) = DivRemByUInt64(value, right);
+			digit = DivideByUInt64(value, right);
 			p00 = (ulong)digit;
 		}
 		else if (left.Part3 != 0)
@@ -712,7 +727,7 @@ internal static class Calculator
 			p01 = (ulong)digit;
 
 			value = new UInt128(carry, left.Part0);
-			(digit, _) = DivRemByUInt64(value, right);
+			digit = DivideByUInt64(value, right);
 			p00 = (ulong)digit;
 		}
 		else if (left.Part2 != 0)
@@ -732,12 +747,12 @@ internal static class Calculator
 			p01 = (ulong)digit;
 
 			value = new UInt128(carry, left.Part0);
-			(digit, _) = DivRemByUInt64(value, right);
+			digit = DivideByUInt64(value, right);
 			p00 = (ulong)digit;
 		}
 		else
 		{
-			(value, _) = DivRemByUInt64(new UInt128(left.Part1, left.Part0), right);
+			value = DivideByUInt64(new UInt128(left.Part1, left.Part0), right);
 			return new UInt512(0, 0, 0, 0, 0, 0, (ulong)(value >> 64), (ulong)value);
 		}
 

@@ -112,6 +112,9 @@ internal interface IFormattableUnsignedInteger<TUnsigned> : IFormattableInteger<
 
 internal static partial class NumberFormatter
 {
+	public const ulong E19 = 10_000_000_000_000_000_000UL;
+	public const int E19Digits = 19;
+	
 	internal static int CountDigits(UInt128 value)
 	{
 		ulong upper = ((ulong)(value >> 64));
@@ -205,33 +208,6 @@ internal static partial class NumberFormatter
 		return T.MaxBinaryDigits - T.LeadingZeroCountInt32(in value);
 	}
 
-	private static ref TChar UInt64ToDecChars<TChar>(ulong value, ref TChar bufferEnd)
-		where TChar : unmanaged, IUtfCharacter<TChar>
-	{
-		// Borrowed from https://github.com/dotnet/runtime/blob/main/src/libraries/System.Private.CoreLib/src/System/Number.Formatting.cs
-		if (value >= 10)
-		{
-			// Handle all values >= 100 two-digits at a time to avoid expensive integer division operations.
-			while (value >= 100)
-			{
-				bufferEnd = ref Unsafe.Subtract(ref bufferEnd, 2);
-				(value, uint remainder) = Calculator.DivRemByUInt32(value, 100);
-				WriteTwoDigits(remainder, ref bufferEnd);
-			}
-
-			// If there are two digits remaining, store them.
-			if (value >= 10)
-			{
-				bufferEnd = ref Unsafe.Subtract(ref bufferEnd, 2);
-				WriteTwoDigits((uint)value, ref bufferEnd);
-				return ref bufferEnd;
-			}
-		}
-
-		bufferEnd = ref Unsafe.Subtract(ref bufferEnd, 1);
-		bufferEnd = (TChar)(value + '0');
-		return ref bufferEnd;
-	}
 	private static ref TChar UInt64ToDecChars<TChar>(ulong value, ref TChar bufferEnd, int digits)
 		where TChar : unmanaged, IUtfCharacter<TChar>
 	{
@@ -268,7 +244,7 @@ internal static partial class NumberFormatter
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	private static ulong UInt256DivMod1E19(ref UInt256 value)
 	{
-		Calculator.DivRem(value, 10_000_000_000_000_000_000UL, out value, out ulong remainder);
+		Calculator.DivRem(in value, E19, out value, out ulong remainder);
 		return remainder;
 	}
 	internal static void UInt256ToDecChars<TChar>(UInt256 value, Span<TChar> destination, int digits)
@@ -278,15 +254,15 @@ internal static partial class NumberFormatter
 
 		while (value.Part3 != 0 || value.Part2 != 0 || value.Part1 != 0)
 		{
-			bufferEnd = ref UInt64ToDecChars(UInt256DivMod1E19(ref value), ref bufferEnd, 19);
-			digits -= 9;
+			bufferEnd = ref UInt64ToDecChars(UInt256DivMod1E19(ref value), ref bufferEnd, E19Digits);
+			digits -= E19Digits;
 		}
 		UInt64ToDecChars(value.Part0, ref bufferEnd, digits);
 	}
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	private static ulong UInt512DivMod1E19(ref UInt512 value)
 	{
-		Calculator.DivRem(value, 10_000_000_000_000_000_000UL, out value, out ulong remainder);
+		Calculator.DivRem(in value, E19, out value, out ulong remainder);
 		return remainder;
 	}
 	internal static void UInt512ToDecChars<TChar>(UInt512 value, Span<TChar> destination, int digits)
@@ -296,8 +272,8 @@ internal static partial class NumberFormatter
 
 		while (value.Part7 != 0 || value.Part6 != 0 || value.Part5 != 0 || value.Part4 != 0 || value.Part3 != 0 || value.Part2 != 0 || value.Part1 != 0)
 		{
-			bufferEnd = ref UInt64ToDecChars(UInt512DivMod1E19(ref value), ref bufferEnd, 19);
-			digits -= 9;
+			bufferEnd = ref UInt64ToDecChars(UInt512DivMod1E19(ref value), ref bufferEnd, E19Digits);
+			digits -= E19Digits;
 		}
 		UInt64ToDecChars(value.Part0, ref bufferEnd, digits);
 	}

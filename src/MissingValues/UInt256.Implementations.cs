@@ -1088,23 +1088,37 @@ namespace MissingValues
 
 			Span<ulong> leftSpan = stackalloc ulong[UIntCount];
 			ref ulong leftPtr = ref MemoryMarshal.GetReference(leftSpan);
+			int leftLength = BitHelper.GetTrimLength(in left);
 			leftSpan.Clear();
 			Unsafe.WriteUnaligned(ref Unsafe.As<ulong, byte>(ref leftPtr), left);
 
 			Span<ulong> rightSpan = stackalloc ulong[UIntCount];
 			ref ulong rightPtr = ref MemoryMarshal.GetReference(rightSpan);
+			int rightLength = BitHelper.GetTrimLength(in right);
 			rightSpan.Clear();
 			Unsafe.WriteUnaligned(ref Unsafe.As<ulong, byte>(ref rightPtr), right);
 
 			Span<ulong> rawBits = stackalloc ulong[UIntCount * 2];
 			rawBits.Clear();
 
-			Calculator.Multiply(
-				ref leftPtr,
-				BitHelper.GetTrimLength(in left),
-				ref rightPtr,
-				BitHelper.GetTrimLength(in right),
-				rawBits);
+			if (leftLength >= rightLength)
+			{
+				Calculator.Multiply(
+					ref leftPtr,
+					leftLength,
+					ref rightPtr,
+					rightLength,
+					rawBits);
+			}
+			else
+			{
+				Calculator.Multiply(
+					ref rightPtr,
+					rightLength,
+					ref leftPtr,
+					leftLength,
+					rawBits);
+			}
 
 			return Unsafe.ReadUnaligned<UInt256>(ref Unsafe.As<ulong, byte>(ref MemoryMarshal.GetReference(rawBits)));
 		}
@@ -1144,23 +1158,37 @@ namespace MissingValues
 
 			Span<ulong> leftSpan = stackalloc ulong[UIntCount];
 			ref ulong leftPtr = ref MemoryMarshal.GetReference(leftSpan);
+			int leftLength = BitHelper.GetTrimLength(in left);
 			leftSpan.Clear();
 			Unsafe.WriteUnaligned(ref Unsafe.As<ulong, byte>(ref leftPtr), left);
 
 			Span<ulong> rightSpan = stackalloc ulong[UIntCount];
 			ref ulong rightPtr = ref MemoryMarshal.GetReference(rightSpan);
+			int rightLength = BitHelper.GetTrimLength(in right);
 			rightSpan.Clear();
 			Unsafe.WriteUnaligned(ref Unsafe.As<ulong, byte>(ref rightPtr), right);
 
 			Span<ulong> rawBits = stackalloc ulong[UIntCount * 2];
 			rawBits.Clear();
 
-			Calculator.Multiply(
-				ref leftPtr,
-				BitHelper.GetTrimLength(in left),
-				ref rightPtr,
-				BitHelper.GetTrimLength(in right),
-				rawBits);
+			if (leftLength >= rightLength)
+			{
+				Calculator.Multiply(
+					ref leftPtr,
+					leftLength,
+					ref rightPtr,
+					rightLength,
+					rawBits);
+			}
+			else
+			{
+				Calculator.Multiply(
+					ref rightPtr,
+					rightLength,
+					ref leftPtr,
+					leftLength,
+					rawBits);
+			}
 			var overflowBits = rawBits[UIntCount..];
 
 			for (int i = 0; i < overflowBits.Length; i++)
