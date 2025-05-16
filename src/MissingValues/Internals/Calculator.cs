@@ -9,7 +9,7 @@ namespace MissingValues.Internals;
 
 internal static class Calculator
 {
-	public const int StackAllocThreshold = 32;
+	public const int StackAllocThreshold = 128;
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static UInt128 BigMul(ulong a, ulong b)
