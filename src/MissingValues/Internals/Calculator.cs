@@ -14,11 +14,7 @@ internal static class Calculator
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static UInt128 BigMul(ulong a, ulong b)
 	{
-		if (ArmBase.Arm64.IsSupported)
-		{
-			return new UInt128(ArmBase.Arm64.MultiplyHigh(a, b), a * b);
-		}
-		else if (Bmi2.X64.IsSupported)
+		if (Bmi2.X64.IsSupported)
 		{
 			/*
 			 * Using Bmi2.X64.MultiplyNoFlags(ulong left, ulong right, ulong* low) is actually
@@ -27,6 +23,10 @@ internal static class Calculator
 			 * https://github.com/dotnet/runtime/issues/11782#issuecomment-2174501863
 			 */
 			return new UInt128(Bmi2.X64.MultiplyNoFlags(a, b), a * b);
+		}
+		if (ArmBase.Arm64.IsSupported)
+		{
+			return new UInt128(ArmBase.Arm64.MultiplyHigh(a, b), a * b);
 		}
 #if NET9_0_OR_GREATER
 		return Math.BigMul(a, b);
@@ -234,14 +234,16 @@ internal static class Calculator
 			p3, p2, p1, p0
 			);
 	}
-	public static void Multiply(ref ulong left, int leftLength, ref ulong right, int rightLength, Span<ulong> bits)
+	public static void Multiply(ReadOnlySpan<ulong> left, ReadOnlySpan<ulong> right, Span<ulong> bits)
 	{
 		// Based on: https://github.com/dotnet/runtime/blob/main/src/libraries/System.Runtime.Numerics/src/System/Numerics/BigIntegerCalculator.SquMul.cs
-		Debug.Assert(leftLength < 32);
-		Debug.Assert(rightLength < 32);
+		Debug.Assert(left.Length < 32);
+		Debug.Assert(right.Length < 32);
 
 		// Switching to managed references helps eliminating
 		// index bounds check...
+		ref ulong leftPtr = ref MemoryMarshal.GetReference(left);
+		ref ulong rightPtr = ref MemoryMarshal.GetReference(right);
 		ref ulong resultPtr = ref MemoryMarshal.GetReference(bits);
 
 		// Multiplies the bits using the "grammar-school" method.
@@ -251,18 +253,18 @@ internal static class Calculator
 		// z_i+j + a_j * b_i + c <= 2(2^32 - 1) + (2^32 - 1)^2 =
 		// = 2^64 - 1 (which perfectly matches with ulong!).
 
-		for (int i = 0; i < rightLength; i++)
+		for (int i = 0; i < right.Length; i++)
 		{
-			ulong rv = Unsafe.Add(ref right, i);
+			ulong rv = Unsafe.Add(ref rightPtr, i);
 			UInt128 carry = default;
-			for (int j = 0; j < leftLength; j++)
+			for (int j = 0; j < left.Length; j++)
 			{
 				ref ulong elementPtr = ref Unsafe.Add(ref resultPtr, i + j);
-				UInt128 digits = elementPtr + carry + BigMul(Unsafe.Add(ref left, j), rv);
+				UInt128 digits = elementPtr + carry + BigMul(Unsafe.Add(ref leftPtr, j), rv);
 				elementPtr = unchecked((ulong)digits);
 				carry = digits >> 64;
 			}
-			Unsafe.Add(ref resultPtr, i + leftLength) = (ulong)carry;
+			Unsafe.Add(ref resultPtr, i + left.Length) = (ulong)carry;
 		}
 	}
 
@@ -1146,11 +1148,11 @@ internal static class Calculator
 
 		if (leftLength >= right.Length)
 		{
-			Multiply(ref MemoryMarshal.GetReference(left), leftLength, ref MemoryMarshal.GetReference(right), right.Length, temp[..resultLength]);
+			Multiply(left[..leftLength], right, temp[..resultLength]);
 		}
 		else
 		{
-			Multiply(ref MemoryMarshal.GetReference(right), right.Length, ref MemoryMarshal.GetReference(left), leftLength, temp[..resultLength]);
+			Multiply(right, left[..leftLength], temp[..resultLength]);
 		}
 
 		left.Clear();

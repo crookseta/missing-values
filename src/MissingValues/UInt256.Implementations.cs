@@ -202,11 +202,9 @@ namespace MissingValues
 			}
 
 			Span<ulong> quotientSpan = stackalloc ulong[UIntCount];
-			quotientSpan.Clear();
 			Unsafe.WriteUnaligned(ref Unsafe.As<ulong, byte>(ref MemoryMarshal.GetReference(quotientSpan)), left);
 
 			Span<ulong> divisorSpan = stackalloc ulong[UIntCount];
-			divisorSpan.Clear();
 			Unsafe.WriteUnaligned(ref Unsafe.As<ulong, byte>(ref MemoryMarshal.GetReference(divisorSpan)), right);
 
 			Span<ulong> quoBits = stackalloc ulong[UIntCount];
@@ -1087,16 +1085,12 @@ namespace MissingValues
 			const int UIntCount = Size / sizeof(ulong);
 
 			Span<ulong> leftSpan = stackalloc ulong[UIntCount];
-			ref ulong leftPtr = ref MemoryMarshal.GetReference(leftSpan);
 			int leftLength = BitHelper.GetTrimLength(in left);
-			leftSpan.Clear();
-			Unsafe.WriteUnaligned(ref Unsafe.As<ulong, byte>(ref leftPtr), left);
+			Unsafe.WriteUnaligned(ref Unsafe.As<ulong, byte>(ref MemoryMarshal.GetReference(leftSpan)), left);
 
 			Span<ulong> rightSpan = stackalloc ulong[UIntCount];
-			ref ulong rightPtr = ref MemoryMarshal.GetReference(rightSpan);
 			int rightLength = BitHelper.GetTrimLength(in right);
-			rightSpan.Clear();
-			Unsafe.WriteUnaligned(ref Unsafe.As<ulong, byte>(ref rightPtr), right);
+			Unsafe.WriteUnaligned(ref Unsafe.As<ulong, byte>(ref MemoryMarshal.GetReference(rightSpan)), right);
 
 			Span<ulong> rawBits = stackalloc ulong[UIntCount * 2];
 			rawBits.Clear();
@@ -1104,19 +1098,15 @@ namespace MissingValues
 			if (leftLength >= rightLength)
 			{
 				Calculator.Multiply(
-					ref leftPtr,
-					leftLength,
-					ref rightPtr,
-					rightLength,
+					leftSpan[..leftLength],
+					rightSpan[..rightLength],
 					rawBits);
 			}
 			else
 			{
 				Calculator.Multiply(
-					ref rightPtr,
-					rightLength,
-					ref leftPtr,
-					leftLength,
+					rightSpan[..rightLength],
+					leftSpan[..leftLength],
 					rawBits);
 			}
 
@@ -1157,16 +1147,12 @@ namespace MissingValues
 			const int UIntCount = Size / sizeof(ulong);
 
 			Span<ulong> leftSpan = stackalloc ulong[UIntCount];
-			ref ulong leftPtr = ref MemoryMarshal.GetReference(leftSpan);
 			int leftLength = BitHelper.GetTrimLength(in left);
-			leftSpan.Clear();
-			Unsafe.WriteUnaligned(ref Unsafe.As<ulong, byte>(ref leftPtr), left);
+			Unsafe.WriteUnaligned(ref Unsafe.As<ulong, byte>(ref MemoryMarshal.GetReference(leftSpan)), left);
 
 			Span<ulong> rightSpan = stackalloc ulong[UIntCount];
-			ref ulong rightPtr = ref MemoryMarshal.GetReference(rightSpan);
 			int rightLength = BitHelper.GetTrimLength(in right);
-			rightSpan.Clear();
-			Unsafe.WriteUnaligned(ref Unsafe.As<ulong, byte>(ref rightPtr), right);
+			Unsafe.WriteUnaligned(ref Unsafe.As<ulong, byte>(ref MemoryMarshal.GetReference(rightSpan)), right);
 
 			Span<ulong> rawBits = stackalloc ulong[UIntCount * 2];
 			rawBits.Clear();
@@ -1174,19 +1160,15 @@ namespace MissingValues
 			if (leftLength >= rightLength)
 			{
 				Calculator.Multiply(
-					ref leftPtr,
-					leftLength,
-					ref rightPtr,
-					rightLength,
+					leftSpan[..leftLength],
+					rightSpan[..rightLength],
 					rawBits);
 			}
 			else
 			{
 				Calculator.Multiply(
-					ref rightPtr,
-					rightLength,
-					ref leftPtr,
-					leftLength,
+					rightSpan[..rightLength],
+					leftSpan[..leftLength],
 					rawBits);
 			}
 			var overflowBits = rawBits[UIntCount..];
@@ -1225,11 +1207,9 @@ namespace MissingValues
 			}
 
 			Span<ulong> quotientSpan = stackalloc ulong[UIntCount];
-			quotientSpan.Clear();
 			Unsafe.WriteUnaligned(ref Unsafe.As<ulong, byte>(ref MemoryMarshal.GetReference(quotientSpan)), left);
 
 			Span<ulong> divisorSpan = stackalloc ulong[UIntCount];
-			divisorSpan.Clear();
 			Unsafe.WriteUnaligned(ref Unsafe.As<ulong, byte>(ref MemoryMarshal.GetReference(divisorSpan)), right);
 
 			Span<ulong> rawBits = stackalloc ulong[UIntCount];
@@ -1271,11 +1251,9 @@ namespace MissingValues
 			}
 
 			Span<ulong> quotientSpan = stackalloc ulong[UIntCount];
-			quotientSpan.Clear();
 			Unsafe.WriteUnaligned(ref Unsafe.As<ulong, byte>(ref MemoryMarshal.GetReference(quotientSpan)), left);
 
 			Span<ulong> divisorSpan = stackalloc ulong[UIntCount];
-			divisorSpan.Clear();
 			Unsafe.WriteUnaligned(ref Unsafe.As<ulong, byte>(ref MemoryMarshal.GetReference(divisorSpan)), right);
 
 			Span<ulong> rawBits = stackalloc ulong[UIntCount];
