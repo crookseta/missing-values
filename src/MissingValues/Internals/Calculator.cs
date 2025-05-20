@@ -64,6 +64,19 @@ internal static class Calculator
 
 		return BigMul(ah, bh) + t.GetUpperBits() + tl.GetUpperBits();
 	}
+	
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public static (ulong hi, ulong lo) BigMulAdd(ulong a, ulong b, ulong c)
+	{
+		ulong highProd = Math.BigMul(a, b, out ulong lowProd);
+            
+		ulong lower = lowProd + c;
+		ulong carry = (lower < lowProd) ? 1UL : 0UL;
+
+		ulong upper = highProd + carry;
+            
+		return (upper, lower);
+	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static (ulong Quotient, uint Remainder) DivRemByUInt32(ulong left, uint right)
