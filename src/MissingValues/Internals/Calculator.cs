@@ -68,8 +68,28 @@ internal static class Calculator
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static (ulong hi, ulong lo) BigMulAdd(ulong a, ulong b, ulong c)
 	{
-		ulong highProd = Math.BigMul(a, b, out ulong lowProd);
-            
+		ulong highProd, lowProd;
+		if (Bmi2.X64.IsSupported)
+		{
+			/*
+			 * Using Bmi2.X64.MultiplyNoFlags(ulong left, ulong right, ulong* low) is actually
+			 * slower than simply getting the lower product directly and getting the high
+			 * product with Bmi2.X64.MultiplyNoFlags(ulong left, ulong right).
+			 * https://github.com/dotnet/runtime/issues/11782#issuecomment-2174501863
+			 */
+			highProd = Bmi2.X64.MultiplyNoFlags(a, b);
+			lowProd = a * b;
+		}
+		else if (ArmBase.Arm64.IsSupported)
+		{
+			highProd = ArmBase.Arm64.MultiplyHigh(a, b);
+			lowProd = a * b;
+		}
+		else
+		{
+			highProd = Math.BigMul(a, b, out lowProd);
+		}
+		
 		ulong lower = lowProd + c;
 		ulong carry = (lower < lowProd) ? 1UL : 0UL;
 
