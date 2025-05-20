@@ -184,64 +184,26 @@ internal static class Calculator
 
 		ulong p3, p2, p1, p0;
 
-		UInt128 c = default;
-
-		UInt128 digits = BigMul(left.Part0, right) + c;
-		p0 = unchecked((ulong)digits);
-		c = digits >> 64;
-
-		digits = BigMul(left.Part1, right) + c;
-		p1 = unchecked((ulong)digits);
-		c = digits >> 64;
-
-		digits = BigMul(left.Part2, right) + c;
-		p2 = unchecked((ulong)digits);
-		c = digits >> 64;
-
-		digits = BigMul(left.Part3, right) + c;
-		p3 = unchecked((ulong)digits);
-		carry = (ulong)(digits >> 64);
+		carry = Math.BigMul(left.Part0, right, out p0);
+		(carry, p1) = BigMulAdd(left.Part1, right, carry);
+		(carry, p2) = BigMulAdd(left.Part2, right, carry);
+		(carry, p3) = BigMulAdd(left.Part3, right, carry);
 
 		return new UInt256(p3, p2, p1, p0);
 	}
 	public static UInt512 Multiply(in UInt512 left, ulong right, out ulong carry)
 	{
 		ulong p7, p6, p5, p4, p3, p2, p1, p0;
-
-		UInt128 c = default;
-
-		UInt128 digits = BigMul(left.Part0, right) + c;
-		p0 = unchecked((ulong)digits);
-		c = digits >> 64;
-
-		digits = BigMul(left.Part1, right) + c;
-		p1 = unchecked((ulong)digits);
-		c = digits >> 64;
-
-		digits = BigMul(left.Part2, right) + c;
-		p2 = unchecked((ulong)digits);
-		c = digits >> 64;
-
-		digits = BigMul(left.Part3, right) + c;
-		p3 = unchecked((ulong)digits);
-		c = digits >> 64;
-
-		digits = BigMul(left.Part4, right) + c;
-		p4 = unchecked((ulong)digits);
-		c = digits >> 64;
-
-		digits = BigMul(left.Part5, right) + c;
-		p5 = unchecked((ulong)digits);
-		c = digits >> 64;
-
-		digits = BigMul(left.Part6, right) + c;
-		p6 = unchecked((ulong)digits);
-		c = digits >> 64;
-
-		digits = BigMul(left.Part7, right) + c;
-		p7 = unchecked((ulong)digits);
-		carry = (ulong)(digits >> 64);
-
+		
+		carry = Math.BigMul(left.Part0, right, out p0);
+		(carry, p1) = BigMulAdd(left.Part1, right, carry);
+		(carry, p2) = BigMulAdd(left.Part2, right, carry);
+		(carry, p3) = BigMulAdd(left.Part3, right, carry);
+		(carry, p4) = BigMulAdd(left.Part4, right, carry);
+		(carry, p5) = BigMulAdd(left.Part5, right, carry);
+		(carry, p6) = BigMulAdd(left.Part6, right, carry);
+		(carry, p7) = BigMulAdd(left.Part7, right, carry);
+		
 		return new UInt512(
 			p7, p6, p5, p4,
 			p3, p2, p1, p0
