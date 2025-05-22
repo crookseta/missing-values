@@ -12,6 +12,18 @@ internal static class Calculator
 	public const int StackAllocThreshold = 128;
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public static ulong AddWithCarry(ulong a, ulong b, out ulong carry)
+	{
+		ulong result = a + b;
+		
+		// For unsigned addition, we can detect overflow by checking `(x + y) < x`
+		
+		carry = (result < a) ? 1UL : 0UL;
+    
+		return result;
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static UInt128 BigMul(ulong a, ulong b)
 	{
 		if (Bmi2.X64.IsSupported)

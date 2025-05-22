@@ -1092,14 +1092,17 @@ namespace MissingValues
 			ulong p3 = lcarry;
         
 			(hcarry, lcarry) = Calculator.BigMulAdd(left._p0, right._p1, 0);
-			p1 += lcarry;
+			p1 = Calculator.AddWithCarry(p1, lcarry, out ulong carry);
+			hcarry = Calculator.AddWithCarry(hcarry, carry, out carry);
 			(hcarry, lcarry) = Calculator.BigMulAdd(left._p1, right._p1, hcarry);
-			p2 += lcarry;
+			p2 = Calculator.AddWithCarry(p2, lcarry, out carry);
+			hcarry = Calculator.AddWithCarry(hcarry, carry, out carry);
 			(_, lcarry) = Calculator.BigMulAdd(left._p2, right._p1, hcarry);
 			p3 += lcarry;
 
 			(hcarry, lcarry) = Calculator.BigMulAdd(left._p0, right._p2, 0);
-			p2 += lcarry;
+			p2 = Calculator.AddWithCarry(p2, lcarry, out carry);
+			hcarry = Calculator.AddWithCarry(hcarry, carry, out carry);
 			(_, lcarry) = Calculator.BigMulAdd(left._p1, right._p2, hcarry);
 			p3 += lcarry;
         
@@ -1111,6 +1114,8 @@ namespace MissingValues
 		/// <inheritdoc/>
 		public static UInt256 operator checked *(in UInt256 left, in UInt256 right)
 		{
+			ulong carry;
+			
 			if (right._p3 == 0 && right._p2 == 0 && right._p1 == 0)
 			{
 				if (left._p3 == 0 && left._p2 == 0 && left._p1 == 0)
@@ -1119,7 +1124,7 @@ namespace MissingValues
 					return new UInt256(0, 0, up, low);
 				}
 
-				UInt256 lower = Calculator.Multiply(in left, right._p0, out ulong carry);
+				UInt256 lower = Calculator.Multiply(in left, right._p0, out carry);
 
 				if (carry != 0)
 				{
@@ -1130,7 +1135,7 @@ namespace MissingValues
 			}
 			else if (left._p3 == 0 && left._p2 == 0 && left._p1 == 0)
 			{
-				UInt256 lower = Calculator.Multiply(in right, left._p0, out ulong carry);
+				UInt256 lower = Calculator.Multiply(in right, left._p0, out carry);
 
 				if (carry != 0)
 				{
@@ -1152,25 +1157,28 @@ namespace MissingValues
 			if (hcarry != 0) Thrower.ArithmethicOverflow(Thrower.ArithmethicOperation.Multiplication);
         
 			(hcarry, lcarry) = Calculator.BigMulAdd(left._p0, right._p1, 0);
-			p1 += lcarry;
+			p1 = Calculator.AddWithCarry(p1, lcarry, out carry);
+			hcarry = Calculator.AddWithCarry(hcarry, carry, out carry);
 			(hcarry, lcarry) = Calculator.BigMulAdd(left._p1, right._p1, hcarry);
-			p2 += lcarry;
+			p2 = Calculator.AddWithCarry(p2, lcarry, out carry);
+			hcarry = Calculator.AddWithCarry(hcarry, carry, out carry);
 			(hcarry, lcarry) = Calculator.BigMulAdd(left._p2, right._p1, hcarry);
-			p3 += lcarry;
+			p3 = Calculator.AddWithCarry(p3, lcarry, out carry);
 			
-			if (hcarry != 0) Thrower.ArithmethicOverflow(Thrower.ArithmethicOperation.Multiplication);
+			if (hcarry != 0 || carry != 0) Thrower.ArithmethicOverflow(Thrower.ArithmethicOperation.Multiplication);
 
 			(hcarry, lcarry) = Calculator.BigMulAdd(left._p0, right._p2, 0);
-			p2 += lcarry;
+			p2 = Calculator.AddWithCarry(p2, lcarry, out carry);
+			hcarry = Calculator.AddWithCarry(hcarry, carry, out carry);
 			(hcarry, lcarry) = Calculator.BigMulAdd(left._p1, right._p2, hcarry);
-			p3 += lcarry;
+			p3 = Calculator.AddWithCarry(p3, lcarry, out carry);
 			
-			if (hcarry != 0) Thrower.ArithmethicOverflow(Thrower.ArithmethicOperation.Multiplication);
+			if (hcarry != 0 || carry != 0) Thrower.ArithmethicOverflow(Thrower.ArithmethicOperation.Multiplication);
         
 			(hcarry, lcarry) = Calculator.BigMulAdd(left._p0, right._p3, 0);
-			p3 += lcarry;
+			p3 = Calculator.AddWithCarry(p3, lcarry, out carry);
 			
-			if (hcarry != 0) Thrower.ArithmethicOverflow(Thrower.ArithmethicOperation.Multiplication);
+			if (hcarry != 0 || carry != 0) Thrower.ArithmethicOverflow(Thrower.ArithmethicOperation.Multiplication);
         
 			return new UInt256(p3, p2, p1, p0);
 		}
