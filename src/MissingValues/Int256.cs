@@ -172,7 +172,7 @@ namespace MissingValues
 
 				if (power >= ((Size * 8) - 1))
 				{
-					Thrower.ArithmethicOverflow(Thrower.ArithmethicOperation.Exponentiation);
+					Thrower.ArithmeticOverflow(Thrower.ArithmeticOperation.Exponentiation);
 				}
 
 				size = Calculator.PowBound(power, 1);
@@ -188,7 +188,7 @@ namespace MissingValues
 			{
 				if (power >= ((Size * 8) - 1))
 				{
-					Thrower.ArithmethicOverflow(Thrower.ArithmethicOperation.Exponentiation);
+					Thrower.ArithmeticOverflow(Thrower.ArithmeticOperation.Exponentiation);
 				}
 
 				int valueLength = BitHelper.GetTrimLength(in value);
@@ -214,7 +214,7 @@ namespace MissingValues
 				{
 					if (overflow[i] != 0)
 					{
-						Thrower.ArithmethicOverflow(Thrower.ArithmethicOperation.Exponentiation);
+						Thrower.ArithmeticOverflow(Thrower.ArithmeticOperation.Exponentiation);
 					}
 				}
 			}

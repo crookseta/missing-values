@@ -1147,11 +1147,13 @@ namespace MissingValues
 		/// <inheritdoc/>
 		public static UInt512 operator *(in UInt512 left, in UInt512 right)
 		{
+			ulong up, low;
+			
 			if (right._p7 == 0 && right._p6 == 0 && right._p5 == 0 && right._p4 == 0 && right._p3 == 0 && right._p2 == 0 && right._p1 == 0)
 			{
 				if (left._p7 == 0 && left._p6 == 0 && left._p5 == 0 && left._p4 == 0 && left._p3 == 0 && left._p2 == 0 && left._p1 == 0)
 				{
-					ulong up = Math.BigMul(left._p0, right._p0, out ulong low);
+					up = Math.BigMul(left._p0, right._p0, out low);
 					return new UInt512(0, 0, 0, 0, 0, 0, up, low);
 				}
 
@@ -1162,106 +1164,106 @@ namespace MissingValues
 				return Calculator.Multiply(in right, left._p0, out _);
 			}
 
-			(ulong hcarry, ulong lcarry) = Calculator.BigMulAdd(left._p0, right._p0, 0);
-        	ulong p0 = lcarry;
-        	(hcarry, lcarry) = Calculator.BigMulAdd(left._p1, right._p0, hcarry);
-        	ulong p1 = lcarry;
-        	(hcarry, lcarry) = Calculator.BigMulAdd(left._p2, right._p0, hcarry);
-        	ulong p2 = lcarry;
-        	(hcarry, lcarry) = Calculator.BigMulAdd(left._p3, right._p0, hcarry);
-        	ulong p3 = lcarry;
-        	(hcarry, lcarry) = Calculator.BigMulAdd(left._p4, right._p0, hcarry);
-        	ulong p4 = lcarry;
-        	(hcarry, lcarry) = Calculator.BigMulAdd(left._p5, right._p0, hcarry);
-        	ulong p5 = lcarry;
-        	(hcarry, lcarry) = Calculator.BigMulAdd(left._p6, right._p0, hcarry);
-        	ulong p6 = lcarry;
-        	(_, lcarry) = Calculator.BigMulAdd(left._p7, right._p0, hcarry);
-        	ulong p7 = lcarry;
+			(up, low) = Calculator.BigMulAdd(left._p0, right._p0, 0);
+        	ulong p0 = low;
+        	(up, low) = Calculator.BigMulAdd(left._p1, right._p0, up);
+        	ulong p1 = low;
+        	(up, low) = Calculator.BigMulAdd(left._p2, right._p0, up);
+        	ulong p2 = low;
+        	(up, low) = Calculator.BigMulAdd(left._p3, right._p0, up);
+        	ulong p3 = low;
+        	(up, low) = Calculator.BigMulAdd(left._p4, right._p0, up);
+        	ulong p4 = low;
+        	(up, low) = Calculator.BigMulAdd(left._p5, right._p0, up);
+        	ulong p5 = low;
+        	(up, low) = Calculator.BigMulAdd(left._p6, right._p0, up);
+        	ulong p6 = low;
+        	(_, low) = Calculator.BigMulAdd(left._p7, right._p0, up);
+        	ulong p7 = low;
         	
-        	(hcarry, lcarry) = Calculator.BigMulAdd(left._p0, right._p1, 0);
-	        p1 = Calculator.AddWithCarry(p1, lcarry, out ulong carry);
-	        hcarry = Calculator.AddWithCarry(hcarry, carry, out carry);
-        	(hcarry, lcarry) = Calculator.BigMulAdd(left._p1, right._p1, hcarry);
-	        p2 = Calculator.AddWithCarry(p2, lcarry, out carry);
-	        hcarry = Calculator.AddWithCarry(hcarry, carry, out carry);
-        	(hcarry, lcarry) = Calculator.BigMulAdd(left._p2, right._p1, hcarry);
-        	p3 = Calculator.AddWithCarry(p3, lcarry, out carry);
-	        hcarry = Calculator.AddWithCarry(hcarry, carry, out carry);
-        	(hcarry, lcarry) = Calculator.BigMulAdd(left._p3, right._p1, hcarry);
-        	p4 = Calculator.AddWithCarry(p4, lcarry, out carry);
-	        hcarry = Calculator.AddWithCarry(hcarry, carry, out carry);
-        	(hcarry, lcarry) = Calculator.BigMulAdd(left._p4, right._p1, hcarry);
-        	p5 = Calculator.AddWithCarry(p5, lcarry, out carry);
-	        hcarry = Calculator.AddWithCarry(hcarry, carry, out carry);
-        	(hcarry, lcarry) = Calculator.BigMulAdd(left._p5, right._p1, hcarry);
-        	p6 = Calculator.AddWithCarry(p6, lcarry, out carry);
-	        hcarry = Calculator.AddWithCarry(hcarry, carry, out carry);
-        	(_, lcarry) = Calculator.BigMulAdd(left._p6, right._p1, hcarry);
-        	p7 += lcarry;
+        	(up, low) = Calculator.BigMulAdd(left._p0, right._p1, 0);
+	        p1 = Calculator.AddWithCarry(p1, low, out ulong carry);
+	        up = Calculator.AddWithCarry(up, carry, out carry);
+        	(up, low) = Calculator.BigMulAdd(left._p1, right._p1, up);
+	        p2 = Calculator.AddWithCarry(p2, low, out carry);
+	        up = Calculator.AddWithCarry(up, carry, out carry);
+        	(up, low) = Calculator.BigMulAdd(left._p2, right._p1, up);
+        	p3 = Calculator.AddWithCarry(p3, low, out carry);
+	        up = Calculator.AddWithCarry(up, carry, out carry);
+        	(up, low) = Calculator.BigMulAdd(left._p3, right._p1, up);
+        	p4 = Calculator.AddWithCarry(p4, low, out carry);
+	        up = Calculator.AddWithCarry(up, carry, out carry);
+        	(up, low) = Calculator.BigMulAdd(left._p4, right._p1, up);
+        	p5 = Calculator.AddWithCarry(p5, low, out carry);
+	        up = Calculator.AddWithCarry(up, carry, out carry);
+        	(up, low) = Calculator.BigMulAdd(left._p5, right._p1, up);
+        	p6 = Calculator.AddWithCarry(p6, low, out carry);
+	        up = Calculator.AddWithCarry(up, carry, out carry);
+        	(_, low) = Calculator.BigMulAdd(left._p6, right._p1, up);
+        	p7 += low;
         	
-        	(hcarry, lcarry) = Calculator.BigMulAdd(left._p0, right._p2, 0);
-	        p2 = Calculator.AddWithCarry(p2, lcarry, out carry);
-	        hcarry = Calculator.AddWithCarry(hcarry, carry, out carry);
-        	(hcarry, lcarry) = Calculator.BigMulAdd(left._p1, right._p2, hcarry);
-	        p3 = Calculator.AddWithCarry(p3, lcarry, out carry);
-	        hcarry = Calculator.AddWithCarry(hcarry, carry, out carry);
-        	(hcarry, lcarry) = Calculator.BigMulAdd(left._p2, right._p2, hcarry);
-	        p4 = Calculator.AddWithCarry(p4, lcarry, out carry);
-	        hcarry = Calculator.AddWithCarry(hcarry, carry, out carry);
-        	(hcarry, lcarry) = Calculator.BigMulAdd(left._p3, right._p2, hcarry);
-	        p5 = Calculator.AddWithCarry(p5, lcarry, out carry);
-	        hcarry = Calculator.AddWithCarry(hcarry, carry, out carry);
-        	(hcarry, lcarry) = Calculator.BigMulAdd(left._p4, right._p2, hcarry);
-	        p6 = Calculator.AddWithCarry(p6, lcarry, out carry);
-	        hcarry = Calculator.AddWithCarry(hcarry, carry, out carry);
-        	(_, lcarry) = Calculator.BigMulAdd(left._p5, right._p2, hcarry);
-        	p7 += lcarry;
+        	(up, low) = Calculator.BigMulAdd(left._p0, right._p2, 0);
+	        p2 = Calculator.AddWithCarry(p2, low, out carry);
+	        up = Calculator.AddWithCarry(up, carry, out carry);
+        	(up, low) = Calculator.BigMulAdd(left._p1, right._p2, up);
+	        p3 = Calculator.AddWithCarry(p3, low, out carry);
+	        up = Calculator.AddWithCarry(up, carry, out carry);
+        	(up, low) = Calculator.BigMulAdd(left._p2, right._p2, up);
+	        p4 = Calculator.AddWithCarry(p4, low, out carry);
+	        up = Calculator.AddWithCarry(up, carry, out carry);
+        	(up, low) = Calculator.BigMulAdd(left._p3, right._p2, up);
+	        p5 = Calculator.AddWithCarry(p5, low, out carry);
+	        up = Calculator.AddWithCarry(up, carry, out carry);
+        	(up, low) = Calculator.BigMulAdd(left._p4, right._p2, up);
+	        p6 = Calculator.AddWithCarry(p6, low, out carry);
+	        up = Calculator.AddWithCarry(up, carry, out carry);
+        	(_, low) = Calculator.BigMulAdd(left._p5, right._p2, up);
+        	p7 += low;
         	
-        	(hcarry, lcarry) = Calculator.BigMulAdd(left._p0, right._p3, 0);
-	        p3 = Calculator.AddWithCarry(p3, lcarry, out carry);
-	        hcarry = Calculator.AddWithCarry(hcarry, carry, out carry);
-        	(hcarry, lcarry) = Calculator.BigMulAdd(left._p1, right._p3, hcarry);
-	        p4 = Calculator.AddWithCarry(p4, lcarry, out carry);
-	        hcarry = Calculator.AddWithCarry(hcarry, carry, out carry);
-        	(hcarry, lcarry) = Calculator.BigMulAdd(left._p2, right._p3, hcarry);
-	        p5 = Calculator.AddWithCarry(p5, lcarry, out carry);
-	        hcarry = Calculator.AddWithCarry(hcarry, carry, out carry);
-        	(hcarry, lcarry) = Calculator.BigMulAdd(left._p3, right._p3, hcarry);
-	        p6 = Calculator.AddWithCarry(p6, lcarry, out carry);
-	        hcarry = Calculator.AddWithCarry(hcarry, carry, out carry);
-        	(_, lcarry) = Calculator.BigMulAdd(left._p4, right._p3, hcarry);
-        	p7 += lcarry;
+        	(up, low) = Calculator.BigMulAdd(left._p0, right._p3, 0);
+	        p3 = Calculator.AddWithCarry(p3, low, out carry);
+	        up = Calculator.AddWithCarry(up, carry, out carry);
+        	(up, low) = Calculator.BigMulAdd(left._p1, right._p3, up);
+	        p4 = Calculator.AddWithCarry(p4, low, out carry);
+	        up = Calculator.AddWithCarry(up, carry, out carry);
+        	(up, low) = Calculator.BigMulAdd(left._p2, right._p3, up);
+	        p5 = Calculator.AddWithCarry(p5, low, out carry);
+	        up = Calculator.AddWithCarry(up, carry, out carry);
+        	(up, low) = Calculator.BigMulAdd(left._p3, right._p3, up);
+	        p6 = Calculator.AddWithCarry(p6, low, out carry);
+	        up = Calculator.AddWithCarry(up, carry, out carry);
+        	(_, low) = Calculator.BigMulAdd(left._p4, right._p3, up);
+        	p7 += low;
         	
-        	(hcarry, lcarry) = Calculator.BigMulAdd(left._p0, right._p4, 0);
-	        p4 = Calculator.AddWithCarry(p4, lcarry, out carry);
-	        hcarry = Calculator.AddWithCarry(hcarry, carry, out carry);
-        	(hcarry, lcarry) = Calculator.BigMulAdd(left._p1, right._p4, hcarry);
-	        p5 = Calculator.AddWithCarry(p5, lcarry, out carry);
-	        hcarry = Calculator.AddWithCarry(hcarry, carry, out carry);
-        	(hcarry, lcarry) = Calculator.BigMulAdd(left._p2, right._p4, hcarry);
-	        p6 = Calculator.AddWithCarry(p6, lcarry, out carry);
-	        hcarry = Calculator.AddWithCarry(hcarry, carry, out carry);
-        	(_, lcarry) = Calculator.BigMulAdd(left._p3, right._p4, hcarry);
-        	p7 += lcarry;
+        	(up, low) = Calculator.BigMulAdd(left._p0, right._p4, 0);
+	        p4 = Calculator.AddWithCarry(p4, low, out carry);
+	        up = Calculator.AddWithCarry(up, carry, out carry);
+        	(up, low) = Calculator.BigMulAdd(left._p1, right._p4, up);
+	        p5 = Calculator.AddWithCarry(p5, low, out carry);
+	        up = Calculator.AddWithCarry(up, carry, out carry);
+        	(up, low) = Calculator.BigMulAdd(left._p2, right._p4, up);
+	        p6 = Calculator.AddWithCarry(p6, low, out carry);
+	        up = Calculator.AddWithCarry(up, carry, out carry);
+        	(_, low) = Calculator.BigMulAdd(left._p3, right._p4, up);
+        	p7 += low;
         	
-        	(hcarry, lcarry) = Calculator.BigMulAdd(left._p0, right._p5, 0);
-	        p5 = Calculator.AddWithCarry(p5, lcarry, out carry);
-	        hcarry = Calculator.AddWithCarry(hcarry, carry, out carry);
-        	(hcarry, lcarry) = Calculator.BigMulAdd(left._p1, right._p5, hcarry);
-	        p6 = Calculator.AddWithCarry(p6, lcarry, out carry);
-	        hcarry = Calculator.AddWithCarry(hcarry, carry, out carry);
-        	(_, lcarry) = Calculator.BigMulAdd(left._p2, right._p5, hcarry);
-        	p7 += lcarry;
+        	(up, low) = Calculator.BigMulAdd(left._p0, right._p5, 0);
+	        p5 = Calculator.AddWithCarry(p5, low, out carry);
+	        up = Calculator.AddWithCarry(up, carry, out carry);
+        	(up, low) = Calculator.BigMulAdd(left._p1, right._p5, up);
+	        p6 = Calculator.AddWithCarry(p6, low, out carry);
+	        up = Calculator.AddWithCarry(up, carry, out carry);
+        	(_, low) = Calculator.BigMulAdd(left._p2, right._p5, up);
+        	p7 += low;
 	
-        	(hcarry, lcarry) = Calculator.BigMulAdd(left._p0, right._p6, 0);
-	        p6 = Calculator.AddWithCarry(p6, lcarry, out carry);
-	        hcarry = Calculator.AddWithCarry(hcarry, carry, out carry);
-        	(_, lcarry) = Calculator.BigMulAdd(left._p1, right._p6, hcarry);
-        	p7 += lcarry;
+        	(up, low) = Calculator.BigMulAdd(left._p0, right._p6, 0);
+	        p6 = Calculator.AddWithCarry(p6, low, out carry);
+	        up = Calculator.AddWithCarry(up, carry, out carry);
+        	(_, low) = Calculator.BigMulAdd(left._p1, right._p6, up);
+        	p7 += low;
         	
-        	(_, lcarry) = Calculator.BigMulAdd(left._p0, right._p7, 0);
-        	p7 += lcarry;
+        	(_, low) = Calculator.BigMulAdd(left._p0, right._p7, 0);
+        	p7 += low;
         	
         	return new UInt512(p7, p6, p5, p4, p3, p2, p1, p0);
 		}
@@ -1269,13 +1271,13 @@ namespace MissingValues
 		/// <inheritdoc/>
 		public static UInt512 operator checked *(in UInt512 left, in UInt512 right)
 		{
-			ulong carry;
+			ulong carry, up, low;
 			
 			if (right._p7 == 0 && right._p6 == 0 && right._p5 == 0 && right._p4 == 0 && right._p3 == 0 && right._p2 == 0 && right._p1 == 0)
 			{
 				if (left._p7 == 0 && left._p6 == 0 && left._p5 == 0 && left._p4 == 0 && left._p3 == 0 && left._p2 == 0 && left._p1 == 0)
 				{
-					ulong up = Math.BigMul(left._p0, right._p0, out ulong low);
+					up = Math.BigMul(left._p0, right._p0, out low);
 					return new UInt512(0, 0, 0, 0, 0, 0, up, low);
 				}
 
@@ -1283,7 +1285,7 @@ namespace MissingValues
 
 				if (carry != 0)
 				{
-					Thrower.ArithmethicOverflow(Thrower.ArithmethicOperation.Multiplication);
+					Thrower.ArithmeticOverflow(Thrower.ArithmeticOperation.Multiplication);
 				}
 
 				return lower;
@@ -1294,128 +1296,128 @@ namespace MissingValues
 
 				if (carry != 0)
 				{
-					Thrower.ArithmethicOverflow(Thrower.ArithmethicOperation.Multiplication);
+					Thrower.ArithmeticOverflow(Thrower.ArithmeticOperation.Multiplication);
 				}
 
 				return lower;
 			}
 
-			(ulong hcarry, ulong lcarry) = Calculator.BigMulAdd(left._p0, right._p0, 0);
-        	ulong p0 = lcarry;
-        	(hcarry, lcarry) = Calculator.BigMulAdd(left._p1, right._p0, hcarry);
-        	ulong p1 = lcarry;
-        	(hcarry, lcarry) = Calculator.BigMulAdd(left._p2, right._p0, hcarry);
-        	ulong p2 = lcarry;
-        	(hcarry, lcarry) = Calculator.BigMulAdd(left._p3, right._p0, hcarry);
-        	ulong p3 = lcarry;
-        	(hcarry, lcarry) = Calculator.BigMulAdd(left._p4, right._p0, hcarry);
-        	ulong p4 = lcarry;
-        	(hcarry, lcarry) = Calculator.BigMulAdd(left._p5, right._p0, hcarry);
-        	ulong p5 = lcarry;
-        	(hcarry, lcarry) = Calculator.BigMulAdd(left._p6, right._p0, hcarry);
-        	ulong p6 = lcarry;
-        	(hcarry, lcarry) = Calculator.BigMulAdd(left._p7, right._p0, hcarry);
-        	ulong p7 = lcarry;
+			(up, low) = Calculator.BigMulAdd(left._p0, right._p0, 0);
+        	ulong p0 = low;
+        	(up, low) = Calculator.BigMulAdd(left._p1, right._p0, up);
+        	ulong p1 = low;
+        	(up, low) = Calculator.BigMulAdd(left._p2, right._p0, up);
+        	ulong p2 = low;
+        	(up, low) = Calculator.BigMulAdd(left._p3, right._p0, up);
+        	ulong p3 = low;
+        	(up, low) = Calculator.BigMulAdd(left._p4, right._p0, up);
+        	ulong p4 = low;
+        	(up, low) = Calculator.BigMulAdd(left._p5, right._p0, up);
+        	ulong p5 = low;
+        	(up, low) = Calculator.BigMulAdd(left._p6, right._p0, up);
+        	ulong p6 = low;
+        	(up, low) = Calculator.BigMulAdd(left._p7, right._p0, up);
+        	ulong p7 = low;
 	        
-	        if (hcarry != 0) Thrower.ArithmethicOverflow(Thrower.ArithmethicOperation.Multiplication);
+	        if (up != 0) Thrower.ArithmeticOverflow(Thrower.ArithmeticOperation.Multiplication);
         	
-        	(hcarry, lcarry) = Calculator.BigMulAdd(left._p0, right._p1, 0);
-	        p1 = Calculator.AddWithCarry(p1, lcarry, out carry);
-	        hcarry = Calculator.AddWithCarry(hcarry, carry, out carry);
-	        (hcarry, lcarry) = Calculator.BigMulAdd(left._p1, right._p1, hcarry);
-	        p2 = Calculator.AddWithCarry(p2, lcarry, out carry);
-	        hcarry = Calculator.AddWithCarry(hcarry, carry, out carry);
-	        (hcarry, lcarry) = Calculator.BigMulAdd(left._p2, right._p1, hcarry);
-	        p3 = Calculator.AddWithCarry(p3, lcarry, out carry);
-	        hcarry = Calculator.AddWithCarry(hcarry, carry, out carry);
-	        (hcarry, lcarry) = Calculator.BigMulAdd(left._p3, right._p1, hcarry);
-	        p4 = Calculator.AddWithCarry(p4, lcarry, out carry);
-	        hcarry = Calculator.AddWithCarry(hcarry, carry, out carry);
-	        (hcarry, lcarry) = Calculator.BigMulAdd(left._p4, right._p1, hcarry);
-	        p5 = Calculator.AddWithCarry(p5, lcarry, out carry);
-	        hcarry = Calculator.AddWithCarry(hcarry, carry, out carry);
-	        (hcarry, lcarry) = Calculator.BigMulAdd(left._p5, right._p1, hcarry);
-	        p6 = Calculator.AddWithCarry(p6, lcarry, out carry);
-	        hcarry = Calculator.AddWithCarry(hcarry, carry, out carry);
-        	(hcarry, lcarry) = Calculator.BigMulAdd(left._p6, right._p1, hcarry);
-        	p7 = Calculator.AddWithCarry(p7, lcarry, out carry);
+        	(up, low) = Calculator.BigMulAdd(left._p0, right._p1, 0);
+	        p1 = Calculator.AddWithCarry(p1, low, out carry);
+	        up = Calculator.AddWithCarry(up, carry, out carry);
+	        (up, low) = Calculator.BigMulAdd(left._p1, right._p1, up);
+	        p2 = Calculator.AddWithCarry(p2, low, out carry);
+	        up = Calculator.AddWithCarry(up, carry, out carry);
+	        (up, low) = Calculator.BigMulAdd(left._p2, right._p1, up);
+	        p3 = Calculator.AddWithCarry(p3, low, out carry);
+	        up = Calculator.AddWithCarry(up, carry, out carry);
+	        (up, low) = Calculator.BigMulAdd(left._p3, right._p1, up);
+	        p4 = Calculator.AddWithCarry(p4, low, out carry);
+	        up = Calculator.AddWithCarry(up, carry, out carry);
+	        (up, low) = Calculator.BigMulAdd(left._p4, right._p1, up);
+	        p5 = Calculator.AddWithCarry(p5, low, out carry);
+	        up = Calculator.AddWithCarry(up, carry, out carry);
+	        (up, low) = Calculator.BigMulAdd(left._p5, right._p1, up);
+	        p6 = Calculator.AddWithCarry(p6, low, out carry);
+	        up = Calculator.AddWithCarry(up, carry, out carry);
+        	(up, low) = Calculator.BigMulAdd(left._p6, right._p1, up);
+        	p7 = Calculator.AddWithCarry(p7, low, out carry);
 	        
-	        if (hcarry != 0 || carry != 0) Thrower.ArithmethicOverflow(Thrower.ArithmethicOperation.Multiplication);
+	        if (up != 0 || carry != 0) Thrower.ArithmeticOverflow(Thrower.ArithmeticOperation.Multiplication);
         	
-        	(hcarry, lcarry) = Calculator.BigMulAdd(left._p0, right._p2, 0);
-	        p2 = Calculator.AddWithCarry(p2, lcarry, out carry);
-	        hcarry = Calculator.AddWithCarry(hcarry, carry, out carry);
-        	(hcarry, lcarry) = Calculator.BigMulAdd(left._p1, right._p2, hcarry);
-	        p3 = Calculator.AddWithCarry(p3, lcarry, out carry);
-	        hcarry = Calculator.AddWithCarry(hcarry, carry, out carry);
-        	(hcarry, lcarry) = Calculator.BigMulAdd(left._p2, right._p2, hcarry);
-	        p4 = Calculator.AddWithCarry(p4, lcarry, out carry);
-	        hcarry = Calculator.AddWithCarry(hcarry, carry, out carry);
-        	(hcarry, lcarry) = Calculator.BigMulAdd(left._p3, right._p2, hcarry);
-	        p5 = Calculator.AddWithCarry(p5, lcarry, out carry);
-	        hcarry = Calculator.AddWithCarry(hcarry, carry, out carry);
-        	(hcarry, lcarry) = Calculator.BigMulAdd(left._p4, right._p2, hcarry);
-	        p6 = Calculator.AddWithCarry(p6, lcarry, out carry);
-	        hcarry = Calculator.AddWithCarry(hcarry, carry, out carry);
-        	(hcarry, lcarry) = Calculator.BigMulAdd(left._p5, right._p2, hcarry);
-        	p7 = Calculator.AddWithCarry(p7, lcarry, out carry);
+        	(up, low) = Calculator.BigMulAdd(left._p0, right._p2, 0);
+	        p2 = Calculator.AddWithCarry(p2, low, out carry);
+	        up = Calculator.AddWithCarry(up, carry, out carry);
+        	(up, low) = Calculator.BigMulAdd(left._p1, right._p2, up);
+	        p3 = Calculator.AddWithCarry(p3, low, out carry);
+	        up = Calculator.AddWithCarry(up, carry, out carry);
+        	(up, low) = Calculator.BigMulAdd(left._p2, right._p2, up);
+	        p4 = Calculator.AddWithCarry(p4, low, out carry);
+	        up = Calculator.AddWithCarry(up, carry, out carry);
+        	(up, low) = Calculator.BigMulAdd(left._p3, right._p2, up);
+	        p5 = Calculator.AddWithCarry(p5, low, out carry);
+	        up = Calculator.AddWithCarry(up, carry, out carry);
+        	(up, low) = Calculator.BigMulAdd(left._p4, right._p2, up);
+	        p6 = Calculator.AddWithCarry(p6, low, out carry);
+	        up = Calculator.AddWithCarry(up, carry, out carry);
+        	(up, low) = Calculator.BigMulAdd(left._p5, right._p2, up);
+        	p7 = Calculator.AddWithCarry(p7, low, out carry);
 			
-	        if (hcarry != 0 || carry != 0) Thrower.ArithmethicOverflow(Thrower.ArithmethicOperation.Multiplication);
+	        if (up != 0 || carry != 0) Thrower.ArithmeticOverflow(Thrower.ArithmeticOperation.Multiplication);
         	
-        	(hcarry, lcarry) = Calculator.BigMulAdd(left._p0, right._p3, 0);
-	        p3 = Calculator.AddWithCarry(p3, lcarry, out carry);
-	        hcarry = Calculator.AddWithCarry(hcarry, carry, out carry);
-        	(hcarry, lcarry) = Calculator.BigMulAdd(left._p1, right._p3, hcarry);
-	        p4 = Calculator.AddWithCarry(p4, lcarry, out carry);
-	        hcarry = Calculator.AddWithCarry(hcarry, carry, out carry);
-        	(hcarry, lcarry) = Calculator.BigMulAdd(left._p2, right._p3, hcarry);
-	        p5 = Calculator.AddWithCarry(p5, lcarry, out carry);
-	        hcarry = Calculator.AddWithCarry(hcarry, carry, out carry);
-        	(hcarry, lcarry) = Calculator.BigMulAdd(left._p3, right._p3, hcarry);
-	        p6 = Calculator.AddWithCarry(p6, lcarry, out carry);
-	        hcarry = Calculator.AddWithCarry(hcarry, carry, out carry);
-        	(hcarry, lcarry) = Calculator.BigMulAdd(left._p4, right._p3, hcarry);
-	        p7 = Calculator.AddWithCarry(p7, lcarry, out carry);
+        	(up, low) = Calculator.BigMulAdd(left._p0, right._p3, 0);
+	        p3 = Calculator.AddWithCarry(p3, low, out carry);
+	        up = Calculator.AddWithCarry(up, carry, out carry);
+        	(up, low) = Calculator.BigMulAdd(left._p1, right._p3, up);
+	        p4 = Calculator.AddWithCarry(p4, low, out carry);
+	        up = Calculator.AddWithCarry(up, carry, out carry);
+        	(up, low) = Calculator.BigMulAdd(left._p2, right._p3, up);
+	        p5 = Calculator.AddWithCarry(p5, low, out carry);
+	        up = Calculator.AddWithCarry(up, carry, out carry);
+        	(up, low) = Calculator.BigMulAdd(left._p3, right._p3, up);
+	        p6 = Calculator.AddWithCarry(p6, low, out carry);
+	        up = Calculator.AddWithCarry(up, carry, out carry);
+        	(up, low) = Calculator.BigMulAdd(left._p4, right._p3, up);
+	        p7 = Calculator.AddWithCarry(p7, low, out carry);
 			
-	        if (hcarry != 0 || carry != 0) Thrower.ArithmethicOverflow(Thrower.ArithmethicOperation.Multiplication);
+	        if (up != 0 || carry != 0) Thrower.ArithmeticOverflow(Thrower.ArithmeticOperation.Multiplication);
         	
-        	(hcarry, lcarry) = Calculator.BigMulAdd(left._p0, right._p4, 0);
-	        p4 = Calculator.AddWithCarry(p4, lcarry, out carry);
-	        hcarry = Calculator.AddWithCarry(hcarry, carry, out carry);
-        	(hcarry, lcarry) = Calculator.BigMulAdd(left._p1, right._p4, hcarry);
-	        p5 = Calculator.AddWithCarry(p5, lcarry, out carry);
-	        hcarry = Calculator.AddWithCarry(hcarry, carry, out carry);
-        	(hcarry, lcarry) = Calculator.BigMulAdd(left._p2, right._p4, hcarry);
-	        p6 = Calculator.AddWithCarry(p6, lcarry, out carry);
-	        hcarry = Calculator.AddWithCarry(hcarry, carry, out carry);
-        	(hcarry, lcarry) = Calculator.BigMulAdd(left._p3, right._p4, hcarry);
-	        p7 = Calculator.AddWithCarry(p7, lcarry, out carry);
+        	(up, low) = Calculator.BigMulAdd(left._p0, right._p4, 0);
+	        p4 = Calculator.AddWithCarry(p4, low, out carry);
+	        up = Calculator.AddWithCarry(up, carry, out carry);
+        	(up, low) = Calculator.BigMulAdd(left._p1, right._p4, up);
+	        p5 = Calculator.AddWithCarry(p5, low, out carry);
+	        up = Calculator.AddWithCarry(up, carry, out carry);
+        	(up, low) = Calculator.BigMulAdd(left._p2, right._p4, up);
+	        p6 = Calculator.AddWithCarry(p6, low, out carry);
+	        up = Calculator.AddWithCarry(up, carry, out carry);
+        	(up, low) = Calculator.BigMulAdd(left._p3, right._p4, up);
+	        p7 = Calculator.AddWithCarry(p7, low, out carry);
 			
-	        if (hcarry != 0 || carry != 0) Thrower.ArithmethicOverflow(Thrower.ArithmethicOperation.Multiplication);
+	        if (up != 0 || carry != 0) Thrower.ArithmeticOverflow(Thrower.ArithmeticOperation.Multiplication);
         	
-        	(hcarry, lcarry) = Calculator.BigMulAdd(left._p0, right._p5, 0);
-	        p5 = Calculator.AddWithCarry(p5, lcarry, out carry);
-	        hcarry = Calculator.AddWithCarry(hcarry, carry, out carry);
-        	(hcarry, lcarry) = Calculator.BigMulAdd(left._p1, right._p5, hcarry);
-	        p6 = Calculator.AddWithCarry(p6, lcarry, out carry);
-	        hcarry = Calculator.AddWithCarry(hcarry, carry, out carry);
-        	(hcarry, lcarry) = Calculator.BigMulAdd(left._p2, right._p5, hcarry);
-	        p7 = Calculator.AddWithCarry(p7, lcarry, out carry);
+        	(up, low) = Calculator.BigMulAdd(left._p0, right._p5, 0);
+	        p5 = Calculator.AddWithCarry(p5, low, out carry);
+	        up = Calculator.AddWithCarry(up, carry, out carry);
+        	(up, low) = Calculator.BigMulAdd(left._p1, right._p5, up);
+	        p6 = Calculator.AddWithCarry(p6, low, out carry);
+	        up = Calculator.AddWithCarry(up, carry, out carry);
+        	(up, low) = Calculator.BigMulAdd(left._p2, right._p5, up);
+	        p7 = Calculator.AddWithCarry(p7, low, out carry);
 			
-	        if (hcarry != 0 || carry != 0) Thrower.ArithmethicOverflow(Thrower.ArithmethicOperation.Multiplication);
+	        if (up != 0 || carry != 0) Thrower.ArithmeticOverflow(Thrower.ArithmeticOperation.Multiplication);
 	
-        	(hcarry, lcarry) = Calculator.BigMulAdd(left._p0, right._p6, 0);
-	        p6 = Calculator.AddWithCarry(p6, lcarry, out carry);
-	        hcarry = Calculator.AddWithCarry(hcarry, carry, out carry);
-        	(hcarry, lcarry) = Calculator.BigMulAdd(left._p1, right._p6, hcarry);
-	        p7 = Calculator.AddWithCarry(p7, lcarry, out carry);
+        	(up, low) = Calculator.BigMulAdd(left._p0, right._p6, 0);
+	        p6 = Calculator.AddWithCarry(p6, low, out carry);
+	        up = Calculator.AddWithCarry(up, carry, out carry);
+        	(up, low) = Calculator.BigMulAdd(left._p1, right._p6, up);
+	        p7 = Calculator.AddWithCarry(p7, low, out carry);
 	        
-	        if (hcarry != 0 || carry != 0) Thrower.ArithmethicOverflow(Thrower.ArithmethicOperation.Multiplication);
+	        if (up != 0 || carry != 0) Thrower.ArithmeticOverflow(Thrower.ArithmeticOperation.Multiplication);
         	
-        	(hcarry, lcarry) = Calculator.BigMulAdd(left._p0, right._p7, 0);
-	        p7 = Calculator.AddWithCarry(p7, lcarry, out carry);
+        	(up, low) = Calculator.BigMulAdd(left._p0, right._p7, 0);
+	        p7 = Calculator.AddWithCarry(p7, low, out carry);
 	        
-	        if (hcarry != 0 || carry != 0) Thrower.ArithmethicOverflow(Thrower.ArithmethicOperation.Multiplication);
+	        if (up != 0 || carry != 0) Thrower.ArithmeticOverflow(Thrower.ArithmeticOperation.Multiplication);
         	
         	return new UInt512(p7, p6, p5, p4, p3, p2, p1, p0);
 		}
