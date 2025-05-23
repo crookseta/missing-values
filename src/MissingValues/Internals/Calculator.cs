@@ -2,16 +2,44 @@ using System.Diagnostics;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Runtime.Intrinsics.Arm;
+using System.Runtime.Intrinsics.X86;
 
 namespace MissingValues.Internals;
 
 internal static class Calculator
 {
-	public const int StackAllocThreshold = 64;
+	public const int StackAllocThreshold = 128;
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public static ulong AddWithCarry(ulong a, ulong b, out ulong carry)
+	{
+		ulong result = a + b;
+		
+		// For unsigned addition, we can detect overflow by checking `(x + y) < x`
+		
+		carry = (result < a) ? 1UL : 0UL;
+    
+		return result;
+	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static UInt128 BigMul(ulong a, ulong b)
 	{
+		if (Bmi2.X64.IsSupported)
+		{
+			/*
+			 * Using Bmi2.X64.MultiplyNoFlags(ulong left, ulong right, ulong* low) is actually
+			 * slower than simply getting the lower product directly and getting the high
+			 * product with Bmi2.X64.MultiplyNoFlags(ulong left, ulong right).
+			 * https://github.com/dotnet/runtime/issues/11782#issuecomment-2174501863
+			 */
+			return new UInt128(Bmi2.X64.MultiplyNoFlags(a, b), a * b);
+		}
+		if (ArmBase.Arm64.IsSupported)
+		{
+			return new UInt128(ArmBase.Arm64.MultiplyHigh(a, b), a * b);
+		}
 #if NET9_0_OR_GREATER
 		return Math.BigMul(a, b);
 #else
@@ -48,6 +76,39 @@ internal static class Calculator
 
 		return BigMul(ah, bh) + t.GetUpperBits() + tl.GetUpperBits();
 	}
+	
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public static (ulong hi, ulong lo) BigMulAdd(ulong a, ulong b, ulong c)
+	{
+		ulong highProd, lowProd;
+		if (Bmi2.X64.IsSupported)
+		{
+			/*
+			 * Using Bmi2.X64.MultiplyNoFlags(ulong left, ulong right, ulong* low) is actually
+			 * slower than simply getting the lower product directly and getting the high
+			 * product with Bmi2.X64.MultiplyNoFlags(ulong left, ulong right).
+			 * https://github.com/dotnet/runtime/issues/11782#issuecomment-2174501863
+			 */
+			highProd = Bmi2.X64.MultiplyNoFlags(a, b);
+			lowProd = a * b;
+		}
+		else if (ArmBase.Arm64.IsSupported)
+		{
+			highProd = ArmBase.Arm64.MultiplyHigh(a, b);
+			lowProd = a * b;
+		}
+		else
+		{
+			highProd = Math.BigMul(a, b, out lowProd);
+		}
+		
+		ulong lower = lowProd + c;
+		ulong carry = (lower < lowProd) ? 1UL : 0UL;
+
+		ulong upper = highProd + carry;
+            
+		return (upper, lower);
+	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static (ulong Quotient, uint Remainder) DivRemByUInt32(ulong left, uint right)
@@ -55,12 +116,56 @@ internal static class Calculator
 		ulong quotient = left / right;
 		return (quotient, (uint)left - ((uint)quotient * right));
 	}
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public static (UInt128 Quotient, ulong Remainder) DivRemByUInt64(UInt128 left, ulong right)
+	{
+#if NET9_0_OR_GREATER
+		if (X86Base.X64.IsSupported)
+		{
+			ulong highRes = 0ul;
+			ulong remainder = (ulong)(left >> 64);
+            
+#pragma warning disable SYSLIB5004
+			if (remainder >= right)
+			{
+				(highRes, remainder) = X86Base.X64.DivRem(remainder, 0, right);
+			}
 
-	public static void Square(ReadOnlySpan<uint> value, Span<uint> bits)
+			(ulong lowRes, remainder) = X86Base.X64.DivRem((ulong)left, remainder, right);
+#pragma warning restore SYSLIB5004
+			return (new UInt128(highRes, lowRes), remainder);
+		}
+#endif
+		UInt128 quotient = left / right;
+		return (quotient, (ulong)left - ((ulong)quotient * right));
+	}
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	private static UInt128 DivideByUInt64(UInt128 left, ulong right)
+	{
+#if NET9_0_OR_GREATER
+		if (X86Base.X64.IsSupported)
+		{
+			ulong highRes = 0ul;
+			ulong remainder = (ulong)(left >> 64);
+            
+#pragma warning disable SYSLIB5004
+			if (remainder >= right)
+			{
+				(highRes, remainder) = X86Base.X64.DivRem(remainder, 0, right);
+			}
+
+			return new UInt128(highRes, X86Base.X64.DivRem((ulong)left, remainder, right).Quotient);
+#pragma warning restore SYSLIB5004
+		}
+#endif
+		return left / right;
+	}
+
+	public static void Square(ref ulong value, int valueLength, Span<ulong> bits)
 	{
 		// Based on: https://github.com/dotnet/runtime/blob/main/src/libraries/System.Runtime.Numerics/src/System/Numerics/BigIntegerCalculator.SquMul.cs
 
-		Debug.Assert(bits.Length == value.Length + value.Length);
+		Debug.Assert(bits.Length == valueLength + valueLength);
 
 		// Executes different algorithms for computing z = a * a
 		// based on the actual length of a. If a is "small" enough
@@ -70,7 +175,7 @@ internal static class Calculator
 
 		// Switching to managed references helps eliminating
 		// index bounds check...
-		ref uint resultPtr = ref MemoryMarshal.GetReference(bits);
+		ref ulong resultPtr = ref MemoryMarshal.GetReference(bits);
 
 		// Squares the bits using the "grammar-school" method.
 		// Envisioning the "rhombus" of a pen-and-paper calculation
@@ -83,20 +188,20 @@ internal static class Calculator
 		// = 2^64 - 1 (which perfectly matches with ulong!). But
 		// here we would need an UInt65... Hence, we split these
 		// operation and do some extra shifts.
-		for (int i = 0; i < value.Length; i++)
+		for (int i = 0; i < valueLength; i++)
 		{
-			ulong carry = 0UL;
-			uint v = value[i];
+			UInt128 carry = default;
+			ulong v = Unsafe.Add(ref value, i);
 			for (int j = 0; j < i; j++)
 			{
-				ulong digit1 = Unsafe.Add(ref resultPtr, i + j) + carry;
-				ulong digit2 = (ulong)value[j] * v;
-				Unsafe.Add(ref resultPtr, i + j) = unchecked((uint)(digit1 + (digit2 << 1)));
+				UInt128 digit1 = Unsafe.Add(ref resultPtr, i + j) + carry;
+				UInt128 digit2 = BigMul(Unsafe.Add(ref value, j), v);
+				Unsafe.Add(ref resultPtr, i + j) = unchecked((ulong)(digit1 + (digit2 << 1)));
 				carry = (digit2 + (digit1 >> 1)) >> 31;
 			}
-			ulong digits = (ulong)v * v + carry;
-			Unsafe.Add(ref resultPtr, i + i) = unchecked((uint)digits);
-			Unsafe.Add(ref resultPtr, i + i + 1) = (uint)(digits >> 32);
+			UInt128 digits = BigMul(v, v) + carry;
+			Unsafe.Add(ref resultPtr, i + i) = unchecked((ulong)digits);
+			Unsafe.Add(ref resultPtr, i + i + 1) = (ulong)(digits >> 64);
 		}
 	}
 
@@ -111,106 +216,41 @@ internal static class Calculator
 
 		ulong p3, p2, p1, p0;
 
-		UInt128 c = default;
-
-		UInt128 digits = BigMul(left.Part0, right) + c;
-		p0 = unchecked((ulong)digits);
-		c = digits >> 64;
-
-		digits = BigMul(left.Part1, right) + c;
-		p1 = unchecked((ulong)digits);
-		c = digits >> 64;
-
-		digits = BigMul(left.Part2, right) + c;
-		p2 = unchecked((ulong)digits);
-		c = digits >> 64;
-
-		digits = BigMul(left.Part3, right) + c;
-		p3 = unchecked((ulong)digits);
-		carry = (ulong)(digits >> 64);
+		carry = Math.BigMul(left.Part0, right, out p0);
+		(carry, p1) = BigMulAdd(left.Part1, right, carry);
+		(carry, p2) = BigMulAdd(left.Part2, right, carry);
+		(carry, p3) = BigMulAdd(left.Part3, right, carry);
 
 		return new UInt256(p3, p2, p1, p0);
 	}
 	public static UInt512 Multiply(in UInt512 left, ulong right, out ulong carry)
 	{
 		ulong p7, p6, p5, p4, p3, p2, p1, p0;
-
-		UInt128 c = default;
-
-		UInt128 digits = BigMul(left.Part0, right) + c;
-		p0 = unchecked((ulong)digits);
-		c = digits >> 64;
-
-		digits = BigMul(left.Part1, right) + c;
-		p1 = unchecked((ulong)digits);
-		c = digits >> 64;
-
-		digits = BigMul(left.Part2, right) + c;
-		p2 = unchecked((ulong)digits);
-		c = digits >> 64;
-
-		digits = BigMul(left.Part3, right) + c;
-		p3 = unchecked((ulong)digits);
-		c = digits >> 64;
-
-		digits = BigMul(left.Part4, right) + c;
-		p4 = unchecked((ulong)digits);
-		c = digits >> 64;
-
-		digits = BigMul(left.Part5, right) + c;
-		p5 = unchecked((ulong)digits);
-		c = digits >> 64;
-
-		digits = BigMul(left.Part6, right) + c;
-		p6 = unchecked((ulong)digits);
-		c = digits >> 64;
-
-		digits = BigMul(left.Part7, right) + c;
-		p7 = unchecked((ulong)digits);
-		carry = (ulong)(digits >> 64);
-
+		
+		carry = Math.BigMul(left.Part0, right, out p0);
+		(carry, p1) = BigMulAdd(left.Part1, right, carry);
+		(carry, p2) = BigMulAdd(left.Part2, right, carry);
+		(carry, p3) = BigMulAdd(left.Part3, right, carry);
+		(carry, p4) = BigMulAdd(left.Part4, right, carry);
+		(carry, p5) = BigMulAdd(left.Part5, right, carry);
+		(carry, p6) = BigMulAdd(left.Part6, right, carry);
+		(carry, p7) = BigMulAdd(left.Part7, right, carry);
+		
 		return new UInt512(
 			p7, p6, p5, p4,
 			p3, p2, p1, p0
 			);
 	}
-	public static void Multiply(ReadOnlySpan<uint> left, ReadOnlySpan<uint> right, Span<uint> bits)
+	public static void Multiply(ReadOnlySpan<ulong> left, ReadOnlySpan<ulong> right, Span<ulong> bits)
 	{
 		// Based on: https://github.com/dotnet/runtime/blob/main/src/libraries/System.Runtime.Numerics/src/System/Numerics/BigIntegerCalculator.SquMul.cs
+		Debug.Assert(left.Length < 32);
 		Debug.Assert(right.Length < 32);
 
 		// Switching to managed references helps eliminating
 		// index bounds check...
-		ref uint resultPtr = ref MemoryMarshal.GetReference(bits);
-
-		// Multiplies the bits using the "grammar-school" method.
-		// Envisioning the "rhombus" of a pen-and-paper calculation
-		// should help getting the idea of these two loops...
-		// The inner multiplication operations are safe, because
-		// z_i+j + a_j * b_i + c <= 2(2^32 - 1) + (2^32 - 1)^2 =
-		// = 2^64 - 1 (which perfectly matches with ulong!).
-
-		for (int i = 0; i < right.Length; i++)
-		{
-			uint rv = right[i];
-			ulong carry = 0UL;
-			for (int j = 0; j < left.Length; j++)
-			{
-				ref uint elementPtr = ref Unsafe.Add(ref resultPtr, i + j);
-				ulong digits = elementPtr + carry + (ulong)left[j] * rv;
-				elementPtr = unchecked((uint)digits);
-				carry = digits >> 32;
-			}
-			Unsafe.Add(ref resultPtr, i + left.Length) = (uint)carry;
-		}
-	}
-	public static void Multiply(ReadOnlySpan<ulong> left, ReadOnlySpan<ulong> right, Span<ulong> bits)
-	{
-		// Based on: https://github.com/dotnet/runtime/blob/main/src/libraries/System.Runtime.Numerics/src/System/Numerics/BigIntegerCalculator.SquMul.cs
-		Debug.Assert(right.Length < 16);
-
-		// Switching to managed references helps eliminating
-		// index bounds check...
+		ref ulong leftPtr = ref MemoryMarshal.GetReference(left);
+		ref ulong rightPtr = ref MemoryMarshal.GetReference(right);
 		ref ulong resultPtr = ref MemoryMarshal.GetReference(bits);
 
 		// Multiplies the bits using the "grammar-school" method.
@@ -222,12 +262,12 @@ internal static class Calculator
 
 		for (int i = 0; i < right.Length; i++)
 		{
-			ulong rv = right[i];
-			UInt128 carry = UInt128.Zero;
+			ulong rv = Unsafe.Add(ref rightPtr, i);
+			UInt128 carry = default;
 			for (int j = 0; j < left.Length; j++)
 			{
 				ref ulong elementPtr = ref Unsafe.Add(ref resultPtr, i + j);
-				UInt128 digits = elementPtr + carry + BigMul(left[j], rv);
+				UInt128 digits = elementPtr + carry + BigMul(Unsafe.Add(ref leftPtr, j), rv);
 				elementPtr = unchecked((ulong)digits);
 				carry = digits >> 64;
 			}
@@ -236,7 +276,7 @@ internal static class Calculator
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public static void DivRem(in UInt256 left, uint right, out UInt256 quotient, out uint remainder)
+	public static void DivRem(in UInt256 left, ulong right, out UInt256 quotient, out ulong remainder)
 	{
 		// Based on: https://github.com/dotnet/runtime/blob/main/src/libraries/System.Runtime.Numerics/src/System/Numerics/BigIntegerCalculator.DivRem.cs
 
@@ -244,108 +284,58 @@ internal static class Calculator
 		// Thus, we've similar code than below, but there is no loop for
 		// processing the 64-bit integer, since it's a single element.
 
-		uint p7, p6, p5, p4, p3, p2, p1, p0;
-		ulong carry, value, digit;
+		ulong p3, p2, p1, p0;
+		ulong carry;
+		UInt128 value, digit;
 
 		if (left.Part3 != 0)
 		{
-			value = (left.Part3 >> 32);
-			(digit, carry) = DivRemByUInt32(value, right);
-			p7 = (uint)digit;
+			value = new UInt128(0, left.Part3);
+			(digit, carry) = DivRemByUInt64(value, right);
+			p3 = (ulong)digit;
+			
+			value = new UInt128(carry, left.Part2);
+			(digit, carry) = DivRemByUInt64(value, right);
+			p2 = (ulong)digit;
 
-			value = (carry << 32) | (uint)left.Part3;
-			(digit, carry) = DivRemByUInt32(value, right);
-			p6 = (uint)digit;
-
-			value = (carry << 32) | (left.Part2 >> 32);
-			(digit, carry) = DivRemByUInt32(value, right);
-			p5 = (uint)digit;
-
-			value = (carry << 32) | (uint)left.Part2;
-			(digit, carry) = DivRemByUInt32(value, right);
-			p4 = (uint)digit;
-
-			value = (carry << 32) | (left.Part1 >> 32);
-			(digit, carry) = DivRemByUInt32(value, right);
-			p3 = (uint)digit;
-
-			value = (carry << 32) | (uint)left.Part1;
-			(digit, carry) = DivRemByUInt32(value, right);
-			p2 = (uint)digit;
-
-			value = (carry << 32) | (left.Part0 >> 32);
-			(digit, carry) = DivRemByUInt32(value, right);
-			p1 = (uint)digit;
-
-			value = (carry << 32) | (uint)left.Part0;
-			(digit, carry) = DivRemByUInt32(value, right);
-			p0 = (uint)digit;
+			value = new UInt128(carry, left.Part1);
+			(digit, carry) = DivRemByUInt64(value, right);
+			p1 = (ulong)digit;
+			
+			value = new UInt128(carry, left.Part0);
+			(digit, carry) = DivRemByUInt64(value, right);
+			p0 = (ulong)digit;
 		}
 		else if (left.Part2 != 0)
 		{
-			p7 = 0;
-			p6 = 0;
+			p3 = 0;
 
-			value = (left.Part2 >> 32);
-			(digit, carry) = DivRemByUInt32(value, right);
-			p5 = (uint)digit;
+			value = new UInt128(0, left.Part2);
+			(digit, carry) = DivRemByUInt64(value, right);
+			p2 = (ulong)digit;
 
-			value = (carry << 32) | (uint)left.Part2;
-			(digit, carry) = DivRemByUInt32(value, right);
-			p4 = (uint)digit;
-
-			value = (carry << 32) | (left.Part1 >> 32);
-			(digit, carry) = DivRemByUInt32(value, right);
-			p3 = (uint)digit;
-
-			value = (carry << 32) | (uint)left.Part1;
-			(digit, carry) = DivRemByUInt32(value, right);
-			p2 = (uint)digit;
-
-			value = (carry << 32) | (left.Part0 >> 32);
-			(digit, carry) = DivRemByUInt32(value, right);
-			p1 = (uint)digit;
-
-			value = (carry << 32) | (uint)left.Part0;
-			(digit, carry) = DivRemByUInt32(value, right);
-			p0 = (uint)digit;
-		}
-		else if (left.Part1 != 0)
-		{
-			p7 = 0;
-			p6 = 0;
-			p5 = 0;
-			p4 = 0;
-
-			value = (left.Part1 >> 32);
-			(digit, carry) = DivRemByUInt32(value, right);
-			p3 = (uint)digit;
-
-			value = (carry << 32) | (uint)left.Part1;
-			(digit, carry) = DivRemByUInt32(value, right);
-			p2 = (uint)digit;
-
-			value = (carry << 32) | (left.Part0 >> 32);
-			(digit, carry) = DivRemByUInt32(value, right);
-			p1 = (uint)digit;
-
-			value = (carry << 32) | (uint)left.Part0;
-			(digit, carry) = DivRemByUInt32(value, right);
-			p0 = (uint)digit;
+			value = new UInt128(carry, left.Part1);
+			(digit, carry) = DivRemByUInt64(value, right);
+			p1 = (ulong)digit;
+			
+			value = new UInt128(carry, left.Part0);
+			(digit, carry) = DivRemByUInt64(value, right);
+			p0 = (ulong)digit;
 		}
 		else
 		{
-			(value, remainder) = DivRemByUInt32(left.Part0, right);
-			quotient = new UInt256(0, 0, 0, value);
+			(value, remainder) = DivRemByUInt64(new UInt128(left.Part1, left.Part0), right);
+			quotient = new UInt256(0, 0, (ulong)(value >> 64), (ulong)value);
 
 			return;
 		}
 
-		remainder = (uint)carry;
-		quotient = new UInt256(((ulong)p7 << 32) | p6, ((ulong)p5 << 32) | p4, ((ulong)p3 << 32) | p2, ((ulong)p1 << 32) | p0);
+		remainder = carry;
+		quotient = new UInt256(p3, p2, p1, p0);
 	}
+	
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public static void DivRem(in UInt512 left, uint right, out UInt512 quotient, out uint remainder)
+	public static void DivRem(in UInt512 left, ulong right, out UInt512 quotient, out ulong remainder)
 	{
 		// Based on: https://github.com/dotnet/runtime/blob/main/src/libraries/System.Runtime.Numerics/src/System/Numerics/BigIntegerCalculator.DivRem.cs
 
@@ -353,383 +343,187 @@ internal static class Calculator
 		// Thus, we've similar code than below, but there is no loop for
 		// processing the 64-bit integer, since it's a single element.
 
-		uint p07, p06, p05, p04, p03, p02, p01, p00;
-		uint p15, p14, p13, p12, p11, p10, p09, p08;
-		ulong carry, value, digit;
+		ulong p07, p06, p05, p04, p03, p02, p01, p00;
+		ulong carry; 
+		UInt128 value, digit;
 
 		if (left.Part7 != 0)
 		{
-			value = (left.Part7 >> 32);
-			(digit, carry) = DivRemByUInt32(value, right);
-			p15 = (uint)digit;
+			value = new UInt128(0, left.Part7);
+			(digit, carry) = DivRemByUInt64(value, right);
+			p07 = (ulong)digit;
 
-			value = (carry << 32) | (uint)left.Part7;
-			(digit, carry) = DivRemByUInt32(value, right);
-			p14 = (uint)digit;
+			value = new UInt128(carry, left.Part6);
+			(digit, carry) = DivRemByUInt64(value, right);
+			p06 = (ulong)digit;
 
-			value = (carry << 32) | (left.Part6 >> 32);
-			(digit, carry) = DivRemByUInt32(value, right);
-			p13 = (uint)digit;
+			value = new UInt128(carry, left.Part5);
+			(digit, carry) = DivRemByUInt64(value, right);
+			p05 = (ulong)digit;
 
-			value = (carry << 32) | (uint)left.Part6;
-			(digit, carry) = DivRemByUInt32(value, right);
-			p12 = (uint)digit;
+			value = new UInt128(carry, left.Part4);
+			(digit, carry) = DivRemByUInt64(value, right);
+			p04 = (ulong)digit;
 
-			value = (carry << 32) | (left.Part5 >> 32);
-			(digit, carry) = DivRemByUInt32(value, right);
-			p11 = (uint)digit;
+			value = new UInt128(carry, left.Part3);
+			(digit, carry) = DivRemByUInt64(value, right);
+			p03 = (ulong)digit;
 
-			value = (carry << 32) | (uint)left.Part5;
-			(digit, carry) = DivRemByUInt32(value, right);
-			p10 = (uint)digit;
+			value = new UInt128(carry, left.Part2);
+			(digit, carry) = DivRemByUInt64(value, right);
+			p02 = (ulong)digit;
 
-			value = (carry << 32) | (left.Part4 >> 32);
-			(digit, carry) = DivRemByUInt32(value, right);
-			p09 = (uint)digit;
+			value = new UInt128(carry, left.Part1);
+			(digit, carry) = DivRemByUInt64(value, right);
+			p01 = (ulong)digit;
 
-			value = (carry << 32) | (uint)left.Part4;
-			(digit, carry) = DivRemByUInt32(value, right);
-			p08 = (uint)digit;
-
-			value = (carry << 32) | (left.Part3 >> 32);
-			(digit, carry) = DivRemByUInt32(value, right);
-			p07 = (uint)digit;
-
-			value = (carry << 32) | (uint)left.Part3;
-			(digit, carry) = DivRemByUInt32(value, right);
-			p06 = (uint)digit;
-
-			value = (carry << 32) | (left.Part2 >> 32);
-			(digit, carry) = DivRemByUInt32(value, right);
-			p05 = (uint)digit;
-
-			value = (carry << 32) | (uint)left.Part2;
-			(digit, carry) = DivRemByUInt32(value, right);
-			p04 = (uint)digit;
-
-			value = (carry << 32) | (left.Part1 >> 32);
-			(digit, carry) = DivRemByUInt32(value, right);
-			p03 = (uint)digit;
-
-			value = (carry << 32) | (uint)left.Part1;
-			(digit, carry) = DivRemByUInt32(value, right);
-			p02 = (uint)digit;
-
-			value = (carry << 32) | (left.Part0 >> 32);
-			(digit, carry) = DivRemByUInt32(value, right);
-			p01 = (uint)digit;
-
-			value = (carry << 32) | (uint)left.Part0;
-			(digit, carry) = DivRemByUInt32(value, right);
-			p00 = (uint)digit;
+			value = new UInt128(carry, left.Part0);
+			(digit, carry) = DivRemByUInt64(value, right);
+			p00 = (ulong)digit;
 		}
 		else if (left.Part6 != 0)
 		{
-			p15 = 0;
-			p14 = 0;
+			p07 = 0;
 
-			value = (left.Part6 >> 32);
-			(digit, carry) = DivRemByUInt32(value, right);
-			p13 = (uint)digit;
+			value = new UInt128(0, left.Part6);
+			(digit, carry) = DivRemByUInt64(value, right);
+			p06 = (ulong)digit;
 
-			value = (carry << 32) | (uint)left.Part6;
-			(digit, carry) = DivRemByUInt32(value, right);
-			p12 = (uint)digit;
+			value = new UInt128(carry, left.Part5);
+			(digit, carry) = DivRemByUInt64(value, right);
+			p05 = (ulong)digit;
 
-			value = (carry << 32) | (left.Part5 >> 32);
-			(digit, carry) = DivRemByUInt32(value, right);
-			p11 = (uint)digit;
+			value = new UInt128(carry, left.Part4);
+			(digit, carry) = DivRemByUInt64(value, right);
+			p04 = (ulong)digit;
 
-			value = (carry << 32) | (uint)left.Part5;
-			(digit, carry) = DivRemByUInt32(value, right);
-			p10 = (uint)digit;
+			value = new UInt128(carry, left.Part3);
+			(digit, carry) = DivRemByUInt64(value, right);
+			p03 = (ulong)digit;
 
-			value = (carry << 32) | (left.Part4 >> 32);
-			(digit, carry) = DivRemByUInt32(value, right);
-			p09 = (uint)digit;
+			value = new UInt128(carry, left.Part2);
+			(digit, carry) = DivRemByUInt64(value, right);
+			p02 = (ulong)digit;
 
-			value = (carry << 32) | (uint)left.Part4;
-			(digit, carry) = DivRemByUInt32(value, right);
-			p08 = (uint)digit;
+			value = new UInt128(carry, left.Part1);
+			(digit, carry) = DivRemByUInt64(value, right);
+			p01 = (ulong)digit;
 
-			value = (carry << 32) | (left.Part3 >> 32);
-			(digit, carry) = DivRemByUInt32(value, right);
-			p07 = (uint)digit;
-
-			value = (carry << 32) | (uint)left.Part3;
-			(digit, carry) = DivRemByUInt32(value, right);
-			p06 = (uint)digit;
-
-			value = (carry << 32) | (left.Part2 >> 32);
-			(digit, carry) = DivRemByUInt32(value, right);
-			p05 = (uint)digit;
-
-			value = (carry << 32) | (uint)left.Part2;
-			(digit, carry) = DivRemByUInt32(value, right);
-			p04 = (uint)digit;
-
-			value = (carry << 32) | (left.Part1 >> 32);
-			(digit, carry) = DivRemByUInt32(value, right);
-			p03 = (uint)digit;
-
-			value = (carry << 32) | (uint)left.Part1;
-			(digit, carry) = DivRemByUInt32(value, right);
-			p02 = (uint)digit;
-
-			value = (carry << 32) | (left.Part0 >> 32);
-			(digit, carry) = DivRemByUInt32(value, right);
-			p01 = (uint)digit;
-
-			value = (carry << 32) | (uint)left.Part0;
-			(digit, carry) = DivRemByUInt32(value, right);
-			p00 = (uint)digit;
+			value = new UInt128(carry, left.Part0);
+			(digit, carry) = DivRemByUInt64(value, right);
+			p00 = (ulong)digit;
 		}
 		else if (left.Part5 != 0)
 		{
-			p15 = 0;
-			p14 = 0;
-			p13 = 0;
-			p12 = 0;
-
-			value = (left.Part5 >> 32);
-			(digit, carry) = DivRemByUInt32(value, right);
-			p11 = (uint)digit;
-
-			value = (carry << 32) | (uint)left.Part5;
-			(digit, carry) = DivRemByUInt32(value, right);
-			p10 = (uint)digit;
-
-			value = (carry << 32) | (left.Part4 >> 32);
-			(digit, carry) = DivRemByUInt32(value, right);
-			p09 = (uint)digit;
-
-			value = (carry << 32) | (uint)left.Part4;
-			(digit, carry) = DivRemByUInt32(value, right);
-			p08 = (uint)digit;
-
-			value = (carry << 32) | (left.Part3 >> 32);
-			(digit, carry) = DivRemByUInt32(value, right);
-			p07 = (uint)digit;
-
-			value = (carry << 32) | (uint)left.Part3;
-			(digit, carry) = DivRemByUInt32(value, right);
-			p06 = (uint)digit;
-
-			value = (carry << 32) | (left.Part2 >> 32);
-			(digit, carry) = DivRemByUInt32(value, right);
-			p05 = (uint)digit;
-
-			value = (carry << 32) | (uint)left.Part2;
-			(digit, carry) = DivRemByUInt32(value, right);
-			p04 = (uint)digit;
-
-			value = (carry << 32) | (left.Part1 >> 32);
-			(digit, carry) = DivRemByUInt32(value, right);
-			p03 = (uint)digit;
-
-			value = (carry << 32) | (uint)left.Part1;
-			(digit, carry) = DivRemByUInt32(value, right);
-			p02 = (uint)digit;
-
-			value = (carry << 32) | (left.Part0 >> 32);
-			(digit, carry) = DivRemByUInt32(value, right);
-			p01 = (uint)digit;
-
-			value = (carry << 32) | (uint)left.Part0;
-			(digit, carry) = DivRemByUInt32(value, right);
-			p00 = (uint)digit;
-		}
-		else if (left.Part4 != 0)
-		{
-			p15 = 0;
-			p14 = 0;
-			p13 = 0;
-			p12 = 0;
-			p11 = 0;
-			p10 = 0;
-
-			value = (left.Part4 >> 32);
-			(digit, carry) = DivRemByUInt32(value, right);
-			p09 = (uint)digit;
-
-			value = (carry << 32) | (uint)left.Part4;
-			(digit, carry) = DivRemByUInt32(value, right);
-			p08 = (uint)digit;
-
-			value = (carry << 32) | (left.Part3 >> 32);
-			(digit, carry) = DivRemByUInt32(value, right);
-			p07 = (uint)digit;
-
-			value = (carry << 32) | (uint)left.Part3;
-			(digit, carry) = DivRemByUInt32(value, right);
-			p06 = (uint)digit;
-
-			value = (carry << 32) | (left.Part2 >> 32);
-			(digit, carry) = DivRemByUInt32(value, right);
-			p05 = (uint)digit;
-
-			value = (carry << 32) | (uint)left.Part2;
-			(digit, carry) = DivRemByUInt32(value, right);
-			p04 = (uint)digit;
-
-			value = (carry << 32) | (left.Part1 >> 32);
-			(digit, carry) = DivRemByUInt32(value, right);
-			p03 = (uint)digit;
-
-			value = (carry << 32) | (uint)left.Part1;
-			(digit, carry) = DivRemByUInt32(value, right);
-			p02 = (uint)digit;
-
-			value = (carry << 32) | (left.Part0 >> 32);
-			(digit, carry) = DivRemByUInt32(value, right);
-			p01 = (uint)digit;
-
-			value = (carry << 32) | (uint)left.Part0;
-			(digit, carry) = DivRemByUInt32(value, right);
-			p00 = (uint)digit;
-		}
-		else if (left.Part3 != 0)
-		{
-			p15 = 0;
-			p14 = 0;
-			p13 = 0;
-			p12 = 0;
-			p11 = 0;
-			p10 = 0;
-			p09 = 0;
-			p08 = 0;
-
-			value = (left.Part3 >> 32);
-			(digit, carry) = DivRemByUInt32(value, right);
-			p07 = (uint)digit;
-
-			value = (carry << 32) | (uint)left.Part3;
-			(digit, carry) = DivRemByUInt32(value, right);
-			p06 = (uint)digit;
-
-			value = (carry << 32) | (left.Part2 >> 32);
-			(digit, carry) = DivRemByUInt32(value, right);
-			p05 = (uint)digit;
-
-			value = (carry << 32) | (uint)left.Part2;
-			(digit, carry) = DivRemByUInt32(value, right);
-			p04 = (uint)digit;
-
-			value = (carry << 32) | (left.Part1 >> 32);
-			(digit, carry) = DivRemByUInt32(value, right);
-			p03 = (uint)digit;
-
-			value = (carry << 32) | (uint)left.Part1;
-			(digit, carry) = DivRemByUInt32(value, right);
-			p02 = (uint)digit;
-
-			value = (carry << 32) | (left.Part0 >> 32);
-			(digit, carry) = DivRemByUInt32(value, right);
-			p01 = (uint)digit;
-
-			value = (carry << 32) | (uint)left.Part0;
-			(digit, carry) = DivRemByUInt32(value, right);
-			p00 = (uint)digit;
-		}
-		else if (left.Part2 != 0)
-		{
-			p15 = 0;
-			p14 = 0;
-			p13 = 0;
-			p12 = 0;
-			p11 = 0;
-			p10 = 0;
-			p09 = 0;
-			p08 = 0;
 			p07 = 0;
 			p06 = 0;
 
-			value = (left.Part2 >> 32);
-			(digit, carry) = DivRemByUInt32(value, right);
-			p05 = (uint)digit;
+			value = new UInt128(0, left.Part5);
+			(digit, carry) = DivRemByUInt64(value, right);
+			p05 = (ulong)digit;
 
-			value = (carry << 32) | (uint)left.Part2;
-			(digit, carry) = DivRemByUInt32(value, right);
-			p04 = (uint)digit;
+			value = new UInt128(carry, left.Part4);
+			(digit, carry) = DivRemByUInt64(value, right);
+			p04 = (ulong)digit;
 
-			value = (carry << 32) | (left.Part1 >> 32);
-			(digit, carry) = DivRemByUInt32(value, right);
-			p03 = (uint)digit;
+			value = new UInt128(carry, left.Part3);
+			(digit, carry) = DivRemByUInt64(value, right);
+			p03 = (ulong)digit;
 
-			value = (carry << 32) | (uint)left.Part1;
-			(digit, carry) = DivRemByUInt32(value, right);
-			p02 = (uint)digit;
+			value = new UInt128(carry, left.Part2);
+			(digit, carry) = DivRemByUInt64(value, right);
+			p02 = (ulong)digit;
 
-			value = (carry << 32) | (left.Part0 >> 32);
-			(digit, carry) = DivRemByUInt32(value, right);
-			p01 = (uint)digit;
+			value = new UInt128(carry, left.Part1);
+			(digit, carry) = DivRemByUInt64(value, right);
+			p01 = (ulong)digit;
 
-			value = (carry << 32) | (uint)left.Part0;
-			(digit, carry) = DivRemByUInt32(value, right);
-			p00 = (uint)digit;
+			value = new UInt128(carry, left.Part0);
+			(digit, carry) = DivRemByUInt64(value, right);
+			p00 = (ulong)digit;
 		}
-		else if (left.Part1 != 0)
+		else if (left.Part4 != 0)
 		{
-			p15 = 0;
-			p14 = 0;
-			p13 = 0;
-			p12 = 0;
-			p11 = 0;
-			p10 = 0;
-			p09 = 0;
-			p08 = 0;
+			p07 = 0;
+			p06 = 0;
+			p05 = 0;
+
+			value = new UInt128(0, left.Part4);
+			(digit, carry) = DivRemByUInt64(value, right);
+			p04 = (ulong)digit;
+
+			value = new UInt128(carry, left.Part3);
+			(digit, carry) = DivRemByUInt64(value, right);
+			p03 = (ulong)digit;
+
+			value = new UInt128(carry, left.Part2);
+			(digit, carry) = DivRemByUInt64(value, right);
+			p02 = (ulong)digit;
+
+			value = new UInt128(carry, left.Part1);
+			(digit, carry) = DivRemByUInt64(value, right);
+			p01 = (ulong)digit;
+
+			value = new UInt128(carry, left.Part0);
+			(digit, carry) = DivRemByUInt64(value, right);
+			p00 = (ulong)digit;
+		}
+		else if (left.Part3 != 0)
+		{
 			p07 = 0;
 			p06 = 0;
 			p05 = 0;
 			p04 = 0;
 
-			value = (left.Part1 >> 32);
-			(digit, carry) = DivRemByUInt32(value, right);
-			p03 = (uint)digit;
+			value = new UInt128(0, left.Part3);
+			(digit, carry) = DivRemByUInt64(value, right);
+			p03 = (ulong)digit;
 
-			value = (carry << 32) | (uint)left.Part1;
-			(digit, carry) = DivRemByUInt32(value, right);
-			p02 = (uint)digit;
+			value = new UInt128(carry, left.Part2);
+			(digit, carry) = DivRemByUInt64(value, right);
+			p02 = (ulong)digit;
 
-			value = (carry << 32) | (left.Part0 >> 32);
-			(digit, carry) = DivRemByUInt32(value, right);
-			p01 = (uint)digit;
+			value = new UInt128(carry, left.Part1);
+			(digit, carry) = DivRemByUInt64(value, right);
+			p01 = (ulong)digit;
 
-			value = (carry << 32) | (uint)left.Part0;
-			(digit, carry) = DivRemByUInt32(value, right);
-			p00 = (uint)digit;
+			value = new UInt128(carry, left.Part0);
+			(digit, carry) = DivRemByUInt64(value, right);
+			p00 = (ulong)digit;
+		}
+		else if (left.Part2 != 0)
+		{
+			p07 = 0;
+			p06 = 0;
+			p05 = 0;
+			p04 = 0;
+			p03 = 0;
+
+			value = new UInt128(0, left.Part2);
+			(digit, carry) = DivRemByUInt64(value, right);
+			p02 = (ulong)digit;
+
+			value = new UInt128(carry, left.Part1);
+			(digit, carry) = DivRemByUInt64(value, right);
+			p01 = (ulong)digit;
+
+			value = new UInt128(carry, left.Part0);
+			(digit, carry) = DivRemByUInt64(value, right);
+			p00 = (ulong)digit;
 		}
 		else
 		{
-			(value, remainder) = DivRemByUInt32(left.Part0, right);
-			quotient = new UInt512(0, 0, 0, 0, 0, 0, 0, value);
+			(value, remainder) = DivRemByUInt64(new UInt128(left.Part1, left.Part0), right);
+			quotient = new UInt512(0, 0, 0, 0, 0, 0, (ulong)(value >> 64), (ulong)value);
 			return;
 		}
 
-		remainder = (uint)carry;
+		remainder = carry;
 		quotient = new UInt512(
-			((ulong)p15 << 32) | p14, ((ulong)p13 << 32) | p12, ((ulong)p11 << 32) | p10, ((ulong)p09 << 32) | p08,
-			((ulong)p07 << 32) | p06, ((ulong)p05 << 32) | p04, ((ulong)p03 << 32) | p02, ((ulong)p01 << 32) | p00);
+			p07, p06, p05, p04,
+			p03, p02, p01, p00);
 	}
-	public static void DivRem(ReadOnlySpan<uint> left, uint right, Span<uint> quotient, out uint remainder)
-	{
-		// Based on: https://github.com/dotnet/runtime/blob/main/src/libraries/System.Runtime.Numerics/src/System/Numerics/BigIntegerCalculator.DivRem.cs
-
-		// Executes the division for one big and one 64-bit integer.
-		// Thus, we've similar code than below, but there is no loop for
-		// processing the 64-bit integer, since it's a single element.
-
-		ulong carry = default;
-
-		for (int i = left.Length - 1; i >= 0; i--)
-		{
-			ulong value = (carry << 32) | left[i];
-			(ulong digit, carry) = DivRemByUInt32(value, right);
-			quotient[i] = (uint)digit;
-		}
-		remainder = (uint)carry;
-	}
-	public static void DivRem(ReadOnlySpan<uint> left, ReadOnlySpan<uint> right, Span<uint> quotient, Span<uint> remainder)
+	public static void DivRem(ReadOnlySpan<ulong> left, ReadOnlySpan<ulong> right, Span<ulong> quotient, Span<ulong> remainder)
 	{
 		// Based on: https://github.com/dotnet/runtime/blob/main/src/libraries/System.Runtime.Numerics/src/System/Numerics/BigIntegerCalculator.DivRem.cs
 
@@ -737,487 +531,246 @@ internal static class Calculator
 		Divide(remainder, right, quotient);
 	}
 
-	public static UInt256 Divide(in UInt256 left, uint right)
+	public static UInt256 Divide(in UInt256 left, ulong right)
 	{
 		// Executes the division for one big and one 64-bit integer.
 		// Thus, we've similar code than below, but there is no loop for
 		// processing the 64-bit integer, since it's a single element.
 
-		uint p7, p6, p5, p4, p3, p2, p1, p0;
-		ulong carry, value, digit;
+		ulong p3, p2, p1, p0;
+		ulong carry;
+		UInt128 digit, value;
 
 		if (left.Part3 != 0)
 		{
-			value = (left.Part3 >> 32);
-			(digit, carry) = DivRemByUInt32(value, right);
-			p7 = (uint)digit;
+			value = new UInt128(0, left.Part3);
+			(digit, carry) = DivRemByUInt64(value, right);
+			p3 = (ulong)digit;
+			
+			value = new UInt128(carry, left.Part2);
+			(digit, carry) = DivRemByUInt64(value, right);
+			p2 = (ulong)digit;
 
-			value = (carry << 32) | (uint)left.Part3;
-			(digit, carry) = DivRemByUInt32(value, right);
-			p6 = (uint)digit;
+			value = new UInt128(carry, left.Part1);
+			(digit, carry) = DivRemByUInt64(value, right);
+			p1 = (ulong)digit;
 
-			value = (carry << 32) | (left.Part2 >> 32);
-			(digit, carry) = DivRemByUInt32(value, right);
-			p5 = (uint)digit;
-
-			value = (carry << 32) | (uint)left.Part2;
-			(digit, carry) = DivRemByUInt32(value, right);
-			p4 = (uint)digit;
-
-			value = (carry << 32) | (left.Part1 >> 32);
-			(digit, carry) = DivRemByUInt32(value, right);
-			p3 = (uint)digit;
-
-			value = (carry << 32) | (uint)left.Part1;
-			(digit, carry) = DivRemByUInt32(value, right);
-			p2 = (uint)digit;
-
-			value = (carry << 32) | (left.Part0 >> 32);
-			(digit, carry) = DivRemByUInt32(value, right);
-			p1 = (uint)digit;
-
-			value = (carry << 32) | (uint)left.Part0;
-			(digit, _) = DivRemByUInt32(value, right);
-			p0 = (uint)digit;
+			value = new UInt128(carry, left.Part0);
+			digit = DivideByUInt64(value, right);
+			p0 = (ulong)digit;
 		}
 		else if (left.Part2 != 0)
 		{
-			p7 = 0;
-			p6 = 0;
+			p3 = 0;
+			
+			value = new UInt128(0, left.Part2);
+			(digit, carry) = DivRemByUInt64(value, right);
+			p2 = (ulong)digit;
 
-			value = (left.Part2 >> 32);
-			(digit, carry) = DivRemByUInt32(value, right);
-			p5 = (uint)digit;
+			value = new UInt128(carry, left.Part1);
+			(digit, carry) = DivRemByUInt64(value, right);
+			p1 = (ulong)digit;
 
-			value = (carry << 32) | (uint)left.Part2;
-			(digit, carry) = DivRemByUInt32(value, right);
-			p4 = (uint)digit;
-
-			value = (carry << 32) | (left.Part1 >> 32);
-			(digit, carry) = DivRemByUInt32(value, right);
-			p3 = (uint)digit;
-
-			value = (carry << 32) | (uint)left.Part1;
-			(digit, carry) = DivRemByUInt32(value, right);
-			p2 = (uint)digit;
-
-			value = (carry << 32) | (left.Part0 >> 32);
-			(digit, carry) = DivRemByUInt32(value, right);
-			p1 = (uint)digit;
-
-			value = (carry << 32) | (uint)left.Part0;
-			(digit, _) = DivRemByUInt32(value, right);
-			p0 = (uint)digit;
-		}
-		else if (left.Part1 != 0)
-		{
-			p7 = 0;
-			p6 = 0;
-			p5 = 0;
-			p4 = 0;
-
-			value = (left.Part1 >> 32);
-			(digit, carry) = DivRemByUInt32(value, right);
-			p3 = (uint)digit;
-
-			value = (carry << 32) | (uint)left.Part1;
-			(digit, carry) = DivRemByUInt32(value, right);
-			p2 = (uint)digit;
-
-			value = (carry << 32) | (left.Part0 >> 32);
-			(digit, carry) = DivRemByUInt32(value, right);
-			p1 = (uint)digit;
-
-			value = (carry << 32) | (uint)left.Part0;
-			(digit, _) = DivRemByUInt32(value, right);
-			p0 = (uint)digit;
+			value = new UInt128(carry, left.Part0);
+			digit = DivideByUInt64(value, right);
+			p0 = (ulong)digit;
 		}
 		else
 		{
-			(value, _) = DivRemByUInt32(left.Part0, right);
-			return new UInt256(0, 0, 0, value);
+			value = DivideByUInt64(new UInt128(left.Part1, left.Part0), right);
+
+			return new UInt256(0, 0, (ulong)(value >> 64), (ulong)value);
 		}
 
-		return new UInt256(((ulong)p7 << 32) | p6, ((ulong)p5 << 32) | p4, ((ulong)p3 << 32) | p2, ((ulong)p1 << 32) | p0);
+		return new UInt256(p3, p2, p1, p0);
 	}
-	public static UInt512 Divide(in UInt512 left, uint right)
+	
+	public static UInt512 Divide(in UInt512 left, ulong right)
 	{
 		// Executes the division for one big and one 64-bit integer.
 		// Thus, we've similar code than below, but there is no loop for
 		// processing the 64-bit integer, since it's a single element.
 
-		uint p07, p06, p05, p04, p03, p02, p01, p00;
-		uint p15, p14, p13, p12, p11, p10, p09, p08;
-		ulong carry, value, digit;
+		ulong p07, p06, p05, p04, p03, p02, p01, p00;
+		ulong carry;
+		UInt128 value, digit;
 
 		if (left.Part7 != 0)
 		{
-			value = (left.Part7 >> 32);
-			(digit, carry) = DivRemByUInt32(value, right);
-			p15 = (uint)digit;
+			value = new UInt128(0, left.Part7);
+			(digit, carry) = DivRemByUInt64(value, right);
+			p07 = (ulong)digit;
 
-			value = (carry << 32) | (uint)left.Part7;
-			(digit, carry) = DivRemByUInt32(value, right);
-			p14 = (uint)digit;
+			value = new UInt128(carry, left.Part6);
+			(digit, carry) = DivRemByUInt64(value, right);
+			p06 = (ulong)digit;
 
-			value = (carry << 32) | (left.Part6 >> 32);
-			(digit, carry) = DivRemByUInt32(value, right);
-			p13 = (uint)digit;
+			value = new UInt128(carry, left.Part5);
+			(digit, carry) = DivRemByUInt64(value, right);
+			p05 = (ulong)digit;
 
-			value = (carry << 32) | (uint)left.Part6;
-			(digit, carry) = DivRemByUInt32(value, right);
-			p12 = (uint)digit;
+			value = new UInt128(carry, left.Part4);
+			(digit, carry) = DivRemByUInt64(value, right);
+			p04 = (ulong)digit;
 
-			value = (carry << 32) | (left.Part5 >> 32);
-			(digit, carry) = DivRemByUInt32(value, right);
-			p11 = (uint)digit;
+			value = new UInt128(carry, left.Part3);
+			(digit, carry) = DivRemByUInt64(value, right);
+			p03 = (ulong)digit;
 
-			value = (carry << 32) | (uint)left.Part5;
-			(digit, carry) = DivRemByUInt32(value, right);
-			p10 = (uint)digit;
+			value = new UInt128(carry, left.Part2);
+			(digit, carry) = DivRemByUInt64(value, right);
+			p02 = (ulong)digit;
 
-			value = (carry << 32) | (left.Part4 >> 32);
-			(digit, carry) = DivRemByUInt32(value, right);
-			p09 = (uint)digit;
+			value = new UInt128(carry, left.Part1);
+			(digit, carry) = DivRemByUInt64(value, right);
+			p01 = (ulong)digit;
 
-			value = (carry << 32) | (uint)left.Part4;
-			(digit, carry) = DivRemByUInt32(value, right);
-			p08 = (uint)digit;
-
-			value = (carry << 32) | (left.Part3 >> 32);
-			(digit, carry) = DivRemByUInt32(value, right);
-			p07 = (uint)digit;
-
-			value = (carry << 32) | (uint)left.Part3;
-			(digit, carry) = DivRemByUInt32(value, right);
-			p06 = (uint)digit;
-
-			value = (carry << 32) | (left.Part2 >> 32);
-			(digit, carry) = DivRemByUInt32(value, right);
-			p05 = (uint)digit;
-
-			value = (carry << 32) | (uint)left.Part2;
-			(digit, carry) = DivRemByUInt32(value, right);
-			p04 = (uint)digit;
-
-			value = (carry << 32) | (left.Part1 >> 32);
-			(digit, carry) = DivRemByUInt32(value, right);
-			p03 = (uint)digit;
-
-			value = (carry << 32) | (uint)left.Part1;
-			(digit, carry) = DivRemByUInt32(value, right);
-			p02 = (uint)digit;
-
-			value = (carry << 32) | (left.Part0 >> 32);
-			(digit, carry) = DivRemByUInt32(value, right);
-			p01 = (uint)digit;
-
-			value = (carry << 32) | (uint)left.Part0;
-			(digit, _) = DivRemByUInt32(value, right);
-			p00 = (uint)digit;
+			value = new UInt128(carry, left.Part0);
+			digit = DivideByUInt64(value, right);
+			p00 = (ulong)digit;
 		}
 		else if (left.Part6 != 0)
 		{
-			p15 = 0;
-			p14 = 0;
+			p07 = 0;
 
-			value = (left.Part6 >> 32);
-			(digit, carry) = DivRemByUInt32(value, right);
-			p13 = (uint)digit;
+			value = new UInt128(0, left.Part6);
+			(digit, carry) = DivRemByUInt64(value, right);
+			p06 = (ulong)digit;
 
-			value = (carry << 32) | (uint)left.Part6;
-			(digit, carry) = DivRemByUInt32(value, right);
-			p12 = (uint)digit;
+			value = new UInt128(carry, left.Part5);
+			(digit, carry) = DivRemByUInt64(value, right);
+			p05 = (ulong)digit;
 
-			value = (carry << 32) | (left.Part5 >> 32);
-			(digit, carry) = DivRemByUInt32(value, right);
-			p11 = (uint)digit;
+			value = new UInt128(carry, left.Part4);
+			(digit, carry) = DivRemByUInt64(value, right);
+			p04 = (ulong)digit;
 
-			value = (carry << 32) | (uint)left.Part5;
-			(digit, carry) = DivRemByUInt32(value, right);
-			p10 = (uint)digit;
+			value = new UInt128(carry, left.Part3);
+			(digit, carry) = DivRemByUInt64(value, right);
+			p03 = (ulong)digit;
 
-			value = (carry << 32) | (left.Part4 >> 32);
-			(digit, carry) = DivRemByUInt32(value, right);
-			p09 = (uint)digit;
+			value = new UInt128(carry, left.Part2);
+			(digit, carry) = DivRemByUInt64(value, right);
+			p02 = (ulong)digit;
 
-			value = (carry << 32) | (uint)left.Part4;
-			(digit, carry) = DivRemByUInt32(value, right);
-			p08 = (uint)digit;
+			value = new UInt128(carry, left.Part1);
+			(digit, carry) = DivRemByUInt64(value, right);
+			p01 = (ulong)digit;
 
-			value = (carry << 32) | (left.Part3 >> 32);
-			(digit, carry) = DivRemByUInt32(value, right);
-			p07 = (uint)digit;
-
-			value = (carry << 32) | (uint)left.Part3;
-			(digit, carry) = DivRemByUInt32(value, right);
-			p06 = (uint)digit;
-
-			value = (carry << 32) | (left.Part2 >> 32);
-			(digit, carry) = DivRemByUInt32(value, right);
-			p05 = (uint)digit;
-
-			value = (carry << 32) | (uint)left.Part2;
-			(digit, carry) = DivRemByUInt32(value, right);
-			p04 = (uint)digit;
-
-			value = (carry << 32) | (left.Part1 >> 32);
-			(digit, carry) = DivRemByUInt32(value, right);
-			p03 = (uint)digit;
-
-			value = (carry << 32) | (uint)left.Part1;
-			(digit, carry) = DivRemByUInt32(value, right);
-			p02 = (uint)digit;
-
-			value = (carry << 32) | (left.Part0 >> 32);
-			(digit, carry) = DivRemByUInt32(value, right);
-			p01 = (uint)digit;
-
-			value = (carry << 32) | (uint)left.Part0;
-			(digit, _) = DivRemByUInt32(value, right);
-			p00 = (uint)digit;
+			value = new UInt128(carry, left.Part0);
+			digit = DivideByUInt64(value, right);
+			p00 = (ulong)digit;
 		}
 		else if (left.Part5 != 0)
 		{
-			p15 = 0;
-			p14 = 0;
-			p13 = 0;
-			p12 = 0;
-
-			value = (left.Part5 >> 32);
-			(digit, carry) = DivRemByUInt32(value, right);
-			p11 = (uint)digit;
-
-			value = (carry << 32) | (uint)left.Part5;
-			(digit, carry) = DivRemByUInt32(value, right);
-			p10 = (uint)digit;
-
-			value = (carry << 32) | (left.Part4 >> 32);
-			(digit, carry) = DivRemByUInt32(value, right);
-			p09 = (uint)digit;
-
-			value = (carry << 32) | (uint)left.Part4;
-			(digit, carry) = DivRemByUInt32(value, right);
-			p08 = (uint)digit;
-
-			value = (carry << 32) | (left.Part3 >> 32);
-			(digit, carry) = DivRemByUInt32(value, right);
-			p07 = (uint)digit;
-
-			value = (carry << 32) | (uint)left.Part3;
-			(digit, carry) = DivRemByUInt32(value, right);
-			p06 = (uint)digit;
-
-			value = (carry << 32) | (left.Part2 >> 32);
-			(digit, carry) = DivRemByUInt32(value, right);
-			p05 = (uint)digit;
-
-			value = (carry << 32) | (uint)left.Part2;
-			(digit, carry) = DivRemByUInt32(value, right);
-			p04 = (uint)digit;
-
-			value = (carry << 32) | (left.Part1 >> 32);
-			(digit, carry) = DivRemByUInt32(value, right);
-			p03 = (uint)digit;
-
-			value = (carry << 32) | (uint)left.Part1;
-			(digit, carry) = DivRemByUInt32(value, right);
-			p02 = (uint)digit;
-
-			value = (carry << 32) | (left.Part0 >> 32);
-			(digit, carry) = DivRemByUInt32(value, right);
-			p01 = (uint)digit;
-
-			value = (carry << 32) | (uint)left.Part0;
-			(digit, _) = DivRemByUInt32(value, right);
-			p00 = (uint)digit;
-		}
-		else if (left.Part4 != 0)
-		{
-			p15 = 0;
-			p14 = 0;
-			p13 = 0;
-			p12 = 0;
-			p11 = 0;
-			p10 = 0;
-
-			value = (left.Part4 >> 32);
-			(digit, carry) = DivRemByUInt32(value, right);
-			p09 = (uint)digit;
-
-			value = (carry << 32) | (uint)left.Part4;
-			(digit, carry) = DivRemByUInt32(value, right);
-			p08 = (uint)digit;
-
-			value = (carry << 32) | (left.Part3 >> 32);
-			(digit, carry) = DivRemByUInt32(value, right);
-			p07 = (uint)digit;
-
-			value = (carry << 32) | (uint)left.Part3;
-			(digit, carry) = DivRemByUInt32(value, right);
-			p06 = (uint)digit;
-
-			value = (carry << 32) | (left.Part2 >> 32);
-			(digit, carry) = DivRemByUInt32(value, right);
-			p05 = (uint)digit;
-
-			value = (carry << 32) | (uint)left.Part2;
-			(digit, carry) = DivRemByUInt32(value, right);
-			p04 = (uint)digit;
-
-			value = (carry << 32) | (left.Part1 >> 32);
-			(digit, carry) = DivRemByUInt32(value, right);
-			p03 = (uint)digit;
-
-			value = (carry << 32) | (uint)left.Part1;
-			(digit, carry) = DivRemByUInt32(value, right);
-			p02 = (uint)digit;
-
-			value = (carry << 32) | (left.Part0 >> 32);
-			(digit, carry) = DivRemByUInt32(value, right);
-			p01 = (uint)digit;
-
-			value = (carry << 32) | (uint)left.Part0;
-			(digit, _) = DivRemByUInt32(value, right);
-			p00 = (uint)digit;
-		}
-		else if (left.Part3 != 0)
-		{
-			p15 = 0;
-			p14 = 0;
-			p13 = 0;
-			p12 = 0;
-			p11 = 0;
-			p10 = 0;
-			p09 = 0;
-			p08 = 0;
-
-			value = (left.Part3 >> 32);
-			(digit, carry) = DivRemByUInt32(value, right);
-			p07 = (uint)digit;
-
-			value = (carry << 32) | (uint)left.Part3;
-			(digit, carry) = DivRemByUInt32(value, right);
-			p06 = (uint)digit;
-
-			value = (carry << 32) | (left.Part2 >> 32);
-			(digit, carry) = DivRemByUInt32(value, right);
-			p05 = (uint)digit;
-
-			value = (carry << 32) | (uint)left.Part2;
-			(digit, carry) = DivRemByUInt32(value, right);
-			p04 = (uint)digit;
-
-			value = (carry << 32) | (left.Part1 >> 32);
-			(digit, carry) = DivRemByUInt32(value, right);
-			p03 = (uint)digit;
-
-			value = (carry << 32) | (uint)left.Part1;
-			(digit, carry) = DivRemByUInt32(value, right);
-			p02 = (uint)digit;
-
-			value = (carry << 32) | (left.Part0 >> 32);
-			(digit, carry) = DivRemByUInt32(value, right);
-			p01 = (uint)digit;
-
-			value = (carry << 32) | (uint)left.Part0;
-			(digit, _) = DivRemByUInt32(value, right);
-			p00 = (uint)digit;
-		}
-		else if (left.Part2 != 0)
-		{
-			p15 = 0;
-			p14 = 0;
-			p13 = 0;
-			p12 = 0;
-			p11 = 0;
-			p10 = 0;
-			p09 = 0;
-			p08 = 0;
 			p07 = 0;
 			p06 = 0;
 
-			value = (left.Part2 >> 32);
-			(digit, carry) = DivRemByUInt32(value, right);
-			p05 = (uint)digit;
+			value = new UInt128(0, left.Part5);
+			(digit, carry) = DivRemByUInt64(value, right);
+			p05 = (ulong)digit;
 
-			value = (carry << 32) | (uint)left.Part2;
-			(digit, carry) = DivRemByUInt32(value, right);
-			p04 = (uint)digit;
+			value = new UInt128(carry, left.Part4);
+			(digit, carry) = DivRemByUInt64(value, right);
+			p04 = (ulong)digit;
 
-			value = (carry << 32) | (left.Part1 >> 32);
-			(digit, carry) = DivRemByUInt32(value, right);
-			p03 = (uint)digit;
+			value = new UInt128(carry, left.Part3);
+			(digit, carry) = DivRemByUInt64(value, right);
+			p03 = (ulong)digit;
 
-			value = (carry << 32) | (uint)left.Part1;
-			(digit, carry) = DivRemByUInt32(value, right);
-			p02 = (uint)digit;
+			value = new UInt128(carry, left.Part2);
+			(digit, carry) = DivRemByUInt64(value, right);
+			p02 = (ulong)digit;
 
-			value = (carry << 32) | (left.Part0 >> 32);
-			(digit, carry) = DivRemByUInt32(value, right);
-			p01 = (uint)digit;
+			value = new UInt128(carry, left.Part1);
+			(digit, carry) = DivRemByUInt64(value, right);
+			p01 = (ulong)digit;
 
-			value = (carry << 32) | (uint)left.Part0;
-			(digit, _) = DivRemByUInt32(value, right);
-			p00 = (uint)digit;
+			value = new UInt128(carry, left.Part0);
+			digit = DivideByUInt64(value, right);
+			p00 = (ulong)digit;
 		}
-		else if (left.Part1 != 0)
+		else if (left.Part4 != 0)
 		{
-			p15 = 0;
-			p14 = 0;
-			p13 = 0;
-			p12 = 0;
-			p11 = 0;
-			p10 = 0;
-			p09 = 0;
-			p08 = 0;
+			p07 = 0;
+			p06 = 0;
+			p05 = 0;
+
+			value = new UInt128(0, left.Part4);
+			(digit, carry) = DivRemByUInt64(value, right);
+			p04 = (ulong)digit;
+
+			value = new UInt128(carry, left.Part3);
+			(digit, carry) = DivRemByUInt64(value, right);
+			p03 = (ulong)digit;
+
+			value = new UInt128(carry, left.Part2);
+			(digit, carry) = DivRemByUInt64(value, right);
+			p02 = (ulong)digit;
+
+			value = new UInt128(carry, left.Part1);
+			(digit, carry) = DivRemByUInt64(value, right);
+			p01 = (ulong)digit;
+
+			value = new UInt128(carry, left.Part0);
+			digit = DivideByUInt64(value, right);
+			p00 = (ulong)digit;
+		}
+		else if (left.Part3 != 0)
+		{
 			p07 = 0;
 			p06 = 0;
 			p05 = 0;
 			p04 = 0;
 
-			value = (left.Part1 >> 32);
-			(digit, carry) = DivRemByUInt32(value, right);
-			p03 = (uint)digit;
+			value = new UInt128(0, left.Part3);
+			(digit, carry) = DivRemByUInt64(value, right);
+			p03 = (ulong)digit;
 
-			value = (carry << 32) | (uint)left.Part1;
-			(digit, carry) = DivRemByUInt32(value, right);
-			p02 = (uint)digit;
+			value = new UInt128(carry, left.Part2);
+			(digit, carry) = DivRemByUInt64(value, right);
+			p02 = (ulong)digit;
 
-			value = (carry << 32) | (left.Part0 >> 32);
-			(digit, carry) = DivRemByUInt32(value, right);
-			p01 = (uint)digit;
+			value = new UInt128(carry, left.Part1);
+			(digit, carry) = DivRemByUInt64(value, right);
+			p01 = (ulong)digit;
 
-			value = (carry << 32) | (uint)left.Part0;
-			(digit, _) = DivRemByUInt32(value, right);
-			p00 = (uint)digit;
+			value = new UInt128(carry, left.Part0);
+			digit = DivideByUInt64(value, right);
+			p00 = (ulong)digit;
+		}
+		else if (left.Part2 != 0)
+		{
+			p07 = 0;
+			p06 = 0;
+			p05 = 0;
+			p04 = 0;
+			p03 = 0;
+
+			value = new UInt128(0, left.Part2);
+			(digit, carry) = DivRemByUInt64(value, right);
+			p02 = (ulong)digit;
+
+			value = new UInt128(carry, left.Part1);
+			(digit, carry) = DivRemByUInt64(value, right);
+			p01 = (ulong)digit;
+
+			value = new UInt128(carry, left.Part0);
+			digit = DivideByUInt64(value, right);
+			p00 = (ulong)digit;
 		}
 		else
 		{
-			(value, _) = DivRemByUInt32(left.Part0, right);
-			return new UInt512(0, 0, 0, 0, 0, 0, 0, value);
+			value = DivideByUInt64(new UInt128(left.Part1, left.Part0), right);
+			return new UInt512(0, 0, 0, 0, 0, 0, (ulong)(value >> 64), (ulong)value);
 		}
 
 		return new UInt512(
-			((ulong)p15 << 32) | p14, ((ulong)p13 << 32) | p12, ((ulong)p11 << 32) | p10, ((ulong)p09 << 32) | p08,
-			((ulong)p07 << 32) | p06, ((ulong)p05 << 32) | p04, ((ulong)p03 << 32) | p02, ((ulong)p01 << 32) | p00);
+			p07, p06, p05, p04,
+			p03, p02, p01, p00);
 	}
-	public static void Divide(ReadOnlySpan<uint> left, uint right, Span<uint> quotient)
-	{
-		// Based on: https://github.com/dotnet/runtime/blob/main/src/libraries/System.Runtime.Numerics/src/System/Numerics/BigIntegerCalculator.DivRem.cs
-
-		// Same as above, but only computing the quotient.
-
-		ulong carry = default;
-
-		for (int i = left.Length - 1; i >= 0; i--)
-		{
-			ulong value = (carry << 32) | left[i];
-			(ulong digit, carry) = DivRemByUInt32(value, right);
-			quotient[i] = (uint)digit;
-		}
-	}
-	public static void Divide(Span<uint> left, ReadOnlySpan<uint> right, Span<uint> bits)
+	
+	public static void Divide(Span<ulong> left, ReadOnlySpan<ulong> right, Span<ulong> bits)
 	{
 		// Based on: https://github.com/dotnet/runtime/blob/main/src/libraries/System.Runtime.Numerics/src/System/Numerics/BigIntegerCalculator.DivRem.cs
 
@@ -1226,17 +779,17 @@ internal static class Calculator
 		// block of the divisor. Thus, guessing digits of the quotient
 		// will be more precise. Additionally we'll get r = a % b.
 
-		uint divHi = right[right.Length - 1];
-		uint divLo = right.Length > 1 ? right[right.Length - 2] : 0;
+		ulong divHi = right[^1];
+		ulong divLo = right.Length > 1 ? right[^2] : 0;
 
 		// We measure the leading zeros of the divisor
 		int shift = BitOperations.LeadingZeroCount(divHi);
-		int backShift = 32 - shift;
+		int backShift = 64 - shift;
 
 		// And, we make sure the most significant bit is set
 		if (shift > 0)
 		{
-			uint divNx = right.Length > 2 ? right[right.Length - 3] : 0;
+			ulong divNx = right.Length > 2 ? right[^3] : 0;
 
 			divHi = (divHi << shift) | (divLo >> backShift);
 			divLo = (divLo << shift) | (divNx >> backShift);
@@ -1247,115 +800,110 @@ internal static class Calculator
 		for (int i = left.Length; i >= right.Length; i--)
 		{
 			int n = i - right.Length;
-			uint t = ((uint)(i) < (uint)(left.Length)) ? left[i] : 0;
+			ulong t = ((uint)i < (uint)left.Length) ? left[i] : 0;
 
-			ulong valHi = ((ulong)(t) << 32) | left[i - 1];
-			uint valLo = (i > 1) ? left[i - 2] : 0;
+			UInt128 valHi = new UInt128(t, left[i - 1]);
+			ulong valLo = (i > 1) ? left[i - 2] : 0;
 
 			// We shifted the divisor, we shift the dividend too
 			if (shift > 0)
 			{
-				uint valNx = i > 2 ? left[i - 3] : 0;
+				ulong valNx = i > 2 ? left[i - 3] : 0;
 
 				valHi = (valHi << shift) | (valLo >> backShift);
 				valLo = (valLo << shift) | (valNx >> backShift);
 			}
 
 			// First guess for the current digit of the quotient,
-			// which naturally must have only 32 bits...
-			ulong digit = valHi / divHi;
+			// which naturally must have only 64 bits...
+			UInt128 digit = DivideByUInt64(valHi, divHi);
+			var digit64 = digit > new UInt128(0, 0xFFFF_FFFF_FFFF_FFFF) ? 0xFFFF_FFFF_FFFF_FFFF : (ulong)digit;
 
-			if (digit > 0xFFFF_FFFF)
+			// Our first guess may be a little bit too big
+			while (DivideGuessTooBig(digit64, valHi, valLo, divHi, divLo))
 			{
-				digit = 0xFFFF_FFFF;
+				--digit64;
 			}
 
-			// Our first guess may be a little bit to big
-			while (DivideGuessTooBig(digit, valHi, valLo, divHi, divLo))
-			{
-				--digit;
-			}
-
-			if (digit > 0)
+			if (digit64 > 0)
 			{
 				// Now it's time to subtract our current quotient
-				uint carry = SubtractDivisor(left.Slice(n), right, digit);
+				ulong carry = SubtractDivisor(left[n..], right, digit64);
 
 				if (carry != t)
 				{
 					Debug.Assert(carry == (t + 1));
 
 					// Our guess was still exactly one too high
-					carry = AddDivisor(left.Slice(n), right);
+					carry = AddDivisor(left[n..], right);
 
-					--digit;
+					--digit64;
 					Debug.Assert(carry == 1);
 				}
 			}
 
 			// We have the digit!
-			if ((uint)(n) < (uint)(bits.Length))
+			if ((uint)n < (uint)bits.Length)
 			{
-				bits[n] = (uint)(digit);
+				bits[n] = digit64;
 			}
 
-			if ((uint)(i) < (uint)(left.Length))
+			if ((uint)i < (uint)left.Length)
 			{
 				left[i] = 0;
 			}
 		}
 
-		static uint AddDivisor(Span<uint> left, ReadOnlySpan<uint> right)
+		return;
+		
+		static ulong AddDivisor(Span<ulong> left, ReadOnlySpan<ulong> right)
 		{
-			ulong carry = 0;
+			UInt128 carry = default;
 
 			// Repairs the dividend, if the last subtract was too much
 
 			for (int i = 0; i < right.Length; i++)
 			{
-				ref uint leftElement = ref left[i];
-				ulong digit = (leftElement + carry) + right[i];
+				ref ulong leftElement = ref left[i];
+				UInt128 digit = (leftElement + carry) + right[i];
 
-				leftElement = unchecked((uint)digit);
-				carry = digit >> 32;
+				leftElement = unchecked((ulong)digit);
+				carry = digit >> 64;
 			}
 
-			return (uint)carry;
+			return (ulong)carry;
 		}
 
-		static bool DivideGuessTooBig(ulong q, ulong valHi, uint valLo, uint divHi, uint divLo)
+		static bool DivideGuessTooBig(ulong q, UInt128 valHi, ulong valLo, ulong divHi, ulong divLo)
 		{
-			Debug.Assert(q <= 0xFFFFFFFF);
-
 			// We multiply the two most significant limbs of the divisor
 			// with the current guess for the quotient. If those are bigger
 			// than the three most significant limbs of the current dividend
 			// we return true, which means the current guess is still too big.
+			UInt128 chkHi = BigMul(divHi, q);
+			UInt128 chkLo = BigMul(divLo, q);
 
-			ulong chkHi = divHi * q;
-			ulong chkLo = divLo * q;
-
-			chkHi += (chkLo >> 32);
-			chkLo = (uint)(chkLo);
+			chkHi += (chkLo >> 64);
+			chkLo = (ulong)(chkLo);
 
 			return (chkHi > valHi) || ((chkHi == valHi) && (chkLo > valLo));
 		}
 
-		static uint SubtractDivisor(Span<uint> left, ReadOnlySpan<uint> right, ulong q)
+		static ulong SubtractDivisor(Span<ulong> left, ReadOnlySpan<ulong> right, ulong q)
 		{
 			// Combines a subtract and a multiply operation, which is naturally
 			// more efficient than multiplying and then subtracting...
 
-			ulong carry = 0;
+			UInt128 carry = default;
 
 			for (int i = 0; i < right.Length; i++)
 			{
-				carry += right[i] * q;
+				carry += BigMul(right[i], q);
 
-				uint digit = unchecked((uint)(carry));
-				carry >>= 32;
+				ulong digit = unchecked((ulong)carry);
+				carry >>= 64;
 
-				ref uint leftElement = ref left[i];
+				ref ulong leftElement = ref left[i];
 
 				if (leftElement < digit)
 				{
@@ -1364,11 +912,11 @@ internal static class Calculator
 				leftElement = unchecked(leftElement - digit);
 			}
 
-			return (uint)(carry);
+			return (ulong)carry;
 		}
 	}
-
-	public static uint Remainder(in UInt256 left, uint right)
+	
+	public static ulong Remainder(in UInt256 left, ulong right)
 	{
 		// Based on: https://github.com/dotnet/runtime/blob/main/src/libraries/System.Runtime.Numerics/src/System/Numerics/BigIntegerCalculator.DivRem.cs
 
@@ -1376,77 +924,44 @@ internal static class Calculator
 		// Thus, we've similar code than below, but there is no loop for
 		// processing the 64-bit integer, since it's a single element.
 
-		ulong carry, value;
+		ulong carry;
+		UInt128 value;
 
 		if (left.Part3 != 0)
 		{
-			value = (left.Part3 >> 32);
-			carry = value % right;
+			value = new UInt128(0, left.Part3);
+			carry = DivRemByUInt64(value, right).Remainder;
 
-			value = (carry << 32) | (uint)left.Part3;
-			carry = value % right;
+			value = new UInt128(carry, left.Part2);
+			carry = DivRemByUInt64(value, right).Remainder;
 
-			value = (carry << 32) | (left.Part2 >> 32);
-			carry = value % right;
-
-			value = (carry << 32) | (uint)left.Part2;
-			carry = value % right;
-
-			value = (carry << 32) | (left.Part1 >> 32);
-			carry = value % right;
-
-			value = (carry << 32) | (uint)left.Part1;
-			carry = value % right;
-
-			value = (carry << 32) | (left.Part0 >> 32);
-			carry = value % right;
-
-			value = (carry << 32) | (uint)left.Part0;
-			carry = value % right;
+			value = new UInt128(carry, left.Part1);
+			carry = DivRemByUInt64(value, right).Remainder;
+			
+			value = new UInt128(carry, left.Part0);
+			carry = DivRemByUInt64(value, right).Remainder;
 		}
 		else if (left.Part2 != 0)
 		{
-			value = (left.Part2 >> 32);
-			carry = value % right;
+			value = new UInt128(0, left.Part2);
+			carry = DivRemByUInt64(value, right).Remainder;
 
-			value = (carry << 32) | (uint)left.Part2;
-			carry = value % right;
+			value = new UInt128(carry, left.Part1);
+			carry = DivRemByUInt64(value, right).Remainder;
+			
+			value = new UInt128(carry, left.Part0);
+			carry = DivRemByUInt64(value, right).Remainder;
 
-			value = (carry << 32) | (left.Part1 >> 32);
-			carry = value % right;
-
-			value = (carry << 32) | (uint)left.Part1;
-			carry = value % right;
-
-			value = (carry << 32) | (left.Part0 >> 32);
-			carry = value % right;
-
-			value = (carry << 32) | (uint)left.Part0;
-			carry = value % right;
-
-		}
-		else if (left.Part1 != 0)
-		{
-			value = (left.Part1 >> 32);
-			carry = value % right;
-
-			value = (carry << 32) | (uint)left.Part1;
-			carry = value % right;
-
-			value = (carry << 32) | (left.Part0 >> 32);
-			carry = value % right;
-
-			value = (carry << 32) | (uint)left.Part0;
-			carry = value % right;
 		}
 		else
 		{
-			carry = left.Part0 % right;
+			carry = DivRemByUInt64(new UInt128(left.Part1, left.Part0), right).Remainder;
 		}
 
-		return (uint)carry;
+		return carry;
 	}
-	public static uint Remainder(in UInt512 left, uint right)
+	
+	public static ulong Remainder(in UInt512 left, ulong right)
 	{
 		// Based on: https://github.com/dotnet/runtime/blob/main/src/libraries/System.Runtime.Numerics/src/System/Numerics/BigIntegerCalculator.DivRem.cs
 
@@ -1454,257 +969,129 @@ internal static class Calculator
 		// Thus, we've similar code than below, but there is no loop for
 		// processing the 64-bit integer, since it's a single element.
 
-		ulong carry, value;
+		ulong carry;
+		UInt128 value;
 
 		if (left.Part7 != 0)
 		{
-			value = (left.Part7 >> 32);
-			carry = value % right;
+			value = new UInt128(0, left.Part7);
+			carry = DivRemByUInt64(value, right).Remainder;
 
-			value = (carry << 32) | (uint)left.Part7;
-			carry = value % right;
+			value = new UInt128(carry, left.Part6);
+			carry = DivRemByUInt64(value, right).Remainder;
 
-			value = (carry << 32) | (left.Part6 >> 32);
-			carry = value % right;
+			value = new UInt128(carry, left.Part5);
+			carry = DivRemByUInt64(value, right).Remainder;
+			
+			value = new UInt128(carry, left.Part4);
+			carry = DivRemByUInt64(value, right).Remainder;
 
-			value = (carry << 32) | (uint)left.Part6;
-			carry = value % right;
+			value = new UInt128(carry, left.Part3);
+			carry = DivRemByUInt64(value, right).Remainder;
 
-			value = (carry << 32) | (left.Part5 >> 32);
-			carry = value % right;
+			value = new UInt128(carry, left.Part2);
+			carry = DivRemByUInt64(value, right).Remainder;
 
-			value = (carry << 32) | (uint)left.Part5;
-			carry = value % right;
-
-			value = (carry << 32) | (left.Part4 >> 32);
-			carry = value % right;
-
-			value = (carry << 32) | (uint)left.Part4;
-			carry = value % right;
-
-			value = (carry << 32) | (left.Part3 >> 32);
-			carry = value % right;
-
-			value = (carry << 32) | (uint)left.Part3;
-			carry = value % right;
-
-			value = (carry << 32) | (left.Part2 >> 32);
-			carry = value % right;
-
-			value = (carry << 32) | (uint)left.Part2;
-			carry = value % right;
-
-			value = (carry << 32) | (left.Part1 >> 32);
-			carry = value % right;
-
-			value = (carry << 32) | (uint)left.Part1;
-			carry = value % right;
-
-			value = (carry << 32) | (left.Part0 >> 32);
-			carry = value % right;
-
-			value = (carry << 32) | (uint)left.Part0;
-			carry = value % right;
+			value = new UInt128(carry, left.Part1);
+			carry = DivRemByUInt64(value, right).Remainder;
+			
+			value = new UInt128(carry, left.Part0);
+			carry = DivRemByUInt64(value, right).Remainder;
 		}
 		else if (left.Part6 != 0)
 		{
-			value = (left.Part6 >> 32);
-			carry = value % right;
+			value = new UInt128(0, left.Part6);
+			carry = DivRemByUInt64(value, right).Remainder;
 
-			value = (carry << 32) | (uint)left.Part6;
-			carry = value % right;
+			value = new UInt128(carry, left.Part5);
+			carry = DivRemByUInt64(value, right).Remainder;
+			
+			value = new UInt128(carry, left.Part4);
+			carry = DivRemByUInt64(value, right).Remainder;
 
-			value = (carry << 32) | (left.Part5 >> 32);
-			carry = value % right;
+			value = new UInt128(carry, left.Part3);
+			carry = DivRemByUInt64(value, right).Remainder;
 
-			value = (carry << 32) | (uint)left.Part5;
-			carry = value % right;
+			value = new UInt128(carry, left.Part2);
+			carry = DivRemByUInt64(value, right).Remainder;
 
-			value = (carry << 32) | (left.Part4 >> 32);
-			carry = value % right;
-
-			value = (carry << 32) | (uint)left.Part4;
-			carry = value % right;
-
-			value = (carry << 32) | (left.Part3 >> 32);
-			carry = value % right;
-
-			value = (carry << 32) | (uint)left.Part3;
-			carry = value % right;
-
-			value = (carry << 32) | (left.Part2 >> 32);
-			carry = value % right;
-
-			value = (carry << 32) | (uint)left.Part2;
-			carry = value % right;
-
-			value = (carry << 32) | (left.Part1 >> 32);
-			carry = value % right;
-
-			value = (carry << 32) | (uint)left.Part1;
-			carry = value % right;
-
-			value = (carry << 32) | (left.Part0 >> 32);
-			carry = value % right;
-
-			value = (carry << 32) | (uint)left.Part0;
-			carry = value % right;
+			value = new UInt128(carry, left.Part1);
+			carry = DivRemByUInt64(value, right).Remainder;
+			
+			value = new UInt128(carry, left.Part0);
+			carry = DivRemByUInt64(value, right).Remainder;
 		}
 		else if (left.Part5 != 0)
 		{
-			value = (left.Part5 >> 32);
-			carry = value % right;
+			value = new UInt128(0, left.Part5);
+			carry = DivRemByUInt64(value, right).Remainder;
+			
+			value = new UInt128(carry, left.Part4);
+			carry = DivRemByUInt64(value, right).Remainder;
 
-			value = (carry << 32) | (uint)left.Part5;
-			carry = value % right;
+			value = new UInt128(carry, left.Part3);
+			carry = DivRemByUInt64(value, right).Remainder;
 
-			value = (carry << 32) | (left.Part4 >> 32);
-			carry = value % right;
+			value = new UInt128(carry, left.Part2);
+			carry = DivRemByUInt64(value, right).Remainder;
 
-			value = (carry << 32) | (uint)left.Part4;
-			carry = value % right;
-
-			value = (carry << 32) | (left.Part3 >> 32);
-			carry = value % right;
-
-			value = (carry << 32) | (uint)left.Part3;
-			carry = value % right;
-
-			value = (carry << 32) | (left.Part2 >> 32);
-			carry = value % right;
-
-			value = (carry << 32) | (uint)left.Part2;
-			carry = value % right;
-
-			value = (carry << 32) | (left.Part1 >> 32);
-			carry = value % right;
-
-			value = (carry << 32) | (uint)left.Part1;
-			carry = value % right;
-
-			value = (carry << 32) | (left.Part0 >> 32);
-			carry = value % right;
-
-			value = (carry << 32) | (uint)left.Part0;
-			carry = value % right;
+			value = new UInt128(carry, left.Part1);
+			carry = DivRemByUInt64(value, right).Remainder;
+			
+			value = new UInt128(carry, left.Part0);
+			carry = DivRemByUInt64(value, right).Remainder;
 		}
 		else if (left.Part4 != 0)
 		{
-			value = (left.Part4 >> 32);
-			carry = value % right;
+			value = new UInt128(0, left.Part4);
+			carry = DivRemByUInt64(value, right).Remainder;
 
-			value = (carry << 32) | (uint)left.Part4;
-			carry = value % right;
+			value = new UInt128(carry, left.Part3);
+			carry = DivRemByUInt64(value, right).Remainder;
 
-			value = (carry << 32) | (left.Part3 >> 32);
-			carry = value % right;
+			value = new UInt128(carry, left.Part2);
+			carry = DivRemByUInt64(value, right).Remainder;
 
-			value = (carry << 32) | (uint)left.Part3;
-			carry = value % right;
-
-			value = (carry << 32) | (left.Part2 >> 32);
-			carry = value % right;
-
-			value = (carry << 32) | (uint)left.Part2;
-			carry = value % right;
-
-			value = (carry << 32) | (left.Part1 >> 32);
-			carry = value % right;
-
-			value = (carry << 32) | (uint)left.Part1;
-			carry = value % right;
-
-			value = (carry << 32) | (left.Part0 >> 32);
-			carry = value % right;
-
-			value = (carry << 32) | (uint)left.Part0;
-			carry = value % right;
+			value = new UInt128(carry, left.Part1);
+			carry = DivRemByUInt64(value, right).Remainder;
+			
+			value = new UInt128(carry, left.Part0);
+			carry = DivRemByUInt64(value, right).Remainder;
 		}
 		else if (left.Part3 != 0)
 		{
-			value = (left.Part3 >> 32);
-			carry = value % right;
+			value = new UInt128(0, left.Part3);
+			carry = DivRemByUInt64(value, right).Remainder;
 
-			value = (carry << 32) | (uint)left.Part3;
-			carry = value % right;
+			value = new UInt128(carry, left.Part2);
+			carry = DivRemByUInt64(value, right).Remainder;
 
-			value = (carry << 32) | (left.Part2 >> 32);
-			carry = value % right;
-
-			value = (carry << 32) | (uint)left.Part2;
-			carry = value % right;
-
-			value = (carry << 32) | (left.Part1 >> 32);
-			carry = value % right;
-
-			value = (carry << 32) | (uint)left.Part1;
-			carry = value % right;
-
-			value = (carry << 32) | (left.Part0 >> 32);
-			carry = value % right;
-
-			value = (carry << 32) | (uint)left.Part0;
-			carry = value % right;
+			value = new UInt128(carry, left.Part1);
+			carry = DivRemByUInt64(value, right).Remainder;
+			
+			value = new UInt128(carry, left.Part0);
+			carry = DivRemByUInt64(value, right).Remainder;
 		}
 		else if (left.Part2 != 0)
 		{
-			value = (left.Part2 >> 32);
-			carry = value % right;
+			value = new UInt128(0, left.Part2);
+			carry = DivRemByUInt64(value, right).Remainder;
 
-			value = (carry << 32) | (uint)left.Part2;
-			carry = value % right;
+			value = new UInt128(carry, left.Part1);
+			carry = DivRemByUInt64(value, right).Remainder;
+			
+			value = new UInt128(carry, left.Part0);
+			carry = DivRemByUInt64(value, right).Remainder;
 
-			value = (carry << 32) | (left.Part1 >> 32);
-			carry = value % right;
-
-			value = (carry << 32) | (uint)left.Part1;
-			carry = value % right;
-
-			value = (carry << 32) | (left.Part0 >> 32);
-			carry = value % right;
-
-			value = (carry << 32) | (uint)left.Part0;
-			carry = value % right;
-
-		}
-		else if (left.Part1 != 0)
-		{
-			value = (left.Part1 >> 32);
-			carry = value % right;
-
-			value = (carry << 32) | (uint)left.Part1;
-			carry = value % right;
-
-			value = (carry << 32) | (left.Part0 >> 32);
-			carry = value % right;
-
-			value = (carry << 32) | (uint)left.Part0;
-			carry = value % right;
 		}
 		else
 		{
-			carry = left.Part0 % right;
+			carry = DivRemByUInt64(new UInt128(left.Part1, left.Part0), right).Remainder;
 		}
 
-		return (uint)carry;
+		return carry;
 	}
-	public static uint Remainder(ReadOnlySpan<uint> left, uint right)
-	{
-		// Based on: https://github.com/dotnet/runtime/blob/main/src/libraries/System.Runtime.Numerics/src/System/Numerics/BigIntegerCalculator.DivRem.cs
-
-		// Same as above, but only computing the remainder.
-
-		ulong carry = default;
-
-		for (int i = left.Length - 1; i >= 0; i--)
-		{
-			ulong value = (carry << 32) | left[i];
-			carry = value % right;
-		}
-
-		return (uint)carry;
-	}
-	public static void Remainder(ReadOnlySpan<uint> left, ReadOnlySpan<uint> right, Span<uint> remainder)
+	public static void Remainder(ReadOnlySpan<ulong> left, ReadOnlySpan<ulong> right, Span<ulong> remainder)
 	{
 		// Based on: https://github.com/dotnet/runtime/blob/main/src/libraries/System.Runtime.Numerics/src/System/Numerics/BigIntegerCalculator.DivRem.cs
 		// Same as above, but only returning the remainder.
@@ -1714,29 +1101,29 @@ internal static class Calculator
 		Divide(remainder, right, default);
 	}
 
-	public static void Pow(uint value, uint power, Span<uint> bits)
+	public static void Pow(ulong value, uint power, Span<ulong> bits)
 	{
-		Pow(value != 0 ? new ReadOnlySpan<uint>(in value) : default, power, bits);
+		Pow(value != 0 ? new ReadOnlySpan<ulong>(in value) : default, power, bits);
 	}
-	public static void Pow(ReadOnlySpan<uint> value, uint power, Span<uint> bits)
+	public static void Pow(ReadOnlySpan<ulong> value, uint power, Span<ulong> bits)
 	{
 		// Based on: https://github.com/dotnet/runtime/blob/main/src/libraries/System.Runtime.Numerics/src/System/Numerics/BigIntegerCalculator.PowMod.cs
 
 		Debug.Assert(bits.Length == PowBound(power, value.Length));
 
-		Span<uint> temp = stackalloc uint[bits.Length];
+		Span<ulong> temp = stackalloc ulong[bits.Length];
 		temp.Clear();
 
-		Span<uint> valueCopy = stackalloc uint[bits.Length];
+		Span<ulong> valueCopy = stackalloc ulong[bits.Length];
 		value.CopyTo(valueCopy);
 		valueCopy[value.Length..].Clear();
 
-		Span<uint> result = PowCore(valueCopy, value.Length, temp, power, bits);
+		Span<ulong> result = PowCore(valueCopy, value.Length, temp, power, bits);
 		result.CopyTo(bits);
 		bits[result.Length..].Clear();
 	}
 
-	private static Span<uint> PowCore(Span<uint> value, int valueLength, Span<uint> temp, uint power, Span<uint> result)
+	private static Span<ulong> PowCore(Span<ulong> value, int valueLength, Span<ulong> temp, uint power, Span<ulong> result)
 	{
 		// Based on: https://github.com/dotnet/runtime/blob/main/src/libraries/System.Runtime.Numerics/src/System/Numerics/BigIntegerCalculator.PowMod.cs
 		Debug.Assert(value.Length >= valueLength);
@@ -1759,7 +1146,7 @@ internal static class Calculator
 		return result[..resultLength];
 	}
 
-	private static int MultiplySelf(ref Span<uint> left, int leftLength, ReadOnlySpan<uint> right, ref Span<uint> temp)
+	private static int MultiplySelf(ref Span<ulong> left, int leftLength, ReadOnlySpan<ulong> right, ref Span<ulong> temp)
 	{
 		// Based on: https://github.com/dotnet/runtime/blob/main/src/libraries/System.Runtime.Numerics/src/System/Numerics/BigIntegerCalculator.PowMod.cs
 		Debug.Assert(leftLength <= left.Length);
@@ -1777,13 +1164,13 @@ internal static class Calculator
 
 		left.Clear();
 		//switch buffers
-		Span<uint> t = left;
+		Span<ulong> t = left;
 		left = temp;
 		temp = t;
 		return ActualLength(left[..resultLength]);
 	}
 
-	private static int SquareSelf(ref Span<uint> value, int valueLength, ref Span<uint> temp)
+	private static int SquareSelf(ref Span<ulong> value, int valueLength, ref Span<ulong> temp)
 	{
 		// Based on: https://github.com/dotnet/runtime/blob/main/src/libraries/System.Runtime.Numerics/src/System/Numerics/BigIntegerCalculator.PowMod.cs
 		Debug.Assert(valueLength <= value.Length);
@@ -1791,11 +1178,11 @@ internal static class Calculator
 
 		int resultLength = valueLength + valueLength;
 
-		Square(value[..valueLength], temp[..resultLength]);
+		Square(ref MemoryMarshal.GetReference(value), valueLength, temp[..resultLength]);
 
 		value.Clear();
 		//switch buffers
-		Span<uint> t = value;
+		Span<ulong> t = value;
 		value = temp;
 		temp = t;
 		return ActualLength(value[..resultLength]);
@@ -1823,7 +1210,7 @@ internal static class Calculator
 		return resultLength;
 	}
 
-	public static int ActualLength(ReadOnlySpan<uint> value)
+	public static int ActualLength(ReadOnlySpan<ulong> value)
 	{
 		// Based on: https://github.com/dotnet/runtime/blob/main/src/libraries/System.Runtime.Numerics/src/System/Numerics/BigIntegerCalculator.Utils.cs
 		// Since we're reusing memory here, the actual length

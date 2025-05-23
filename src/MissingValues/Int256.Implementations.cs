@@ -1121,7 +1121,7 @@ namespace MissingValues
 			if (sign == (uint)(right._p3 >> 63) &&
 				sign != (uint)(result._p3 >> 63))
 			{
-				Thrower.ArithmethicOverflow(Thrower.ArithmethicOperation.Addition);
+				Thrower.ArithmeticOverflow(Thrower.ArithmeticOperation.Addition);
 			}
 			return result;
 		}
@@ -1163,7 +1163,7 @@ namespace MissingValues
 
 			if (sign != (uint)(right._p3 >> 63) && sign != (uint)(result._p3 >> 63))
 			{
-				Thrower.ArithmethicOverflow(Thrower.ArithmethicOperation.Subtraction);
+				Thrower.ArithmeticOverflow(Thrower.ArithmeticOperation.Subtraction);
 			}
 			return result;
 		}
@@ -1215,7 +1215,7 @@ namespace MissingValues
 				// we have a large negative value less than MinValue and
 				// should throw.
 
-				Thrower.ArithmethicOverflow(Thrower.ArithmethicOperation.Multiplication);
+				Thrower.ArithmeticOverflow(Thrower.ArithmeticOperation.Multiplication);
 			}
 
 			return lower;
@@ -1226,7 +1226,7 @@ namespace MissingValues
 		{
 			if ((right == NegativeOne) && (left.Upper == _upperMin) && (left.Lower == _lowerMin))
 			{
-				Thrower.ArithmethicOverflow(Thrower.ArithmethicOperation.Division);
+				Thrower.ArithmeticOverflow(Thrower.ArithmeticOperation.Division);
 			}
 
 			// We simplify the logic here by just doing unsigned division on the

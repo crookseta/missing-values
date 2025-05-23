@@ -20,7 +20,7 @@ namespace MissingValues.Info
 			NumberFormatInfo provider)
 			where TNumber : struct, IFormattableNumber<TNumber>
 		{
-			Span<char> buffer = stackalloc char[128];
+			Span<char> buffer = stackalloc char[256];
 
 			if (!TryFormatNumber(
 				in value,
@@ -29,7 +29,7 @@ namespace MissingValues.Info
 					format,
 					provider))
 			{
-				int minimumLength = 256;
+				int minimumLength = 512;
 				char[] bufferArray = ArrayPool<char>.Shared.Rent(minimumLength);
 				buffer = bufferArray;
 				while (!TryFormatNumber(

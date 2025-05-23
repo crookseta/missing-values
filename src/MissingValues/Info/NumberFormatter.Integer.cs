@@ -112,6 +112,9 @@ internal interface IFormattableUnsignedInteger<TUnsigned> : IFormattableInteger<
 
 internal static partial class NumberFormatter
 {
+	public const ulong E19 = 10_000_000_000_000_000_000UL;
+	public const int E19Digits = 19;
+	
 	internal static int CountDigits(UInt128 value)
 	{
 		ulong upper = ((ulong)(value >> 64));
@@ -205,34 +208,7 @@ internal static partial class NumberFormatter
 		return T.MaxBinaryDigits - T.LeadingZeroCountInt32(in value);
 	}
 
-	private static ref TChar UInt32ToDecChars<TChar>(uint value, ref TChar bufferEnd)
-		where TChar : unmanaged, IUtfCharacter<TChar>
-	{
-		// Borrowed from https://github.com/dotnet/runtime/blob/main/src/libraries/System.Private.CoreLib/src/System/Number.Formatting.cs
-		if (value >= 10)
-		{
-			// Handle all values >= 100 two-digits at a time so as to avoid expensive integer division operations.
-			while (value >= 100)
-			{
-				bufferEnd = ref Unsafe.Subtract(ref bufferEnd, 2);
-				(value, uint remainder) = Math.DivRem(value, 100);
-				WriteTwoDigits(remainder, ref bufferEnd);
-			}
-
-			// If there are two digits remaining, store them.
-			if (value >= 10)
-			{
-				bufferEnd = ref Unsafe.Subtract(ref bufferEnd, 2);
-				WriteTwoDigits(value, ref bufferEnd);
-				return ref bufferEnd;
-			}
-		}
-
-		bufferEnd = ref Unsafe.Subtract(ref bufferEnd, 1);
-		bufferEnd = (TChar)(value + '0');
-		return ref bufferEnd;
-	}
-	private static ref TChar UInt32ToDecChars<TChar>(uint value, ref TChar bufferEnd, int digits)
+	private static ref TChar UInt64ToDecChars<TChar>(ulong value, ref TChar bufferEnd, int digits)
 		where TChar : unmanaged, IUtfCharacter<TChar>
 	{
 		// Borrowed from https://github.com/dotnet/runtime/blob/main/src/libraries/System.Private.CoreLib/src/System/Number.Formatting.cs
@@ -241,13 +217,13 @@ internal static partial class NumberFormatter
 		{
 			bufferEnd = ref Unsafe.Subtract(ref bufferEnd, 2);
 			digits -= 2;
-			(value, remainder) = Math.DivRem(value, 100);
+			(value, remainder) = Calculator.DivRemByUInt32(value, 100);
 			WriteTwoDigits(remainder, ref bufferEnd);
 		}
 		while (value != 0 || digits > 0)
 		{
 			digits--;
-			(value, remainder) = Math.DivRem(value, 10);
+			(value, remainder) = Calculator.DivRemByUInt32(value, 10);
 			bufferEnd = ref Unsafe.Subtract(ref bufferEnd, 1);
 			bufferEnd = (TChar)(remainder + '0');
 		}
@@ -266,62 +242,40 @@ internal static partial class NumberFormatter
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	private static uint UInt256DivMod1E9(ref UInt256 value)
+	private static ulong UInt256DivMod1E19(ref UInt256 value)
 	{
-		Calculator.DivRem(value, 1_000_000_000U, out value, out uint remainder);
+		Calculator.DivRem(in value, E19, out value, out ulong remainder);
 		return remainder;
-	}
-	private static void UInt256ToDecChars<TChar>(UInt256 value, Span<TChar> destination)
-		where TChar : unmanaged, IUtfCharacter<TChar>
-	{
-		ref TChar bufferEnd = ref Unsafe.Add(ref MemoryMarshal.GetReference(destination), UInt256.CountDigits(in value));
-
-		while (value.Part3 != 0 || value.Part2 != 0 || value.Part1 != 0 || value.Part0 > uint.MaxValue)
-		{
-			bufferEnd = ref UInt32ToDecChars(UInt256DivMod1E9(ref value), ref bufferEnd, 9);
-		}
-		UInt32ToDecChars((uint)value.Part0, ref bufferEnd);
 	}
 	internal static void UInt256ToDecChars<TChar>(UInt256 value, Span<TChar> destination, int digits)
 		where TChar : unmanaged, IUtfCharacter<TChar>
 	{
 		ref TChar bufferEnd = ref Unsafe.Add(ref MemoryMarshal.GetReference(destination), digits);
 
-		while (value.Part3 != 0 || value.Part2 != 0 || value.Part1 != 0 || value.Part0 > uint.MaxValue)
+		while (value.Part3 != 0 || value.Part2 != 0 || value.Part1 != 0)
 		{
-			bufferEnd = ref UInt32ToDecChars(UInt256DivMod1E9(ref value), ref bufferEnd, 9);
-			digits -= 9;
+			bufferEnd = ref UInt64ToDecChars(UInt256DivMod1E19(ref value), ref bufferEnd, E19Digits);
+			digits -= E19Digits;
 		}
-		UInt32ToDecChars((uint)value.Part0, ref bufferEnd, digits);
+		UInt64ToDecChars(value.Part0, ref bufferEnd, digits);
 	}
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	private static uint UInt512DivMod1E9(ref UInt512 value)
+	private static ulong UInt512DivMod1E19(ref UInt512 value)
 	{
-		Calculator.DivRem(value, 1_000_000_000U, out value, out uint remainder);
+		Calculator.DivRem(in value, E19, out value, out ulong remainder);
 		return remainder;
-	}
-	private static void UInt512ToDecChars<TChar>(UInt512 value, Span<TChar> destination)
-		where TChar : unmanaged, IUtfCharacter<TChar>
-	{
-		ref TChar bufferEnd = ref Unsafe.Add(ref MemoryMarshal.GetReference(destination), UInt512.CountDigits(in value));
-
-		while (value.Part7 != 0 || value.Part6 != 0 || value.Part5 != 0 || value.Part4 != 0 || value.Part3 != 0 || value.Part2 != 0 || value.Part1 != 0 || value.Part0 > uint.MaxValue)
-		{
-			bufferEnd = ref UInt32ToDecChars(UInt512DivMod1E9(ref value), ref bufferEnd, 9);
-		}
-		UInt32ToDecChars((uint)value.Part0, ref bufferEnd);
 	}
 	internal static void UInt512ToDecChars<TChar>(UInt512 value, Span<TChar> destination, int digits)
 		where TChar : unmanaged, IUtfCharacter<TChar>
 	{
 		ref TChar bufferEnd = ref Unsafe.Add(ref MemoryMarshal.GetReference(destination), digits);
 
-		while (value.Part7 != 0 || value.Part6 != 0 || value.Part5 != 0 || value.Part4 != 0 || value.Part3 != 0 || value.Part2 != 0 || value.Part1 != 0 || value.Part0 > uint.MaxValue)
+		while (value.Part7 != 0 || value.Part6 != 0 || value.Part5 != 0 || value.Part4 != 0 || value.Part3 != 0 || value.Part2 != 0 || value.Part1 != 0)
 		{
-			bufferEnd = ref UInt32ToDecChars(UInt512DivMod1E9(ref value), ref bufferEnd, 9);
-			digits -= 9;
+			bufferEnd = ref UInt64ToDecChars(UInt512DivMod1E19(ref value), ref bufferEnd, E19Digits);
+			digits -= E19Digits;
 		}
-		UInt32ToDecChars((uint)value.Part0, ref bufferEnd, digits);
+		UInt64ToDecChars(value.Part0, ref bufferEnd, digits);
 	}
 	public static unsafe void UnsignedIntegerToHexChars<T, TChar>(in T value, char isUpper, Span<TChar> destination, int digits)
 		where T : unmanaged, IFormattableUnsignedInteger<T>

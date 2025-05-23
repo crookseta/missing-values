@@ -25,7 +25,7 @@ namespace MissingValues.Internals
 			NotSupported = 128,
 			InvalidWhiteSpace = InvalidTrailingWhiteSpace | InvalidLeadingWhiteSpace
 		}
-		internal enum ArithmethicOperation : byte
+		internal enum ArithmeticOperation : byte
 		{
 			Addition, Subtraction, Multiplication, Division, Exponentiation
 		}
@@ -36,7 +36,7 @@ namespace MissingValues.Internals
 			throw new OverflowException();
 		}
 		[DoesNotReturn]
-		public static void ArithmethicOverflow(ArithmethicOperation operation)
+		public static void ArithmeticOverflow(ArithmeticOperation operation)
 		{
 			throw new OverflowException($"{operation} operation ended in overflow.");
 		}

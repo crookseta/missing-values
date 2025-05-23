@@ -10,7 +10,7 @@ namespace MissingValues.Info
 {
 	internal class NumberConverter
 	{
-		public const int StackallocByteThreshold = 256;
+		public const int StackallocByteThreshold = 512;
 
 		internal static int CopyValue(in Utf8JsonReader reader, Span<byte> utf8Destination)
 		{

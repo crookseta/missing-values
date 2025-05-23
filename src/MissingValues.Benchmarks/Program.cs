@@ -12,6 +12,8 @@ using System.Windows.Markup;
 using MissingValues.Internals;
 
 #if DEBUG
+string? s = UInt512.MaxValue.ToString();
+Console.WriteLine(s);
 Console.WriteLine("Hello World!");
 #else
 BenchmarkSwitcher.FromAssembly(typeof(Program).Assembly).Run(args);
