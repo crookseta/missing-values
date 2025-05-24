@@ -198,37 +198,70 @@ namespace MissingValues
 				lower = Calculator.Multiply(in right, left._p0, out var carry);
 				return carry;
 			}
-			
+
 			const int UIntCount = Size / sizeof(ulong);
 
-			Span<ulong> leftSpan = stackalloc ulong[UIntCount];
-			int leftLength = BitHelper.GetTrimLength(in left);
-			Unsafe.WriteUnaligned(ref Unsafe.As<ulong, byte>(ref MemoryMarshal.GetReference(leftSpan)), left);
-
-			Span<ulong> rightSpan = stackalloc ulong[UIntCount];
-			int rightLength = BitHelper.GetTrimLength(in right);
-			Unsafe.WriteUnaligned(ref Unsafe.As<ulong, byte>(ref MemoryMarshal.GetReference(rightSpan)), right);
-
 			Span<ulong> rawBits = stackalloc ulong[UIntCount * 2];
-			rawBits.Clear();
+			ref ulong resultPtr = ref MemoryMarshal.GetReference(rawBits);
 
-			if (leftLength >= rightLength)
-			{
-				Calculator.Multiply(
-					leftSpan[..leftLength],
-					rightSpan[..rightLength],
-					rawBits);
-			}
-			else
-			{
-				Calculator.Multiply(
-					rightSpan[..rightLength],
-					leftSpan[..leftLength],
-					rawBits);
-			}
+			Multiply(in left, right._p0, ref Unsafe.Add(ref resultPtr, 0));
+			Multiply(in left, right._p1, ref Unsafe.Add(ref resultPtr, 1));
+			Multiply(in left, right._p2, ref Unsafe.Add(ref resultPtr, 2));
+			Multiply(in left, right._p3, ref Unsafe.Add(ref resultPtr, 3));
+			Multiply(in left, right._p4, ref Unsafe.Add(ref resultPtr, 4));
+			Multiply(in left, right._p5, ref Unsafe.Add(ref resultPtr, 5));
+			Multiply(in left, right._p6, ref Unsafe.Add(ref resultPtr, 6));
+			Multiply(in left, right._p7, ref Unsafe.Add(ref resultPtr, 7));
 
-			lower = Unsafe.ReadUnaligned<UInt512>(ref Unsafe.As<ulong, byte>(ref MemoryMarshal.GetReference(rawBits)));
-			return Unsafe.ReadUnaligned<UInt512>(ref Unsafe.As<ulong, byte>(ref Unsafe.Add(ref MemoryMarshal.GetReference(rawBits), UIntCount)));
+			lower = new UInt512(
+				Unsafe.Add(ref resultPtr, 7),
+				Unsafe.Add(ref resultPtr, 6),
+				Unsafe.Add(ref resultPtr, 5),
+				Unsafe.Add(ref resultPtr, 3),
+				Unsafe.Add(ref resultPtr, 2),
+				Unsafe.Add(ref resultPtr, 4),
+				Unsafe.Add(ref resultPtr, 1),
+				Unsafe.Add(ref resultPtr, 0)
+				);
+
+			return new UInt512(
+				Unsafe.Add(ref resultPtr, 15),
+				Unsafe.Add(ref resultPtr, 14),
+				Unsafe.Add(ref resultPtr, 13),
+				Unsafe.Add(ref resultPtr, 12),
+				Unsafe.Add(ref resultPtr, 11),
+				Unsafe.Add(ref resultPtr, 10),
+				Unsafe.Add(ref resultPtr, 09),
+				Unsafe.Add(ref resultPtr, 08)
+				);
+
+			static void Multiply(in UInt512 left, ulong right, ref ulong resultPtr)
+			{
+				ulong up, low, carry;
+				(up, low) = Calculator.BigMulAdd(left._p0, right, 0);
+				Unsafe.Add(ref resultPtr, 0) = Calculator.AddWithCarry(Unsafe.Add(ref resultPtr, 0), low, out carry);
+				up = Calculator.AddWithCarry(up, carry, out carry);
+				(up, low) = Calculator.BigMulAdd(left._p1, right, up);
+				Unsafe.Add(ref resultPtr, 1) = Calculator.AddWithCarry(Unsafe.Add(ref resultPtr, 1), low, out carry);
+				up = Calculator.AddWithCarry(up, carry, out carry);
+				(up, low) = Calculator.BigMulAdd(left._p2, right, up);
+				Unsafe.Add(ref resultPtr, 2) = Calculator.AddWithCarry(Unsafe.Add(ref resultPtr, 2), low, out carry);
+				up = Calculator.AddWithCarry(up, carry, out carry);
+				(up, low) = Calculator.BigMulAdd(left._p3, right, up);
+				Unsafe.Add(ref resultPtr, 3) = Calculator.AddWithCarry(Unsafe.Add(ref resultPtr, 3), low, out carry);
+				up = Calculator.AddWithCarry(up, carry, out carry);
+				(up, low) = Calculator.BigMulAdd(left._p4, right, up);
+				Unsafe.Add(ref resultPtr, 4) = Calculator.AddWithCarry(Unsafe.Add(ref resultPtr, 4), low, out carry);
+				up = Calculator.AddWithCarry(up, carry, out carry);
+				(up, low) = Calculator.BigMulAdd(left._p5, right, up);
+				Unsafe.Add(ref resultPtr, 5) = Calculator.AddWithCarry(Unsafe.Add(ref resultPtr, 5), low, out carry);
+				up = Calculator.AddWithCarry(up, carry, out carry);
+				(up, low) = Calculator.BigMulAdd(left._p6, right, up);
+				Unsafe.Add(ref resultPtr, 6) = Calculator.AddWithCarry(Unsafe.Add(ref resultPtr, 6), low, out carry);
+				up = Calculator.AddWithCarry(up, carry, out carry);
+				(_, low) = Calculator.BigMulAdd(left._p7, right, up);
+				Unsafe.Add(ref resultPtr, 7) = Unsafe.Add(ref resultPtr, 7) + low;
+			}
 		}
 
 		/// <summary>
