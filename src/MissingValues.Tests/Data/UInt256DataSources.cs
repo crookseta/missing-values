@@ -255,112 +255,139 @@ public class UInt256DataSources
 
 	public static IEnumerable<Func<(UInt256, UInt256)>> AbsTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (UInt256.Zero, UInt256.Zero);
+		yield return () => (UInt256.One, UInt256.One);
+		yield return () => (UInt256.MaxValue, UInt256.MaxValue);
+		yield return () => (UInt256.MinValue, UInt256.MinValue);
 	}
 
 	public static IEnumerable<Func<(UInt256, bool)>> IsCanonicalTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (UInt256.Zero, true);
 	}
 
 	public static IEnumerable<Func<(UInt256, bool)>> IsComplexNumberTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (UInt256.Zero, false);
 	}
 
 	public static IEnumerable<Func<(UInt256, bool)>> IsEvenIntegerTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (UInt256.Zero, true);
+		yield return () => (UInt256.One, false);
+		yield return () => (new UInt256(0, 0, 0, 2), true);
+		yield return () => (new UInt256(0, 0, 0, 3), true);
+		yield return () => (new UInt256(0, 0, 0, 0x8000_0000_0000_0000), true);
+		yield return () => (new UInt256(0x8000_0000_0000_0000, 0, 0, 0), true);
+		yield return () => (new UInt256(0x8000_0000_0000_0000, 0, 0, 1), false);
+		yield return () => (UInt256.MaxValue, false);
 	}
 
 	public static IEnumerable<Func<(UInt256, bool)>> IsFiniteTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (UInt256.Zero, true);
 	}
 
 	public static IEnumerable<Func<(UInt256, bool)>> IsImaginaryNumberTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (UInt256.Zero, false);
 	}
 
 	public static IEnumerable<Func<(UInt256, bool)>> IsInfinityTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (UInt256.Zero, false);
 	}
 
 	public static IEnumerable<Func<(UInt256, bool)>> IsIntegerTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (UInt256.Zero, true);
 	}
 
 	public static IEnumerable<Func<(UInt256, bool)>> IsNaNTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (UInt256.Zero, false);
 	}
 
 	public static IEnumerable<Func<(UInt256, bool)>> IsNegativeTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (UInt256.Zero, false);
 	}
 
 	public static IEnumerable<Func<(UInt256, bool)>> IsNegativeInfinityTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (UInt256.Zero, false);
 	}
 
 	public static IEnumerable<Func<(UInt256, bool)>> IsNormalTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (UInt256.Zero, false);
+		yield return () => (UInt256.One, true);
+		yield return () => (new UInt256(0, 0, 1, 0), true);
+		yield return () => (new UInt256(0, 1, 0, 0), true);
+		yield return () => (new UInt256(1, 0, 0, 0), true);
+		yield return () => (UInt256.MaxValue, true);
 	}
 
 	public static IEnumerable<Func<(UInt256, bool)>> IsOddIntegerTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (UInt256.Zero, false);
+		yield return () => (UInt256.One, true);
+		yield return () => (new UInt256(0, 0, 0, 2), false);
+		yield return () => (new UInt256(0, 0, 0, 3), false);
+		yield return () => (new UInt256(0, 0, 0, 0x8000_0000_0000_0000), false);
+		yield return () => (new UInt256(0x8000_0000_0000_0000, 0, 0, 0), false);
+		yield return () => (new UInt256(0x8000_0000_0000_0000, 0, 0, 1), true);
+		yield return () => (UInt256.MaxValue, true);
 	}
 
 	public static IEnumerable<Func<(UInt256, bool)>> IsPositiveTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (UInt256.Zero, true);
 	}
 
 	public static IEnumerable<Func<(UInt256, bool)>> IsPositiveInfinityTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (UInt256.Zero, false);
 	}
 
 	public static IEnumerable<Func<(UInt256, bool)>> IsRealNumberTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (UInt256.Zero, true);
 	}
 
 	public static IEnumerable<Func<(UInt256, bool)>> IsSubnormalTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (UInt256.Zero, false);
 	}
 
 	public static IEnumerable<Func<(UInt256, bool)>> IsZeroTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (UInt256.Zero, true);
+		yield return () => (UInt256.One, false);
+		yield return () => (new UInt256(0, 0, 1, 0), false);
+		yield return () => (new UInt256(0, 1, 0, 0), false);
+		yield return () => (new UInt256(1, 0, 0, 0), false);
+		yield return () => (UInt256.MaxValue, false);
 	}
 
 	public static IEnumerable<Func<(UInt256, UInt256, UInt256)>> MaxMagnitudeTestData()
 	{
-		throw new NotImplementedException();
+		return MaxTestData();
 	}
 
 	public static IEnumerable<Func<(UInt256, UInt256, UInt256)>> MaxMagnitudeNumberTestData()
 	{
-		throw new NotImplementedException();
+		return MaxTestData();
 	}
 
 	public static IEnumerable<Func<(UInt256, UInt256, UInt256)>> MinMagnitudeTestData()
 	{
-		throw new NotImplementedException();
+		return MinTestData();
 	}
 
 	public static IEnumerable<Func<(UInt256, UInt256, UInt256)>> MinMagnitudeNumberTestData()
 	{
-		throw new NotImplementedException();
+		return MinTestData();
 	}
 
 	public static IEnumerable<Func<(UInt256, UInt256, UInt256, UInt256)>> MultiplyAddEstimateTestData()
@@ -370,32 +397,80 @@ public class UInt256DataSources
 
 	public static IEnumerable<Func<(string, NumberStyles, IFormatProvider?, UInt256)>> ParseTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => ("0", NumberStyles.Integer, CultureInfo.InvariantCulture, UInt256.Zero);
+		yield return () => ("1", NumberStyles.Integer, CultureInfo.InvariantCulture, UInt256.One);
+		yield return () => ("4294967296", NumberStyles.Integer, CultureInfo.InvariantCulture, new UInt256(0, 0, 0, 4294967296));
+		yield return () => ("18446744073709551616", NumberStyles.Integer, CultureInfo.InvariantCulture, new UInt256(0, 0, 1, ulong.MaxValue));
+		yield return () => ("340282366920938463463374607431768211456", NumberStyles.Integer, CultureInfo.InvariantCulture, new UInt256(0, 1, ulong.MaxValue, ulong.MaxValue));
+		yield return () => ("6277101735386680763835789423207666416102355444464034512896", NumberStyles.Integer, CultureInfo.InvariantCulture, new UInt256(1, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue));
+		yield return () => ("115792089237316195423570985008687907853269984665640564039457584007913129639935", NumberStyles.Integer, CultureInfo.InvariantCulture, UInt256.MaxValue);
 	}
 
 	public static IEnumerable<Func<(char[], NumberStyles, IFormatProvider?, UInt256)>> ParseSpanTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => ("0".ToCharArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, UInt256.Zero);
+		yield return () => ("1".ToCharArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, UInt256.One);
+		yield return () => ("4294967296".ToCharArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, new UInt256(0, 0, 0, 4294967296));
+		yield return () => ("18446744073709551616".ToCharArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, new UInt256(0, 0, 1, ulong.MaxValue));
+		yield return () => ("340282366920938463463374607431768211456".ToCharArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, new UInt256(0, 1, ulong.MaxValue, ulong.MaxValue));
+		yield return () => ("6277101735386680763835789423207666416102355444464034512896".ToCharArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, new UInt256(1, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue));
+		yield return () => ("115792089237316195423570985008687907853269984665640564039457584007913129639935".ToCharArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, UInt256.MaxValue);
 	}
 
 	public static IEnumerable<Func<(byte[], NumberStyles, IFormatProvider?, UInt256)>> ParseUtf8TestData()
 	{
-		throw new NotImplementedException();
+		yield return () => ("0"u8.ToArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, UInt256.Zero);
+		yield return () => ("1"u8.ToArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, UInt256.One);
+		yield return () => ("4294967296"u8.ToArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, new UInt256(0, 0, 0, 4294967296));
+		yield return () => ("18446744073709551616"u8.ToArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, new UInt256(0, 0, 1, ulong.MaxValue));
+		yield return () => ("340282366920938463463374607431768211456"u8.ToArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, new UInt256(0, 1, ulong.MaxValue, ulong.MaxValue));
+		yield return () => ("6277101735386680763835789423207666416102355444464034512896"u8.ToArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, new UInt256(1, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue));
+		yield return () => ("115792089237316195423570985008687907853269984665640564039457584007913129639935"u8.ToArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, UInt256.MaxValue);
 	}
 
 	public static IEnumerable<Func<(string, NumberStyles, IFormatProvider?, bool, UInt256)>> TryParseTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => ("0", NumberStyles.Integer, CultureInfo.InvariantCulture, true, UInt256.Zero);
+		yield return () => ("1", NumberStyles.Integer, CultureInfo.InvariantCulture, true, UInt256.One);
+		yield return () => ("4294967296", NumberStyles.Integer, CultureInfo.InvariantCulture, true, new UInt256(0, 0, 0, 4294967296));
+		yield return () => ("18446744073709551616", NumberStyles.Integer, CultureInfo.InvariantCulture, true, new UInt256(0, 0, 1, ulong.MaxValue));
+		yield return () => ("340282366920938463463374607431768211456", NumberStyles.Integer, CultureInfo.InvariantCulture, true, new UInt256(0, 1, ulong.MaxValue, ulong.MaxValue));
+		yield return () => ("6277101735386680763835789423207666416102355444464034512896", NumberStyles.Integer, CultureInfo.InvariantCulture, true, new UInt256(1, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue));
+		yield return () => ("115792089237316195423570985008687907853269984665640564039457584007913129639935", NumberStyles.Integer, CultureInfo.InvariantCulture, true, UInt256.MaxValue);
+		yield return () => ("-1", NumberStyles.Integer, CultureInfo.InvariantCulture, false, default);
+		yield return () => ("2.25", NumberStyles.Integer, CultureInfo.InvariantCulture, false, default);
+		yield return () => ("115792089237316195423570985008687907853269984665640564039457584007913129639936", NumberStyles.Integer, CultureInfo.InvariantCulture, false, default);
+		yield return () => ("1000000000000000000000000000000000000000000000000000000000000000000000000000000", NumberStyles.Integer, CultureInfo.InvariantCulture, false, default);
 	}
 
 	public static IEnumerable<Func<(char[], NumberStyles, IFormatProvider?, bool, UInt256)>> TryParseSpanTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => ("0".ToCharArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, true, UInt256.Zero);
+		yield return () => ("1".ToCharArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, true, UInt256.One);
+		yield return () => ("4294967296".ToCharArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, true, new UInt256(0, 0, 0, 4294967296));
+		yield return () => ("18446744073709551616".ToCharArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, true, new UInt256(0, 0, 1, ulong.MaxValue));
+		yield return () => ("340282366920938463463374607431768211456".ToCharArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, true, new UInt256(0, 1, ulong.MaxValue, ulong.MaxValue));
+		yield return () => ("6277101735386680763835789423207666416102355444464034512896".ToCharArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, true, new UInt256(1, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue));
+		yield return () => ("115792089237316195423570985008687907853269984665640564039457584007913129639935".ToCharArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, true, UInt256.MaxValue);
+		yield return () => ("-1".ToCharArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, false, default);
+		yield return () => ("2.25".ToCharArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, false, default);
+		yield return () => ("115792089237316195423570985008687907853269984665640564039457584007913129639936".ToCharArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, false, default);
+		yield return () => ("1000000000000000000000000000000000000000000000000000000000000000000000000000000".ToCharArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, false, default);
 	}
 
 	public static IEnumerable<Func<(byte[], NumberStyles, IFormatProvider?, bool, UInt256)>> TryParseUtf8TestData()
 	{
-		throw new NotImplementedException();
+		yield return () => ("0"u8.ToArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, true, UInt256.Zero);
+		yield return () => ("1"u8.ToArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, true, UInt256.One);
+		yield return () => ("4294967296"u8.ToArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, true, new UInt256(0, 0, 0, 4294967296));
+		yield return () => ("18446744073709551616"u8.ToArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, true, new UInt256(0, 0, 1, ulong.MaxValue));
+		yield return () => ("340282366920938463463374607431768211456"u8.ToArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, true, new UInt256(0, 1, ulong.MaxValue, ulong.MaxValue));
+		yield return () => ("6277101735386680763835789423207666416102355444464034512896"u8.ToArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, true, new UInt256(1, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue));
+		yield return () => ("115792089237316195423570985008687907853269984665640564039457584007913129639935"u8.ToArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, true, UInt256.MaxValue);
+		yield return () => ("-1"u8.ToArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, false, default);
+		yield return () => ("2.25"u8.ToArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, false, default);
+		yield return () => ("115792089237316195423570985008687907853269984665640564039457584007913129639936"u8.ToArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, false, default);
+		yield return () => ("1000000000000000000000000000000000000000000000000000000000000000000000000000000"u8.ToArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, false, default);
 	}
 
 	public static IEnumerable<Func<(UInt256, UInt256, UInt256, UInt256)>> ClampTestData()
@@ -415,7 +490,7 @@ public class UInt256DataSources
 
 	public static IEnumerable<Func<(UInt256, UInt256, UInt256)>> MaxNumberTestData()
 	{
-		throw new NotImplementedException();
+		return MaxTestData();
 	}
 
 	public static IEnumerable<Func<(UInt256, UInt256, UInt256)>> MinTestData()
@@ -425,7 +500,7 @@ public class UInt256DataSources
 
 	public static IEnumerable<Func<(UInt256, UInt256, UInt256)>> MinNumberTestData()
 	{
-		throw new NotImplementedException();
+		return MinTestData();
 	}
 
 	public static IEnumerable<Func<(UInt256, UInt256)>> SignTestData()
@@ -499,6 +574,546 @@ public class UInt256DataSources
 	}
 
 	public static IEnumerable<Func<(UInt256, byte[], int)>> WriteLittleEndianTestData()
+	{
+		throw new NotImplementedException();
+	}
+
+	public static IEnumerable<Func<(UInt256, byte)>> ConvertToCheckedByteTestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(UInt256, byte)>> ConvertToSaturatingByteTestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(UInt256, byte)>> ConvertToTruncatingByteTestData()
+	{
+		throw new NotImplementedException();
+	}
+
+	public static IEnumerable<Func<(UInt256, ushort)>> ConvertToCheckedUInt16TestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(UInt256, ushort)>> ConvertToSaturatingUInt16TestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(UInt256, ushort)>> ConvertToTruncatingUInt16TestData()
+	{
+		throw new NotImplementedException();
+	}
+
+	public static IEnumerable<Func<(UInt256, uint)>> ConvertToCheckedUInt32TestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(UInt256, uint)>> ConvertToSaturatingUInt32TestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(UInt256, uint)>> ConvertToTruncatingUInt32TestData()
+	{
+		throw new NotImplementedException();
+	}
+
+	public static IEnumerable<Func<(UInt256, ulong)>> ConvertToCheckedUInt64TestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(UInt256, ulong)>> ConvertToSaturatingUInt64TestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(UInt256, ulong)>> ConvertToTruncatingUInt64TestData()
+	{
+		throw new NotImplementedException();
+	}
+
+	public static IEnumerable<Func<(UInt256, UInt128)>> ConvertToCheckedUInt128TestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(UInt256, UInt128)>> ConvertToSaturatingUInt128TestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(UInt256, UInt128)>> ConvertToTruncatingUInt128TestData()
+	{
+		throw new NotImplementedException();
+	}
+
+	public static IEnumerable<Func<(UInt256, UInt512)>> ConvertToCheckedUInt512TestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(UInt256, UInt512)>> ConvertToSaturatingUInt512TestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(UInt256, UInt512)>> ConvertToTruncatingUInt512TestData()
+	{
+		throw new NotImplementedException();
+	}
+
+	public static IEnumerable<Func<(UInt256, sbyte)>> ConvertToCheckedSByteTestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(UInt256, sbyte)>> ConvertToSaturatingSByteTestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(UInt256, sbyte)>> ConvertToTruncatingSByteTestData()
+	{
+		throw new NotImplementedException();
+	}
+
+	public static IEnumerable<Func<(UInt256, short)>> ConvertToCheckedInt16TestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(UInt256, short)>> ConvertToSaturatingInt16TestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(UInt256, short)>> ConvertToTruncatingInt16TestData()
+	{
+		throw new NotImplementedException();
+	}
+
+	public static IEnumerable<Func<(UInt256, int)>> ConvertToCheckedInt32TestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(UInt256, int)>> ConvertToSaturatingInt32TestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(UInt256, int)>> ConvertToTruncatingInt32TestData()
+	{
+		throw new NotImplementedException();
+	}
+
+	public static IEnumerable<Func<(UInt256, long)>> ConvertToCheckedInt64TestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(UInt256, long)>> ConvertToSaturatingInt64TestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(UInt256, long)>> ConvertToTruncatingInt64TestData()
+	{
+		throw new NotImplementedException();
+	}
+
+	public static IEnumerable<Func<(UInt256, Int128)>> ConvertToCheckedInt128TestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(UInt256, Int128)>> ConvertToSaturatingInt128TestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(UInt256, Int128)>> ConvertToTruncatingInt128TestData()
+	{
+		throw new NotImplementedException();
+	}
+
+	public static IEnumerable<Func<(UInt256, Int256)>> ConvertToCheckedInt256TestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(UInt256, Int256)>> ConvertToSaturatingInt256TestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(UInt256, Int256)>> ConvertToTruncatingInt256TestData()
+	{
+		throw new NotImplementedException();
+	}
+
+	public static IEnumerable<Func<(UInt256, Int512)>> ConvertToCheckedInt512TestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(UInt256, Int512)>> ConvertToSaturatingInt512TestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(UInt256, Int512)>> ConvertToTruncatingInt512TestData()
+	{
+		throw new NotImplementedException();
+	}
+
+	public static IEnumerable<Func<(UInt256, Half)>> ConvertToCheckedHalfTestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(UInt256, Half)>> ConvertToSaturatingHalfTestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(UInt256, Half)>> ConvertToTruncatingHalfTestData()
+	{
+		throw new NotImplementedException();
+	}
+
+	public static IEnumerable<Func<(UInt256, float)>> ConvertToCheckedSingleTestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(UInt256, float)>> ConvertToSaturatingSingleTestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(UInt256, float)>> ConvertToTruncatingSingleTestData()
+	{
+		throw new NotImplementedException();
+	}
+
+	public static IEnumerable<Func<(UInt256, double)>> ConvertToCheckedDoubleTestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(UInt256, double)>> ConvertToSaturatingDoubleTestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(UInt256, double)>> ConvertToTruncatingDoubleTestData()
+	{
+		throw new NotImplementedException();
+	}
+
+	public static IEnumerable<Func<(UInt256, Quad)>> ConvertToCheckedQuadTestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(UInt256, Quad)>> ConvertToSaturatingQuadTestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(UInt256, Quad)>> ConvertToTruncatingQuadTestData()
+	{
+		throw new NotImplementedException();
+	}
+
+	public static IEnumerable<Func<(UInt256, Octo)>> ConvertToCheckedOctoTestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(UInt256, Octo)>> ConvertToSaturatingOctoTestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(UInt256, Octo)>> ConvertToTruncatingOctoTestData()
+	{
+		throw new NotImplementedException();
+	}
+
+	public static IEnumerable<Func<(byte, UInt256)>> ConvertFromCheckedByteTestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(byte, UInt256)>> ConvertFromSaturatingByteTestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(byte, UInt256)>> ConvertFromTruncatingByteTestData()
+	{
+		throw new NotImplementedException();
+	}
+
+	public static IEnumerable<Func<(ushort, UInt256)>> ConvertFromCheckedUInt16TestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(ushort, UInt256)>> ConvertFromSaturatingUInt16TestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(ushort, UInt256)>> ConvertFromTruncatingUInt16TestData()
+	{
+		throw new NotImplementedException();
+	}
+
+	public static IEnumerable<Func<(uint, UInt256)>> ConvertFromCheckedUInt32TestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(uint, UInt256)>> ConvertFromSaturatingUInt32TestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(uint, UInt256)>> ConvertFromTruncatingUInt32TestData()
+	{
+		throw new NotImplementedException();
+	}
+
+	public static IEnumerable<Func<(ulong, UInt256)>> ConvertFromCheckedUInt64TestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(ulong, UInt256)>> ConvertFromSaturatingUInt64TestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(ulong, UInt256)>> ConvertFromTruncatingUInt64TestData()
+	{
+		throw new NotImplementedException();
+	}
+
+	public static IEnumerable<Func<(UInt128, UInt256)>> ConvertFromCheckedUInt128TestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(UInt128, UInt256)>> ConvertFromSaturatingUInt128TestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(UInt128, UInt256)>> ConvertFromTruncatingUInt128TestData()
+	{
+		throw new NotImplementedException();
+	}
+
+	public static IEnumerable<Func<(UInt512, UInt256)>> ConvertFromCheckedUInt512TestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(UInt512, UInt256)>> ConvertFromSaturatingUInt512TestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(UInt512, UInt256)>> ConvertFromTruncatingUInt512TestData()
+	{
+		throw new NotImplementedException();
+	}
+
+	public static IEnumerable<Func<(sbyte, UInt256)>> ConvertFromCheckedSByteTestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(sbyte, UInt256)>> ConvertFromSaturatingSByteTestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(sbyte, UInt256)>> ConvertFromTruncatingSByteTestData()
+	{
+		throw new NotImplementedException();
+	}
+
+	public static IEnumerable<Func<(short, UInt256)>> ConvertFromCheckedInt16TestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(short, UInt256)>> ConvertFromSaturatingInt16TestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(short, UInt256)>> ConvertFromTruncatingInt16TestData()
+	{
+		throw new NotImplementedException();
+	}
+
+	public static IEnumerable<Func<(int, UInt256)>> ConvertFromCheckedInt32TestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(int, UInt256)>> ConvertFromSaturatingInt32TestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(int, UInt256)>> ConvertFromTruncatingInt32TestData()
+	{
+		throw new NotImplementedException();
+	}
+
+	public static IEnumerable<Func<(long, UInt256)>> ConvertFromCheckedInt64TestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(long, UInt256)>> ConvertFromSaturatingInt64TestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(long, UInt256)>> ConvertFromTruncatingInt64TestData()
+	{
+		throw new NotImplementedException();
+	}
+
+	public static IEnumerable<Func<(Int128, UInt256)>> ConvertFromCheckedInt128TestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(Int128, UInt256)>> ConvertFromSaturatingInt128TestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(Int128, UInt256)>> ConvertFromTruncatingInt128TestData()
+	{
+		throw new NotImplementedException();
+	}
+
+	public static IEnumerable<Func<(Int256, UInt256)>> ConvertFromCheckedInt256TestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(Int256, UInt256)>> ConvertFromSaturatingInt256TestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(Int256, UInt256)>> ConvertFromTruncatingInt256TestData()
+	{
+		throw new NotImplementedException();
+	}
+
+	public static IEnumerable<Func<(Int512, UInt256)>> ConvertFromCheckedInt512TestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(Int512, UInt256)>> ConvertFromSaturatingInt512TestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(Int512, UInt256)>> ConvertFromTruncatingInt512TestData()
+	{
+		throw new NotImplementedException();
+	}
+
+	public static IEnumerable<Func<(Half, UInt256)>> ConvertFromCheckedHalfTestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(Half, UInt256)>> ConvertFromSaturatingHalfTestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(Half, UInt256)>> ConvertFromTruncatingHalfTestData()
+	{
+		throw new NotImplementedException();
+	}
+
+	public static IEnumerable<Func<(float, UInt256)>> ConvertFromCheckedSingleTestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(float, UInt256)>> ConvertFromSaturatingSingleTestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(float, UInt256)>> ConvertFromTruncatingSingleTestData()
+	{
+		throw new NotImplementedException();
+	}
+
+	public static IEnumerable<Func<(double, UInt256)>> ConvertFromCheckedDoubleTestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(double, UInt256)>> ConvertFromSaturatingDoubleTestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(double, UInt256)>> ConvertFromTruncatingDoubleTestData()
+	{
+		throw new NotImplementedException();
+	}
+
+	public static IEnumerable<Func<(Quad, UInt256)>> ConvertFromCheckedQuadTestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(Quad, UInt256)>> ConvertFromSaturatingQuadTestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(Quad, UInt256)>> ConvertFromTruncatingQuadTestData()
+	{
+		throw new NotImplementedException();
+	}
+
+	public static IEnumerable<Func<(Octo, UInt256)>> ConvertFromCheckedOctoTestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(Octo, UInt256)>> ConvertFromSaturatingOctoTestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(Octo, UInt256)>> ConvertFromTruncatingOctoTestData()
 	{
 		throw new NotImplementedException();
 	}

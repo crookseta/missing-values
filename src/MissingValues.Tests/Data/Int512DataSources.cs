@@ -388,4 +388,544 @@ public class Int512DataSources
 	{
 		throw new NotImplementedException();
 	}
+	
+	public static IEnumerable<Func<(Int512, byte)>> ConvertToCheckedByteTestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(Int512, byte)>> ConvertToSaturatingByteTestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(Int512, byte)>> ConvertToTruncatingByteTestData()
+	{
+		throw new NotImplementedException();
+	}
+
+	public static IEnumerable<Func<(Int512, ushort)>> ConvertToCheckedUInt16TestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(Int512, ushort)>> ConvertToSaturatingUInt16TestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(Int512, ushort)>> ConvertToTruncatingUInt16TestData()
+	{
+		throw new NotImplementedException();
+	}
+
+	public static IEnumerable<Func<(Int512, uint)>> ConvertToCheckedUInt32TestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(Int512, uint)>> ConvertToSaturatingUInt32TestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(Int512, uint)>> ConvertToTruncatingUInt32TestData()
+	{
+		throw new NotImplementedException();
+	}
+
+	public static IEnumerable<Func<(Int512, ulong)>> ConvertToCheckedUInt64TestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(Int512, ulong)>> ConvertToSaturatingUInt64TestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(Int512, ulong)>> ConvertToTruncatingUInt64TestData()
+	{
+		throw new NotImplementedException();
+	}
+
+	public static IEnumerable<Func<(Int512, UInt128)>> ConvertToCheckedUInt128TestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(Int512, UInt128)>> ConvertToSaturatingUInt128TestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(Int512, UInt128)>> ConvertToTruncatingUInt128TestData()
+	{
+		throw new NotImplementedException();
+	}
+
+	public static IEnumerable<Func<(Int512, UInt256)>> ConvertToCheckedUInt256TestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(Int512, UInt256)>> ConvertToSaturatingUInt256TestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(Int512, UInt256)>> ConvertToTruncatingUInt256TestData()
+	{
+		throw new NotImplementedException();
+	}
+
+	public static IEnumerable<Func<(Int512, UInt512)>> ConvertToCheckedUInt512TestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(Int512, UInt512)>> ConvertToSaturatingUInt512TestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(Int512, UInt512)>> ConvertToTruncatingUInt512TestData()
+	{
+		throw new NotImplementedException();
+	}
+
+	public static IEnumerable<Func<(Int512, sbyte)>> ConvertToCheckedSByteTestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(Int512, sbyte)>> ConvertToSaturatingSByteTestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(Int512, sbyte)>> ConvertToTruncatingSByteTestData()
+	{
+		throw new NotImplementedException();
+	}
+
+	public static IEnumerable<Func<(Int512, short)>> ConvertToCheckedInt16TestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(Int512, short)>> ConvertToSaturatingInt16TestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(Int512, short)>> ConvertToTruncatingInt16TestData()
+	{
+		throw new NotImplementedException();
+	}
+
+	public static IEnumerable<Func<(Int512, int)>> ConvertToCheckedInt32TestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(Int512, int)>> ConvertToSaturatingInt32TestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(Int512, int)>> ConvertToTruncatingInt32TestData()
+	{
+		throw new NotImplementedException();
+	}
+
+	public static IEnumerable<Func<(Int512, long)>> ConvertToCheckedInt64TestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(Int512, long)>> ConvertToSaturatingInt64TestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(Int512, long)>> ConvertToTruncatingInt64TestData()
+	{
+		throw new NotImplementedException();
+	}
+
+	public static IEnumerable<Func<(Int512, Int128)>> ConvertToCheckedInt128TestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(Int512, Int128)>> ConvertToSaturatingInt128TestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(Int512, Int128)>> ConvertToTruncatingInt128TestData()
+	{
+		throw new NotImplementedException();
+	}
+
+	public static IEnumerable<Func<(Int512, Int256)>> ConvertToCheckedInt256TestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(Int512, Int256)>> ConvertToSaturatingInt256TestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(Int512, Int256)>> ConvertToTruncatingInt256TestData()
+	{
+		throw new NotImplementedException();
+	}
+
+	public static IEnumerable<Func<(Int512, Half)>> ConvertToCheckedHalfTestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(Int512, Half)>> ConvertToSaturatingHalfTestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(Int512, Half)>> ConvertToTruncatingHalfTestData()
+	{
+		throw new NotImplementedException();
+	}
+
+	public static IEnumerable<Func<(Int512, float)>> ConvertToCheckedSingleTestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(Int512, float)>> ConvertToSaturatingSingleTestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(Int512, float)>> ConvertToTruncatingSingleTestData()
+	{
+		throw new NotImplementedException();
+	}
+
+	public static IEnumerable<Func<(Int512, double)>> ConvertToCheckedDoubleTestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(Int512, double)>> ConvertToSaturatingDoubleTestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(Int512, double)>> ConvertToTruncatingDoubleTestData()
+	{
+		throw new NotImplementedException();
+	}
+
+	public static IEnumerable<Func<(Int512, Quad)>> ConvertToCheckedQuadTestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(Int512, Quad)>> ConvertToSaturatingQuadTestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(Int512, Quad)>> ConvertToTruncatingQuadTestData()
+	{
+		throw new NotImplementedException();
+	}
+
+	public static IEnumerable<Func<(Int512, Octo)>> ConvertToCheckedOctoTestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(Int512, Octo)>> ConvertToSaturatingOctoTestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(Int512, Octo)>> ConvertToTruncatingOctoTestData()
+	{
+		throw new NotImplementedException();
+	}
+
+	public static IEnumerable<Func<(byte, Int512)>> ConvertFromCheckedByteTestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(byte, Int512)>> ConvertFromSaturatingByteTestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(byte, Int512)>> ConvertFromTruncatingByteTestData()
+	{
+		throw new NotImplementedException();
+	}
+
+	public static IEnumerable<Func<(ushort, Int512)>> ConvertFromCheckedUInt16TestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(ushort, Int512)>> ConvertFromSaturatingUInt16TestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(ushort, Int512)>> ConvertFromTruncatingUInt16TestData()
+	{
+		throw new NotImplementedException();
+	}
+
+	public static IEnumerable<Func<(uint, Int512)>> ConvertFromCheckedUInt32TestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(uint, Int512)>> ConvertFromSaturatingUInt32TestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(uint, Int512)>> ConvertFromTruncatingUInt32TestData()
+	{
+		throw new NotImplementedException();
+	}
+
+	public static IEnumerable<Func<(ulong, Int512)>> ConvertFromCheckedUInt64TestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(ulong, Int512)>> ConvertFromSaturatingUInt64TestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(ulong, Int512)>> ConvertFromTruncatingUInt64TestData()
+	{
+		throw new NotImplementedException();
+	}
+
+	public static IEnumerable<Func<(UInt128, Int512)>> ConvertFromCheckedUInt128TestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(UInt128, Int512)>> ConvertFromSaturatingUInt128TestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(UInt128, Int512)>> ConvertFromTruncatingUInt128TestData()
+	{
+		throw new NotImplementedException();
+	}
+
+	public static IEnumerable<Func<(UInt256, Int512)>> ConvertFromCheckedUInt256TestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(UInt256, Int512)>> ConvertFromSaturatingUInt256TestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(UInt256, Int512)>> ConvertFromTruncatingUInt256TestData()
+	{
+		throw new NotImplementedException();
+	}
+
+	public static IEnumerable<Func<(UInt512, Int512)>> ConvertFromCheckedUInt512TestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(UInt512, Int512)>> ConvertFromSaturatingUInt512TestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(UInt512, Int512)>> ConvertFromTruncatingUInt512TestData()
+	{
+		throw new NotImplementedException();
+	}
+
+	public static IEnumerable<Func<(sbyte, Int512)>> ConvertFromCheckedSByteTestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(sbyte, Int512)>> ConvertFromSaturatingSByteTestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(sbyte, Int512)>> ConvertFromTruncatingSByteTestData()
+	{
+		throw new NotImplementedException();
+	}
+
+	public static IEnumerable<Func<(short, Int512)>> ConvertFromCheckedInt16TestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(short, Int512)>> ConvertFromSaturatingInt16TestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(short, Int512)>> ConvertFromTruncatingInt16TestData()
+	{
+		throw new NotImplementedException();
+	}
+
+	public static IEnumerable<Func<(int, Int512)>> ConvertFromCheckedInt32TestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(int, Int512)>> ConvertFromSaturatingInt32TestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(int, Int512)>> ConvertFromTruncatingInt32TestData()
+	{
+		throw new NotImplementedException();
+	}
+
+	public static IEnumerable<Func<(long, Int512)>> ConvertFromCheckedInt64TestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(long, Int512)>> ConvertFromSaturatingInt64TestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(long, Int512)>> ConvertFromTruncatingInt64TestData()
+	{
+		throw new NotImplementedException();
+	}
+
+	public static IEnumerable<Func<(Int128, Int512)>> ConvertFromCheckedInt128TestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(Int128, Int512)>> ConvertFromSaturatingInt128TestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(Int128, Int512)>> ConvertFromTruncatingInt128TestData()
+	{
+		throw new NotImplementedException();
+	}
+
+	public static IEnumerable<Func<(Int256, Int512)>> ConvertFromCheckedInt256TestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(Int256, Int512)>> ConvertFromSaturatingInt256TestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(Int256, Int512)>> ConvertFromTruncatingInt256TestData()
+	{
+		throw new NotImplementedException();
+	}
+
+	public static IEnumerable<Func<(Half, Int512)>> ConvertFromCheckedHalfTestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(Half, Int512)>> ConvertFromSaturatingHalfTestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(Half, Int512)>> ConvertFromTruncatingHalfTestData()
+	{
+		throw new NotImplementedException();
+	}
+
+	public static IEnumerable<Func<(float, Int512)>> ConvertFromCheckedSingleTestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(float, Int512)>> ConvertFromSaturatingSingleTestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(float, Int512)>> ConvertFromTruncatingSingleTestData()
+	{
+		throw new NotImplementedException();
+	}
+
+	public static IEnumerable<Func<(double, Int512)>> ConvertFromCheckedDoubleTestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(double, Int512)>> ConvertFromSaturatingDoubleTestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(double, Int512)>> ConvertFromTruncatingDoubleTestData()
+	{
+		throw new NotImplementedException();
+	}
+
+	public static IEnumerable<Func<(Quad, Int512)>> ConvertFromCheckedQuadTestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(Quad, Int512)>> ConvertFromSaturatingQuadTestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(Quad, Int512)>> ConvertFromTruncatingQuadTestData()
+	{
+		throw new NotImplementedException();
+	}
+
+	public static IEnumerable<Func<(Octo, Int512)>> ConvertFromCheckedOctoTestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(Octo, Int512)>> ConvertFromSaturatingOctoTestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(Octo, Int512)>> ConvertFromTruncatingOctoTestData()
+	{
+		throw new NotImplementedException();
+	}
 }
