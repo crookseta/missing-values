@@ -1,4 +1,5 @@
-﻿using MissingValues.Tests.Data.Sources;
+﻿using System.Globalization;
+using MissingValues.Tests.Data.Sources;
 
 namespace MissingValues.Tests.Data;
 
@@ -7,7 +8,11 @@ public class UInt256DataSources
 	IShiftOperatorsDataSource<UInt256>,
 	IBitwiseOperatorsDataSource<UInt256>,
 	IEqualityOperatorsDataSource<UInt256>, 
-	IComparisonOperatorsDataSource<UInt256>
+	IComparisonOperatorsDataSource<UInt256>,
+	INumberBaseDataSource<UInt256>,
+	INumberDataSource<UInt256>,
+	IBinaryNumberDataSource<UInt256>,
+	IBinaryIntegerDataSource<UInt256>
 {
 	public static IEnumerable<Func<(UInt256, UInt256, UInt256)>> op_AdditionTestData()
 	{
@@ -246,5 +251,255 @@ public class UInt256DataSources
 		yield return () => (new UInt256(1, 2, 1, 4), new UInt256(1, 2, 2, 4), false);
 		yield return () => (new UInt256(1, 2, 3, 3), new UInt256(1, 2, 3, 4), false);
 		yield return () => (new UInt256(1, 2, 3, 5), new UInt256(1, 2, 3, 4), true);
+	}
+
+	public static IEnumerable<Func<(UInt256, UInt256)>> AbsTestData()
+	{
+		throw new NotImplementedException();
+	}
+
+	public static IEnumerable<Func<(UInt256, bool)>> IsCanonicalTestData()
+	{
+		throw new NotImplementedException();
+	}
+
+	public static IEnumerable<Func<(UInt256, bool)>> IsComplexNumberTestData()
+	{
+		throw new NotImplementedException();
+	}
+
+	public static IEnumerable<Func<(UInt256, bool)>> IsEvenIntegerTestData()
+	{
+		throw new NotImplementedException();
+	}
+
+	public static IEnumerable<Func<(UInt256, bool)>> IsFiniteTestData()
+	{
+		throw new NotImplementedException();
+	}
+
+	public static IEnumerable<Func<(UInt256, bool)>> IsImaginaryNumberTestData()
+	{
+		throw new NotImplementedException();
+	}
+
+	public static IEnumerable<Func<(UInt256, bool)>> IsInfinityTestData()
+	{
+		throw new NotImplementedException();
+	}
+
+	public static IEnumerable<Func<(UInt256, bool)>> IsIntegerTestData()
+	{
+		throw new NotImplementedException();
+	}
+
+	public static IEnumerable<Func<(UInt256, bool)>> IsNaNTestData()
+	{
+		throw new NotImplementedException();
+	}
+
+	public static IEnumerable<Func<(UInt256, bool)>> IsNegativeTestData()
+	{
+		throw new NotImplementedException();
+	}
+
+	public static IEnumerable<Func<(UInt256, bool)>> IsNegativeInfinityTestData()
+	{
+		throw new NotImplementedException();
+	}
+
+	public static IEnumerable<Func<(UInt256, bool)>> IsNormalTestData()
+	{
+		throw new NotImplementedException();
+	}
+
+	public static IEnumerable<Func<(UInt256, bool)>> IsOddIntegerTestData()
+	{
+		throw new NotImplementedException();
+	}
+
+	public static IEnumerable<Func<(UInt256, bool)>> IsPositiveTestData()
+	{
+		throw new NotImplementedException();
+	}
+
+	public static IEnumerable<Func<(UInt256, bool)>> IsPositiveInfinityTestData()
+	{
+		throw new NotImplementedException();
+	}
+
+	public static IEnumerable<Func<(UInt256, bool)>> IsRealNumberTestData()
+	{
+		throw new NotImplementedException();
+	}
+
+	public static IEnumerable<Func<(UInt256, bool)>> IsSubnormalTestData()
+	{
+		throw new NotImplementedException();
+	}
+
+	public static IEnumerable<Func<(UInt256, bool)>> IsZeroTestData()
+	{
+		throw new NotImplementedException();
+	}
+
+	public static IEnumerable<Func<(UInt256, UInt256, UInt256)>> MaxMagnitudeTestData()
+	{
+		throw new NotImplementedException();
+	}
+
+	public static IEnumerable<Func<(UInt256, UInt256, UInt256)>> MaxMagnitudeNumberTestData()
+	{
+		throw new NotImplementedException();
+	}
+
+	public static IEnumerable<Func<(UInt256, UInt256, UInt256)>> MinMagnitudeTestData()
+	{
+		throw new NotImplementedException();
+	}
+
+	public static IEnumerable<Func<(UInt256, UInt256, UInt256)>> MinMagnitudeNumberTestData()
+	{
+		throw new NotImplementedException();
+	}
+
+	public static IEnumerable<Func<(UInt256, UInt256, UInt256, UInt256)>> MultiplyAddEstimateTestData()
+	{
+		throw new NotImplementedException();
+	}
+
+	public static IEnumerable<Func<(string, NumberStyles, IFormatProvider?, UInt256)>> ParseTestData()
+	{
+		throw new NotImplementedException();
+	}
+
+	public static IEnumerable<Func<(char[], NumberStyles, IFormatProvider?, UInt256)>> ParseSpanTestData()
+	{
+		throw new NotImplementedException();
+	}
+
+	public static IEnumerable<Func<(byte[], NumberStyles, IFormatProvider?, UInt256)>> ParseUtf8TestData()
+	{
+		throw new NotImplementedException();
+	}
+
+	public static IEnumerable<Func<(string, NumberStyles, IFormatProvider?, bool, UInt256)>> TryParseTestData()
+	{
+		throw new NotImplementedException();
+	}
+
+	public static IEnumerable<Func<(char[], NumberStyles, IFormatProvider?, bool, UInt256)>> TryParseSpanTestData()
+	{
+		throw new NotImplementedException();
+	}
+
+	public static IEnumerable<Func<(byte[], NumberStyles, IFormatProvider?, bool, UInt256)>> TryParseUtf8TestData()
+	{
+		throw new NotImplementedException();
+	}
+
+	public static IEnumerable<Func<(UInt256, UInt256, UInt256, UInt256)>> ClampTestData()
+	{
+		throw new NotImplementedException();
+	}
+
+	public static IEnumerable<Func<(UInt256, UInt256, UInt256)>> CopySignTestData()
+	{
+		throw new NotImplementedException();
+	}
+
+	public static IEnumerable<Func<(UInt256, UInt256, UInt256)>> MaxTestData()
+	{
+		throw new NotImplementedException();
+	}
+
+	public static IEnumerable<Func<(UInt256, UInt256, UInt256)>> MaxNumberTestData()
+	{
+		throw new NotImplementedException();
+	}
+
+	public static IEnumerable<Func<(UInt256, UInt256, UInt256)>> MinTestData()
+	{
+		throw new NotImplementedException();
+	}
+
+	public static IEnumerable<Func<(UInt256, UInt256, UInt256)>> MinNumberTestData()
+	{
+		throw new NotImplementedException();
+	}
+
+	public static IEnumerable<Func<(UInt256, UInt256)>> SignTestData()
+	{
+		throw new NotImplementedException();
+	}
+
+	public static IEnumerable<Func<(UInt256, bool)>> IsPow2TestData()
+	{
+		throw new NotImplementedException();
+	}
+
+	public static IEnumerable<Func<(UInt256, UInt256)>> Log2TestData()
+	{
+		throw new NotImplementedException();
+	}
+
+	public static IEnumerable<Func<(UInt256, UInt256, (UInt256, UInt256))>> DivRemTestData()
+	{
+		throw new NotImplementedException();
+	}
+
+	public static IEnumerable<Func<(UInt256, UInt256)>> LeadingZeroCountTestData()
+	{
+		throw new NotImplementedException();
+	}
+
+	public static IEnumerable<Func<(UInt256, UInt256)>> PopCountTestData()
+	{
+		throw new NotImplementedException();
+	}
+
+	public static IEnumerable<Func<(byte[], bool, UInt256)>> ReadBigEndianTestData()
+	{
+		throw new NotImplementedException();
+	}
+
+	public static IEnumerable<Func<(byte[], bool, UInt256)>> ReadLittleEndianTestData()
+	{
+		throw new NotImplementedException();
+	}
+
+	public static IEnumerable<Func<(UInt256, int, UInt256)>> RotateLeftTestData()
+	{
+		throw new NotImplementedException();
+	}
+
+	public static IEnumerable<Func<(UInt256, int, UInt256)>> RotateRightTestData()
+	{
+		throw new NotImplementedException();
+	}
+
+	public static IEnumerable<Func<(UInt256, UInt256)>> TrailingZeroCountTestData()
+	{
+		throw new NotImplementedException();
+	}
+
+	public static IEnumerable<Func<(UInt256, int)>> GetByteCountTestData()
+	{
+		throw new NotImplementedException();
+	}
+
+	public static IEnumerable<Func<(UInt256, int)>> GetShortestBitLengthTestData()
+	{
+		throw new NotImplementedException();
+	}
+
+	public static IEnumerable<Func<(UInt256, byte[], int)>> WriteBigEndianTestData()
+	{
+		throw new NotImplementedException();
+	}
+
+	public static IEnumerable<Func<(UInt256, byte[], int)>> WriteLittleEndianTestData()
+	{
+		throw new NotImplementedException();
 	}
 }
