@@ -319,7 +319,7 @@ public class UInt512DataSources
 		throw new NotImplementedException();
 	}
 
-	public static IEnumerable<Func<(UInt512, UInt512)>> SignTestData()
+	public static IEnumerable<Func<(UInt512, int)>> SignTestData()
 	{
 		throw new NotImplementedException();
 	}

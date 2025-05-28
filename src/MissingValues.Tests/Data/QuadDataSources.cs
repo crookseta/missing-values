@@ -299,7 +299,7 @@ public class QuadDataSources
         throw new NotImplementedException();
     }
 
-    public static IEnumerable<Func<(Quad, Quad)>> SignTestData()
+    public static IEnumerable<Func<(Quad, int)>> SignTestData()
     {
         throw new NotImplementedException();
     }

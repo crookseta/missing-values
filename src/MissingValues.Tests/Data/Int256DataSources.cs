@@ -314,7 +314,7 @@ public class Int256DataSources
 		throw new NotImplementedException();
 	}
 
-	public static IEnumerable<Func<(Int256, Int256)>> SignTestData()
+	public static IEnumerable<Func<(Int256, int)>> SignTestData()
 	{
 		throw new NotImplementedException();
 	}

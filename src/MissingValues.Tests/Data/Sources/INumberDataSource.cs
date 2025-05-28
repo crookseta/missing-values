@@ -11,5 +11,5 @@ public interface INumberDataSource<T>
     static abstract IEnumerable<Func<(T, T, T)>> MaxNumberTestData();
     static abstract IEnumerable<Func<(T, T, T)>> MinTestData();
     static abstract IEnumerable<Func<(T, T, T)>> MinNumberTestData();
-    static abstract IEnumerable<Func<(T, T)>> SignTestData();
+    static abstract IEnumerable<Func<(T, int)>> SignTestData();
 }

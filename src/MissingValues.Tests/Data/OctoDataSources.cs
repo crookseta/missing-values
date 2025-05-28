@@ -299,7 +299,7 @@ public class OctoDataSources
         throw new NotImplementedException();
     }
 
-    public static IEnumerable<Func<(Octo, Octo)>> SignTestData()
+    public static IEnumerable<Func<(Octo, int)>> SignTestData()
     {
         throw new NotImplementedException();
     }
