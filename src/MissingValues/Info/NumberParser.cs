@@ -151,7 +151,7 @@ namespace MissingValues.Info
 			where T : struct, IFormattableUnsignedInteger<T>
 			where TChar : unmanaged, IUtfCharacter<TChar>
 		{
-			if (s.Length > T.MaxDecimalDigits && (char)s[0] > T.LastDecimalDigitOfMaxValue)
+			if (s.Length > T.MaxDecimalDigits || (s.Length == T.MaxDecimalDigits && (char)s[0] > T.LastDecimalDigitOfMaxValue))
 			{
 				output = default;
 				return ParsingStatus.Overflow;
