@@ -228,7 +228,7 @@ public static class Helper
     public static TSelf RotateRight<TSelf>(TSelf value, int rotateAmount)
         where TSelf : IBinaryInteger<TSelf>
     {
-        return TSelf.RotateLeft(value, rotateAmount);
+        return TSelf.RotateRight(value, rotateAmount);
     }
     public static TSelf TrailingZeroCount<TSelf>(TSelf value)
         where TSelf : IBinaryInteger<TSelf>
