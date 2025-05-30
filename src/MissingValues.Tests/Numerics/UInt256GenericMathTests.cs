@@ -7,13 +7,17 @@ using System.Text;
 using System.Threading.Tasks;
 using TUnit.Assertions.AssertConditions.Throws;
 
+using static MissingValues.Tests.Data.UInt256DataSources;
+
+using DataSources = MissingValues.Tests.Data.UInt256DataSources;
+
 namespace MissingValues.Tests.Numerics;
 
 public class UInt256GenericMathTests
 {
 	#region Operators
 	[Test]
-	[MethodDataSource(typeof(UInt256DataSources), nameof(UInt256DataSources.op_AdditionTestData))]
+	[MethodDataSource(typeof(DataSources), nameof(op_AdditionTestData))]
 	public async Task op_AdditionTest(UInt256 left, UInt256 right, UInt256 expected)
 	{
 		var result = left + right;
@@ -21,7 +25,7 @@ public class UInt256GenericMathTests
 		await Assert.That(result).IsEqualTo(expected);
 	}
 	[Test]
-	[MethodDataSource(typeof(UInt256DataSources), nameof(UInt256DataSources.op_CheckedAdditionTestData))]
+	[MethodDataSource(typeof(DataSources), nameof(op_CheckedAdditionTestData))]
 	public async Task op_CheckedAdditionTest(UInt256 left, UInt256 right, UInt256 expected, bool overflows)
 	{
 		if (overflows)
@@ -35,7 +39,7 @@ public class UInt256GenericMathTests
 		}
 	}
 	[Test]
-	[MethodDataSource(typeof(UInt256DataSources), nameof(UInt256DataSources.op_IncrementTestData))]
+	[MethodDataSource(typeof(DataSources), nameof(op_IncrementTestData))]
 	public async Task op_IncrementTest(UInt256 value, UInt256 expected)
 	{
 		var result = ++value;
@@ -43,7 +47,7 @@ public class UInt256GenericMathTests
 		await Assert.That(result).IsEqualTo(expected).And.IsEqualTo(value);
 	}
 	[Test]
-	[MethodDataSource(typeof(UInt256DataSources), nameof(UInt256DataSources.op_CheckedIncrementTestData))]
+	[MethodDataSource(typeof(DataSources), nameof(op_CheckedIncrementTestData))]
 	public async Task op_CheckedIncrementTest(UInt256 value, UInt256 expected, bool overflows)
 	{
 		if (overflows)
@@ -57,7 +61,7 @@ public class UInt256GenericMathTests
 		}
 	}
 	[Test]
-	[MethodDataSource(typeof(UInt256DataSources), nameof(UInt256DataSources.op_SubtractionTestData))]
+	[MethodDataSource(typeof(DataSources), nameof(op_SubtractionTestData))]
 	public async Task op_SubtractionTest(UInt256 left, UInt256 right, UInt256 expected)
 	{
 		var result = left - right;
@@ -65,7 +69,7 @@ public class UInt256GenericMathTests
 		await Assert.That(result).IsEqualTo(expected);
 	}
 	[Test]
-	[MethodDataSource(typeof(UInt256DataSources), nameof(UInt256DataSources.op_CheckedSubtractionTestData))]
+	[MethodDataSource(typeof(DataSources), nameof(op_CheckedSubtractionTestData))]
 	public async Task op_CheckedSubtractionTest(UInt256 left, UInt256 right, UInt256 expected, bool overflows)
 	{
 		if (overflows)
@@ -79,7 +83,7 @@ public class UInt256GenericMathTests
 		}
 	}
 	[Test]
-	[MethodDataSource(typeof(UInt256DataSources), nameof(UInt256DataSources.op_DecrementTestData))]
+	[MethodDataSource(typeof(DataSources), nameof(op_DecrementTestData))]
 	public async Task op_DecrementTest(UInt256 value, UInt256 expected)
 	{
 		var result = --value;
@@ -87,7 +91,7 @@ public class UInt256GenericMathTests
 		await Assert.That(result).IsEqualTo(expected).And.IsEqualTo(value);
 	}
 	[Test]
-	[MethodDataSource(typeof(UInt256DataSources), nameof(UInt256DataSources.op_CheckedDecrementTestData))]
+	[MethodDataSource(typeof(DataSources), nameof(op_CheckedDecrementTestData))]
 	public async Task op_CheckedDecrementTest(UInt256 value, UInt256 expected, bool overflows)
 	{
 		if (overflows)
@@ -101,7 +105,7 @@ public class UInt256GenericMathTests
 		}
 	}
 	[Test]
-	[MethodDataSource(typeof(UInt256DataSources), nameof(UInt256DataSources.op_MultiplyTestData))]
+	[MethodDataSource(typeof(DataSources), nameof(op_MultiplyTestData))]
 	public async Task op_MultiplyTest(UInt256 left, UInt256 right, UInt256 expected)
 	{
 		var result = left * right;
@@ -109,7 +113,7 @@ public class UInt256GenericMathTests
 		await Assert.That(result).IsEqualTo(expected);
 	}
 	[Test]
-	[MethodDataSource(typeof(UInt256DataSources), nameof(UInt256DataSources.op_CheckedMultiplyTestData))]
+	[MethodDataSource(typeof(DataSources), nameof(op_CheckedMultiplyTestData))]
 	public async Task op_CheckedMultiplyTest(UInt256 left, UInt256 right, UInt256 expected, bool overflows)
 	{
 		if (overflows)
@@ -123,7 +127,7 @@ public class UInt256GenericMathTests
 		}
 	}
 	[Test]
-	[MethodDataSource(typeof(UInt256DataSources), nameof(UInt256DataSources.op_DivisionTestData))]
+	[MethodDataSource(typeof(DataSources), nameof(op_DivisionTestData))]
 	public async Task op_DivisionTest(UInt256 left, UInt256 right, UInt256 expected)
 	{
 		if (right == UInt256.Zero)
@@ -138,7 +142,7 @@ public class UInt256GenericMathTests
 		}
 	}
 	[Test]
-	[MethodDataSource(typeof(UInt256DataSources), nameof(UInt256DataSources.op_ModulusTestData))]
+	[MethodDataSource(typeof(DataSources), nameof(op_ModulusTestData))]
 	public async Task op_ModulusTest(UInt256 left, UInt256 right, UInt256 expected)
 	{
 		if (right == UInt256.Zero)
@@ -153,7 +157,7 @@ public class UInt256GenericMathTests
 		}
 	}
 	[Test]
-	[MethodDataSource(typeof(UInt256DataSources), nameof(UInt256DataSources.op_OnesComplementTestData))]
+	[MethodDataSource(typeof(DataSources), nameof(op_OnesComplementTestData))]
 	public async Task op_OnesComplementTest(UInt256 value, UInt256 expected)
 	{
 		var result = ~value;
@@ -161,7 +165,7 @@ public class UInt256GenericMathTests
 		await Assert.That(result).IsEqualTo(expected);
 	}
 	[Test]
-	[MethodDataSource(typeof(UInt256DataSources), nameof(UInt256DataSources.op_BitwiseAndTestData))]
+	[MethodDataSource(typeof(DataSources), nameof(op_BitwiseAndTestData))]
 	public async Task op_BitwiseAndTest(UInt256 left, UInt256 right, UInt256 expected)
 	{
 		var result = left & right;
@@ -169,7 +173,7 @@ public class UInt256GenericMathTests
 		await Assert.That(result).IsEqualTo(expected);
 	}
 	[Test]
-	[MethodDataSource(typeof(UInt256DataSources), nameof(UInt256DataSources.op_BitwiseOrTestData))]
+	[MethodDataSource(typeof(DataSources), nameof(op_BitwiseOrTestData))]
 	public async Task op_BitwiseOrTest(UInt256 left, UInt256 right, UInt256 expected)
 	{
 		var result = left | right;
@@ -177,7 +181,7 @@ public class UInt256GenericMathTests
 		await Assert.That(result).IsEqualTo(expected);
 	}
 	[Test]
-	[MethodDataSource(typeof(UInt256DataSources), nameof(UInt256DataSources.op_BitwiseXorTestData))]
+	[MethodDataSource(typeof(DataSources), nameof(op_BitwiseXorTestData))]
 	public async Task op_BitwiseXorTest(UInt256 left, UInt256 right, UInt256 expected)
 	{
 		var result = left ^ right;
@@ -185,7 +189,7 @@ public class UInt256GenericMathTests
 		await Assert.That(result).IsEqualTo(expected);
 	}
 	[Test]
-	[MethodDataSource(typeof(UInt256DataSources), nameof(UInt256DataSources.op_ShiftLeftTestData))]
+	[MethodDataSource(typeof(DataSources), nameof(op_ShiftLeftTestData))]
 	public async Task op_ShiftLeftTest(UInt256 value, int shiftAmount, UInt256 expected)
 	{
 		var result = value << shiftAmount;
@@ -193,7 +197,7 @@ public class UInt256GenericMathTests
 		await Assert.That(result).IsEqualTo(expected);
 	}
 	[Test]
-	[MethodDataSource(typeof(UInt256DataSources), nameof(UInt256DataSources.op_ShiftRightTestData))]
+	[MethodDataSource(typeof(DataSources), nameof(op_ShiftRightTestData))]
 	public async Task op_ShiftRightTest(UInt256 value, int shiftAmount, UInt256 expected)
 	{
 		var result = value >> shiftAmount;
@@ -201,7 +205,7 @@ public class UInt256GenericMathTests
 		await Assert.That(result).IsEqualTo(expected);
 	}
 	[Test]
-	[MethodDataSource(typeof(UInt256DataSources), nameof(UInt256DataSources.op_UnsignedShiftRightTestData))]
+	[MethodDataSource(typeof(DataSources), nameof(op_UnsignedShiftRightTestData))]
 	public async Task op_UnsignedShiftRightTest(UInt256 value, int shiftAmount, UInt256 expected)
 	{
 		var result = value >>> shiftAmount;
@@ -209,7 +213,7 @@ public class UInt256GenericMathTests
 		await Assert.That(result).IsEqualTo(expected);
 	}
 	[Test]
-	[MethodDataSource(typeof(UInt256DataSources), nameof(UInt256DataSources.op_EqualityTestData))]
+	[MethodDataSource(typeof(DataSources), nameof(op_EqualityTestData))]
 	public async Task op_EqualityTest(UInt256 left, UInt256 right, bool expected)
 	{
 		var result = left == right;
@@ -217,7 +221,7 @@ public class UInt256GenericMathTests
 		await Assert.That(result).IsEqualTo(expected);
 	}
 	[Test]
-	[MethodDataSource(typeof(UInt256DataSources), nameof(UInt256DataSources.op_InequalityTestData))]
+	[MethodDataSource(typeof(DataSources), nameof(op_InequalityTestData))]
 	public async Task op_InequalityTest(UInt256 left, UInt256 right, bool expected)
 	{
 		var result = left != right;
@@ -225,7 +229,7 @@ public class UInt256GenericMathTests
 		await Assert.That(result).IsEqualTo(expected);
 	}
 	[Test]
-	[MethodDataSource(typeof(UInt256DataSources), nameof(UInt256DataSources.op_LessThanTestData))]
+	[MethodDataSource(typeof(DataSources), nameof(op_LessThanTestData))]
 	public async Task op_LessThanTest(UInt256 left, UInt256 right, bool expected)
 	{
 		var result = left < right;
@@ -233,7 +237,7 @@ public class UInt256GenericMathTests
 		await Assert.That(result).IsEqualTo(expected);
 	}
 	[Test]
-	[MethodDataSource(typeof(UInt256DataSources), nameof(UInt256DataSources.op_LessThanOrEqualTestData))]
+	[MethodDataSource(typeof(DataSources), nameof(op_LessThanOrEqualTestData))]
 	public async Task op_LessThanOrEqualTest(UInt256 left, UInt256 right, bool expected)
 	{
 		var result = left <= right;
@@ -241,7 +245,7 @@ public class UInt256GenericMathTests
 		await Assert.That(result).IsEqualTo(expected);
 	}
 	[Test]
-	[MethodDataSource(typeof(UInt256DataSources), nameof(UInt256DataSources.op_GreaterThanTestData))]
+	[MethodDataSource(typeof(DataSources), nameof(op_GreaterThanTestData))]
 	public async Task op_GreaterThanTest(UInt256 left, UInt256 right, bool expected)
 	{
 		var result = left > right;
@@ -249,7 +253,7 @@ public class UInt256GenericMathTests
 		await Assert.That(result).IsEqualTo(expected);
 	}
 	[Test]
-	[MethodDataSource(typeof(UInt256DataSources), nameof(UInt256DataSources.op_GreaterThanOrEqualTestData))]
+	[MethodDataSource(typeof(DataSources), nameof(op_GreaterThanOrEqualTestData))]
 	public async Task op_GreaterThanOrEqualTest(UInt256 left, UInt256 right, bool expected)
 	{
 		var result = left >= right;
@@ -260,189 +264,189 @@ public class UInt256GenericMathTests
 
 	#region INumberBase
 	[Test]
-	[MethodDataSource(typeof(UInt256DataSources), nameof(UInt256DataSources.AbsTestData))]
+	[MethodDataSource(typeof(DataSources), nameof(AbsTestData))]
 	public async Task AbsTest(UInt256 value, UInt256 expected)
 	{
 		UInt256 result = Helper.Abs(value);
 		await Assert.That(result).IsEqualTo(expected);
 	}
 	[Test]
-	[MethodDataSource(typeof(UInt256DataSources), nameof(UInt256DataSources.IsCanonicalTestData))]
+	[MethodDataSource(typeof(DataSources), nameof(IsCanonicalTestData))]
 	public async Task IsCanonicalTest(UInt256 value, bool expected)
 	{
 		bool result = Helper.IsCanonical(value);
 		await Assert.That(result).IsEqualTo(expected);
 	}
 	[Test]
-	[MethodDataSource(typeof(UInt256DataSources), nameof(UInt256DataSources.IsComplexNumberTestData))]
+	[MethodDataSource(typeof(DataSources), nameof(IsComplexNumberTestData))]
 	public async Task IsComplexNumberTest(UInt256 value, bool expected)
 	{
 		bool result = Helper.IsComplexNumber(value);
 		await Assert.That(result).IsEqualTo(expected);
 	}
 	[Test]
-	[MethodDataSource(typeof(UInt256DataSources), nameof(UInt256DataSources.IsEvenIntegerTestData))]
+	[MethodDataSource(typeof(DataSources), nameof(IsEvenIntegerTestData))]
 	public async Task IsEvenIntegerTest(UInt256 value, bool expected)
 	{
 		bool result = Helper.IsEvenInteger(value);
 		await Assert.That(result).IsEqualTo(expected);
 	}
 	[Test]
-	[MethodDataSource(typeof(UInt256DataSources), nameof(UInt256DataSources.IsFiniteTestData))]
+	[MethodDataSource(typeof(DataSources), nameof(IsFiniteTestData))]
 	public async Task IsFiniteTest(UInt256 value, bool expected)
 	{
 		bool result = Helper.IsFinite(value);
 		await Assert.That(result).IsEqualTo(expected);
 	}
 	[Test]
-	[MethodDataSource(typeof(UInt256DataSources), nameof(UInt256DataSources.IsImaginaryNumberTestData))]
+	[MethodDataSource(typeof(DataSources), nameof(IsImaginaryNumberTestData))]
 	public async Task IsImaginaryNumberTest(UInt256 value, bool expected)
 	{
 		bool result = Helper.IsImaginaryNumber(value);
 		await Assert.That(result).IsEqualTo(expected);
 	}
 	[Test]
-	[MethodDataSource(typeof(UInt256DataSources), nameof(UInt256DataSources.IsInfinityTestData))]
+	[MethodDataSource(typeof(DataSources), nameof(IsInfinityTestData))]
 	public async Task IsInfinityTest(UInt256 value, bool expected)
 	{
 		bool result = Helper.IsInfinity(value);
 		await Assert.That(result).IsEqualTo(expected);
 	}
 	[Test]
-	[MethodDataSource(typeof(UInt256DataSources), nameof(UInt256DataSources.IsIntegerTestData))]
+	[MethodDataSource(typeof(DataSources), nameof(IsIntegerTestData))]
 	public async Task IsIntegerTest(UInt256 value, bool expected)
 	{
 		bool result = Helper.IsInteger(value);
 		await Assert.That(result).IsEqualTo(expected);
 	}
 	[Test]
-	[MethodDataSource(typeof(UInt256DataSources), nameof(UInt256DataSources.IsNaNTestData))]
+	[MethodDataSource(typeof(DataSources), nameof(IsNaNTestData))]
 	public async Task IsNaNTest(UInt256 value, bool expected)
 	{
 		bool result = Helper.IsNaN(value);
 		await Assert.That(result).IsEqualTo(expected);
 	}
 	[Test]
-	[MethodDataSource(typeof(UInt256DataSources), nameof(UInt256DataSources.IsNegativeTestData))]
+	[MethodDataSource(typeof(DataSources), nameof(IsNegativeTestData))]
 	public async Task IsNegativeTest(UInt256 value, bool expected)
 	{
 		bool result = Helper.IsNegative(value);
 		await Assert.That(result).IsEqualTo(expected);
 	}
 	[Test]
-	[MethodDataSource(typeof(UInt256DataSources), nameof(UInt256DataSources.IsNegativeInfinityTestData))]
+	[MethodDataSource(typeof(DataSources), nameof(IsNegativeInfinityTestData))]
 	public async Task IsNegativeInfinityTest(UInt256 value, bool expected)
 	{
 		bool result = Helper.IsNegativeInfinity(value);
 		await Assert.That(result).IsEqualTo(expected);
 	}
 	[Test]
-	[MethodDataSource(typeof(UInt256DataSources), nameof(UInt256DataSources.IsNormalTestData))]
+	[MethodDataSource(typeof(DataSources), nameof(IsNormalTestData))]
 	public async Task IsNormalTest(UInt256 value, bool expected)
 	{
 		bool result = Helper.IsNormal(value);
 		await Assert.That(result).IsEqualTo(expected);
 	}
 	[Test]
-	[MethodDataSource(typeof(UInt256DataSources), nameof(UInt256DataSources.IsOddIntegerTestData))]
+	[MethodDataSource(typeof(DataSources), nameof(IsOddIntegerTestData))]
 	public async Task IsOddIntegerTest(UInt256 value, bool expected)
 	{
 		bool result = Helper.IsOddInteger(value);
 		await Assert.That(result).IsEqualTo(expected);
 	}
 	[Test]
-	[MethodDataSource(typeof(UInt256DataSources), nameof(UInt256DataSources.IsPositiveTestData))]
+	[MethodDataSource(typeof(DataSources), nameof(IsPositiveTestData))]
 	public async Task IsPositiveTest(UInt256 value, bool expected)
 	{
 		bool result = Helper.IsPositive(value);
 		await Assert.That(result).IsEqualTo(expected);
 	}
 	[Test]
-	[MethodDataSource(typeof(UInt256DataSources), nameof(UInt256DataSources.IsPositiveInfinityTestData))]
+	[MethodDataSource(typeof(DataSources), nameof(IsPositiveInfinityTestData))]
 	public async Task IsPositiveInfinityTest(UInt256 value, bool expected)
 	{
 		bool result = Helper.IsPositiveInfinity(value);
 		await Assert.That(result).IsEqualTo(expected);
 	}
 	[Test]
-	[MethodDataSource(typeof(UInt256DataSources), nameof(UInt256DataSources.IsRealNumberTestData))]
+	[MethodDataSource(typeof(DataSources), nameof(IsRealNumberTestData))]
 	public async Task IsRealNumberTest(UInt256 value, bool expected)
 	{
 		bool result = Helper.IsRealNumber(value);
 		await Assert.That(result).IsEqualTo(expected);
 	}
 	[Test]
-	[MethodDataSource(typeof(UInt256DataSources), nameof(UInt256DataSources.IsSubnormalTestData))]
+	[MethodDataSource(typeof(DataSources), nameof(IsSubnormalTestData))]
 	public async Task IsSubnormalTest(UInt256 value, bool expected)
 	{
 		bool result = Helper.IsSubnormal(value);
 		await Assert.That(result).IsEqualTo(expected);
 	}
 	[Test]
-	[MethodDataSource(typeof(UInt256DataSources), nameof(UInt256DataSources.IsZeroTestData))]
+	[MethodDataSource(typeof(DataSources), nameof(IsZeroTestData))]
 	public async Task IsZeroTest(UInt256 value, bool expected)
 	{
 		bool result = Helper.IsZero(value);
 		await Assert.That(result).IsEqualTo(expected);
 	}
 	[Test]
-	[MethodDataSource(typeof(UInt256DataSources), nameof(UInt256DataSources.MaxMagnitudeTestData))]
+	[MethodDataSource(typeof(DataSources), nameof(MaxMagnitudeTestData))]
 	public async Task MaxMagnitudeTest(UInt256 x, UInt256 y, UInt256 expected)
 	{
 		var result = Helper.MaxMagnitude(x, y);
 		await Assert.That(result).IsEqualTo(expected);
 	}
 	[Test]
-	[MethodDataSource(typeof(UInt256DataSources), nameof(UInt256DataSources.MaxMagnitudeNumberTestData))]
+	[MethodDataSource(typeof(DataSources), nameof(MaxMagnitudeNumberTestData))]
 	public async Task MaxMagnitudeNumberTest(UInt256 x, UInt256 y, UInt256 expected)
 	{
 		var result = Helper.MaxMagnitudeNumber(x, y);
 		await Assert.That(result).IsEqualTo(expected);
 	}
 	[Test]
-	[MethodDataSource(typeof(UInt256DataSources), nameof(UInt256DataSources.MinMagnitudeTestData))]
+	[MethodDataSource(typeof(DataSources), nameof(MinMagnitudeTestData))]
 	public async Task MinMagnitudeTest(UInt256 x, UInt256 y, UInt256 expected)
 	{
 		var result = Helper.MinMagnitude(x, y);
 		await Assert.That(result).IsEqualTo(expected);
 	}
 	[Test]
-	[MethodDataSource(typeof(UInt256DataSources), nameof(UInt256DataSources.MinMagnitudeNumberTestData))]
+	[MethodDataSource(typeof(DataSources), nameof(MinMagnitudeNumberTestData))]
 	public async Task MinMagnitudeNumberTest(UInt256 x, UInt256 y, UInt256 expected)
 	{
 		var result = Helper.MinMagnitudeNumber(x, y);
 		await Assert.That(result).IsEqualTo(expected);
 	}
 	[Test]
-	[MethodDataSource(typeof(UInt256DataSources), nameof(UInt256DataSources.MultiplyAddEstimateTestData))]
+	[MethodDataSource(typeof(DataSources), nameof(MultiplyAddEstimateTestData))]
 	public async Task MultiplyAddEstimateTest(UInt256 left, UInt256 right, UInt256 addend, UInt256 expected)
 	{
 		var result = Helper.MultiplyAddEstimate(left, right, addend);
 		await Assert.That(result).IsEqualTo(expected);
 	}
 	[Test]
-	[MethodDataSource(typeof(UInt256DataSources), nameof(UInt256DataSources.ParseTestData))]
+	[MethodDataSource(typeof(DataSources), nameof(ParseTestData))]
 	public async Task ParseTest(string s, NumberStyles style, IFormatProvider? provider, UInt256 expected)
 	{
 		var result = Helper.Parse<UInt256>(s, style, provider);
 		await Assert.That(result).IsEqualTo(expected);
 	}
 	[Test]
-	[MethodDataSource(typeof(UInt256DataSources), nameof(UInt256DataSources.ParseSpanTestData))]
+	[MethodDataSource(typeof(DataSources), nameof(ParseSpanTestData))]
 	public async Task ParseTest(char[] s, NumberStyles style, IFormatProvider? provider, UInt256 expected)
 	{
 		var result = Helper.Parse<UInt256>(s, style, provider);
 		await Assert.That(result).IsEqualTo(expected);
 	}
 	[Test]
-	[MethodDataSource(typeof(UInt256DataSources), nameof(UInt256DataSources.ParseUtf8TestData))]
+	[MethodDataSource(typeof(DataSources), nameof(ParseUtf8TestData))]
 	public async Task ParseTest(byte[] utf8Text, NumberStyles style, IFormatProvider? provider, UInt256 expected)
 	{
 		var result = Helper.Parse<UInt256>(utf8Text, style, provider);
 		await Assert.That(result).IsEqualTo(expected);
 	}
 	[Test]
-	[MethodDataSource(typeof(UInt256DataSources), nameof(UInt256DataSources.TryParseTestData))]
+	[MethodDataSource(typeof(DataSources), nameof(TryParseTestData))]
 	public async Task TryParseTest(string s, NumberStyles style, IFormatProvider? provider, bool expected, UInt256 expectedValue)
 	{
 		var success = Helper.TryParse<UInt256>(s, style, provider, out var result);
@@ -453,7 +457,7 @@ public class UInt256GenericMathTests
 		}
 	}
 	[Test]
-	[MethodDataSource(typeof(UInt256DataSources), nameof(UInt256DataSources.TryParseSpanTestData))]
+	[MethodDataSource(typeof(DataSources), nameof(TryParseSpanTestData))]
 	public async Task TryParseTest(char[] s, NumberStyles style, IFormatProvider? provider, bool expected, UInt256 expectedValue)
 	{
 		var success = Helper.TryParse<UInt256>(s, style, provider, out var result);
@@ -464,7 +468,7 @@ public class UInt256GenericMathTests
 		}
 	}
 	[Test]
-	[MethodDataSource(typeof(UInt256DataSources), nameof(UInt256DataSources.TryParseUtf8TestData))]
+	[MethodDataSource(typeof(DataSources), nameof(TryParseUtf8TestData))]
 	public async Task TryParseTest(byte[] utf8Text, NumberStyles style, IFormatProvider? provider, bool expected, UInt256 expectedValue)
 	{
 		var success = Helper.TryParse<UInt256>(utf8Text, style, provider, out var result);
@@ -474,8 +478,11 @@ public class UInt256GenericMathTests
 			await Assert.That(result).IsEqualTo(expectedValue);
 		}
 	}
+	#endregion
+	
+	#region INumber
 	[Test]
-	[MethodDataSource(typeof(UInt256DataSources), nameof(UInt256DataSources.ClampTestData))]
+	[MethodDataSource(typeof(DataSources), nameof(ClampTestData))]
 	public async Task ClampTest(UInt256 value, UInt256 min, UInt256 max, UInt256 expected)
 	{
 		if (min > max)
@@ -489,98 +496,104 @@ public class UInt256GenericMathTests
 		}
 	}
 	[Test]
-	[MethodDataSource(typeof(UInt256DataSources), nameof(UInt256DataSources.CopySignTestData))]
+	[MethodDataSource(typeof(DataSources), nameof(CopySignTestData))]
 	public async Task CopySignTest(UInt256 value, UInt256 sign, UInt256 expected)
 	{
 		var result = Helper.CopySign(value, sign);
 		await Assert.That(result).IsEqualTo(expected);
 	}
 	[Test]
-	[MethodDataSource(typeof(UInt256DataSources), nameof(UInt256DataSources.MaxTestData))]
+	[MethodDataSource(typeof(DataSources), nameof(MaxTestData))]
 	public async Task MaxTest(UInt256 x, UInt256 y, UInt256 expected)
 	{
 		var result = Helper.Max(x, y);
 		await Assert.That(result).IsEqualTo(expected);
 	}
 	[Test]
-	[MethodDataSource(typeof(UInt256DataSources), nameof(UInt256DataSources.MaxNumberTestData))]
+	[MethodDataSource(typeof(DataSources), nameof(MaxNumberTestData))]
 	public async Task MaxNumberTest(UInt256 x, UInt256 y, UInt256 expected)
 	{
 		var result = Helper.MaxNumber(x, y);
 		await Assert.That(result).IsEqualTo(expected);
 	}
 	[Test]
-	[MethodDataSource(typeof(UInt256DataSources), nameof(UInt256DataSources.MinTestData))]
+	[MethodDataSource(typeof(DataSources), nameof(MinTestData))]
 	public async Task MinTest(UInt256 x, UInt256 y, UInt256 expected)
 	{
 		var result = Helper.Min(x, y);
 		await Assert.That(result).IsEqualTo(expected);
 	}
 	[Test]
-	[MethodDataSource(typeof(UInt256DataSources), nameof(UInt256DataSources.MinNumberTestData))]
+	[MethodDataSource(typeof(DataSources), nameof(MinNumberTestData))]
 	public async Task MinNumberTest(UInt256 x, UInt256 y, UInt256 expected)
 	{
 		var result = Helper.MinNumber(x, y);
 		await Assert.That(result).IsEqualTo(expected);
 	}
 	[Test]
-	[MethodDataSource(typeof(UInt256DataSources), nameof(UInt256DataSources.SignTestData))]
+	[MethodDataSource(typeof(DataSources), nameof(SignTestData))]
 	public async Task SignTest(UInt256 value, int expected)
 	{
 		var result = Helper.Sign(value);
 		await Assert.That(result).IsEqualTo(expected);
 	}
+	#endregion
+	
+	#region IBinaryNumber
 	[Test]
-	[MethodDataSource(typeof(UInt256DataSources), nameof(UInt256DataSources.IsPow2TestData))]
+	[MethodDataSource(typeof(DataSources), nameof(IsPow2TestData))]
 	public async Task IsPow2Test(UInt256 value, bool expected)
 	{
 		var result = Helper.IsPow2(value);
 		await Assert.That(result).IsEqualTo(expected);
 	}
 	[Test]
-	[MethodDataSource(typeof(UInt256DataSources), nameof(UInt256DataSources.Log2TestData))]
+	[MethodDataSource(typeof(DataSources), nameof(Log2TestData))]
 	public async Task Log2Test(UInt256 value, UInt256 expected)
 	{
 		var result = Helper.Log2(value);
 		await Assert.That(result).IsEqualTo(expected);
 	}
+	#endregion
+	
+	#region IBinaryInteger
 	[Test]
-	[MethodDataSource(typeof(UInt256DataSources), nameof(UInt256DataSources.DivRemTestData))]
+	[MethodDataSource(typeof(DataSources), nameof(DivRemTestData))]
 	public async Task DivRemTest(UInt256 left, UInt256 right, (UInt256, UInt256) expected)
 	{
 		var result = Helper.DivRem(left, right);
 		await Assert.That(result).IsEqualTo(expected);
 	}
 	[Test]
-	[MethodDataSource(typeof(UInt256DataSources), nameof(UInt256DataSources.LeadingZeroCountTestData))]
+	[MethodDataSource(typeof(DataSources), nameof(LeadingZeroCountTestData))]
 	public async Task LeadingZeroCountTest(UInt256 value, UInt256 expected)
 	{
 		var result = Helper.LeadingZeroCount(value);
 		await Assert.That(result).IsEqualTo(expected);
 	}
 	[Test]
-	[MethodDataSource(typeof(UInt256DataSources), nameof(UInt256DataSources.PopCountTestData))]
+	[MethodDataSource(typeof(DataSources), nameof(PopCountTestData))]
 	public async Task PopCountTest(UInt256 value, UInt256 expected)
 	{
 		var result = Helper.PopCount(value);
 		await Assert.That(result).IsEqualTo(expected);
 	}
 	[Test]
-	[MethodDataSource(typeof(UInt256DataSources), nameof(UInt256DataSources.ReadBigEndianTestData))]
+	[MethodDataSource(typeof(DataSources), nameof(ReadBigEndianTestData))]
 	public async Task ReadBigEndianTest(byte[] source, bool isUnsigned, UInt256 expected)
 	{
 		var result = Helper.ReadBigEndian<UInt256>(source, isUnsigned);
 		await Assert.That(result).IsEqualTo(expected);
 	}
 	[Test]
-	[MethodDataSource(typeof(UInt256DataSources), nameof(UInt256DataSources.ReadLittleEndianTestData))]
+	[MethodDataSource(typeof(DataSources), nameof(ReadLittleEndianTestData))]
 	public async Task ReadLittleEndianTest(byte[] source, bool isUnsigned, UInt256 expected)
 	{
 		var result = Helper.ReadLittleEndian<UInt256>(source, isUnsigned);
 		await Assert.That(result).IsEqualTo(expected);
 	}
 	[Test]
-	[MethodDataSource(typeof(UInt256DataSources), nameof(UInt256DataSources.RotateLeftTestData))]
+	[MethodDataSource(typeof(DataSources), nameof(RotateLeftTestData))]
 	public async Task RotateLeftTest(UInt256 value, int shiftAmount, UInt256 expected)
 	{
 		var result = Helper.RotateLeft(value, shiftAmount);
@@ -588,7 +601,7 @@ public class UInt256GenericMathTests
 		await Assert.That(result).IsEqualTo(expected);
 	}
 	[Test]
-	[MethodDataSource(typeof(UInt256DataSources), nameof(UInt256DataSources.RotateRightTestData))]
+	[MethodDataSource(typeof(DataSources), nameof(RotateRightTestData))]
 	public async Task RotateRightTest(UInt256 value, int shiftAmount, UInt256 expected)
 	{
 		var result = Helper.RotateRight(value, shiftAmount);
@@ -596,28 +609,28 @@ public class UInt256GenericMathTests
 		await Assert.That(result).IsEqualTo(expected);
 	}
 	[Test]
-	[MethodDataSource(typeof(UInt256DataSources), nameof(UInt256DataSources.TrailingZeroCountTestData))]
+	[MethodDataSource(typeof(DataSources), nameof(TrailingZeroCountTestData))]
 	public async Task TrailingZeroCountTest(UInt256 value, UInt256 expected)
 	{
 		var result = Helper.TrailingZeroCount(value);
 		await Assert.That(result).IsEqualTo(expected);
 	}
 	[Test]
-	[MethodDataSource(typeof(UInt256DataSources), nameof(UInt256DataSources.GetByteCountTestData))]
+	[MethodDataSource(typeof(DataSources), nameof(GetByteCountTestData))]
 	public async Task GetByteCountTest(UInt256 value, int expected)
 	{
 		var result = Helper.GetByteCount(value);
 		await Assert.That(result).IsEqualTo(expected);
 	}
 	[Test]
-	[MethodDataSource(typeof(UInt256DataSources), nameof(UInt256DataSources.GetShortestBitLengthTestData))]
+	[MethodDataSource(typeof(DataSources), nameof(GetShortestBitLengthTestData))]
 	public async Task GetShortestBitLengthTest(UInt256 value, int expected)
 	{
 		var result = Helper.GetShortestBitLength(value);
 		await Assert.That(result).IsEqualTo(expected);
 	}
 	[Test]
-	[MethodDataSource(typeof(UInt256DataSources), nameof(UInt256DataSources.WriteBigEndianTestData))]
+	[MethodDataSource(typeof(DataSources), nameof(WriteBigEndianTestData))]
 	public async Task WriteBigEndianTest(UInt256 value, byte[] expectedDestination, int expected)
 	{
 		byte[] buffer = new byte[UInt256.Size];
@@ -634,7 +647,7 @@ public class UInt256GenericMathTests
 		}
 	}
 	[Test]
-	[MethodDataSource(typeof(UInt256DataSources), nameof(UInt256DataSources.WriteLittleEndianTestData))]
+	[MethodDataSource(typeof(DataSources), nameof(WriteLittleEndianTestData))]
 	public async Task WriteLittleEndianTest(UInt256 value, byte[] expectedDestination, int expected)
 	{
 		byte[] buffer = new byte[UInt256.Size];

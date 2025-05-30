@@ -4,9 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MissingValues.Tests.Numerics
+using static MissingValues.Tests.Data.QuadDataSources;
+
+using DataSources = MissingValues.Tests.Data.QuadDataSources;
+
+namespace MissingValues.Tests.Numerics;
+
+public class QuadGenericMathTests
 {
-    class QuadGenericMathTests
-    {
-    }
 }
