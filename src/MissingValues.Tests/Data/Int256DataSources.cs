@@ -16,12 +16,27 @@ public class Int256DataSources
 {
 	public static IEnumerable<Func<(Int256, Int256, Int256)>> op_AdditionTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int256.Zero, Int256.Zero, Int256.Zero);
+		yield return () => (Int256.One, Int256.Zero, Int256.One);
+		yield return () => (Int256.One, Int256.One, new Int256(0, 0, 0, 2));
+		yield return () => (new Int256(0, 0, 1, ulong.MaxValue), new Int256(0, 0, 1, 1), new Int256(0, 0, 3, 0));
+		yield return () => (new Int256(0, 1, ulong.MaxValue, ulong.MaxValue), new Int256(0, 1, 1, 1), new Int256(0, 3, 1, 0));
+		yield return () => (new Int256(1, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue), new Int256(1, 1, 1, 1), new Int256(3, 1, 1, 0));
+		yield return () => (Int256.MaxValue, Int256.One, Int256.MinValue);
+		yield return () => (Int256.NegativeOne, Int256.One, Int256.Zero);
 	}
 
 	public static IEnumerable<Func<(Int256, Int256, Int256, bool)>> op_CheckedAdditionTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int256.Zero, Int256.Zero, Int256.Zero, false);
+		yield return () => (Int256.One, Int256.Zero, Int256.One, false);
+		yield return () => (Int256.One, Int256.One, new Int256(0, 0, 0, 2), false);
+		yield return () => (new Int256(0, 0, 1, ulong.MaxValue), new Int256(0, 0, 1, 1), new Int256(0, 0, 3, 0), false);
+		yield return () => (new Int256(0, 1, ulong.MaxValue, ulong.MaxValue), new Int256(0, 1, 1, 1), new Int256(0, 3, 1, 0), false);
+		yield return () => (new Int256(1, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue), new Int256(1, 1, 1, 1), new Int256(3, 1, 1, 0), false);
+		yield return () => (Int256.MaxValue, Int256.One, Int256.MinValue, true);
+		yield return () => (Int256.NegativeOne, Int256.One, Int256.Zero, false);
+		yield return () => (Int256.MinValue, Int256.NegativeOne, Int256.MaxValue, true);
 	}
 
 	public static IEnumerable<Func<(Int256, Int256, bool)>> op_CheckedDecrementTestData()
@@ -141,17 +156,20 @@ public class Int256DataSources
 
 	public static IEnumerable<Func<(Int256, Int256)>> AbsTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int256.Zero, Int256.Zero);
+		yield return () => (Int256.One, Int256.One);
+		yield return () => (Int256.NegativeOne, Int256.One);
+		yield return () => (Int256.MaxValue, Int256.MinValue + Int256.One);
 	}
 
 	public static IEnumerable<Func<(Int256, bool)>> IsCanonicalTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int256.Zero, true);
 	}
 
 	public static IEnumerable<Func<(Int256, bool)>> IsComplexNumberTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int256.Zero, true);
 	}
 
 	public static IEnumerable<Func<(Int256, bool)>> IsEvenIntegerTestData()
