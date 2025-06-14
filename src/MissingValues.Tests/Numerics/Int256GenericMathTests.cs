@@ -43,7 +43,7 @@ public class Int256GenericMathTests
 	public async Task op_IncrementTest(Int256 value, Int256 expected)
 	{
 		var result = ++value;
-
+		
 		await Assert.That(result).IsEqualTo(expected).And.IsEqualTo(value);
 	}
 	[Test]

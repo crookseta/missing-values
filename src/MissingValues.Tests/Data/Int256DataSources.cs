@@ -41,52 +41,136 @@ public class Int256DataSources
 
 	public static IEnumerable<Func<(Int256, Int256, bool)>> op_CheckedDecrementTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int256.Zero, Int256.NegativeOne, false);
+		yield return () => (Int256.One, Int256.Zero, false);
+		yield return () => (new Int256(0, 0, 0, 2), new Int256(0, 0, 0, 1), false);
+		yield return () => (new Int256(0, 0, 1, 0), new Int256(0, 0, 0, ulong.MaxValue), false);
+		yield return () => (new Int256(0, 1, 0, 0), new Int256(0, 0, ulong.MaxValue, ulong.MaxValue), false);
+		yield return () => (new Int256(1, 0, 0, 0), new Int256(0, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue), false);
+		yield return () => (Int256.MinValue, Int256.MaxValue, true);
 	}
 
 	public static IEnumerable<Func<(Int256, Int256, bool)>> op_CheckedIncrementTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int256.Zero, Int256.One, false);
+		yield return () => (Int256.One, new Int256(0, 0, 0, 2), false);
+		yield return () => (Int256.MaxValue, Int256.Zero, true);
+		yield return () => (Int256.NegativeOne, Int256.Zero, false);
+		yield return () => (new Int256(0, 0, 0, ulong.MaxValue), new Int256(0, 0, 1, 0), false);
+		yield return () => (new Int256(0, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue), new Int256(1, 0, 0, 0), false);
+		yield return () => (new Int256(unchecked((ulong)-123456789), 987654321, 555555555, 999999999), new Int256(unchecked((ulong)-123456789), 987654321, 555555555, 1000000000), false);
 	}
 
 	public static IEnumerable<Func<(Int256, Int256, Int256, bool)>> op_CheckedMultiplyTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int256.Zero, Int256.Zero, Int256.Zero, false);
+		yield return () => (Int256.One, Int256.One, Int256.One, false);
+		yield return () => (Int256.One, Int256.NegativeOne, Int256.NegativeOne, false);
+		yield return () => (Int256.NegativeOne, Int256.NegativeOne, Int256.One, false);
+		yield return () => (new Int256(0, 0, 0, 2), new Int256(0, 0, 0, 3), new Int256(0, 0, 0, 6), false);
+		yield return () => (Int256.MaxValue, Int256.One, Int256.MaxValue, false);
+		yield return () => (Int256.MaxValue, new Int256(0, 0, 0, 2), default, true);
+		yield return () => (Int256.MinValue, Int256.NegativeOne, default, true);
+		yield return () => (new Int256(0, 0, 0, ulong.MaxValue), new Int256(0, 0, 0, ulong.MaxValue), default, true);
+		yield return () => (new Int256(ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue), new Int256(2, 0, 0, 0), default, true);
 	}
 
 	public static IEnumerable<Func<(Int256, Int256, Int256, bool)>> op_CheckedSubtractionTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int256.Zero, Int256.Zero, Int256.Zero, false);
+		yield return () => (Int256.One, Int256.Zero, Int256.One, false);
+		yield return () => (Int256.One, Int256.One, Int256.Zero, false);
+		yield return () => (new Int256(0, 0, 0, 2), Int256.One, Int256.One, false);
+		yield return () => (new Int256(0, 0, 1, 0), new Int256(0, 0, 0, 1), new Int256(0, 0, 0, ulong.MaxValue), false);
+		yield return () => (new Int256(0, 1, 0, 0), new Int256(0, 0, ulong.MaxValue, ulong.MaxValue), new Int256(0, 0, 0, 1), false);
+		yield return () => (Int256.MinValue, Int256.One, Int256.MaxValue, true);
+		yield return () => (Int256.MaxValue, Int256.NegativeOne, Int256.MinValue, true);
 	}
 
 	public static IEnumerable<Func<(Int256, Int256)>> op_DecrementTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int256.Zero, Int256.NegativeOne);
+		yield return () => (Int256.One, Int256.Zero);
+		yield return () => (new Int256(0, 0, 0, 2), new Int256(0, 0, 0, 1));
+		yield return () => (new Int256(0, 0, 1, 0), new Int256(0, 0, 0, ulong.MaxValue));
+		yield return () => (new Int256(0, 1, 0, 0), new Int256(0, 0, ulong.MaxValue, ulong.MaxValue));
+		yield return () => (new Int256(1, 0, 0, 0), new Int256(0, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue));
+		yield return () => (Int256.MinValue, Int256.MaxValue);
 	}
 
 	public static IEnumerable<Func<(Int256, Int256, Int256)>> op_DivisionTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int256.Zero, Int256.One, Int256.Zero);
+		yield return () => (Int256.One, Int256.One, Int256.One);
+		yield return () => (Int256.One, Int256.NegativeOne, Int256.NegativeOne);
+		yield return () => (Int256.NegativeOne, Int256.One, Int256.NegativeOne);
+		yield return () => (new Int256(0, 0, 0, 4), new Int256(0, 0, 0, 2), new Int256(0, 0, 0, 2));
+		yield return () => (Int256.MaxValue, Int256.One, Int256.MaxValue);
+		yield return () => (Int256.MinValue, Int256.One, Int256.MinValue);
+		yield return () => (Int256.Zero, Int256.MaxValue, Int256.Zero);
+		yield return () => (Int256.MaxValue, Int256.MaxValue, Int256.One);
+		yield return () => (Int256.MinValue, Int256.MinValue, Int256.One);
+		yield return () => (new Int256(0, 0, 1, 0), new Int256(0, 1, 0, 0), Int256.Zero);
+		yield return () => (Int256.Parse("340282366920938463463374607431768211456"), Int256.Parse("18446744073709551616"), Int256.Parse("18446744073709551616"));
+		yield return () => (Int256.Parse("340282366920938463463374607431768211456"), Int256.Parse("-18446744073709551616"), Int256.Parse("-18446744073709551616"));
+		yield return () => (Int256.Parse("-340282366920938463463374607431768211456"), Int256.Parse("18446744073709551616"), Int256.Parse("-18446744073709551616"));
+		yield return () => (Int256.Parse("-340282366920938463463374607431768211456"), Int256.Parse("-18446744073709551616"), Int256.Parse("18446744073709551616"));
+		yield return () => (Int256.Parse("-340282366920938463463374607431768211456"), Int256.Parse("-18446744073709551616"), Int256.Parse("18446744073709551616"));
+		yield return () => (Int256.Parse("57896044618658097711785492504343953926634992332820282019728792003956564819968"), new Int256(0, 0, 0, 10), Int256.Parse("5789604461865809771178549250434395392663499233282028201972879200395656481996"));
+		yield return () => (Int256.Parse("170141183460469231731687303715884105728"), new Int256(0, 0, 0, 10), Int256.Parse("17014118346046923173168730371588410572"));
+		yield return () => (Int256.Parse("-170141183460469231731687303715884105728"), new Int256(0, 0, 0, 10), Int256.Parse("-17014118346046923173168730371588410572"));
 	}
 
 	public static IEnumerable<Func<(Int256, Int256)>> op_IncrementTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int256.Zero, Int256.One);
+		yield return () => (Int256.One, new Int256(0, 0, 0, 2));
+		yield return () => (Int256.MaxValue, Int256.MinValue);
+		yield return () => (Int256.NegativeOne, Int256.Zero);
+		yield return () => (new Int256(0, 0, 0, ulong.MaxValue), new Int256(0, 0, 1, 0));
+		yield return () => (new Int256(0, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue), new Int256(1, 0, 0, 0));
+		yield return () => (new Int256(123456789, 987654321, 555555555, 999999999), new Int256(123456789, 987654321, 555555555, 1000000000));
+		yield return () => (new Int256(0x8000000000000000, 0, 0, 0),new Int256(0x8000000000000000, 0, 0, 1));
 	}
 
 	public static IEnumerable<Func<(Int256, Int256, Int256)>> op_ModulusTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int256.Zero, Int256.One, Int256.Zero);
+		yield return () => (Int256.One, Int256.One, Int256.Zero);
+		yield return () => (new Int256(0, 0, 0, 123456789), Int256.One, Int256.Zero);
+		yield return () => (Int256.MaxValue, Int256.MaxValue, Int256.Zero);
+		yield return () => (new Int256(0, 0, 1, 0), new Int256(0, 1, 0, 0), new Int256(0, 0, 1, 0));
+		yield return () => (new Int256(0, 0, 0, 10), new Int256(0, 0, 0, 3), new Int256(0, 0, 0, 1));
+		yield return () => (new Int256(0, 0, 0, 15), new Int256(0, 0, 0, 5), Int256.Zero);
+		yield return () => (Int256.NegativeOne, new Int256(0, 0, 0, 2), Int256.NegativeOne);
+		yield return () => (new Int256(0, 0, 0, 7), Int256.NegativeOne, Int256.Zero);
+		yield return () => (Int256.MaxValue, new Int256(0, 0, 0, 123456789), new Int256(0, 0, 0, 77645365));
+		yield return () => (Int256.Parse("401734511064747568885490523085290650630550748445698208825344"), Int256.Parse("100000000000000000000000000000000000000000000000000000000000"), Int256.Parse("1734511064747568885490523085290650630550748445698208825344"));
 	}
 
 	public static IEnumerable<Func<(Int256, Int256, Int256)>> op_MultiplyTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int256.Zero, Int256.Zero, Int256.Zero);
+		yield return () => (Int256.Zero, Int256.One, Int256.Zero);
+		yield return () => (Int256.One, Int256.One, Int256.One);
+		yield return () => (Int256.One, Int256.NegativeOne, Int256.NegativeOne);
+		yield return () => (Int256.NegativeOne, Int256.NegativeOne, Int256.One);
+		yield return () => (new Int256(0, 0, 0, 2), new Int256(0, 0, 0, 3), new Int256(0, 0, 0, 6));
+		yield return () => (new Int256(0, 0, 0, ulong.MaxValue), new Int256(0, 0, 0, 2), new Int256(0, 0, 1, ulong.MaxValue - 1));
+		yield return () => (new Int256(0, 0, 0, ulong.MaxValue), new Int256(0, 0, 0, ulong.MaxValue), new Int256(ulong.MaxValue - 1, ulong.MaxValue, 0, 1));
 	}
 
 	public static IEnumerable<Func<(Int256, Int256, Int256)>> op_SubtractionTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int256.Zero, Int256.Zero, Int256.Zero);
+		yield return () => (Int256.One, Int256.Zero, Int256.One);
+		yield return () => (Int256.One, Int256.One, Int256.Zero);
+		yield return () => (Int256.Zero, Int256.One, Int256.NegativeOne);
+		yield return () => (Int256.MaxValue,Int256.One, Int256.Parse("57896044618658097711785492504343953926634992332820282019728792003956564819966"));
+		yield return () => (Int256.MinValue,Int256.One,Int256.MaxValue);
+		yield return () => (Int256.MinValue,Int256.NegativeOne, Int256.Parse("-57896044618658097711785492504343953926634992332820282019728792003956564819967"));
+		yield return () => (new Int256(1, 2, 3, 4),new Int256(0, 1, 2, 3),new Int256(1, 1, 1, 1));
+		yield return () => (new Int256(0, 0, 0, 0),new Int256(0, 0, 0, 1),new Int256(unchecked((ulong)-1), ulong.MaxValue, ulong.MaxValue, ulong.MaxValue));
 	}
 
 	public static IEnumerable<Func<(Int256, int, Int256)>> op_ShiftLeftTestData()
@@ -159,7 +243,7 @@ public class Int256DataSources
 		yield return () => (Int256.Zero, Int256.Zero);
 		yield return () => (Int256.One, Int256.One);
 		yield return () => (Int256.NegativeOne, Int256.One);
-		yield return () => (Int256.MaxValue, Int256.MinValue + Int256.One);
+		yield return () => (Int256.MinValue + Int256.One, Int256.MaxValue);
 	}
 
 	public static IEnumerable<Func<(Int256, bool)>> IsCanonicalTestData()
