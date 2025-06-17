@@ -71,7 +71,7 @@ public class Int256DataSources
 		yield return () => (Int256.MaxValue, Int256.One, Int256.MaxValue, false);
 		yield return () => (Int256.MaxValue, new Int256(0, 0, 0, 2), default, true);
 		yield return () => (Int256.MinValue, Int256.NegativeOne, default, true);
-		yield return () => (new Int256(0, 0, 0, ulong.MaxValue), new Int256(0, 0, 0, ulong.MaxValue), default, true);
+		yield return () => (new Int256(0, 0, 0, ulong.MaxValue), new Int256(0, 0, 0, ulong.MaxValue), Int256.Parse("340282366920938463426481119284349108225"), false);
 		yield return () => (new Int256(ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue), new Int256(2, 0, 0, 0), default, true);
 	}
 
@@ -175,67 +175,141 @@ public class Int256DataSources
 
 	public static IEnumerable<Func<(Int256, int, Int256)>> op_ShiftLeftTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int256.Zero, 100, Int256.Zero);
+		yield return () => (Int256.One, 0, Int256.One);
+		yield return () => (Int256.One, 1, new Int256(0, 0, 0, 2));
+		yield return () => (Int256.One, 2, new Int256(0, 0, 0, 4));
+		yield return () => (Int256.One, 64, new Int256(0, 0, 1, 0));
+		yield return () => (Int256.One, 128, new Int256(0, 1, 0, 0));
+		yield return () => (Int256.One, 192, new Int256(1, 0, 0, 0));
+		yield return () => (new Int256(0, 0, 0, 0xFFFF_FFFF_FFFF_FFFF), 32, new Int256(0, 0, 0xFFFF_FFFF, 0xFFFF_FFFF_0000_0000));
+		yield return () => (new Int256(0, 0, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF), 96, new Int256(0xFFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_0000_0000, 0));
+		yield return () => (Int256.One, 256, Int256.One);
 	}
 
 	public static IEnumerable<Func<(Int256, int, Int256)>> op_ShiftRightTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int256.Zero, 100, Int256.Zero);
+		yield return () => (Int256.One, 0, Int256.One);
+		yield return () => (new Int256(1, 0, 0, 0), 64, new Int256(0, 1, 0, 0));
+		yield return () => (new Int256(1, 0, 0, 0), 128, new Int256(0, 0, 1, 0));
+		yield return () => (new Int256(1, 0, 0, 0), 192, new Int256(0, 0, 0, 1));
+		yield return () => (new Int256(0b1000000000000000000000000000000000000000000000000000000000000000, 0, 0, 0), 031, new Int256(0b1111111111111111111111111111111100000000000000000000000000000000, 0, 0, 0));
+		yield return () => (new Int256(0b1000000000000000000000000000000000000000000000000000000000000000, 0, 0, 0), 127, new Int256(0b1111111111111111111111111111111111111111111111111111111111111111, 0b1111111111111111111111111111111111111111111111111111111111111111, 0, 0));
+		yield return () => (new Int256(0b1000000000000000000000000000000000000000000000000000000000000000, 0, 0, 0), 255, new Int256(0b1111111111111111111111111111111111111111111111111111111111111111, 0b1111111111111111111111111111111111111111111111111111111111111111, 0b1111111111111111111111111111111111111111111111111111111111111111, 0b1111111111111111111111111111111111111111111111111111111111111111));
+		yield return () => (Int256.One, 256, Int256.One);
 	}
 
 	public static IEnumerable<Func<(Int256, int, Int256)>> op_UnsignedShiftRightTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int256.Zero, 100, Int256.Zero);
+		yield return () => (Int256.One, 0, Int256.One);
+		yield return () => (new Int256(1, 0, 0, 0), 64, new Int256(0, 1, 0, 0));
+		yield return () => (new Int256(1, 0, 0, 0), 128, new Int256(0, 0, 1, 0));
+		yield return () => (new Int256(1, 0, 0, 0), 192, new Int256(0, 0, 0, 1));
+		yield return () => (new Int256(0xFFFF_FFFF_FFFF_FFFF, 0, 0, 0), 64, new Int256(0, 0xFFFF_FFFF_FFFF_FFFF, 0, 0));
+		yield return () => (new Int256(0xFFFF_FFFF_FFFF_FFFF, 0, 0, 0), 128, new Int256(0, 0, 0xFFFF_FFFF_FFFF_FFFF, 0));
+		yield return () => (new Int256(0xFFFF_FFFF_FFFF_FFFF, 0, 0, 0), 192, new Int256(0, 0, 0, 0xFFFF_FFFF_FFFF_FFFF));
+		yield return () => (Int256.One, 256, Int256.One);
 	}
 
 	public static IEnumerable<Func<(Int256, Int256, Int256)>> op_BitwiseAndTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int256.Zero, Int256.Zero, Int256.Zero);
+		yield return () => (Int256.Zero, Int256.MaxValue, Int256.Zero);
+		yield return () => (new Int256(1, 2, 3, 4), new Int256(1, 2, 3, 4), new Int256(1, 2, 3, 4));
+		yield return () => (new Int256(1, 2, 3, 4), Int256.MaxValue, new Int256(1, 2, 3, 4));
+		yield return () => (new Int256(0xFFFFFFFF00000000, 0xAAAAAAAA55555555, 0x123456789ABCDEF0, 0x0F0F0F0F0F0F0F0F), new Int256(0x00000000FFFFFFFF, 0x55555555AAAAAAAA, 0x0F0F0F0F0F0F0F0F, 0xF0F0F0F0F0F0F0F0), new Int256(0x0000000000000000, 0x0000000000000000, 0x020406080A0C0E00, 0x0000000000000000));
 	}
 
 	public static IEnumerable<Func<(Int256, Int256, Int256)>> op_BitwiseOrTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int256.Zero, Int256.Zero, Int256.Zero);
+		yield return () => (Int256.Zero, Int256.MaxValue, Int256.MaxValue);
+		yield return () => (new Int256(1, 2, 3, 4), new Int256(1, 2, 3, 4), new Int256(1, 2, 3, 4));
+		yield return () => (new Int256(1, 2, 3, 4), Int256.MaxValue, Int256.MaxValue);
+		yield return () => (new Int256(0x00000000FFFFFFFF, 0xAAAAAAAA00000000, 0x00000000AAAAAAAA, 0x1234567890ABCDEF), new Int256(0xFFFFFFFF00000000, 0x0000000055555555, 0x5555555500000000, 0xFEDCBA9876543210), new Int256(0xFFFFFFFFFFFFFFFF, 0xAAAAAAAA55555555, 0x55555555AAAAAAAA, 0xFEFCFEF8F6FFFFFF));
 	}
 
 	public static IEnumerable<Func<(Int256, Int256, Int256)>> op_BitwiseXorTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int256.Zero, Int256.Zero, Int256.Zero);
+		yield return () => (Int256.Zero, Int256.MaxValue, Int256.MaxValue);
+		yield return () => (new Int256(1, 2, 3, 4), new Int256(1, 2, 3, 4), Int256.Zero);
+		yield return () => (new Int256(0x0000000000000000, 0xFFFFFFFFFFFFFFFF, 0x1234567890ABCDEF, 0xFEDCBA9876543210), Int256.MaxValue, new Int256(ulong.MaxValue, 0x0, 0xEDCBA9876F543210, 0x0123456789ABCDEF));
+		yield return () => (new Int256(0x1234567890ABCDEF, 0xAAAAAAAA00000000, 0x00000000AAAAAAAA, 0xFFFFFFFFFFFFFFFF), new Int256(0xFFFFFFFFFFFFFFFF, 0x00000000AAAAAAAA, 0xAAAAAAAA00000000, 0x0000000000000000), new Int256(0xEDCBA9876F543210, 0xAAAAAAAAAAAAAAAA, 0xAAAAAAAAAAAAAAAA, 0xFFFFFFFFFFFFFFFF));
 	}
 
 	public static IEnumerable<Func<(Int256, Int256)>> op_OnesComplementTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int256.Zero, Int256.MaxValue);
+		yield return () => (Int256.MaxValue, Int256.Zero);
+		yield return () => (new Int256(0xAAAAAAAAAAAAAAAA, 0x5555555555555555, 0xAAAAAAAAAAAAAAAA, 0x5555555555555555), new Int256(0x5555555555555555, 0xAAAAAAAAAAAAAAAA, 0x5555555555555555, 0xAAAAAAAAAAAAAAAA));
+		yield return () => (new Int256(0x0123456789ABCDEF, 0xFEDCBA9876543210, 0x0F0F0F0F0F0F0F0F, 0xF0F0F0F0F0F0F0F0), new Int256(~0x0123456789ABCDEFU, ~0xFEDCBA9876543210U, ~0x0F0F0F0F0F0F0F0FU, ~0xF0F0F0F0F0F0F0F0U));
 	}
 
 	public static IEnumerable<Func<(Int256, Int256, bool)>> op_EqualityTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int256.Zero, Int256.Zero, true);
+		yield return () => (new Int256(1, 2, 3, 4), new Int256(1, 2, 3, 4), true);
+		yield return () => (new Int256(1, 2, 3, 4), new Int256(1, 2, 3, 5), false);
+		yield return () => (new Int256(1, 2, 3, 4), new Int256(1, 2, 4, 4), false);
+		yield return () => (new Int256(1, 2, 3, 4), new Int256(1, 3, 3, 4), false);
+		yield return () => (new Int256(1, 2, 3, 4), new Int256(2, 2, 3, 4), false);
 	}
 
 	public static IEnumerable<Func<(Int256, Int256, bool)>> op_InequalityTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int256.Zero, Int256.Zero, false);
+		yield return () => (new Int256(1, 2, 3, 4), new Int256(1, 2, 3, 4), false);
+		yield return () => (new Int256(1, 2, 3, 4), new Int256(1, 2, 3, 5), true);
+		yield return () => (new Int256(1, 2, 3, 4), new Int256(1, 2, 4, 4), true);
+		yield return () => (new Int256(1, 2, 3, 4), new Int256(1, 3, 3, 4), true);
+		yield return () => (new Int256(1, 2, 3, 4), new Int256(2, 2, 3, 4), true);
 	}
 
 	public static IEnumerable<Func<(Int256, Int256, bool)>> op_GreaterThanOrEqualTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int256.Zero, Int256.Zero, true);
+		yield return () => (Int256.NegativeOne, Int256.One, false);
+		yield return () => (Int256.One, Int256.NegativeOne, true);
+		yield return () => (Int256.Zero, Int256.MinValue, true);
+		yield return () => (Int256.Zero, Int256.NegativeOne, true);
+		yield return () => (Int256.Zero, Int256.One, false);
+		yield return () => (Int256.Zero, Int256.MaxValue, false);
 	}
 
 	public static IEnumerable<Func<(Int256, Int256, bool)>> op_GreaterThanTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int256.Zero, Int256.Zero, false);
+		yield return () => (Int256.NegativeOne, Int256.One, false);
+		yield return () => (Int256.One, Int256.NegativeOne, true);
+		yield return () => (Int256.Zero, Int256.MinValue, true);
+		yield return () => (Int256.Zero, Int256.NegativeOne, true);
+		yield return () => (Int256.Zero, Int256.One, false);
+		yield return () => (Int256.Zero, Int256.MaxValue, false);
 	}
 
 	public static IEnumerable<Func<(Int256, Int256, bool)>> op_LessThanOrEqualTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int256.Zero, Int256.Zero, true);
+		yield return () => (Int256.NegativeOne, Int256.One, true);
+		yield return () => (Int256.One, Int256.NegativeOne, false);
+		yield return () => (Int256.Zero, Int256.MinValue, false);
+		yield return () => (Int256.Zero, Int256.NegativeOne, false);
+		yield return () => (Int256.Zero, Int256.One, true);
+		yield return () => (Int256.Zero, Int256.MaxValue, true);
 	}
 
 	public static IEnumerable<Func<(Int256, Int256, bool)>> op_LessThanTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int256.Zero, Int256.Zero, false);
+		yield return () => (Int256.NegativeOne, Int256.One, true);
+		yield return () => (Int256.One, Int256.NegativeOne, false);
+		yield return () => (Int256.Zero, Int256.MinValue, false);
+		yield return () => (Int256.Zero, Int256.NegativeOne, false);
+		yield return () => (Int256.Zero, Int256.One, true);
+		yield return () => (Int256.Zero, Int256.MaxValue, true);
 	}
 
 	public static IEnumerable<Func<(Int256, Int256)>> AbsTestData()
@@ -253,7 +327,7 @@ public class Int256DataSources
 
 	public static IEnumerable<Func<(Int256, bool)>> IsComplexNumberTestData()
 	{
-		yield return () => (Int256.Zero, true);
+		yield return () => (Int256.Zero, false);
 	}
 
 	public static IEnumerable<Func<(Int256, bool)>> IsEvenIntegerTestData()
