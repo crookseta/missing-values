@@ -1095,16 +1095,16 @@ namespace MissingValues
         
 			(up, low) = Calculator.BigMulAdd(left._p0, right._p1, 0);
 			p1 = Calculator.AddWithCarry(p1, low, out ulong carry);
-			up = Calculator.AddWithCarry(up, carry, out carry);
+			up += carry;
 			(up, low) = Calculator.BigMulAdd(left._p1, right._p1, up);
 			p2 = Calculator.AddWithCarry(p2, low, out carry);
-			up = Calculator.AddWithCarry(up, carry, out carry);
+			up += carry;
 			(_, low) = Calculator.BigMulAdd(left._p2, right._p1, up);
 			p3 += low;
 
 			(up, low) = Calculator.BigMulAdd(left._p0, right._p2, 0);
 			p2 = Calculator.AddWithCarry(p2, low, out carry);
-			up = Calculator.AddWithCarry(up, carry, out carry);
+			up += carry;
 			(_, low) = Calculator.BigMulAdd(left._p1, right._p2, up);
 			p3 += low;
         
