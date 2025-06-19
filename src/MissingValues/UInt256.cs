@@ -132,12 +132,12 @@ namespace MissingValues
 					lower = new UInt256(0, 0, up, low);
 				}
 
-				lower = Calculator.Multiply(in left, right._p0, out var carry);
+				lower = Calculator.Multiply(in left, right._p0, out ulong carry);
 				return carry;
 			}
 			else if (left._p3 == 0 && left._p2 == 0 && left._p1 == 0)
 			{
-				lower = Calculator.Multiply(in right, left._p0, out var carry);
+				lower = Calculator.Multiply(in right, left._p0, out ulong carry);
 				return carry;
 			}
 
@@ -170,15 +170,20 @@ namespace MissingValues
 				ulong up, low, carry;
 				(up, low) = Calculator.BigMulAdd(left._p0, right, 0);
 				Unsafe.Add(ref resultPtr, 0) = Calculator.AddWithCarry(Unsafe.Add(ref resultPtr, 0), low, out carry);
-				up = Calculator.AddWithCarry(up, carry, out carry);
+
+				up += carry;
 				(up, low) = Calculator.BigMulAdd(left._p1, right, up);
 				Unsafe.Add(ref resultPtr, 1) = Calculator.AddWithCarry(Unsafe.Add(ref resultPtr, 1), low, out carry);
-				up = Calculator.AddWithCarry(up, carry, out carry);
+
+				up += carry;
 				(up, low) = Calculator.BigMulAdd(left._p2, right, up);
 				Unsafe.Add(ref resultPtr, 2) = Calculator.AddWithCarry(Unsafe.Add(ref resultPtr, 2), low, out carry);
-				up = Calculator.AddWithCarry(up, carry, out carry);
+
+				up += carry;
 				(up, low) = Calculator.BigMulAdd(left._p3, right, up);
 				Unsafe.Add(ref resultPtr, 3) = Calculator.AddWithCarry(Unsafe.Add(ref resultPtr, 3), low, out carry);
+
+				Unsafe.Add(ref resultPtr, 4) = up;
 			}
 		}
 
