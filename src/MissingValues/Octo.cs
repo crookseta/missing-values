@@ -274,7 +274,7 @@ namespace MissingValues
 		}
 
 		/// <inheritdoc/>
-		public override string? ToString()
+		public override string ToString()
 		{
 			return ToString("G71", NumberFormatInfo.CurrentInfo);
 		}
