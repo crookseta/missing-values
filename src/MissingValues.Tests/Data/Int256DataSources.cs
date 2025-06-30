@@ -332,77 +332,123 @@ public class Int256DataSources
 
 	public static IEnumerable<Func<(Int256, bool)>> IsEvenIntegerTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int256.Zero, true);
+		yield return () => (Int256.One, false);
+		yield return () => (Int256.NegativeOne, false);
+		yield return () => (new Int256(0, 0, 0, 2), true);
+		yield return () => (new Int256(0, 0, 0, 3), false);
+		yield return () => (new Int256(0, 0, 0, 4), true);
+		yield return () => (new Int256(0, 0, 0, 6), true);
+		yield return () => (new Int256(0, 0, 0, 8), true);
+		yield return () => (new Int256(0, 0, 0, 16), true);
+		yield return () => (-new Int256(0, 0, 0, 2), true);
+		yield return () => (-new Int256(0, 0, 0, 3), false);
+		yield return () => (-new Int256(0, 0, 0, 4), true);
+		yield return () => (-new Int256(0, 0, 0, 6), true);
+		yield return () => (-new Int256(0, 0, 0, 8), true);
+		yield return () => (-new Int256(0, 0, 0, 16), true);
 	}
 
 	public static IEnumerable<Func<(Int256, bool)>> IsFiniteTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int256.Zero, true);
 	}
 
 	public static IEnumerable<Func<(Int256, bool)>> IsImaginaryNumberTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int256.Zero, false);
 	}
 
 	public static IEnumerable<Func<(Int256, bool)>> IsInfinityTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int256.Zero, false);
 	}
 
 	public static IEnumerable<Func<(Int256, bool)>> IsIntegerTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int256.Zero, true);
 	}
 
 	public static IEnumerable<Func<(Int256, bool)>> IsNaNTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int256.Zero, false);
 	}
 
 	public static IEnumerable<Func<(Int256, bool)>> IsNegativeTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int256.Zero, false);
+		yield return () => (Int256.One, false);
+		yield return () => (Int256.MaxValue, false);
+		yield return () => (Int256.NegativeOne, true);
+		yield return () => (-Int256.One, true);
+		yield return () => (-Int256.MaxValue, true);
+		yield return () => (Int256.MinValue, true);
 	}
 
 	public static IEnumerable<Func<(Int256, bool)>> IsNegativeInfinityTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int256.Zero, false);
 	}
 
 	public static IEnumerable<Func<(Int256, bool)>> IsNormalTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int256.Zero, false);
+		yield return () => (Int256.One, true);
+		yield return () => (Int256.NegativeOne, true);
 	}
 
 	public static IEnumerable<Func<(Int256, bool)>> IsOddIntegerTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int256.Zero, false);
+		yield return () => (Int256.One, true);
+		yield return () => (Int256.NegativeOne, true);
+		yield return () => (new Int256(0, 0, 0, 2), false);
+		yield return () => (new Int256(0, 0, 0, 3), true);
+		yield return () => (new Int256(0, 0, 0, 4), false);
+		yield return () => (new Int256(0, 0, 0, 6), false);
+		yield return () => (new Int256(0, 0, 0, 8), false);
+		yield return () => (new Int256(0, 0, 0, 16), false);
+		yield return () => (-new Int256(0, 0, 0, 2), false);
+		yield return () => (-new Int256(0, 0, 0, 3), true);
+		yield return () => (-new Int256(0, 0, 0, 4), false);
+		yield return () => (-new Int256(0, 0, 0, 6), false);
+		yield return () => (-new Int256(0, 0, 0, 8), false);
+		yield return () => (-new Int256(0, 0, 0, 16), false);
 	}
 
 	public static IEnumerable<Func<(Int256, bool)>> IsPositiveTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int256.Zero, true);
+		yield return () => (Int256.One, true);
+		yield return () => (Int256.MaxValue, true);
+		yield return () => (Int256.NegativeOne, false);
+		yield return () => (-Int256.One, false);
+		yield return () => (-Int256.MaxValue, false);
+		yield return () => (Int256.MinValue, false);
 	}
 
 	public static IEnumerable<Func<(Int256, bool)>> IsPositiveInfinityTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int256.Zero, false);
 	}
 
 	public static IEnumerable<Func<(Int256, bool)>> IsRealNumberTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int256.Zero, true);
 	}
 
 	public static IEnumerable<Func<(Int256, bool)>> IsSubnormalTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int256.Zero, false);
 	}
 
 	public static IEnumerable<Func<(Int256, bool)>> IsZeroTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int256.Zero, true);
+		yield return () => (Int256.One, false);
+		yield return () => (Int256.NegativeOne, false);
+		yield return () => (Int256.MaxValue, false);
+		yield return () => (Int256.MinValue, false);
 	}
 
 	public static IEnumerable<Func<(Int256, Int256, Int256)>> MaxMagnitudeTestData()
@@ -497,7 +543,18 @@ public class Int256DataSources
 
 	public static IEnumerable<Func<(Int256, bool)>> IsPow2TestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int256.Zero, false);
+		yield return () => (Int256.One, true);
+		yield return () => (new Int256(0, 0, 0, 3), false);
+		yield return () => (new Int256(0, 0, 0, 4), true);
+		yield return () => (new Int256(0, 0, 0, 6), false);
+		yield return () => (new Int256(0, 0, 0, 8), true);
+		yield return () => (new Int256(1UL << 62, 0, 0, 0), true);
+		yield return () => (Int256.NegativeOne, false);
+		yield return () => (-new Int256(0, 0, 0, 3), false);
+		yield return () => (-new Int256(0, 0, 0, 4), false);
+		yield return () => (-new Int256(0, 0, 0, 6), false);
+		yield return () => (-new Int256(0, 0, 0, 8), false);
 	}
 
 	public static IEnumerable<Func<(Int256, Int256)>> Log2TestData()
