@@ -1,6 +1,9 @@
 ﻿using MissingValues.Internals;
 using System.Buffers.Binary;
+using System.Diagnostics;
 using System.Numerics;
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 
 namespace MissingValues
 {
@@ -448,6 +451,52 @@ namespace MissingValues
 			}
 
 			return 1;
+		}
+
+		internal static void Write<T>(Span<ulong> destination, in T value)
+			where T : unmanaged, IBigInteger<T>
+		{
+			Debug.Assert(((typeof(T) == typeof(UInt256) || typeof(T) == typeof(Int256)) && destination.Length == 4) || ((typeof(T) == typeof(UInt512) || typeof(T) == typeof(Int512)) && destination.Length == 8));
+			
+#if BIGENDIAN
+			ref byte dest = ref Unsafe.As<ulong, byte>(ref MemoryMarshal.GetReference(destination));
+			Unsafe.WriteUnaligned(ref Unsafe.Add(ref dest, sizeof(ulong) * 0), ulong.CreateTruncating(value));
+			Unsafe.WriteUnaligned(ref Unsafe.Add(ref dest, sizeof(ulong) * 1), ulong.CreateTruncating(value >>> 64));
+			Unsafe.WriteUnaligned(ref Unsafe.Add(ref dest, sizeof(ulong) * 2), ulong.CreateTruncating(value >>> 128));
+			Unsafe.WriteUnaligned(ref Unsafe.Add(ref dest, sizeof(ulong) * 3), ulong.CreateTruncating(value >>> 192));
+			if (typeof(T) == typeof(UInt512) || typeof(T) == typeof(Int512))
+			{
+				Unsafe.WriteUnaligned(ref Unsafe.Add(ref dest, sizeof(ulong) * 4), ulong.CreateTruncating(value >>> 256));
+				Unsafe.WriteUnaligned(ref Unsafe.Add(ref dest, sizeof(ulong) * 5), ulong.CreateTruncating(value >>> 320));
+				Unsafe.WriteUnaligned(ref Unsafe.Add(ref dest, sizeof(ulong) * 6), ulong.CreateTruncating(value >>> 384));
+				Unsafe.WriteUnaligned(ref Unsafe.Add(ref dest, sizeof(ulong) * 7), ulong.CreateTruncating(value >>> 448));
+			}
+#else
+			Unsafe.WriteUnaligned(ref Unsafe.As<ulong, byte>(ref MemoryMarshal.GetReference(destination)), value);
+#endif
+		}
+		
+		internal static T Read<T>(ReadOnlySpan<ulong> source)
+			where T : unmanaged, IBigInteger<T>
+		{
+			Debug.Assert(((typeof(T) == typeof(UInt256) || typeof(T) == typeof(Int256)) && source.Length == 4) || ((typeof(T) == typeof(UInt512) || typeof(T) == typeof(Int512)) && source.Length == 8));
+			
+#if BIGENDIAN
+			T result = T.CreateTruncating(source[0]);
+			result |= T.CreateTruncating(source[1]) << 64;
+			result |= T.CreateTruncating(source[2]) << 128;
+			result |= T.CreateTruncating(source[3]) << 192;
+			if (typeof(T) == typeof(UInt512) || typeof(T) == typeof(Int512))
+			{
+				result |= T.CreateTruncating(source[4]) << 256;
+				result |= T.CreateTruncating(source[5]) << 320;
+				result |= T.CreateTruncating(source[6]) << 384;
+				result |= T.CreateTruncating(source[7]) << 448;
+			}
+			return result;
+#else
+			return Unsafe.ReadUnaligned<T>(in Unsafe.As<ulong, byte>(ref MemoryMarshal.GetReference(source)));
+#endif
 		}
 	}
 }
