@@ -7,20 +7,17 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace MissingValues.Benchmarks
+namespace MissingValues.Benchmarks.Core
 {
 	public class QuadBenchmarks
 	{
 		private static readonly Random rnd = new Random(7);
 
-		[SimpleJob(RuntimeMoniker.Net80)]
-		[SimpleJob(RuntimeMoniker.Net90)]
 		[HideColumns("Job", "Error", "StdDev")]
+		[BenchmarkCategory("Quad", "Floating")]
 		public class MathOperators
 		{
-			private Quad q;
-			private double d;
-			private float f;
+			private Quad _q;
 
 			private static readonly Quad Two = new Quad(0x4000_0000_0000_0000, 0x0000_0000_0000_0000);
 
@@ -30,97 +27,50 @@ namespace MissingValues.Benchmarks
             [GlobalSetup]
 			public void Setup()
 			{
-				f = rnd.NextSingle() * E;
-				d = rnd.NextDouble() * E;
-				q = (Quad)rnd.NextDouble() * E * E;
+				_q = (Quad)rnd.NextDouble() * E * E;
 			}
 
 			[Benchmark]
-			public float Addition_Op__Single()
-			{
-				float sum = f;
-				for (int i = 0, length = (int)E; i < length; i++)
-				{
-					sum += f;
-				}
-				return sum;
-			}
-			[Benchmark]
-			public double Addition_Op__Double()
-			{
-				double sum = d;
-				for (int i = 0, length = (int)E; i < length; i++)
-				{
-					sum += d;
-				}
-				return sum;
-			}
-			[Benchmark]
+			[BenchmarkCategory("Addition")]
 			public Quad Addition_Op__Quad()
 			{
-				Quad sum = q;
+				Quad sum = _q;
 				for (int i = 0, length = (int)E; i < length; i++)
 				{
-					sum += q;
+					sum += _q;
 				}
 				return sum;
 			}
 
 			[Benchmark]
-			public float Multiplication_Op__Single()
+			[BenchmarkCategory("Subtraction")]
+			public Quad Subtraction_Op__Quad()
 			{
-				float sum = f;
+				Quad sum = _q;
 				for (int i = 0, length = (int)E; i < length; i++)
 				{
-					sum *= f;
+					sum -= _q;
 				}
 				return sum;
 			}
+
 			[Benchmark]
-			public double Multiplication_Op__Double()
-			{
-				double sum = d;
-				for (int i = 0, length = (int)E; i < length; i++)
-				{
-					sum *= d;
-				}
-				return sum;
-			}
-			[Benchmark]
+			[BenchmarkCategory("Multiplication")]
 			public Quad Multiplication_Op__Quad()
 			{
-				Quad sum = q;
+				Quad sum = _q;
 				for (int i = 0, length = (int)E; i < length; i++)
 				{
-					sum *= q;
+					sum *= _q;
 				}
 				return sum;
 			}
 
 			[Benchmark]
-			public float Division_Op__Single()
-			{
-				float sum = f;
-				for (int i = 0, length = (int)E; i < length; i++)
-				{
-					sum /= 2F;
-				}
-				return sum;
-			}
-			[Benchmark]
-			public double Division_Op__Double()
-			{
-				double sum = d;
-				for (int i = 0, length = (int)E; i < length; i++)
-				{
-					sum /= 2d;
-				}
-				return sum;
-			}
-			[Benchmark]
+			[BenchmarkCategory("Division")]
 			public Quad Division_Op__Quad()
 			{
-				Quad sum = q;
+				Quad sum = _q;
 				for (int i = 0, length = (int)E; i < length; i++)
 				{
 					sum /= Two;
@@ -129,53 +79,47 @@ namespace MissingValues.Benchmarks
 			}
 		}
 		[MemoryDiagnoser]
-		[SimpleJob(RuntimeMoniker.Net80)]
-		[SimpleJob(RuntimeMoniker.Net90)]
 		[HideColumns("Job", "Error", "StdDev")]
+		[BenchmarkCategory("Quad", "Floating")]
 		public class Parsing
 		{
 			private string[] _lines;
+			private Quad[] _quads;
 
 			[Params(@"Data/canada.txt", @"Data/mesh.txt", @"Data/synthetic.txt")]
 			public string FileName { get; set; }
 			public int LineCount { get; set; }
 			public ReadOnlySpan<string> Lines => new(_lines);
-			private NumberFormatInfo _numberFormatInfo = NumberFormatInfo.InvariantInfo;
+			private readonly NumberFormatInfo _numberFormatInfo = NumberFormatInfo.InvariantInfo;
 
 			[GlobalSetup]
 			public void Setup()
 			{
 				_lines = File.ReadAllLines(FileName);
 				LineCount = _lines.Length;
+				_quads = new Quad[LineCount];
+				for (int i = 0; i < LineCount; i++)
+				{
+					_quads[i] = Quad.Parse(_lines[i]);
+				}
 			}
 
 			[Benchmark]
-			public Span<float> SingleParse()
+			[BenchmarkCategory("Formatting")]
+			public Span<string> QuadToString()
 			{
-				Span<float> result = new float[_lines.Length];
+				Span<string> result = new string[_lines.Length];
 
                 for (int i = 0; i < LineCount; i++)
                 {
-					result[i] = float.Parse(_lines[i], _numberFormatInfo);
+					result[i] = _quads[i].ToString();
                 }
 
 				return result;
             }
 
 			[Benchmark]
-			public Span<double> DoubleParse()
-			{
-				Span<double> result = new double[_lines.Length];
-
-                for (int i = 0; i < LineCount; i++)
-                {
-					result[i] = double.Parse(_lines[i], _numberFormatInfo);
-                }
-
-				return result;
-            }
-
-			[Benchmark]
+			[BenchmarkCategory("Parsing")]
 			public Span<Quad> QuadParse()
 			{
 				Span<Quad> result = new Quad[_lines.Length];
