@@ -6,6 +6,7 @@ using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using MissingValues.Benchmarks.Helpers;
 
 namespace MissingValues.Benchmarks.Core
 {
@@ -15,6 +16,7 @@ namespace MissingValues.Benchmarks.Core
 		[BenchmarkCategory("UInt256", "Unsigned", "Integer")]
 		public class MathOperators
 		{
+			private static readonly Random rng = new Random(7);
 			[Params(100, 10_000, 100_000)]
 			public int Length;
 			private UInt256[] a, b, c;
@@ -66,6 +68,62 @@ namespace MissingValues.Benchmarks.Core
 				}
 				return c;
 			}
+			
+			[Benchmark]
+			[BenchmarkCategory("Multiplication")]
+			[ArgumentsSource(nameof(Arguments64x256))]
+			public UInt256[] Multiply64x256_UInt256(UInt256[] left, UInt256[] right)
+			{
+				for (int i = 0; i < Length; i++)
+				{
+					c[i] = left[i] * right[i];
+				}
+				return c;
+			}
+			[Benchmark]
+			[BenchmarkCategory("Multiplication")]
+			[ArgumentsSource(nameof(Arguments128x256))]
+			public UInt256[] Multiply128x256_UInt256(UInt256[] left, UInt256[] right)
+			{
+				for (int i = 0; i < Length; i++)
+				{
+					c[i] = left[i] * right[i];
+				}
+				return c;
+			}
+			[Benchmark]
+			[BenchmarkCategory("Multiplication")]
+			[ArgumentsSource(nameof(Arguments256x256))]
+			public UInt256[] Multiply256x256_UInt256(UInt256[] left, UInt256[] right)
+			{
+				for (int i = 0; i < Length; i++)
+				{
+					c[i] = left[i] * right[i];
+				}
+				return c;
+			}
+			[Benchmark]
+			[BenchmarkCategory("Multiplication")]
+			[ArgumentsSource(nameof(Arguments256x128))]
+			public UInt256[] Multiply256x128_UInt256(UInt256[] left, UInt256[] right)
+			{
+				for (int i = 0; i < Length; i++)
+				{
+					c[i] = left[i] * right[i];
+				}
+				return c;
+			}
+			[Benchmark]
+			[BenchmarkCategory("Multiplication")]
+			[ArgumentsSource(nameof(Arguments256x64))]
+			public UInt256[] Multiply256x64_UInt256(UInt256[] left, UInt256[] right)
+			{
+				for (int i = 0; i < Length; i++)
+				{
+					c[i] = left[i] * right[i];
+				}
+				return c;
+			}
 
 			[Benchmark]
 			[BenchmarkCategory("Division")]
@@ -74,6 +132,40 @@ namespace MissingValues.Benchmarks.Core
 				for (int i = 0; i < Length; i++)
 				{
 					c[i] = a[i] / b[i];
+				}
+				return c;
+			}
+
+			[Benchmark]
+			[BenchmarkCategory("Division")]
+			[ArgumentsSource(nameof(Arguments256x256))]
+			public UInt256[] Divide256x256_UInt256(UInt256[] left, UInt256[] right)
+			{
+				for (int i = 0; i < Length; i++)
+				{
+					c[i] = left[i] / right[i];
+				}
+				return c;
+			}
+			[Benchmark]
+			[BenchmarkCategory("Division")]
+			[ArgumentsSource(nameof(Arguments256x128))]
+			public UInt256[] Divide256x128_UInt256(UInt256[] left, UInt256[] right)
+			{
+				for (int i = 0; i < Length; i++)
+				{
+					c[i] = left[i] / right[i];
+				}
+				return c;
+			}
+			[Benchmark]
+			[BenchmarkCategory("Division")]
+			[ArgumentsSource(nameof(Arguments256x64))]
+			public UInt256[] Divide256x64_UInt256(UInt256[] left, UInt256[] right)
+			{
+				for (int i = 0; i < Length; i++)
+				{
+					c[i] = left[i] / right[i];
 				}
 				return c;
 			}
@@ -135,6 +227,27 @@ namespace MissingValues.Benchmarks.Core
 				}
 				return c;
 			}
+
+			public IEnumerable<object[]> Arguments256x64()
+			{
+				yield return [rng.NextIntegerArray<UInt256>(Length, new UInt256(1, 0, 0, 0), UInt256.MaxValue), rng.NextIntegerArray<UInt256>(Length, ulong.MaxValue)];
+			}
+			public IEnumerable<object[]> Arguments256x128()
+			{
+				yield return [rng.NextIntegerArray<UInt256>(Length, new UInt256(1, 0, 0, 0), UInt256.MaxValue), rng.NextIntegerArray<UInt256>(Length, new UInt256(0, 0, 1, 0), UInt128.MaxValue)];
+			}
+			public IEnumerable<object[]> Arguments256x256()
+			{
+				yield return [rng.NextIntegerArray<UInt256>(Length, new UInt256(1, 0, 0, 0), UInt256.MaxValue), rng.NextIntegerArray<UInt256>(Length, new UInt256(1, 0, 0, 0), UInt256.MaxValue)];
+			}
+			public IEnumerable<object[]> Arguments128x256()
+			{
+				yield return [rng.NextIntegerArray<UInt256>(Length, new UInt256(0, 0, 1, 0), UInt128.MaxValue), rng.NextIntegerArray<UInt256>(Length, new UInt256(1, 0, 0, 0), UInt256.MaxValue)];
+			}
+			public IEnumerable<object[]> Arguments64x256()
+			{
+				yield return [rng.NextIntegerArray<UInt256>(Length, ulong.MaxValue), rng.NextIntegerArray<UInt256>(Length, new UInt256(1, 0, 0, 0), UInt256.MaxValue)];
+			}
 		}
 
 		[MemoryDiagnoser]
@@ -168,8 +281,8 @@ namespace MissingValues.Benchmarks.Core
 			public IEnumerable<object[]> ValuesToFormat()
 			{
 				yield return [UInt256.MaxValue, "D"];
-				yield return [UInt256.MaxValue, "X64"];
-				yield return [UInt256.MaxValue, "B256"];
+				yield return [UInt256.MaxValue, "X"];
+				yield return [UInt256.MaxValue, "B"];
 				yield return [UInt256.MaxValue, "C"];
 				yield return [UInt256.MaxValue, "E"];
 				yield return [UInt256.MaxValue, "N"];

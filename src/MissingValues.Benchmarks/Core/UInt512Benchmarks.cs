@@ -6,6 +6,7 @@ using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using MissingValues.Benchmarks.Helpers;
 
 namespace MissingValues.Benchmarks.Core
 {
@@ -15,6 +16,7 @@ namespace MissingValues.Benchmarks.Core
 		[BenchmarkCategory("UInt512", "Unsigned", "Integer")]
 		public class MathOperators
 		{
+			private static readonly Random rng = new Random(7);
 			[Params(100, 10_000, 100_000)]
 			public int Length;
 			private UInt512[] a, b, c;
@@ -70,6 +72,84 @@ namespace MissingValues.Benchmarks.Core
 				}
 				return c;
 			}
+			
+			[Benchmark]
+			[BenchmarkCategory("Multiplication")]
+			[ArgumentsSource(nameof(Arguments64x512))]
+			public UInt512[] Multiply64x512_UInt512(UInt512[] left, UInt512[] right)
+			{
+				for (int i = 0; i < Length; i++)
+				{
+					c[i] = left[i] * right[i];
+				}
+				return c;
+			}
+			[Benchmark]
+			[BenchmarkCategory("Multiplication")]
+			[ArgumentsSource(nameof(Arguments128x512))]
+			public UInt512[] Multiply128x512_UInt512(UInt512[] left, UInt512[] right)
+			{
+				for (int i = 0; i < Length; i++)
+				{
+					c[i] = left[i] * right[i];
+				}
+				return c;
+			}
+			[Benchmark]
+			[BenchmarkCategory("Multiplication")]
+			[ArgumentsSource(nameof(Arguments256x512))]
+			public UInt512[] Multiply256x512_UInt512(UInt512[] left, UInt512[] right)
+			{
+				for (int i = 0; i < Length; i++)
+				{
+					c[i] = left[i] * right[i];
+				}
+				return c;
+			}
+			[Benchmark]
+			[BenchmarkCategory("Multiplication")]
+			[ArgumentsSource(nameof(Arguments512x512))]
+			public UInt512[] Multiply512x512_UInt512(UInt512[] left, UInt512[] right)
+			{
+				for (int i = 0; i < Length; i++)
+				{
+					c[i] = left[i] * right[i];
+				}
+				return c;
+			}
+			[Benchmark]
+			[BenchmarkCategory("Multiplication")]
+			[ArgumentsSource(nameof(Arguments512x256))]
+			public UInt512[] Multiply512x256_UInt512(UInt512[] left, UInt512[] right)
+			{
+				for (int i = 0; i < Length; i++)
+				{
+					c[i] = left[i] * right[i];
+				}
+				return c;
+			}
+			[Benchmark]
+			[BenchmarkCategory("Multiplication")]
+			[ArgumentsSource(nameof(Arguments512x128))]
+			public UInt512[] Multiply512x128_UInt512(UInt512[] left, UInt512[] right)
+			{
+				for (int i = 0; i < Length; i++)
+				{
+					c[i] = left[i] * right[i];
+				}
+				return c;
+			}
+			[Benchmark]
+			[BenchmarkCategory("Multiplication")]
+			[ArgumentsSource(nameof(Arguments512x64))]
+			public UInt512[] Multiply512x64_UInt512(UInt512[] left, UInt512[] right)
+			{
+				for (int i = 0; i < Length; i++)
+				{
+					c[i] = left[i] * right[i];
+				}
+				return c;
+			}
 
 			[Benchmark]
 			[BenchmarkCategory("Division")]
@@ -78,6 +158,51 @@ namespace MissingValues.Benchmarks.Core
 				for (int i = 0; i < Length; i++)
 				{
 					c[i] = a[i] / b[i];
+				}
+				return c;
+			}
+			
+			[Benchmark]
+			[BenchmarkCategory("Division")]
+			[ArgumentsSource(nameof(Arguments512x512))]
+			public UInt512[] Divide512x512_UInt512(UInt512[] left, UInt512[] right)
+			{
+				for (int i = 0; i < Length; i++)
+				{
+					c[i] = left[i] / right[i];
+				}
+				return c;
+			}
+			[Benchmark]
+			[BenchmarkCategory("Division")]
+			[ArgumentsSource(nameof(Arguments512x256))]
+			public UInt512[] Divide512x256_UInt512(UInt512[] left, UInt512[] right)
+			{
+				for (int i = 0; i < Length; i++)
+				{
+					c[i] = left[i] / right[i];
+				}
+				return c;
+			}
+			[Benchmark]
+			[BenchmarkCategory("Division")]
+			[ArgumentsSource(nameof(Arguments512x128))]
+			public UInt512[] Divide512x128_UInt512(UInt512[] left, UInt512[] right)
+			{
+				for (int i = 0; i < Length; i++)
+				{
+					c[i] = left[i] / right[i];
+				}
+				return c;
+			}
+			[Benchmark]
+			[BenchmarkCategory("Division")]
+			[ArgumentsSource(nameof(Arguments512x64))]
+			public UInt512[] Divide512x64_UInt512(UInt512[] left, UInt512[] right)
+			{
+				for (int i = 0; i < Length; i++)
+				{
+					c[i] = left[i] / right[i];
 				}
 				return c;
 			}
@@ -147,6 +272,35 @@ namespace MissingValues.Benchmarks.Core
 				}
 				return c;
 			}
+			
+			public IEnumerable<object[]> Arguments512x64()
+			{
+				yield return [rng.NextIntegerArray<UInt512>(Length, new UInt512(1, 0, 0, 0, 0, 0, 0, 0), UInt512.MaxValue), rng.NextIntegerArray<UInt512>(Length, ulong.MaxValue)];
+			}
+			public IEnumerable<object[]> Arguments512x128()
+			{
+				yield return [rng.NextIntegerArray<UInt512>(Length, new UInt512(1, 0, 0, 0, 0, 0, 0, 0), UInt512.MaxValue), rng.NextIntegerArray<UInt512>(Length, new UInt256(0, 0, 1, 0), UInt128.MaxValue)];
+			}
+			public IEnumerable<object[]> Arguments512x256()
+			{
+				yield return [rng.NextIntegerArray<UInt512>(Length, new UInt512(1, 0, 0, 0, 0, 0, 0, 0), UInt512.MaxValue), rng.NextIntegerArray<UInt512>(Length, new UInt256(1, 0, 0, 0), UInt256.MaxValue)];
+			}
+			public IEnumerable<object[]> Arguments512x512()
+			{
+				yield return [rng.NextIntegerArray<UInt512>(Length, new UInt512(1, 0, 0, 0, 0, 0, 0, 0), UInt512.MaxValue), rng.NextIntegerArray<UInt512>(Length, new UInt512(1, 0, 0, 0, 0, 0, 0, 0), UInt512.MaxValue)];
+			}
+			public IEnumerable<object[]> Arguments256x512()
+			{
+				yield return [rng.NextIntegerArray<UInt512>(Length, new UInt256(1, 0, 0, 0), UInt256.MaxValue), rng.NextIntegerArray<UInt512>(Length, new UInt512(1, 0, 0, 0, 0, 0, 0, 0), UInt512.MaxValue)];
+			}
+			public IEnumerable<object[]> Arguments128x512()
+			{
+				yield return [rng.NextIntegerArray<UInt512>(Length, new UInt256(0, 0, 1, 0), UInt128.MaxValue), rng.NextIntegerArray<UInt512>(Length, new UInt512(1, 0, 0, 0, 0, 0, 0, 0), UInt512.MaxValue)];
+			}
+			public IEnumerable<object[]> Arguments64x512()
+			{
+				yield return [rng.NextIntegerArray<UInt512>(Length, ulong.MaxValue), rng.NextIntegerArray<UInt512>(Length, new UInt512(1, 0, 0, 0, 0, 0, 0, 0), UInt512.MaxValue)];
+			}
 		}
 
 		[MemoryDiagnoser]
@@ -181,8 +335,8 @@ namespace MissingValues.Benchmarks.Core
 			public IEnumerable<object[]> ValuesToFormat()
 			{
 				yield return [UInt512.MaxValue, "D"];
-				yield return [UInt512.MaxValue, "X128"];
-				yield return [UInt512.MaxValue, "B512"];
+				yield return [UInt512.MaxValue, "X"];
+				yield return [UInt512.MaxValue, "B"];
 				yield return [UInt512.MaxValue, "C"];
 				yield return [UInt512.MaxValue, "E"];
 				yield return [UInt512.MaxValue, "N"];
