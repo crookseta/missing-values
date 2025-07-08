@@ -1153,15 +1153,28 @@ namespace MissingValues
 		{
 			ulong up, low;
 
-			if (right._p7 == 0 && right._p6 == 0 && right._p5 == 0 && right._p4 == 0 && right._p3 == 0 && right._p2 == 0 && right._p1 == 0)
+			if (right._p7 == 0 && right._p6 == 0 && right._p5 == 0 && right._p4 == 0)
 			{
-				if (left._p7 == 0 && left._p6 == 0 && left._p5 == 0 && left._p4 == 0 && left._p3 == 0 && left._p2 == 0 && left._p1 == 0)
+				if (right._p3 == 0 && right._p2 == 0 && right._p1 == 0)
 				{
-					up = Math.BigMul(left._p0, right._p0, out low);
-					return new UInt512(0, 0, 0, 0, 0, 0, up, low);
-				}
+					if (left._p7 == 0 && left._p6 == 0 && left._p5 == 0 && left._p4 == 0 && left._p3 == 0 && left._p2 == 0 && left._p1 == 0)
+					{
+						up = Calculator.BigMul(left._p0, right._p0, out low);
+						return new UInt512(0, 0, 0, 0, 0, 0, up, low);
+					}
 
-				return Calculator.Multiply(in left, right._p0, out _);
+					return Calculator.Multiply(in left, right._p0, out _);
+				}
+				if (left._p7 == 0 && left._p6 == 0 && left._p5 == 0 && left._p4 == 0)
+				{
+					if (left._p3 == 0 && left._p2 == 0 && left._p1 == 0)
+					{
+						var temp = Calculator.Multiply(right.Lower, left._p0, out low);
+						return new UInt512(0, 0, 0, low, temp.Part3, temp.Part2, temp.Part1, temp.Part0);
+					}
+
+					return MathQ.BigMul(left.Lower, right.Lower);
+				}
 			}
 			else if (left._p7 == 0 && left._p6 == 0 && left._p5 == 0 && left._p4 == 0 && left._p3 == 0 && left._p2 == 0 && left._p1 == 0)
 			{

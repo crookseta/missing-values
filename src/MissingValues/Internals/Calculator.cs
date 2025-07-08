@@ -26,6 +26,13 @@ internal static class Calculator
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static UInt128 BigMul(ulong a, ulong b)
 	{
+		ulong high = BigMul(a, b, out ulong low);
+		return new UInt128(high, low);
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public static ulong BigMul(ulong a, ulong b, out ulong lower)
+	{
 		if (Bmi2.X64.IsSupported)
 		{
 			/*
@@ -34,18 +41,15 @@ internal static class Calculator
 			 * product with Bmi2.X64.MultiplyNoFlags(ulong left, ulong right).
 			 * https://github.com/dotnet/runtime/issues/11782#issuecomment-2174501863
 			 */
-			return new UInt128(Bmi2.X64.MultiplyNoFlags(a, b), a * b);
+			lower = a * b;
+			return Bmi2.X64.MultiplyNoFlags(a, b);
 		}
 		if (ArmBase.Arm64.IsSupported)
 		{
-			return new UInt128(ArmBase.Arm64.MultiplyHigh(a, b), a * b);
+			lower = a * b;
+			return ArmBase.Arm64.MultiplyHigh(a, b);
 		}
-#if NET9_0_OR_GREATER
-		return Math.BigMul(a, b);
-#else
-		ulong high = Math.BigMul(a, b, out ulong low);
-		return new UInt128(high, low);
-#endif
+		return Math.BigMul(a, b, out lower);
 	}
 	/// <summary>
 	/// Produces the full product of two unsigned 128-bit numbers.
@@ -80,27 +84,7 @@ internal static class Calculator
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static (ulong hi, ulong lo) BigMulAdd(ulong a, ulong b, ulong c)
 	{
-		ulong highProd, lowProd;
-		if (Bmi2.X64.IsSupported)
-		{
-			/*
-			 * Using Bmi2.X64.MultiplyNoFlags(ulong left, ulong right, ulong* low) is actually
-			 * slower than simply getting the lower product directly and getting the high
-			 * product with Bmi2.X64.MultiplyNoFlags(ulong left, ulong right).
-			 * https://github.com/dotnet/runtime/issues/11782#issuecomment-2174501863
-			 */
-			highProd = Bmi2.X64.MultiplyNoFlags(a, b);
-			lowProd = a * b;
-		}
-		else if (ArmBase.Arm64.IsSupported)
-		{
-			highProd = ArmBase.Arm64.MultiplyHigh(a, b);
-			lowProd = a * b;
-		}
-		else
-		{
-			highProd = Math.BigMul(a, b, out lowProd);
-		}
+		ulong highProd = BigMul(a, b, out ulong lowProd);
 		
 		ulong lower = lowProd + c;
 		ulong carry = (lower < lowProd) ? 1UL : 0UL;
@@ -216,7 +200,7 @@ internal static class Calculator
 
 		ulong p3, p2, p1, p0;
 
-		carry = Math.BigMul(left.Part0, right, out p0);
+		carry = BigMul(left.Part0, right, out p0);
 		(carry, p1) = BigMulAdd(left.Part1, right, carry);
 		(carry, p2) = BigMulAdd(left.Part2, right, carry);
 		(carry, p3) = BigMulAdd(left.Part3, right, carry);
@@ -227,7 +211,7 @@ internal static class Calculator
 	{
 		ulong p7, p6, p5, p4, p3, p2, p1, p0;
 		
-		carry = Math.BigMul(left.Part0, right, out p0);
+		carry = BigMul(left.Part0, right, out p0);
 		(carry, p1) = BigMulAdd(left.Part1, right, carry);
 		(carry, p2) = BigMulAdd(left.Part2, right, carry);
 		(carry, p3) = BigMulAdd(left.Part3, right, carry);

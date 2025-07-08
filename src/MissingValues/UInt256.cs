@@ -128,7 +128,7 @@ namespace MissingValues
 			{
 				if (left._p3 == 0 && left._p2 == 0 && left._p1 == 0)
 				{
-					ulong up = Math.BigMul(left._p0, right._p0, out ulong low);
+					ulong up = Calculator.BigMul(left._p0, right._p0, out ulong low);
 					lower = new UInt256(0, 0, up, low);
 				}
 
