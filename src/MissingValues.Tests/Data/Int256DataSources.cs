@@ -453,42 +453,202 @@ public class Int256DataSources
 
 	public static IEnumerable<Func<(Int256, Int256, Int256)>> MaxMagnitudeTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int256.MaxValue, 5, Int256.MaxValue);
+		yield return () => (Int256.One, 5, 5);
+		yield return () => (Int256.One, Int256.NegativeOne, Int256.One);
+		yield return () => (Int256.One, -2, -2);
+		yield return () => (Int256.NegativeOne, Int256.MaxValue, Int256.MaxValue);
+		yield return () => (Int256.MinValue, -2, Int256.MinValue);
+		yield return () => (Int256.MaxValue, Int256.MinValue, Int256.MinValue);
 	}
 
 	public static IEnumerable<Func<(Int256, Int256, Int256)>> MaxMagnitudeNumberTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int256.MaxValue, 5, Int256.MaxValue);
+		yield return () => (Int256.One, 5, 5);
+		yield return () => (Int256.One, Int256.NegativeOne, Int256.One);
+		yield return () => (Int256.One, -2, -2);
+		yield return () => (Int256.NegativeOne, Int256.MaxValue, Int256.MaxValue);
+		yield return () => (Int256.MinValue, -2, Int256.MinValue);
+		yield return () => (Int256.MaxValue, Int256.MinValue, Int256.MinValue);
 	}
 
 	public static IEnumerable<Func<(Int256, Int256, Int256)>> MinMagnitudeTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int256.MaxValue, 5, 5);
+		yield return () => (Int256.One, 5, Int256.One);
+		yield return () => (Int256.One, Int256.NegativeOne, Int256.NegativeOne);
+		yield return () => (Int256.One, -2, Int256.One);
+		yield return () => (Int256.NegativeOne, Int256.MaxValue, Int256.NegativeOne);
+		yield return () => (Int256.MinValue, -2, -2);
+		yield return () => (Int256.MaxValue, Int256.MinValue, Int256.MaxValue);
 	}
 
 	public static IEnumerable<Func<(Int256, Int256, Int256)>> MinMagnitudeNumberTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int256.MaxValue, 5, 5);
+		yield return () => (Int256.One, 5, Int256.One);
+		yield return () => (Int256.One, Int256.NegativeOne, Int256.NegativeOne);
+		yield return () => (Int256.One, -2, Int256.One);
+		yield return () => (Int256.NegativeOne, Int256.MaxValue, Int256.NegativeOne);
+		yield return () => (Int256.MinValue, -2, -2);
+		yield return () => (Int256.MaxValue, Int256.MinValue, Int256.MaxValue);
 	}
 
 	public static IEnumerable<Func<(Int256, Int256, Int256, Int256)>> MultiplyAddEstimateTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int256.One, Int256.One, Int256.One, 2);
+		yield return () => (Int256.One, Int256.Zero, Int256.One, Int256.One);
+		yield return () => (Int256.MaxValue, Int256.NegativeOne, Int256.NegativeOne, Int256.MinValue);
+		yield return () => (200, 100, 500, 20500);
+		yield return () => (new Int256(0, 0, ulong.MaxValue, ulong.MaxValue), new Int256(0, 0, ulong.MaxValue, ulong.MaxValue), new Int256(0, 0, ulong.MaxValue, ulong.MaxValue), Int256.Parse("115792089237316195423570985008687907852929702298719625575994209400481361428480"));
 	}
 
 	public static IEnumerable<Func<(string, NumberStyles, IFormatProvider?, Int256)>> ParseTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => ("-57896044618658097711785492504343953926634992332820282019728792003956564819968", NumberStyles.Integer, CultureInfo.InvariantCulture, Int256.MinValue);
+		yield return () => ("-170141183460469231731687303715884105728", NumberStyles.Integer, CultureInfo.InvariantCulture, Int128.MinValue);
+		yield return () => ("-9223372036854775808", NumberStyles.Integer, CultureInfo.InvariantCulture, long.MinValue);
+		yield return () => ("-1", NumberStyles.Integer, CultureInfo.InvariantCulture, Int256.NegativeOne);
+		yield return () => ("0", NumberStyles.Integer, CultureInfo.InvariantCulture, Int256.Zero);
+		yield return () => ("1", NumberStyles.Integer, CultureInfo.InvariantCulture, Int256.One);
+		yield return () => ("9223372036854775808", NumberStyles.Integer, CultureInfo.InvariantCulture, new Int256(0, 0, 0, 0x8000_0000_0000_0000));
+		yield return () => ("170141183460469231731687303715884105728", NumberStyles.Integer, CultureInfo.InvariantCulture, new Int256(0, 0, 0x8000_0000_0000_0000, 0));
+		yield return () => ("57896044618658097711785492504343953926634992332820282019728792003956564819967", NumberStyles.Integer, CultureInfo.InvariantCulture, Int256.MaxValue);
+		
+		yield return () => ("123456789ABCDEF0", 
+			NumberStyles.HexNumber, CultureInfo.InvariantCulture, new Int256(0, 0, 0, 0x123456789ABCDEF0));
+		yield return () => ("FF", 
+			NumberStyles.HexNumber, CultureInfo.InvariantCulture, new Int256(0, 0, 0, 0xFF));
+		yield return () => ("FFFF", 
+			NumberStyles.HexNumber, CultureInfo.InvariantCulture, new Int256(0, 0, 0, 0xFFFF));
+		yield return () => ("FFFFFFFF", 
+			NumberStyles.HexNumber, CultureInfo.InvariantCulture, new Int256(0, 0, 0, 0xFFFFFFFF));
+		yield return () => ("FFFFFFFFFFFFFFFF", 
+			NumberStyles.HexNumber, CultureInfo.InvariantCulture, new Int256(0, 0, 0, 0xFFFFFFFFFFFFFFFF));
+		yield return () => ("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF", 
+			NumberStyles.HexNumber, CultureInfo.InvariantCulture, new Int256(0, 0, 0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF));
+		yield return () => ("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF", 
+			NumberStyles.HexNumber, CultureInfo.InvariantCulture, new Int256(0, 0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF));
+		yield return () => ("FFFFFFFFFFFFFFFF00000000000000000000000000000000FFFFFFFFFFFFFFFF", 
+			NumberStyles.HexNumber, CultureInfo.InvariantCulture, new Int256(0xFFFFFFFFFFFFFFFF, 0x0000000000000000, 0x0000000000000000, 0xFFFFFFFFFFFFFFFF));
+		yield return () => ("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF", 
+			NumberStyles.HexNumber, CultureInfo.InvariantCulture, new Int256(0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF));
+		
+		yield return () => ("1010101010101010", 
+			NumberStyles.BinaryNumber, CultureInfo.InvariantCulture, new Int256(0, 0, 0, 0b1010101010101010));
+		yield return () => ("11111111", 
+			NumberStyles.BinaryNumber, CultureInfo.InvariantCulture, new Int256(0, 0, 0, 0b11111111));
+		yield return () => ("1111111111111111", 
+			NumberStyles.BinaryNumber, CultureInfo.InvariantCulture, new Int256(0, 0, 0, 0b1111111111111111));
+		yield return () => ("11111111111111111111111111111111", 
+			NumberStyles.BinaryNumber, CultureInfo.InvariantCulture, new Int256(0, 0, 0, 0b11111111111111111111111111111111));
+		yield return () => ("1111111111111111111111111111111111111111111111111111111111111111", 
+			NumberStyles.BinaryNumber, CultureInfo.InvariantCulture, new Int256(0, 0, 0, 0b1111111111111111111111111111111111111111111111111111111111111111));
+		yield return () => ("11111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111", 
+			NumberStyles.BinaryNumber, CultureInfo.InvariantCulture, new Int256(0, 0, 0b1111111111111111111111111111111111111111111111111111111111111111, 0b1111111111111111111111111111111111111111111111111111111111111111));
+		yield return () => ("1111111111111111111111111111111111111111111111111111111111111111000000000000000000000000000000000000000000000000000000000000000011111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111", 
+			NumberStyles.BinaryNumber, CultureInfo.InvariantCulture, new Int256(0b1111111111111111111111111111111111111111111111111111111111111111, 0, 0b1111111111111111111111111111111111111111111111111111111111111111, 0b1111111111111111111111111111111111111111111111111111111111111111));
+		yield return () => ("1111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111", 
+			NumberStyles.BinaryNumber, CultureInfo.InvariantCulture, new Int256(0b1111111111111111111111111111111111111111111111111111111111111111, 0b1111111111111111111111111111111111111111111111111111111111111111, 0b1111111111111111111111111111111111111111111111111111111111111111, 0b1111111111111111111111111111111111111111111111111111111111111111));
 	}
 
 	public static IEnumerable<Func<(char[], NumberStyles, IFormatProvider?, Int256)>> ParseSpanTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => ("-57896044618658097711785492504343953926634992332820282019728792003956564819968".ToCharArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, Int256.MinValue);
+		yield return () => ("-170141183460469231731687303715884105728".ToCharArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, Int128.MinValue);
+		yield return () => ("-9223372036854775808".ToCharArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, long.MinValue);
+		yield return () => ("-1".ToCharArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, Int256.NegativeOne);
+		yield return () => ("0".ToCharArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, Int256.Zero);
+		yield return () => ("1".ToCharArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, Int256.One);
+		yield return () => ("9223372036854775808".ToCharArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, new Int256(0, 0, 0, 0x8000_0000_0000_0000));
+		yield return () => ("170141183460469231731687303715884105728".ToCharArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, new Int256(0, 0, 0x8000_0000_0000_0000, 0));
+		yield return () => ("57896044618658097711785492504343953926634992332820282019728792003956564819967".ToCharArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, Int256.MaxValue);
+		
+		yield return () => ("123456789ABCDEF0".ToCharArray(), 
+			NumberStyles.HexNumber, CultureInfo.InvariantCulture, new Int256(0, 0, 0, 0x123456789ABCDEF0));
+		yield return () => ("FF".ToCharArray(), 
+			NumberStyles.HexNumber, CultureInfo.InvariantCulture, new Int256(0, 0, 0, 0xFF));
+		yield return () => ("FFFF".ToCharArray(), 
+			NumberStyles.HexNumber, CultureInfo.InvariantCulture, new Int256(0, 0, 0, 0xFFFF));
+		yield return () => ("FFFFFFFF".ToCharArray(), 
+			NumberStyles.HexNumber, CultureInfo.InvariantCulture, new Int256(0, 0, 0, 0xFFFFFFFF));
+		yield return () => ("FFFFFFFFFFFFFFFF".ToCharArray(), 
+			NumberStyles.HexNumber, CultureInfo.InvariantCulture, new Int256(0, 0, 0, 0xFFFFFFFFFFFFFFFF));
+		yield return () => ("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF".ToCharArray(), 
+			NumberStyles.HexNumber, CultureInfo.InvariantCulture, new Int256(0, 0, 0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF));
+		yield return () => ("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF".ToCharArray(), 
+			NumberStyles.HexNumber, CultureInfo.InvariantCulture, new Int256(0, 0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF));
+		yield return () => ("FFFFFFFFFFFFFFFF00000000000000000000000000000000FFFFFFFFFFFFFFFF".ToCharArray(), 
+			NumberStyles.HexNumber, CultureInfo.InvariantCulture, new Int256(0xFFFFFFFFFFFFFFFF, 0x0000000000000000, 0x0000000000000000, 0xFFFFFFFFFFFFFFFF));
+		yield return () => ("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF".ToCharArray(), 
+			NumberStyles.HexNumber, CultureInfo.InvariantCulture, new Int256(0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF));
+		
+		yield return () => ("1010101010101010".ToCharArray(), 
+			NumberStyles.BinaryNumber, CultureInfo.InvariantCulture, new Int256(0, 0, 0, 0b1010101010101010));
+		yield return () => ("11111111".ToCharArray(), 
+			NumberStyles.BinaryNumber, CultureInfo.InvariantCulture, new Int256(0, 0, 0, 0b11111111));
+		yield return () => ("1111111111111111".ToCharArray(), 
+			NumberStyles.BinaryNumber, CultureInfo.InvariantCulture, new Int256(0, 0, 0, 0b1111111111111111));
+		yield return () => ("11111111111111111111111111111111".ToCharArray(), 
+			NumberStyles.BinaryNumber, CultureInfo.InvariantCulture, new Int256(0, 0, 0, 0b11111111111111111111111111111111));
+		yield return () => ("1111111111111111111111111111111111111111111111111111111111111111".ToCharArray(), 
+			NumberStyles.BinaryNumber, CultureInfo.InvariantCulture, new Int256(0, 0, 0, 0b1111111111111111111111111111111111111111111111111111111111111111));
+		yield return () => ("11111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111".ToCharArray(), 
+			NumberStyles.BinaryNumber, CultureInfo.InvariantCulture, new Int256(0, 0, 0b1111111111111111111111111111111111111111111111111111111111111111, 0b1111111111111111111111111111111111111111111111111111111111111111));
+		yield return () => ("1111111111111111111111111111111111111111111111111111111111111111000000000000000000000000000000000000000000000000000000000000000011111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111".ToCharArray(), 
+			NumberStyles.BinaryNumber, CultureInfo.InvariantCulture, new Int256(0b1111111111111111111111111111111111111111111111111111111111111111, 0, 0b1111111111111111111111111111111111111111111111111111111111111111, 0b1111111111111111111111111111111111111111111111111111111111111111));
+		yield return () => ("1111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111".ToCharArray(), 
+			NumberStyles.BinaryNumber, CultureInfo.InvariantCulture, new Int256(0b1111111111111111111111111111111111111111111111111111111111111111, 0b1111111111111111111111111111111111111111111111111111111111111111, 0b1111111111111111111111111111111111111111111111111111111111111111, 0b1111111111111111111111111111111111111111111111111111111111111111));
 	}
 
 	public static IEnumerable<Func<(byte[], NumberStyles, IFormatProvider?, Int256)>> ParseUtf8TestData()
 	{
-		throw new NotImplementedException();
+		yield return () => ("-57896044618658097711785492504343953926634992332820282019728792003956564819968"u8.ToArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, Int256.MinValue);
+		yield return () => ("-170141183460469231731687303715884105728"u8.ToArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, Int128.MinValue);
+		yield return () => ("-9223372036854775808"u8.ToArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, long.MinValue);
+		yield return () => ("-1"u8.ToArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, Int256.NegativeOne);
+		yield return () => ("0"u8.ToArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, Int256.Zero);
+		yield return () => ("1"u8.ToArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, Int256.One);
+		yield return () => ("9223372036854775808"u8.ToArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, new Int256(0, 0, 0, 0x8000_0000_0000_0000));
+		yield return () => ("170141183460469231731687303715884105728"u8.ToArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, new Int256(0, 0, 0x8000_0000_0000_0000, 0));
+		yield return () => ("57896044618658097711785492504343953926634992332820282019728792003956564819967"u8.ToArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, Int256.MaxValue);
+		
+		yield return () => ("123456789ABCDEF0"u8.ToArray(), 
+			NumberStyles.HexNumber, CultureInfo.InvariantCulture, new Int256(0, 0, 0, 0x123456789ABCDEF0));
+		yield return () => ("FF"u8.ToArray(), 
+			NumberStyles.HexNumber, CultureInfo.InvariantCulture, new Int256(0, 0, 0, 0xFF));
+		yield return () => ("FFFF"u8.ToArray(), 
+			NumberStyles.HexNumber, CultureInfo.InvariantCulture, new Int256(0, 0, 0, 0xFFFF));
+		yield return () => ("FFFFFFFF"u8.ToArray(), 
+			NumberStyles.HexNumber, CultureInfo.InvariantCulture, new Int256(0, 0, 0, 0xFFFFFFFF));
+		yield return () => ("FFFFFFFFFFFFFFFF"u8.ToArray(), 
+			NumberStyles.HexNumber, CultureInfo.InvariantCulture, new Int256(0, 0, 0, 0xFFFFFFFFFFFFFFFF));
+		yield return () => ("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"u8.ToArray(), 
+			NumberStyles.HexNumber, CultureInfo.InvariantCulture, new Int256(0, 0, 0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF));
+		yield return () => ("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"u8.ToArray(), 
+			NumberStyles.HexNumber, CultureInfo.InvariantCulture, new Int256(0, 0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF));
+		yield return () => ("FFFFFFFFFFFFFFFF00000000000000000000000000000000FFFFFFFFFFFFFFFF"u8.ToArray(), 
+			NumberStyles.HexNumber, CultureInfo.InvariantCulture, new Int256(0xFFFFFFFFFFFFFFFF, 0x0000000000000000, 0x0000000000000000, 0xFFFFFFFFFFFFFFFF));
+		yield return () => ("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"u8.ToArray(), 
+			NumberStyles.HexNumber, CultureInfo.InvariantCulture, new Int256(0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF));
+		
+		yield return () => ("1010101010101010"u8.ToArray(), 
+			NumberStyles.BinaryNumber, CultureInfo.InvariantCulture, new Int256(0, 0, 0, 0b1010101010101010));
+		yield return () => ("11111111"u8.ToArray(), 
+			NumberStyles.BinaryNumber, CultureInfo.InvariantCulture, new Int256(0, 0, 0, 0b11111111));
+		yield return () => ("1111111111111111"u8.ToArray(), 
+			NumberStyles.BinaryNumber, CultureInfo.InvariantCulture, new Int256(0, 0, 0, 0b1111111111111111));
+		yield return () => ("11111111111111111111111111111111"u8.ToArray(), 
+			NumberStyles.BinaryNumber, CultureInfo.InvariantCulture, new Int256(0, 0, 0, 0b11111111111111111111111111111111));
+		yield return () => ("1111111111111111111111111111111111111111111111111111111111111111"u8.ToArray(), 
+			NumberStyles.BinaryNumber, CultureInfo.InvariantCulture, new Int256(0, 0, 0, 0b1111111111111111111111111111111111111111111111111111111111111111));
+		yield return () => ("11111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111"u8.ToArray(), 
+			NumberStyles.BinaryNumber, CultureInfo.InvariantCulture, new Int256(0, 0, 0b1111111111111111111111111111111111111111111111111111111111111111, 0b1111111111111111111111111111111111111111111111111111111111111111));
+		yield return () => ("1111111111111111111111111111111111111111111111111111111111111111000000000000000000000000000000000000000000000000000000000000000011111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111"u8.ToArray(), 
+			NumberStyles.BinaryNumber, CultureInfo.InvariantCulture, new Int256(0b1111111111111111111111111111111111111111111111111111111111111111, 0, 0b1111111111111111111111111111111111111111111111111111111111111111, 0b1111111111111111111111111111111111111111111111111111111111111111));
+		yield return () => ("1111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111"u8.ToArray(), 
+			NumberStyles.BinaryNumber, CultureInfo.InvariantCulture, new Int256(0b1111111111111111111111111111111111111111111111111111111111111111, 0b1111111111111111111111111111111111111111111111111111111111111111, 0b1111111111111111111111111111111111111111111111111111111111111111, 0b1111111111111111111111111111111111111111111111111111111111111111));
 	}
 
 	public static IEnumerable<Func<(string, NumberStyles, IFormatProvider?, bool, Int256)>> TryParseTestData()
