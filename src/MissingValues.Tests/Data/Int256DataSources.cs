@@ -1,4 +1,5 @@
 ﻿using System.Globalization;
+using System.Runtime.CompilerServices;
 using MissingValues.Tests.Data.Sources;
 
 namespace MissingValues.Tests.Data;
@@ -833,7 +834,7 @@ public class Int256DataSources
 
 	public static IEnumerable<Func<(Int256, Int256, Int256)>> MaxNumberTestData()
 	{
-		throw new NotImplementedException();
+		return MaxTestData();
 	}
 
 	public static IEnumerable<Func<(Int256, Int256, Int256)>> MinTestData()
@@ -843,7 +844,7 @@ public class Int256DataSources
 
 	public static IEnumerable<Func<(Int256, Int256, Int256)>> MinNumberTestData()
 	{
-		throw new NotImplementedException();
+		return MinTestData();
 	}
 
 	public static IEnumerable<Func<(Int256, int)>> SignTestData()
@@ -869,57 +870,146 @@ public class Int256DataSources
 
 	public static IEnumerable<Func<(Int256, Int256)>> Log2TestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (new Int256(0, 0, 0, 1), new Int256(0, 0, 0, 0));
+		yield return () => (new Int256(0, 0, 0, 2), new Int256(0, 0, 0, 1));
+		yield return () => (new Int256(0, 0, 0, 4), new Int256(0, 0, 0, 2));
+		yield return () => (new Int256(0, 0, 0, 8), new Int256(0, 0, 0, 3));
+		yield return () => (new Int256(0, 0, 0, 1UL << 63), new Int256(0, 0, 0, 63));
+		yield return () => (new Int256(0, 0, 1UL << 5, 0), new Int256(0, 0, 0, 69));
+		yield return () => (new Int256(0, 1UL << 42, 0, 0), new Int256(0, 0, 0, 170));
+		yield return () => (new Int256(1UL << 13, 0, 0, 0), new Int256(0, 0, 0, 205));
+		yield return () => (new Int256(1UL << 63, 0, 0, 0), new Int256(0, 0, 0, 255));
+		yield return () => (new Int256(0, 0, 0, 0), new Int256(0, 0, 0, 0));
 	}
 
 	public static IEnumerable<Func<(Int256, Int256, (Int256, Int256))>> DivRemTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (new Int256(0, 0, 0, 0xFFFF_FFFF_FFFF_FFFF), new Int256(0, 0, 0, 10), (new Int256(0, 0, 0, 0xFFFF_FFFF_FFFF_FFFF / 10), new Int256(0, 0, 0, 0xFFFF_FFFF_FFFF_FFFF % 10)));
+		yield return () => (new Int256(0, 0, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF), new Int256(0, 0, 0, 10), (new Int256(0, new UInt128(0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF) / 10), new Int256(0, new UInt128(0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF) % 10)));
+		yield return () => (new Int256(0, 0, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF), new Int256(0, 0, 1, 0), (new Int256(0, new UInt128(0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF) / new UInt128(1, 0)), new Int256(0, new UInt128(0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF) % new UInt128(1, 0))));
+		yield return () => (new Int256(0, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF), new Int256(0, 0, 0, 10), (Int256.Parse("627710173538668076383578942320766641610235544446403451289"), new Int256(0, 0, 0, 10)));
+		yield return () => (new Int256(0, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF), new Int256(0, 0, 1, 0), (Int256.Parse("21267647932558653966460912964485513215"), Int256.Parse("295147905179352825855")));
+		yield return () => (new Int256(0, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF), new Int256(0, 1, 0, 0), (Int256.Parse("18446744073709551615"), Int256.Parse("340282366920938463463374607431768211455")));
 	}
 
 	public static IEnumerable<Func<(Int256, Int256)>> LeadingZeroCountTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (new Int256(0, 0, 0, 0), new Int256(0, 0, 0, 256));
+		yield return () => (new Int256(0, 0, 0, 1), new Int256(0, 0, 0, 255));
+		yield return () => (new Int256(0, 0, 1, 0), new Int256(0, 0, 0, 191));
+		yield return () => (new Int256(0, 1, 0, 0), new Int256(0, 0, 0, 127));
+		yield return () => (new Int256(1, 0, 0, 0), new Int256(0, 0, 0, 63));
+		yield return () => (new Int256(1, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue), new Int256(0, 0, 0, 63));
+		yield return () => (new Int256(0, 0, 0, 1UL << 63), new Int256(0, 0, 0, 192));
+		yield return () => (new Int256(0, 0, 1UL << 63, 0), new Int256(0, 0, 0, 128));
+		yield return () => (new Int256(0, 1UL << 63, 0, 0), new Int256(0, 0, 0, 64));
+		yield return () => (new Int256(1UL << 63, 0, 0, 0), new Int256(0, 0, 0, 0));
+		yield return () => (new Int256(1UL << 62, 0, 0, 0), new Int256(0, 0, 0, 1));
 	}
 
 	public static IEnumerable<Func<(Int256, Int256)>> PopCountTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (new Int256(0, 0, 0, 0), new Int256(0, 0, 0, 0));
+		yield return () => (new Int256(0, 0, 0, 1), new Int256(0, 0, 0, 1));
+		yield return () => (Int256.MaxValue, new Int256(0, 0, 0, 256));
+		yield return () => (new Int256(ulong.MaxValue, 0, 0, 0), new Int256(0, 0, 0, 64));
+		yield return () => (new Int256(0xAAAAAAAAAAAAAAAA, 0xAAAAAAAAAAAAAAAA, 0xAAAAAAAAAAAAAAAA, 0xAAAAAAAAAAAAAAAA), new Int256(0, 0, 0, 128));
+		yield return () => (new Int256(1UL << 63, 1UL << 62, 1UL << 61, 1UL << 60), new Int256(0, 0, 0, 4));
 	}
 
 	public static IEnumerable<Func<(byte[], bool, Int256)>> ReadBigEndianTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => ([], true, Int256.Zero);
+		yield return () => ([0x01], true, Int256.One);
+		yield return () =>
+		{
+			byte[] array = new byte[32];
+			Array.Fill(array, byte.MaxValue);
+			return (array, true, new Int256(0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF));
+		};
+		yield return () =>
+		{
+			byte[] array = new byte[35];
+			for (int i = 3; i < 35; i++)
+				array[i] = byte.MaxValue;
+			return (array, true, new Int256(0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF));
+		};
+		yield return () => ([0x12, 0x34], true, new Int256(0, 0, 0, 0x1234));
+		yield return () =>
+		{
+			byte[] array = new byte[32];
+			array[0] = 0x80;
+			return (array, true, new Int256(1UL << 63, 0, 0, 0));
+		};
 	}
 
 	public static IEnumerable<Func<(byte[], bool, Int256)>> ReadLittleEndianTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => ([], true, Int256.Zero);
+		yield return () => ([0x01], true, Int256.One);
+		yield return () =>
+		{
+			byte[] array = new byte[32];
+			Array.Fill(array, byte.MaxValue);
+			return (array, true, new Int256(0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF));
+		};
+		yield return () =>
+		{
+			byte[] array = new byte[35];
+			for (int i = 0; i < 32; i++)
+				array[i] = byte.MaxValue;
+			return (array, true, new Int256(0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF));
+		};
+		yield return () => ([0x34, 0x12], true, new Int256(0, 0, 0, 0x1234));
+		yield return () =>
+		{
+			byte[] array = new byte[32];
+			array[31] = 0x80;
+			return (array, true, new Int256(1UL << 63, 0, 0, 0));
+		};
 	}
 
 	public static IEnumerable<Func<(Int256, int, Int256)>> RotateLeftTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (new Int256(1, 2, 3, 4), 0, new Int256(1, 2, 3, 4));
+		yield return () => (new Int256(1, 2, 3, 4), 256, new Int256(1, 2, 3, 4));
+		yield return () => (new Int256(0, 0, 0x8000_0000_0000_0000, 0), 64, new Int256(0, 0x8000_0000_0000_0000, 0, 0));
+		yield return () => (new Int256(0x8000_0000_0000_0000, 0, 0, 0), 64, new Int256(0, 0, 0, 0x8000_0000_0000_0000));
+		yield return () => (new Int256(0, 0, 0x8000_0000_0000_0000, 0), 128, new Int256(0x8000_0000_0000_0000, 0, 0, 0));
+		yield return () => (new Int256(0x8000_0000_0000_0000, 0, 0, 0), 128, new Int256(0, 0, 0x8000_0000_0000_0000, 0));
 	}
 
 	public static IEnumerable<Func<(Int256, int, Int256)>> RotateRightTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (new Int256(1, 2, 3, 4), 0, new Int256(1, 2, 3, 4));
+		yield return () => (new Int256(1, 2, 3, 4), 256, new Int256(1, 2, 3, 4));
+		yield return () => (new Int256(0, 0, 0x8000_0000_0000_0000, 0), 64, new Int256(0, 0, 0, 0x8000_0000_0000_0000));
+		yield return () => (new Int256(0, 0, 0, 0x8000_0000_0000_0000), 64, new Int256(0x8000_0000_0000_0000, 0, 0, 0));
+		yield return () => (new Int256(0, 0, 0x8000_0000_0000_0000, 0), 128, new Int256(0x8000_0000_0000_0000, 0, 0, 0));
+		yield return () => (new Int256(0x8000_0000_0000_0000, 0, 0, 0), 128, new Int256(0, 0, 0x8000_0000_0000_0000, 0));
 	}
 
 	public static IEnumerable<Func<(Int256, Int256)>> TrailingZeroCountTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (new Int256(0, 0, 0, 0), new Int256(0, 0, 0, 256));
+		yield return () => (new Int256(0, 0, 0, 1), new Int256(0, 0, 0, 0));
+		yield return () => (new Int256(0, 0, 8, 0), new Int256(0, 0, 0, 67));
+		yield return () => (new Int256(0, 0x10, 0, 0), new Int256(0, 0, 0, 132));
+		yield return () => (new Int256(0x200, 0, 0, 0), new Int256(0, 0, 0, 201));
 	}
 
 	public static IEnumerable<Func<(Int256, int)>> GetByteCountTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (new Int256(0, 0, 0, 0), Unsafe.SizeOf<Int256>());
 	}
 
 	public static IEnumerable<Func<(Int256, int)>> GetShortestBitLengthTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (new Int256(0, 0, 0, 0), 0);
+		yield return () => (new Int256(0, 0, 0, 1), 1);
+		yield return () => (new Int256(1, 0, 0, 0), 193);
+		yield return () => (Int256.MaxValue, 255);
+		yield return () => (Int256.MinValue, 256);
 	}
 
 	public static IEnumerable<Func<(Int256, byte[], int)>> WriteBigEndianTestData()
