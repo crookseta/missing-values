@@ -188,18 +188,18 @@ namespace MissingValues.Benchmarks.Core
 			}
 			public IEnumerable<object[]> ValuesToFormat()
 			{
-				yield return [UInt256.MaxValue, "D"];
-				yield return [UInt256.MaxValue, "X"];
-				yield return [UInt256.MaxValue, "B"];
-				yield return [UInt256.MaxValue, "C"];
-				yield return [UInt256.MaxValue, "E"];
-				yield return [UInt256.MaxValue, "N"];
-				yield return [UInt256.MinValue, "D"];
-				yield return [UInt256.MinValue, "X"];
-				yield return [UInt256.MinValue, "B"];
-				yield return [UInt256.MinValue, "C"];
-				yield return [UInt256.MinValue, "E"];
-				yield return [UInt256.MinValue, "N"];
+				yield return [Int256.MaxValue, "D"];
+				yield return [Int256.MaxValue, "X"];
+				yield return [Int256.MaxValue, "B"];
+				yield return [Int256.MaxValue, "C"];
+				yield return [Int256.MaxValue, "E"];
+				yield return [Int256.MaxValue, "N"];
+				yield return [Int256.MinValue, "D"];
+				yield return [Int256.MinValue, "X"];
+				yield return [Int256.MinValue, "B"];
+				yield return [Int256.MinValue, "C"];
+				yield return [Int256.MinValue, "E"];
+				yield return [Int256.MinValue, "N"];
 			}
 		}
 	}

@@ -24,6 +24,7 @@ BenchmarkSwitcher
 			.Default
 			.WithRuntime(CoreRuntime.Core80)
 			.WithRuntime(CoreRuntime.Core90)
+			.WithRuntime(CoreRuntime.Core10_0)
 			));
 #endif
 Console.ReadLine();
