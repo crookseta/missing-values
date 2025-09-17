@@ -60,6 +60,9 @@ internal static class Calculator
 	/// <returns>The high 128-bit of the product of the specified numbers.</returns>
 	public static UInt128 BigMul(UInt128 a, UInt128 b, out UInt128 lower)
 	{
+		#if NET10_0_OR_GREATER
+		return UInt128.BigMul(a, b, out lower);
+		#else
 		// Adaptation of algorithm for multiplication
 		// of 32-bit unsigned integers described
 		// in Hacker's Delight by Henry S. Warren, Jr. (ISBN 0-201-91465-4), Chapter 8
@@ -79,6 +82,7 @@ internal static class Calculator
 		lower = new UInt128(tl.GetLowerBits(), mull.GetLowerBits());
 
 		return BigMul(ah, bh) + t.GetUpperBits() + tl.GetUpperBits();
+		#endif
 	}
 	
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]

@@ -353,7 +353,6 @@ namespace MissingValues
 				Span<ulong> valueSpan = stackalloc ulong[UIntCount];
 				valueSpan.Clear();
 				BitHelper.Write(valueSpan, in value);
-				//Unsafe.WriteUnaligned(ref Unsafe.As<ulong, byte>(ref MemoryMarshal.GetReference(valueSpan)), value);
 
 				bits = (size <= Calculator.StackAllocThreshold
 					? stackalloc ulong[Calculator.StackAllocThreshold]
@@ -377,7 +376,6 @@ namespace MissingValues
 			}
 
 			UInt512 result = BitHelper.Read<UInt512>(bits[..UIntCount]);
-			//UInt512 result = Unsafe.ReadUnaligned<UInt512>(ref Unsafe.As<ulong, byte>(ref MemoryMarshal.GetReference(bits[..UIntCount])));
 
 			if (bitsArray is not null)
 			{
