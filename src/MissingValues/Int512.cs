@@ -184,6 +184,16 @@ namespace MissingValues
 		}
 
 		/// <summary>
+		/// Computes the base-10 logarithm of a <see cref="Int512"/>.
+		/// </summary>
+		/// <param name="value">The value whose base-10 logarithm is to be computed.</param>
+		/// <returns>The base-10 logarithm of <paramref name="value"/></returns>
+		public static Int512 Log10(Int512 value)
+		{
+			return BitHelper.Log10(in value);
+		}
+
+		/// <summary>
 		/// Raises a <see cref="Int512"/> value to the power of a specified value.
 		/// </summary>
 		/// <param name="value">The number to raise to the <paramref name="exponent"/> power.</param>

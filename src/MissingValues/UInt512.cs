@@ -288,6 +288,16 @@ namespace MissingValues
 
 			}
 		}
+		
+		/// <summary>
+		/// Computes the base-10 logarithm of a <see cref="UInt512"/>.
+		/// </summary>
+		/// <param name="value">The value whose base-10 logarithm is to be computed.</param>
+		/// <returns>The base-10 logarithm of <paramref name="value"/></returns>
+		public static UInt512 Log10(UInt512 value)
+		{
+			return (UInt512)BitHelper.Log10(in value);
+		}
 
 		/// <summary>
 		/// Raises a <see cref="UInt512"/> value to the power of a specified value.
