@@ -62,4 +62,41 @@ internal static class RandomExtensions
 
 		return T.CreateTruncating(NextInteger<UInt512>(random) >> (512 - significandBitLength)) * (T.One / T.CreateTruncating(UInt512.One << significandBitLength));
 	}
+
+	public static T[] NextIntegerArray<T>(this Random random, int length)
+		where T : unmanaged, IBinaryInteger<T>
+	{
+		T[] result = new T[length];
+
+		for (int i = 0; i < length; i++)
+		{
+			result[i] = random.NextInteger<T>();
+		}
+
+		return result;
+	}
+	public static T[] NextIntegerArray<T>(this Random random, int length, T max)
+		where T : unmanaged, IBinaryInteger<T>
+	{
+		T[] result = new T[length];
+
+		for (int i = 0; i < length; i++)
+		{
+			result[i] = random.NextInteger(max);
+		}
+
+		return result;
+	}
+	public static T[] NextIntegerArray<T>(this Random random, int length, T min, T max)
+		where T : unmanaged, IBinaryInteger<T>
+	{
+		T[] result = new T[length];
+
+		for (int i = 0; i < length; i++)
+		{
+			result[i] = random.NextInteger(min, max);
+		}
+
+		return result;
+	}
 }

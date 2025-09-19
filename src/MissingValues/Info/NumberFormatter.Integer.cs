@@ -101,7 +101,7 @@ internal interface IFormattableUnsignedInteger<TUnsigned> : IFormattableInteger<
 	/// <summary>
 	/// Gets the absolute representation of the maximum representable value of <typeparamref name="TSigned"/>(Abs(TSigned.MinValue)).
 	/// </summary>
-	abstract static TUnsigned SignedMaxMagnitude { get; }
+	static abstract TUnsigned SignedMaxMagnitude { get; }
 
 	static abstract int CountDigits(in TUnsigned value);
 
@@ -285,12 +285,12 @@ internal static partial class NumberFormatter
 		int hexBase = (isUpper - ('X' - 'A' + 10));
 		Span<ulong> value64 = stackalloc ulong[sizeof(T) / sizeof(ulong)];
 		Unsafe.WriteUnaligned(ref Unsafe.As<ulong, byte>(ref MemoryMarshal.GetReference(value64)), value);
-		value64 = value64[..(value64.Length - (T.LeadingZeroCountInt32(in value) / 64))];
+		value64 = value64[..^(T.LeadingZeroCountInt32(in value) / 64)];
 
 		fixed (TChar* ptr = &MemoryMarshal.GetReference(destination))
 		{
 			TChar* bufferEnd = ptr + digits;
-			int maxDigitsPerChunk = 16;
+			const int MaxDigitsPerChunk = 16;
 			ulong v;
 
 			if (value64.Length == 1)
@@ -309,7 +309,7 @@ internal static partial class NumberFormatter
 
 			for (int i = 0; i < value64.Length && digits > 0; i++)
 			{
-				int digitsLeft = Math.Min(digits, maxDigitsPerChunk);
+				int digitsLeft = Math.Min(digits, MaxDigitsPerChunk);
 				v = value64[i];
 
 				while (digitsLeft > 0 || v != 0)
@@ -320,7 +320,7 @@ internal static partial class NumberFormatter
 					v >>= 4;
 				}
 
-				digits -= maxDigitsPerChunk;
+				digits -= MaxDigitsPerChunk;
 			}
 		}
 	}
@@ -331,12 +331,12 @@ internal static partial class NumberFormatter
 		destination[..digits].Fill((TChar)'0');
 		Span<ulong> value64 = stackalloc ulong[sizeof(T) / sizeof(ulong)];
 		Unsafe.WriteUnaligned(ref Unsafe.As<ulong, byte>(ref MemoryMarshal.GetReference(value64)), value);
-		value64 = value64[..(value64.Length - (T.LeadingZeroCountInt32(in value) / 64))];
+		value64 = value64[..^(T.LeadingZeroCountInt32(in value) / 64)];
 
 		fixed (TChar* ptr = &MemoryMarshal.GetReference(destination))
 		{
 			TChar* bufferEnd = ptr + digits;
-			int maxDigitsPerChunk = 64;
+			const int MaxDigitsPerChunk = 64;
 			ulong v;
 
 			if (value64.Length == 1)
@@ -354,7 +354,7 @@ internal static partial class NumberFormatter
 
 			for (int i = 0; i < value64.Length && digits > 0; i++)
 			{
-				int digitsLeft = Math.Min(digits, maxDigitsPerChunk);
+				int digitsLeft = Math.Min(digits, MaxDigitsPerChunk);
 				v = value64[i];
 
 				while (digitsLeft > 0 || v != 0)
@@ -364,7 +364,7 @@ internal static partial class NumberFormatter
 					v >>= 1;
 				}
 
-				digits -= maxDigitsPerChunk;
+				digits -= MaxDigitsPerChunk;
 			}
 		}
 	}

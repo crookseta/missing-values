@@ -1940,119 +1940,120 @@ namespace MissingValues
 		/// <inheritdoc/>
 		public static Octo operator /(in Octo left, in Octo right)
 		{
-			bool signA = Octo.IsNegative(left);
-			var expA = left.BiasedExponent;
-			var sigA = left.Significand;
-			bool signB = Octo.IsNegative(right);
-			var expB = right.BiasedExponent;
-			var sigB = right.Significand;
-			bool signZ = signA ^ signB;
-
-			const int MaxExp = 0x7FFFF;
-			if (expA == MaxExp)
+			// Special case handling
+			if (IsNaN(left))
 			{
-				if (sigA != UInt256.Zero)
-				{
-					return Octo.NaN;
-				}
-				if (expB == MaxExp)
-				{
-					return Octo.NaN;
-				}
-				return signZ ? Octo.NegativeInfinity : Octo.PositiveInfinity;
-			}
-			if (expB == MaxExp)
-			{
-				if (sigB != UInt256.Zero)
-				{
-					return Octo.NaN;
-				}
-
-				return signZ ? Octo.NegativeZero : Octo.Zero;
+				return left;
 			}
 
-			if (expB == 0)
+			if (IsNaN(right))
 			{
-				if (sigB == UInt256.Zero)
+				return right;
+			}
+
+			if (right == Zero || IsInfinity(left) || IsInfinity(right))
+			{
+				if (right == Zero)
 				{
-					if ((expA | sigA) == UInt256.Zero)
+					if (left == Zero)
 					{
-						return Octo.NaN;
+						return NaN;
 					}
-					return signZ ? Octo.NegativeInfinity : Octo.PositiveInfinity;
+					return IsNegative(left) != IsNegative(right) ? NegativeInfinity : PositiveInfinity;
 				}
-				(expB, sigB) = BitHelper.NormalizeSubnormalF256Sig(sigB);
+
+				if (IsInfinity(right))
+				{
+					if (IsInfinity(left))
+					{
+						return NaN;
+					}
+					return IsNegative(left) != IsNegative(right) ? NegativeZero : Zero;
+				}
+
+				if (IsInfinity(left))
+				{
+					return IsNegative(left) != IsNegative(right) ? NegativeInfinity : PositiveInfinity;
+				}
 			}
-			if (expA == 0)
+			
+			// Calculate Exponent
+			long exp = (long)(int)left.BiasedExponent - (int)right.BiasedExponent + ExponentBias;
+			
+			// Normalize inputs
+			UInt256 leftMantissa = left.Significand;
+			UInt256 rightMantissa = right.Significand;
+			int sl = BitHelper.LeadingZeroCount(in leftMantissa);
+			int sr = BitHelper.LeadingZeroCount(in rightMantissa);
+			exp = exp - sl + sr;
+			
+			// Perform division
+			UInt512 dividend = (UInt512)(leftMantissa << sl) << BiasedExponentShift;
+			UInt256 divisor = rightMantissa << sr;
+			var (quotient, remainder) = UInt512.DivRem(dividend, divisor);
+			
+			// Build extended precision result
+			UInt512 am = quotient;
+
+			if (am != UInt512.Zero)
 			{
-				if (sigA == UInt256.Zero)
+				int nlz = BitHelper.LeadingZeroCount(in am);
+				int shift = nlz - (UInt512.Size * 8 - (BiasedExponentShift + 1));
+				if (shift < 0)
 				{
-					return signZ ? Octo.NegativeZero : Octo.Zero;
+					am >>= -shift;
+				}
+				else
+				{
+					am <<= shift;
 				}
 
-				(expA, sigA) = BitHelper.NormalizeSubnormalF256Sig(sigA);
+				exp -= shift;
 			}
-
-			int expZ = ((int)(expA - expB + (Octo.ExponentBias - 1)));
-			sigA |= new UInt256(0x0000_1000_0000_0000, 0, 0, 0);
-			sigB |= new UInt256(0x0000_1000_0000_0000, 0, 0, 0);
-			UInt256 rem = sigA;
-			if (sigA < sigB)
+			
+			// Rounding
+			bool roundUp = false;
+			if (remainder != UInt512.Zero)
 			{
-				--expZ;
-				rem = sigA + sigA;
+				UInt512 half = UInt512.One << (BiasedExponentShift - 1);
+				if (remainder > half)
+				{
+					roundUp = true;
+				}
+				else if (remainder == half)
+				{
+					// Round to nearest even
+					if ((am & UInt512.One) != UInt512.Zero)
+					{
+						roundUp = true;
+					}
+				}
 			}
 
-			uint recip32 = BitHelper.ReciprocalApproximate((uint)(sigB >> 205));
-
-			uint q;
-			const int Iterations = 3;
-			Span<uint> qs = stackalloc uint[Iterations];
-			UInt256 term;
-			for (int ix = Iterations; ;)
+			if (roundUp)
 			{
-				ulong q64 = (ulong)(uint)(rem.Part3 >> 15) * recip32;
-				q = (uint)((q64 + 0x8000_0000) >> 32);
-				if (--ix < 0)
-				{
-					break;
-				}
-				rem <<= 29;
-				term = sigB * q;
-				rem -= term;
-				if ((rem.Part3 & 0x8000_0000_0000_0000) != 0)
-				{
-					--q;
-					rem += sigB;
-				}
-				qs[ix] = q;
+				am++;
 			}
-
-			if (((q + 1) & 7) < 2)
+			
+			// Final normalization after rounding
+			if ((am >> (BiasedExponentShift + 1)) != UInt512.Zero)
 			{
-				rem <<= 153;
-				term = sigB * q;
-				rem -= term;
-				if ((rem.Part3 & 0x8000_0000_0000_0000) != 0)
-				{
-					--q;
-					rem += sigB;
-				}
-				else if (sigB <= rem)
-				{
-					++q;
-					rem -= sigB;
-				}
-				if (rem != UInt128.Zero)
-				{
-					q |= 1;
-				}
+				am >>= 1;
+				exp++;
+			}
+			
+			// Handle overflow
+			if (exp >= (1 << BiasedExponentLength) - 1)
+			{
+				return IsNegative(left) != IsNegative(right) ? NegativeInfinity : PositiveInfinity;
 			}
 
-			UInt128 sigZExtra = new UInt128((ulong)q << 56, 0);
-			term = new UInt256(0, 0, 0, qs[1]) << 108;
-			UInt256 sigZ = new UInt256((ulong)qs[2] << 15, ((ulong)qs[0] << 25) + (q >> 4), 0, 0) + term;
-			return Octo.UInt256BitsToOcto(BitHelper.RoundPackToOcto(signZ, expZ, sigZ, sigZExtra));
+			if (exp <= 0)
+			{
+				return IsNegative(left) != IsNegative(right) ? NegativeZero : Zero;
+			}
+
+			return am == UInt512.Zero ? Zero : new Octo(IsNegative(left) != IsNegative(right), (uint)exp, (UInt256)am);
 		}
 
 		/// <inheritdoc/>

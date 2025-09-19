@@ -1118,8 +1118,7 @@ namespace MissingValues
 
 			uint sign = (uint)(left._p3 >> 63);
 
-			if (sign == (uint)(right._p3 >> 63) &&
-				sign != (uint)(result._p3 >> 63))
+			if ((long)((result._p3 ^ left._p3) & ~(left._p3 ^ right._p3)) < 0)
 			{
 				Thrower.ArithmeticOverflow(Thrower.ArithmeticOperation.Addition);
 			}

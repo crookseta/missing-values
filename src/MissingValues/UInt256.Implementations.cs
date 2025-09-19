@@ -202,10 +202,12 @@ namespace MissingValues
 			}
 
 			Span<ulong> quotientSpan = stackalloc ulong[UIntCount];
-			Unsafe.WriteUnaligned(ref Unsafe.As<ulong, byte>(ref MemoryMarshal.GetReference(quotientSpan)), left);
+			BitHelper.Write(quotientSpan, in left);
+			//Unsafe.WriteUnaligned(ref Unsafe.As<ulong, byte>(ref MemoryMarshal.GetReference(quotientSpan)), left);
 
 			Span<ulong> divisorSpan = stackalloc ulong[UIntCount];
-			Unsafe.WriteUnaligned(ref Unsafe.As<ulong, byte>(ref MemoryMarshal.GetReference(divisorSpan)), right);
+			BitHelper.Write(divisorSpan, in right);
+			//Unsafe.WriteUnaligned(ref Unsafe.As<ulong, byte>(ref MemoryMarshal.GetReference(divisorSpan)), right);
 
 			Span<ulong> quoBits = stackalloc ulong[UIntCount];
 			quoBits.Clear();
@@ -218,8 +220,10 @@ namespace MissingValues
 				quoBits,
 				remBits);
 
-			quotient = Unsafe.ReadUnaligned<UInt256>(ref Unsafe.As<ulong, byte>(ref MemoryMarshal.GetReference(quoBits)));
-			remainder = Unsafe.ReadUnaligned<UInt256>(ref Unsafe.As<ulong, byte>(ref MemoryMarshal.GetReference(remBits)));
+			quotient = BitHelper.Read<UInt256>(quoBits);
+			remainder = BitHelper.Read<UInt256>(remBits);
+			//quotient = Unsafe.ReadUnaligned<UInt256>(ref Unsafe.As<ulong, byte>(ref MemoryMarshal.GetReference(quoBits)));
+			//remainder = Unsafe.ReadUnaligned<UInt256>(ref Unsafe.As<ulong, byte>(ref MemoryMarshal.GetReference(remBits)));
 		}
 
 		/// <inheritdoc/>
@@ -922,28 +926,12 @@ namespace MissingValues
 
 		internal static int CountDigits(in UInt256 value)
 		{
-			if (value.Upper == 0)
+			if (value.Upper == UInt128.Zero)
 			{
 				return NumberFormatter.CountDigits(value.Lower);
 			}
-
-			// We have more than 1e38, so we have at least 39 digits
-			int digits = 39;
-
-			if (value.Upper > 0x2)
-			{
-				var lower = value / new UInt256(0x0000_0000_0000_0000, 0x0000_0000_0000_0002, 0xF050_FE93_8943_ACC4, 0x5F65_5680_0000_0000);
-
-				digits += NumberFormatter.CountDigits(lower.Lower);
-			}
-			else if ((value.Upper == 0x2) && (value.Lower >= new UInt128(0xF050_FE93_8943_ACC4, 0x5F65_5680_0000_0000)))
-			{
-				// We're greater than 1e39, but definitely less than 1e40
-				// so we have exactly 40 digits
-				digits++;
-			}
-
-			return digits;
+			
+			return BitHelper.Log10(in value) + 1;
 		}
 		static int IFormattableUnsignedInteger<UInt256>.CountDigits(in UInt256 value) => CountDigits(in value);
 		static int IFormattableInteger<UInt256>.UnsignedCompare(in UInt256 value1, in UInt256 value2)
@@ -1073,7 +1061,7 @@ namespace MissingValues
 			{
 				if (left._p3 == 0 && left._p2 == 0 && left._p1 == 0)
 				{
-					up = Math.BigMul(left._p0, right._p0, out low);
+					up = Calculator.BigMul(left._p0, right._p0, out low);
 					return new UInt256(0, 0, up, low);
 				}
 
@@ -1149,10 +1137,12 @@ namespace MissingValues
 			}
 
 			Span<ulong> quotientSpan = stackalloc ulong[UIntCount];
-			Unsafe.WriteUnaligned(ref Unsafe.As<ulong, byte>(ref MemoryMarshal.GetReference(quotientSpan)), left);
+			BitHelper.Write(quotientSpan, in left);
+			//Unsafe.WriteUnaligned(ref Unsafe.As<ulong, byte>(ref MemoryMarshal.GetReference(quotientSpan)), left);
 
 			Span<ulong> divisorSpan = stackalloc ulong[UIntCount];
-			Unsafe.WriteUnaligned(ref Unsafe.As<ulong, byte>(ref MemoryMarshal.GetReference(divisorSpan)), right);
+			BitHelper.Write(divisorSpan, in right);
+			//Unsafe.WriteUnaligned(ref Unsafe.As<ulong, byte>(ref MemoryMarshal.GetReference(divisorSpan)), right);
 
 			Span<ulong> rawBits = stackalloc ulong[UIntCount];
 			rawBits.Clear();
@@ -1162,7 +1152,8 @@ namespace MissingValues
 				divisorSpan[..BitHelper.GetTrimLength(in right)],
 				rawBits);
 
-			return Unsafe.ReadUnaligned<UInt256>(ref Unsafe.As<ulong, byte>(ref MemoryMarshal.GetReference(rawBits)));
+			return BitHelper.Read<UInt256>(rawBits);
+			//return Unsafe.ReadUnaligned<UInt256>(ref Unsafe.As<ulong, byte>(ref MemoryMarshal.GetReference(rawBits)));
 		}
 
 		/// <inheritdoc/>
@@ -1193,10 +1184,12 @@ namespace MissingValues
 			}
 
 			Span<ulong> quotientSpan = stackalloc ulong[UIntCount];
-			Unsafe.WriteUnaligned(ref Unsafe.As<ulong, byte>(ref MemoryMarshal.GetReference(quotientSpan)), left);
+			BitHelper.Write(quotientSpan, in left);
+			//Unsafe.WriteUnaligned(ref Unsafe.As<ulong, byte>(ref MemoryMarshal.GetReference(quotientSpan)), left);
 
 			Span<ulong> divisorSpan = stackalloc ulong[UIntCount];
-			Unsafe.WriteUnaligned(ref Unsafe.As<ulong, byte>(ref MemoryMarshal.GetReference(divisorSpan)), right);
+			BitHelper.Write(divisorSpan, in right);
+			//Unsafe.WriteUnaligned(ref Unsafe.As<ulong, byte>(ref MemoryMarshal.GetReference(divisorSpan)), right);
 
 			Span<ulong> rawBits = stackalloc ulong[UIntCount];
 			rawBits.Clear();
@@ -1206,7 +1199,8 @@ namespace MissingValues
 				divisorSpan[..BitHelper.GetTrimLength(in right)],
 				rawBits);
 
-			return Unsafe.ReadUnaligned<UInt256>(ref Unsafe.As<ulong, byte>(ref MemoryMarshal.GetReference(rawBits)));
+			return BitHelper.Read<UInt256>(rawBits);
+			//return Unsafe.ReadUnaligned<UInt256>(ref Unsafe.As<ulong, byte>(ref MemoryMarshal.GetReference(rawBits)));
 		}
 
 		/// <inheritdoc/>

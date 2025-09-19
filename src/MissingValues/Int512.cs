@@ -184,6 +184,16 @@ namespace MissingValues
 		}
 
 		/// <summary>
+		/// Computes the base-10 logarithm of a <see cref="Int512"/>.
+		/// </summary>
+		/// <param name="value">The value whose base-10 logarithm is to be computed.</param>
+		/// <returns>The base-10 logarithm of <paramref name="value"/></returns>
+		public static Int512 Log10(Int512 value)
+		{
+			return BitHelper.Log10(in value);
+		}
+
+		/// <summary>
 		/// Raises a <see cref="Int512"/> value to the power of a specified value.
 		/// </summary>
 		/// <param name="value">The number to raise to the <paramref name="exponent"/> power.</param>
@@ -249,7 +259,8 @@ namespace MissingValues
 
 				Span<ulong> valueSpan = stackalloc ulong[UIntCount];
 				valueSpan.Clear();
-				Unsafe.WriteUnaligned(ref Unsafe.As<ulong, byte>(ref MemoryMarshal.GetReference(valueSpan)), value);
+				BitHelper.Write(valueSpan, in value);
+				//Unsafe.WriteUnaligned(ref Unsafe.As<ulong, byte>(ref MemoryMarshal.GetReference(valueSpan)), value);
 
 				bits = (size <= Calculator.StackAllocThreshold
 					? stackalloc ulong[Calculator.StackAllocThreshold]
@@ -272,7 +283,8 @@ namespace MissingValues
 				}
 			}
 
-			Int512 result = Unsafe.ReadUnaligned<Int512>(ref Unsafe.As<ulong, byte>(ref MemoryMarshal.GetReference(bits[..UIntCount])));
+			Int512 result = BitHelper.Read<Int512>(bits[..UIntCount]);
+			//Int512 result = Unsafe.ReadUnaligned<Int512>(ref Unsafe.As<ulong, byte>(ref MemoryMarshal.GetReference(bits[..UIntCount])));
 
 			if (bitsArray is not null)
 			{

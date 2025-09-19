@@ -26,6 +26,13 @@ internal static class Calculator
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static UInt128 BigMul(ulong a, ulong b)
 	{
+		ulong high = BigMul(a, b, out ulong low);
+		return new UInt128(high, low);
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	public static ulong BigMul(ulong a, ulong b, out ulong lower)
+	{
 		if (Bmi2.X64.IsSupported)
 		{
 			/*
@@ -34,18 +41,15 @@ internal static class Calculator
 			 * product with Bmi2.X64.MultiplyNoFlags(ulong left, ulong right).
 			 * https://github.com/dotnet/runtime/issues/11782#issuecomment-2174501863
 			 */
-			return new UInt128(Bmi2.X64.MultiplyNoFlags(a, b), a * b);
+			lower = a * b;
+			return Bmi2.X64.MultiplyNoFlags(a, b);
 		}
 		if (ArmBase.Arm64.IsSupported)
 		{
-			return new UInt128(ArmBase.Arm64.MultiplyHigh(a, b), a * b);
+			lower = a * b;
+			return ArmBase.Arm64.MultiplyHigh(a, b);
 		}
-#if NET9_0_OR_GREATER
-		return Math.BigMul(a, b);
-#else
-		ulong high = Math.BigMul(a, b, out ulong low);
-		return new UInt128(high, low);
-#endif
+		return Math.BigMul(a, b, out lower);
 	}
 	/// <summary>
 	/// Produces the full product of two unsigned 128-bit numbers.
@@ -56,6 +60,9 @@ internal static class Calculator
 	/// <returns>The high 128-bit of the product of the specified numbers.</returns>
 	public static UInt128 BigMul(UInt128 a, UInt128 b, out UInt128 lower)
 	{
+		#if NET10_0_OR_GREATER
+		return UInt128.BigMul(a, b, out lower);
+		#else
 		// Adaptation of algorithm for multiplication
 		// of 32-bit unsigned integers described
 		// in Hacker's Delight by Henry S. Warren, Jr. (ISBN 0-201-91465-4), Chapter 8
@@ -75,32 +82,13 @@ internal static class Calculator
 		lower = new UInt128(tl.GetLowerBits(), mull.GetLowerBits());
 
 		return BigMul(ah, bh) + t.GetUpperBits() + tl.GetUpperBits();
+		#endif
 	}
 	
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static (ulong hi, ulong lo) BigMulAdd(ulong a, ulong b, ulong c)
 	{
-		ulong highProd, lowProd;
-		if (Bmi2.X64.IsSupported)
-		{
-			/*
-			 * Using Bmi2.X64.MultiplyNoFlags(ulong left, ulong right, ulong* low) is actually
-			 * slower than simply getting the lower product directly and getting the high
-			 * product with Bmi2.X64.MultiplyNoFlags(ulong left, ulong right).
-			 * https://github.com/dotnet/runtime/issues/11782#issuecomment-2174501863
-			 */
-			highProd = Bmi2.X64.MultiplyNoFlags(a, b);
-			lowProd = a * b;
-		}
-		else if (ArmBase.Arm64.IsSupported)
-		{
-			highProd = ArmBase.Arm64.MultiplyHigh(a, b);
-			lowProd = a * b;
-		}
-		else
-		{
-			highProd = Math.BigMul(a, b, out lowProd);
-		}
+		ulong highProd = BigMul(a, b, out ulong lowProd);
 		
 		ulong lower = lowProd + c;
 		ulong carry = (lower < lowProd) ? 1UL : 0UL;
@@ -216,7 +204,7 @@ internal static class Calculator
 
 		ulong p3, p2, p1, p0;
 
-		carry = Math.BigMul(left.Part0, right, out p0);
+		carry = BigMul(left.Part0, right, out p0);
 		(carry, p1) = BigMulAdd(left.Part1, right, carry);
 		(carry, p2) = BigMulAdd(left.Part2, right, carry);
 		(carry, p3) = BigMulAdd(left.Part3, right, carry);
@@ -227,7 +215,7 @@ internal static class Calculator
 	{
 		ulong p7, p6, p5, p4, p3, p2, p1, p0;
 		
-		carry = Math.BigMul(left.Part0, right, out p0);
+		carry = BigMul(left.Part0, right, out p0);
 		(carry, p1) = BigMulAdd(left.Part1, right, carry);
 		(carry, p2) = BigMulAdd(left.Part2, right, carry);
 		(carry, p3) = BigMulAdd(left.Part3, right, carry);
@@ -290,8 +278,7 @@ internal static class Calculator
 
 		if (left.Part3 != 0)
 		{
-			value = new UInt128(0, left.Part3);
-			(digit, carry) = DivRemByUInt64(value, right);
+			(digit, carry) = Math.DivRem(left.Part3, right);
 			p3 = (ulong)digit;
 			
 			value = new UInt128(carry, left.Part2);
@@ -310,8 +297,7 @@ internal static class Calculator
 		{
 			p3 = 0;
 
-			value = new UInt128(0, left.Part2);
-			(digit, carry) = DivRemByUInt64(value, right);
+			(digit, carry) = Math.DivRem(left.Part2, right);
 			p2 = (ulong)digit;
 
 			value = new UInt128(carry, left.Part1);
@@ -349,8 +335,7 @@ internal static class Calculator
 
 		if (left.Part7 != 0)
 		{
-			value = new UInt128(0, left.Part7);
-			(digit, carry) = DivRemByUInt64(value, right);
+			(digit, carry) = Math.DivRem(left.Part7, right);
 			p07 = (ulong)digit;
 
 			value = new UInt128(carry, left.Part6);
@@ -385,8 +370,7 @@ internal static class Calculator
 		{
 			p07 = 0;
 
-			value = new UInt128(0, left.Part6);
-			(digit, carry) = DivRemByUInt64(value, right);
+			(digit, carry) = Math.DivRem(left.Part6, right);
 			p06 = (ulong)digit;
 
 			value = new UInt128(carry, left.Part5);
@@ -418,8 +402,7 @@ internal static class Calculator
 			p07 = 0;
 			p06 = 0;
 
-			value = new UInt128(0, left.Part5);
-			(digit, carry) = DivRemByUInt64(value, right);
+			(digit, carry) = Math.DivRem(left.Part5, right);
 			p05 = (ulong)digit;
 
 			value = new UInt128(carry, left.Part4);
@@ -448,8 +431,7 @@ internal static class Calculator
 			p06 = 0;
 			p05 = 0;
 
-			value = new UInt128(0, left.Part4);
-			(digit, carry) = DivRemByUInt64(value, right);
+			(digit, carry) = Math.DivRem(left.Part4, right);
 			p04 = (ulong)digit;
 
 			value = new UInt128(carry, left.Part3);
@@ -475,8 +457,7 @@ internal static class Calculator
 			p05 = 0;
 			p04 = 0;
 
-			value = new UInt128(0, left.Part3);
-			(digit, carry) = DivRemByUInt64(value, right);
+			(digit, carry) = Math.DivRem(left.Part3, right);
 			p03 = (ulong)digit;
 
 			value = new UInt128(carry, left.Part2);
@@ -499,8 +480,7 @@ internal static class Calculator
 			p04 = 0;
 			p03 = 0;
 
-			value = new UInt128(0, left.Part2);
-			(digit, carry) = DivRemByUInt64(value, right);
+			(digit, carry) = Math.DivRem(left.Part2, right);
 			p02 = (ulong)digit;
 
 			value = new UInt128(carry, left.Part1);
@@ -543,8 +523,7 @@ internal static class Calculator
 
 		if (left.Part3 != 0)
 		{
-			value = new UInt128(0, left.Part3);
-			(digit, carry) = DivRemByUInt64(value, right);
+			(digit, carry) = Math.DivRem(left.Part3, right);
 			p3 = (ulong)digit;
 			
 			value = new UInt128(carry, left.Part2);
@@ -563,8 +542,7 @@ internal static class Calculator
 		{
 			p3 = 0;
 			
-			value = new UInt128(0, left.Part2);
-			(digit, carry) = DivRemByUInt64(value, right);
+			(digit, carry) = Math.DivRem(left.Part2, right);
 			p2 = (ulong)digit;
 
 			value = new UInt128(carry, left.Part1);
@@ -597,8 +575,7 @@ internal static class Calculator
 
 		if (left.Part7 != 0)
 		{
-			value = new UInt128(0, left.Part7);
-			(digit, carry) = DivRemByUInt64(value, right);
+			(digit, carry) = Math.DivRem(left.Part7, right);
 			p07 = (ulong)digit;
 
 			value = new UInt128(carry, left.Part6);
@@ -633,8 +610,7 @@ internal static class Calculator
 		{
 			p07 = 0;
 
-			value = new UInt128(0, left.Part6);
-			(digit, carry) = DivRemByUInt64(value, right);
+			(digit, carry) = Math.DivRem(left.Part6, right);
 			p06 = (ulong)digit;
 
 			value = new UInt128(carry, left.Part5);
@@ -666,8 +642,7 @@ internal static class Calculator
 			p07 = 0;
 			p06 = 0;
 
-			value = new UInt128(0, left.Part5);
-			(digit, carry) = DivRemByUInt64(value, right);
+			(digit, carry) = Math.DivRem(left.Part5, right);
 			p05 = (ulong)digit;
 
 			value = new UInt128(carry, left.Part4);
@@ -696,8 +671,7 @@ internal static class Calculator
 			p06 = 0;
 			p05 = 0;
 
-			value = new UInt128(0, left.Part4);
-			(digit, carry) = DivRemByUInt64(value, right);
+			(digit, carry) = Math.DivRem(left.Part4, right);
 			p04 = (ulong)digit;
 
 			value = new UInt128(carry, left.Part3);
@@ -723,8 +697,7 @@ internal static class Calculator
 			p05 = 0;
 			p04 = 0;
 
-			value = new UInt128(0, left.Part3);
-			(digit, carry) = DivRemByUInt64(value, right);
+			(digit, carry) = Math.DivRem(left.Part3, right);
 			p03 = (ulong)digit;
 
 			value = new UInt128(carry, left.Part2);
@@ -747,8 +720,7 @@ internal static class Calculator
 			p04 = 0;
 			p03 = 0;
 
-			value = new UInt128(0, left.Part2);
-			(digit, carry) = DivRemByUInt64(value, right);
+			(digit, carry) = Math.DivRem(left.Part2, right);
 			p02 = (ulong)digit;
 
 			value = new UInt128(carry, left.Part1);
@@ -929,8 +901,7 @@ internal static class Calculator
 
 		if (left.Part3 != 0)
 		{
-			value = new UInt128(0, left.Part3);
-			carry = DivRemByUInt64(value, right).Remainder;
+			carry = left.Part3 % right;
 
 			value = new UInt128(carry, left.Part2);
 			carry = DivRemByUInt64(value, right).Remainder;
@@ -943,8 +914,7 @@ internal static class Calculator
 		}
 		else if (left.Part2 != 0)
 		{
-			value = new UInt128(0, left.Part2);
-			carry = DivRemByUInt64(value, right).Remainder;
+			carry = left.Part2 % right;
 
 			value = new UInt128(carry, left.Part1);
 			carry = DivRemByUInt64(value, right).Remainder;
@@ -974,8 +944,7 @@ internal static class Calculator
 
 		if (left.Part7 != 0)
 		{
-			value = new UInt128(0, left.Part7);
-			carry = DivRemByUInt64(value, right).Remainder;
+			carry = left.Part7 % right;
 
 			value = new UInt128(carry, left.Part6);
 			carry = DivRemByUInt64(value, right).Remainder;
@@ -1000,8 +969,7 @@ internal static class Calculator
 		}
 		else if (left.Part6 != 0)
 		{
-			value = new UInt128(0, left.Part6);
-			carry = DivRemByUInt64(value, right).Remainder;
+			carry = left.Part6 % right;
 
 			value = new UInt128(carry, left.Part5);
 			carry = DivRemByUInt64(value, right).Remainder;
@@ -1023,8 +991,7 @@ internal static class Calculator
 		}
 		else if (left.Part5 != 0)
 		{
-			value = new UInt128(0, left.Part5);
-			carry = DivRemByUInt64(value, right).Remainder;
+			carry = left.Part5 % right;
 			
 			value = new UInt128(carry, left.Part4);
 			carry = DivRemByUInt64(value, right).Remainder;
@@ -1043,8 +1010,7 @@ internal static class Calculator
 		}
 		else if (left.Part4 != 0)
 		{
-			value = new UInt128(0, left.Part4);
-			carry = DivRemByUInt64(value, right).Remainder;
+			carry = left.Part4 % right;
 
 			value = new UInt128(carry, left.Part3);
 			carry = DivRemByUInt64(value, right).Remainder;
@@ -1060,8 +1026,7 @@ internal static class Calculator
 		}
 		else if (left.Part3 != 0)
 		{
-			value = new UInt128(0, left.Part3);
-			carry = DivRemByUInt64(value, right).Remainder;
+			carry = left.Part3 % right;
 
 			value = new UInt128(carry, left.Part2);
 			carry = DivRemByUInt64(value, right).Remainder;
@@ -1074,8 +1039,7 @@ internal static class Calculator
 		}
 		else if (left.Part2 != 0)
 		{
-			value = new UInt128(0, left.Part2);
-			carry = DivRemByUInt64(value, right).Remainder;
+			carry = left.Part2 % right;
 
 			value = new UInt128(carry, left.Part1);
 			carry = DivRemByUInt64(value, right).Remainder;
