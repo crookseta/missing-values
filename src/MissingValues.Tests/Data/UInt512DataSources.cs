@@ -21,62 +21,188 @@ public class UInt512DataSources
 {
 	public static IEnumerable<Func<(UInt512, UInt512, UInt512)>> op_AdditionTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (UInt512.Zero, UInt512.Zero, UInt512.Zero);
+		yield return () => (UInt512.One, UInt512.Zero, UInt512.One);
+		yield return () => (UInt512.One, UInt512.One, new UInt512(0, 0, 0, 0, 0, 0, 0, 2));
+		yield return () => (new UInt512(0, 0, 0, 0, 0, 0, 0, ulong.MaxValue), UInt512.One, new UInt512(0, 0, 0, 0, 0, 0, 1, 0));
+		yield return () => (new UInt512(0, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue), UInt512.One, new UInt512(1, 0, 0, 0, 0, 0, 0, 0));
+		yield return () => (UInt512.One, UInt512.MaxValue, UInt512.Zero);
 	}
 
 	public static IEnumerable<Func<(UInt512, UInt512, UInt512, bool)>> op_CheckedAdditionTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (UInt512.Zero, UInt512.Zero, UInt512.Zero, false);
+		yield return () => (UInt512.One, UInt512.Zero, UInt512.One, false);
+		yield return () => (UInt512.One, UInt512.One, new UInt512(0, 0, 0, 0, 0, 0, 0, 2), false);
+		yield return () => (new UInt512(0, 0, 0, 0, 0, 0, 0, ulong.MaxValue), UInt512.One, new UInt512(0, 0, 0, 0, 0, 0, 1, 0), false);
+		yield return () => (new UInt512(0, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue), UInt512.One, new UInt512(1, 0, 0, 0, 0, 0, 0, 0), false);
+		yield return () => (UInt512.One, UInt512.MaxValue, UInt512.Zero, true);
 	}
 
 	public static IEnumerable<Func<(UInt512, UInt512, bool)>> op_CheckedDecrementTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (UInt512.Zero, UInt512.MaxValue, true);
+		yield return () => (UInt512.One, UInt512.Zero, false);
+		yield return () => (UInt512.MaxValue, UInt512.MaxValue - UInt512.One, false);
 	}
 
 	public static IEnumerable<Func<(UInt512, UInt512, bool)>> op_CheckedIncrementTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (UInt512.Zero, UInt512.One, false);
+		yield return () => (UInt512.One, new UInt512(0, 0, 0, 0, 0, 0, 0, 2), false);
+		yield return () => (UInt512.MaxValue, UInt512.Zero, true);
 	}
 
 	public static IEnumerable<Func<(UInt512, UInt512, UInt512, bool)>> op_CheckedMultiplyTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (UInt512.Zero, UInt512.Zero, UInt512.Zero, false);
+		yield return () => (UInt512.One, UInt512.One, UInt512.One, false);
+		yield return () => (
+			new UInt512(0, 0, 0, 0, 0, 0, 0, 2),
+			new UInt512(0, 0, 0, 0, 0, 0, 0, 3),
+			new UInt512(0, 0, 0, 0, 0, 0, 0, 6),
+			false
+		);
+		yield return () => (
+			new UInt512(0, 0, 0, 0, 0, 0, 1, 0),
+			new UInt512(0, 0, 0, 0, 0, 0, 1, 0),
+			new UInt512(0, 0, 0, 0, 0, 1, 0, 0),
+			false
+		);
+		yield return () => (
+			new UInt512(0, 0, 0, 1, 0, 0, 0, 0),
+			new UInt512(0, 0, 0, 0, 1, 0, 0, 0),
+			new UInt512(1, 0, 0, 0, 0, 0, 0, 0),
+			false
+		);
+		yield return () => (
+			UInt512.MaxValue,
+			UInt512.One,
+			UInt512.MaxValue,
+			false
+		);
+		yield return () => (
+			UInt512.MaxValue,
+			new UInt512(0, 0, 0, 0, 0, 0, 0, 2),
+			default,
+			true
+		);
 	}
 
 	public static IEnumerable<Func<(UInt512, UInt512, UInt512, bool)>> op_CheckedSubtractionTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (UInt512.Zero, UInt512.Zero, UInt512.Zero, false);
+		yield return () => (UInt512.One, UInt512.Zero, UInt512.One, false);
+		yield return () => (UInt512.One, UInt512.One, UInt512.Zero, false);
+		yield return () => (new UInt512(0, 0, 0, 0, 0, 0, 0, 2), UInt512.One, UInt512.One, false);
+		yield return () => (
+			new UInt512(0, 0, 0, 0, 0, 0, 1, 0),
+			UInt512.One,
+			new UInt512(0, 0, 0, 0, 0, 0, 0, ulong.MaxValue),
+			false
+		);
+		yield return () => (UInt512.Zero, UInt512.One, UInt512.MaxValue, true);
 	}
 
 	public static IEnumerable<Func<(UInt512, UInt512)>> op_DecrementTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (UInt512.Zero, UInt512.MaxValue);
+		yield return () => (UInt512.One, UInt512.Zero);
+		yield return () => (UInt512.MaxValue, UInt512.MaxValue - UInt512.One);
 	}
 
 	public static IEnumerable<Func<(UInt512, UInt512, UInt512)>> op_DivisionTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (UInt512.Zero, UInt512.One, UInt512.Zero);
+		yield return () => (UInt512.One, UInt512.One, UInt512.One);
+		yield return () => (
+			new UInt512(0, 0, 0, 0, 0, 0, 0, 6),
+			new UInt512(0, 0, 0, 0, 0, 0, 0, 2),
+			new UInt512(0, 0, 0, 0, 0, 0, 0, 3)
+		);
+		yield return () => (UInt512.MaxValue, UInt512.One, UInt512.MaxValue);
+		yield return () => (UInt512.MaxValue, new UInt512(0, 0, 0, 0, 0, 1, 0, 0), UInt512.Parse("39402006196394479212279040100143613805079739270465446667948293404245721771497210611414266254884915640806627990306815"));
+		yield return () => (
+			new UInt512(0, 0, 0, 0, 0, 0, 1, ulong.MaxValue - 1),
+			new UInt512(0, 0, 0, 0, 0, 0, 0, 2),
+			new UInt512(0, 0, 0, 0, 0, 0, 0, ulong.MaxValue)
+		);
 	}
 
 	public static IEnumerable<Func<(UInt512, UInt512)>> op_IncrementTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (UInt512.Zero, UInt512.One);
+		yield return () => (UInt512.One, new UInt512(0, 0, 0, 0, 0, 0, 0, 2));
+		yield return () => (UInt512.MaxValue, UInt512.Zero);
 	}
 
 	public static IEnumerable<Func<(UInt512, UInt512, UInt512)>> op_ModulusTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (UInt512.Zero, UInt512.One, UInt512.Zero);
+		yield return () => (UInt512.One, UInt512.One, UInt512.Zero);
+		yield return () => (
+			new UInt512(0, 0, 0, 0, 0, 0, 0, 5),
+			new UInt512(0, 0, 0, 0, 0, 0, 0, 2),
+			UInt512.One
+		);
+		yield return () => (
+			new UInt512(0, 0, 0, 0, 0, 0, 0, 7),
+			new UInt512(0, 0, 0, 0, 0, 0, 0, 3),
+			UInt512.One
+		);
+		yield return () => (UInt512.MaxValue, UInt512.One, UInt512.Zero);
+		yield return () => (
+			new UInt512(0, 0, 0, 0, 0, 0, 1, 0),
+			new UInt512(0, 0, 0, 0, 0, 0, 0, ulong.MaxValue),
+			UInt512.One
+		);
 	}
 
 	public static IEnumerable<Func<(UInt512, UInt512, UInt512)>> op_MultiplyTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (UInt512.Zero, UInt512.Zero, UInt512.Zero);
+		yield return () => (UInt512.One, UInt512.Zero, UInt512.Zero);
+		yield return () => (UInt512.One, UInt512.One, UInt512.One);
+		yield return () => (
+			new UInt512(0, 0, 0, 0, 0, 0, 0, 2),
+			new UInt512(0, 0, 0, 0, 0, 0, 0, 3),
+			new UInt512(0, 0, 0, 0, 0, 0, 0, 6)
+		);
+		yield return () => (
+			new UInt512(0, 0, 0, 0, 0, 0, 0, ulong.MaxValue),
+			new UInt512(0, 0, 0, 0, 0, 0, 0, 2),
+			new UInt512(0, 0, 0, 0, 0, 0, 1, ulong.MaxValue - 1)
+		);
+		yield return () => (
+			new UInt512(0, 0, 0, 0, 0, 0, 1, 0),
+			new UInt512(0, 0, 0, 0, 0, 0, 1, 0),
+			new UInt512(0, 0, 0, 0, 0, 1, 0, 0)
+		);
+		yield return () => (
+			new UInt512(0, 0, 0, 1, 0, 0, 0, 0),
+			new UInt512(0, 0, 0, 0, 1, 0, 0, 0),
+			new UInt512(1, 0, 0, 0, 0, 0, 0, 0)
+		);
+		yield return () => (UInt512.MaxValue, UInt512.One, UInt512.MaxValue);
 	}
 
 	public static IEnumerable<Func<(UInt512, UInt512, UInt512)>> op_SubtractionTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (UInt512.Zero, UInt512.Zero, UInt512.Zero);
+		yield return () => (UInt512.One, UInt512.Zero, UInt512.One);
+		yield return () => (UInt512.One, UInt512.One, UInt512.Zero);
+		yield return () => (new UInt512(0, 0, 0, 0, 0, 0, 0, 2), UInt512.One, UInt512.One);
+		yield return () => (
+			new UInt512(0, 0, 0, 0, 0, 0, 1, 0),
+			UInt512.One,
+			new UInt512(0, 0, 0, 0, 0, 0, 0, ulong.MaxValue)
+		);
+		yield return () => (
+			UInt512.MaxValue,
+			UInt512.One,
+			new UInt512(ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue,
+				ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue - 1)
+		);
 	}
 
 	public static IEnumerable<Func<(UInt512, int, UInt512)>> op_ShiftLeftTestData()
@@ -261,32 +387,221 @@ public class UInt512DataSources
 
 	public static IEnumerable<Func<(string, NumberStyles, IFormatProvider?, UInt512)>> ParseTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => ("0", NumberStyles.Integer, CultureInfo.InvariantCulture, UInt512.Zero);
+		yield return () => ("1", NumberStyles.Integer, CultureInfo.InvariantCulture, UInt512.One);
+		yield return () => ("4294967296", NumberStyles.Integer, CultureInfo.InvariantCulture, new UInt512(0, 0, 0, 0, 0, 0, 0, 4294967296));
+		yield return () => ("18446744073709551616", NumberStyles.Integer, CultureInfo.InvariantCulture, new UInt512(0, 0, 0, 0, 0, 0, 1, 0));
+		yield return () => ("340282366920938463463374607431768211456", NumberStyles.Integer, CultureInfo.InvariantCulture, new UInt512(0, 0, 0, 0, 0, 1, 0, 0));
+		yield return () => ("6277101735386680763835789423207666416102355444464034512896", NumberStyles.Integer, CultureInfo.InvariantCulture, new UInt512(0, 0, 0, 0, 1, 0, 0, 0));
+		yield return () => ("115792089237316195423570985008687907853269984665640564039457584007913129639936", NumberStyles.Integer, CultureInfo.InvariantCulture, new UInt512(0, 0, 0, 1, 0, 0, 0, 0));
+		yield return () => ("2135987035920910082395021706169552114602704522356652769947041607822219725780640550022962086936576", NumberStyles.Integer, CultureInfo.InvariantCulture, new UInt512(0, 0, 1, 0, 0, 0, 0, 0));
+		yield return () => ("39402006196394479212279040100143613805079739270465446667948293404245721771497210611414266254884915640806627990306816", NumberStyles.Integer, CultureInfo.InvariantCulture, new UInt512(0, 1, 0, 0, 0, 0, 0, 0));
+		yield return () => ("726838724295606890549323807888004534353641360687318060281490199180639288113397923326191050713763565560762521606266177933534601628614656", NumberStyles.Integer, CultureInfo.InvariantCulture, new UInt512(1, 0, 0, 0, 0, 0, 0, 0));
+		yield return () => ("13407807929942597099574024998205846127479365820592393377723561443721764030073546976801874298166903427690031858186486050853753882811946569946433649006084095", NumberStyles.Integer, CultureInfo.InvariantCulture, UInt512.MaxValue);
+		
+		yield return () => ("123456789ABCDEF0", 
+			NumberStyles.HexNumber, CultureInfo.InvariantCulture, new UInt512(0, 0, 0, 0, 0, 0, 0, 0x123456789ABCDEF0));
+		yield return () => ("FF", 
+			NumberStyles.HexNumber, CultureInfo.InvariantCulture, new UInt512(0, 0, 0, 0, 0, 0, 0, 0xFF));
+		yield return () => ("FFFF", 
+			NumberStyles.HexNumber, CultureInfo.InvariantCulture, new UInt512(0, 0, 0, 0, 0, 0, 0, 0xFFFF));
+		yield return () => ("FFFFFFFF", 
+			NumberStyles.HexNumber, CultureInfo.InvariantCulture, new UInt512(0, 0, 0, 0, 0, 0, 0, 0xFFFFFFFF));
+		yield return () => ("FFFFFFFFFFFFFFFF", 
+			NumberStyles.HexNumber, CultureInfo.InvariantCulture, new UInt512(0, 0, 0, 0, 0, 0, 0, 0xFFFFFFFFFFFFFFFF));
+		yield return () => ("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF", 
+			NumberStyles.HexNumber, CultureInfo.InvariantCulture, new UInt512(0, 0, 0, 0, 0, 0, 0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF));
+		yield return () => ("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF", 
+			NumberStyles.HexNumber, CultureInfo.InvariantCulture, new UInt512(0, 0, 0, 0, 0, 0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF));
+		yield return () => ("FFFFFFFFFFFFFFFF00000000000000000000000000000000FFFFFFFFFFFFFFFF", 
+			NumberStyles.HexNumber, CultureInfo.InvariantCulture, new UInt512(0, 0, 0, 0, 0xFFFFFFFFFFFFFFFF, 0x0000000000000000, 0x0000000000000000, 0xFFFFFFFFFFFFFFFF));
+		yield return () => ("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF", 
+			NumberStyles.HexNumber, CultureInfo.InvariantCulture, new UInt512(0, 0, 0, 0, 0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF));
+		yield return () => ("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF", 
+			NumberStyles.HexNumber, CultureInfo.InvariantCulture, new UInt512(0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF));
+		yield return () => ("FFFFFFFFFFFFFFFF000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000FFFFFFFFFFFFFFFF", 
+			NumberStyles.HexNumber, CultureInfo.InvariantCulture, new UInt512(0xFFFFFFFFFFFFFFFF, 0x0000000000000000, 0x0000000000000000, 0x0000000000000000, 0x0000000000000000, 0x0000000000000000, 0x0000000000000000, 0xFFFFFFFFFFFFFFFF));
+		
+		yield return () => ("1010101010101010", 
+			NumberStyles.BinaryNumber, CultureInfo.InvariantCulture, new UInt512(0, 0, 0, 0, 0, 0, 0, 0b1010101010101010));
+		yield return () => ("11111111", 
+			NumberStyles.BinaryNumber, CultureInfo.InvariantCulture, new UInt512(0, 0, 0, 0, 0, 0, 0, 0b11111111));
+		yield return () => ("1111111111111111", 
+			NumberStyles.BinaryNumber, CultureInfo.InvariantCulture, new UInt512(0, 0, 0, 0, 0, 0, 0, 0b1111111111111111));
+		yield return () => ("11111111111111111111111111111111", 
+			NumberStyles.BinaryNumber, CultureInfo.InvariantCulture, new UInt512(0, 0, 0, 0, 0, 0, 0, 0b11111111111111111111111111111111));
+		yield return () => ("1111111111111111111111111111111111111111111111111111111111111111", 
+			NumberStyles.BinaryNumber, CultureInfo.InvariantCulture, new UInt512(0, 0, 0, 0, 0, 0, 0, 0b1111111111111111111111111111111111111111111111111111111111111111));
+		yield return () => ("11111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111", 
+			NumberStyles.BinaryNumber, CultureInfo.InvariantCulture, new UInt512(0, 0, 0, 0, 0, 0, 0b1111111111111111111111111111111111111111111111111111111111111111, 0b1111111111111111111111111111111111111111111111111111111111111111));
+		yield return () => ("1111111111111111111111111111111111111111111111111111111111111111000000000000000000000000000000000000000000000000000000000000000011111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111", 
+			NumberStyles.BinaryNumber, CultureInfo.InvariantCulture, new UInt512(0, 0, 0, 0, 0b1111111111111111111111111111111111111111111111111111111111111111, 0, 0b1111111111111111111111111111111111111111111111111111111111111111, 0b1111111111111111111111111111111111111111111111111111111111111111));
+		yield return () => ("1111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111", 
+			NumberStyles.BinaryNumber, CultureInfo.InvariantCulture, new UInt512(0, 0, 0, 0, 0b1111111111111111111111111111111111111111111111111111111111111111, 0b1111111111111111111111111111111111111111111111111111111111111111, 0b1111111111111111111111111111111111111111111111111111111111111111, 0b1111111111111111111111111111111111111111111111111111111111111111));
+		yield return () => ("11111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111", 
+			NumberStyles.BinaryNumber, CultureInfo.InvariantCulture, new UInt512(0b1111111111111111111111111111111111111111111111111111111111111111, 0b1111111111111111111111111111111111111111111111111111111111111111, 0b1111111111111111111111111111111111111111111111111111111111111111, 0b1111111111111111111111111111111111111111111111111111111111111111, 0b1111111111111111111111111111111111111111111111111111111111111111, 0b1111111111111111111111111111111111111111111111111111111111111111, 0b1111111111111111111111111111111111111111111111111111111111111111, 0b1111111111111111111111111111111111111111111111111111111111111111));
 	}
 
 	public static IEnumerable<Func<(char[], NumberStyles, IFormatProvider?, UInt512)>> ParseSpanTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => ("0".ToCharArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, UInt512.Zero);
+		yield return () => ("1".ToCharArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, UInt512.One);
+		yield return () => ("4294967296".ToCharArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, new UInt512(0, 0, 0, 0, 0, 0, 0, 4294967296));
+		yield return () => ("18446744073709551616".ToCharArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, new UInt512(0, 0, 0, 0, 0, 0, 1, 0));
+		yield return () => ("340282366920938463463374607431768211456".ToCharArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, new UInt512(0, 0, 0, 0, 0, 1, 0, 0));
+		yield return () => ("6277101735386680763835789423207666416102355444464034512896".ToCharArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, new UInt512(0, 0, 0, 0, 1, 0, 0, 0));
+		yield return () => ("115792089237316195423570985008687907853269984665640564039457584007913129639936".ToCharArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, new UInt512(0, 0, 0, 1, 0, 0, 0, 0));
+		yield return () => ("2135987035920910082395021706169552114602704522356652769947041607822219725780640550022962086936576".ToCharArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, new UInt512(0, 0, 1, 0, 0, 0, 0, 0));
+		yield return () => ("39402006196394479212279040100143613805079739270465446667948293404245721771497210611414266254884915640806627990306816".ToCharArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, new UInt512(0, 1, 0, 0, 0, 0, 0, 0));
+		yield return () => ("726838724295606890549323807888004534353641360687318060281490199180639288113397923326191050713763565560762521606266177933534601628614656".ToCharArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, new UInt512(1, 0, 0, 0, 0, 0, 0, 0));
+		yield return () => ("13407807929942597099574024998205846127479365820592393377723561443721764030073546976801874298166903427690031858186486050853753882811946569946433649006084095".ToCharArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, UInt512.MaxValue);
+		
+		yield return () => ("123456789ABCDEF0".ToCharArray(), 
+			NumberStyles.HexNumber, CultureInfo.InvariantCulture, new UInt512(0, 0, 0, 0, 0, 0, 0, 0x123456789ABCDEF0));
+		yield return () => ("FF".ToCharArray(), 
+			NumberStyles.HexNumber, CultureInfo.InvariantCulture, new UInt512(0, 0, 0, 0, 0, 0, 0, 0xFF));
+		yield return () => ("FFFF".ToCharArray(), 
+			NumberStyles.HexNumber, CultureInfo.InvariantCulture, new UInt512(0, 0, 0, 0, 0, 0, 0, 0xFFFF));
+		yield return () => ("FFFFFFFF".ToCharArray(), 
+			NumberStyles.HexNumber, CultureInfo.InvariantCulture, new UInt512(0, 0, 0, 0, 0, 0, 0, 0xFFFFFFFF));
+		yield return () => ("FFFFFFFFFFFFFFFF".ToCharArray(), 
+			NumberStyles.HexNumber, CultureInfo.InvariantCulture, new UInt512(0, 0, 0, 0, 0, 0, 0, 0xFFFFFFFFFFFFFFFF));
+		yield return () => ("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF".ToCharArray(), 
+			NumberStyles.HexNumber, CultureInfo.InvariantCulture, new UInt512(0, 0, 0, 0, 0, 0, 0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF));
+		yield return () => ("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF".ToCharArray(), 
+			NumberStyles.HexNumber, CultureInfo.InvariantCulture, new UInt512(0, 0, 0, 0, 0, 0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF));
+		yield return () => ("FFFFFFFFFFFFFFFF00000000000000000000000000000000FFFFFFFFFFFFFFFF".ToCharArray(), 
+			NumberStyles.HexNumber, CultureInfo.InvariantCulture, new UInt512(0, 0, 0, 0, 0xFFFFFFFFFFFFFFFF, 0x0000000000000000, 0x0000000000000000, 0xFFFFFFFFFFFFFFFF));
+		yield return () => ("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF".ToCharArray(), 
+			NumberStyles.HexNumber, CultureInfo.InvariantCulture, new UInt512(0, 0, 0, 0, 0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF));
+		yield return () => ("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF".ToCharArray(), 
+			NumberStyles.HexNumber, CultureInfo.InvariantCulture, new UInt512(0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF));
+		yield return () => ("FFFFFFFFFFFFFFFF000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000FFFFFFFFFFFFFFFF".ToCharArray(), 
+			NumberStyles.HexNumber, CultureInfo.InvariantCulture, new UInt512(0xFFFFFFFFFFFFFFFF, 0x0000000000000000, 0x0000000000000000, 0x0000000000000000, 0x0000000000000000, 0x0000000000000000, 0x0000000000000000, 0xFFFFFFFFFFFFFFFF));
+		
+		yield return () => ("1010101010101010".ToCharArray(), 
+			NumberStyles.BinaryNumber, CultureInfo.InvariantCulture, new UInt512(0, 0, 0, 0, 0, 0, 0, 0b1010101010101010));
+		yield return () => ("11111111".ToCharArray(), 
+			NumberStyles.BinaryNumber, CultureInfo.InvariantCulture, new UInt512(0, 0, 0, 0, 0, 0, 0, 0b11111111));
+		yield return () => ("1111111111111111".ToCharArray(), 
+			NumberStyles.BinaryNumber, CultureInfo.InvariantCulture, new UInt512(0, 0, 0, 0, 0, 0, 0, 0b1111111111111111));
+		yield return () => ("11111111111111111111111111111111".ToCharArray(), 
+			NumberStyles.BinaryNumber, CultureInfo.InvariantCulture, new UInt512(0, 0, 0, 0, 0, 0, 0, 0b11111111111111111111111111111111));
+		yield return () => ("1111111111111111111111111111111111111111111111111111111111111111".ToCharArray(), 
+			NumberStyles.BinaryNumber, CultureInfo.InvariantCulture, new UInt512(0, 0, 0, 0, 0, 0, 0, 0b1111111111111111111111111111111111111111111111111111111111111111));
+		yield return () => ("11111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111".ToCharArray(), 
+			NumberStyles.BinaryNumber, CultureInfo.InvariantCulture, new UInt512(0, 0, 0, 0, 0, 0, 0b1111111111111111111111111111111111111111111111111111111111111111, 0b1111111111111111111111111111111111111111111111111111111111111111));
+		yield return () => ("1111111111111111111111111111111111111111111111111111111111111111000000000000000000000000000000000000000000000000000000000000000011111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111".ToCharArray(), 
+			NumberStyles.BinaryNumber, CultureInfo.InvariantCulture, new UInt512(0, 0, 0, 0, 0b1111111111111111111111111111111111111111111111111111111111111111, 0, 0b1111111111111111111111111111111111111111111111111111111111111111, 0b1111111111111111111111111111111111111111111111111111111111111111));
+		yield return () => ("1111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111".ToCharArray(), 
+			NumberStyles.BinaryNumber, CultureInfo.InvariantCulture, new UInt512(0, 0, 0, 0, 0b1111111111111111111111111111111111111111111111111111111111111111, 0b1111111111111111111111111111111111111111111111111111111111111111, 0b1111111111111111111111111111111111111111111111111111111111111111, 0b1111111111111111111111111111111111111111111111111111111111111111));
+		yield return () => ("11111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111".ToCharArray(), 
+			NumberStyles.BinaryNumber, CultureInfo.InvariantCulture, new UInt512(0b1111111111111111111111111111111111111111111111111111111111111111, 0b1111111111111111111111111111111111111111111111111111111111111111, 0b1111111111111111111111111111111111111111111111111111111111111111, 0b1111111111111111111111111111111111111111111111111111111111111111, 0b1111111111111111111111111111111111111111111111111111111111111111, 0b1111111111111111111111111111111111111111111111111111111111111111, 0b1111111111111111111111111111111111111111111111111111111111111111, 0b1111111111111111111111111111111111111111111111111111111111111111));
 	}
 
 	public static IEnumerable<Func<(byte[], NumberStyles, IFormatProvider?, UInt512)>> ParseUtf8TestData()
 	{
-		throw new NotImplementedException();
+		yield return () => ("0"u8.ToArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, UInt512.Zero);
+		yield return () => ("1"u8.ToArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, UInt512.One);
+		yield return () => ("4294967296"u8.ToArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, new UInt512(0, 0, 0, 0, 0, 0, 0, 4294967296));
+		yield return () => ("18446744073709551616"u8.ToArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, new UInt512(0, 0, 0, 0, 0, 0, 1, 0));
+		yield return () => ("340282366920938463463374607431768211456"u8.ToArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, new UInt512(0, 0, 0, 0, 0, 1, 0, 0));
+		yield return () => ("6277101735386680763835789423207666416102355444464034512896"u8.ToArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, new UInt512(0, 0, 0, 0, 1, 0, 0, 0));
+		yield return () => ("115792089237316195423570985008687907853269984665640564039457584007913129639936"u8.ToArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, new UInt512(0, 0, 0, 1, 0, 0, 0, 0));
+		yield return () => ("2135987035920910082395021706169552114602704522356652769947041607822219725780640550022962086936576"u8.ToArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, new UInt512(0, 0, 1, 0, 0, 0, 0, 0));
+		yield return () => ("39402006196394479212279040100143613805079739270465446667948293404245721771497210611414266254884915640806627990306816"u8.ToArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, new UInt512(0, 1, 0, 0, 0, 0, 0, 0));
+		yield return () => ("726838724295606890549323807888004534353641360687318060281490199180639288113397923326191050713763565560762521606266177933534601628614656"u8.ToArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, new UInt512(1, 0, 0, 0, 0, 0, 0, 0));
+		yield return () => ("13407807929942597099574024998205846127479365820592393377723561443721764030073546976801874298166903427690031858186486050853753882811946569946433649006084095"u8.ToArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, UInt512.MaxValue);
+		
+		yield return () => ("123456789ABCDEF0"u8.ToArray(), 
+			NumberStyles.HexNumber, CultureInfo.InvariantCulture, new UInt512(0, 0, 0, 0, 0, 0, 0, 0x123456789ABCDEF0));
+		yield return () => ("FF"u8.ToArray(), 
+			NumberStyles.HexNumber, CultureInfo.InvariantCulture, new UInt512(0, 0, 0, 0, 0, 0, 0, 0xFF));
+		yield return () => ("FFFF"u8.ToArray(), 
+			NumberStyles.HexNumber, CultureInfo.InvariantCulture, new UInt512(0, 0, 0, 0, 0, 0, 0, 0xFFFF));
+		yield return () => ("FFFFFFFF"u8.ToArray(), 
+			NumberStyles.HexNumber, CultureInfo.InvariantCulture, new UInt512(0, 0, 0, 0, 0, 0, 0, 0xFFFFFFFF));
+		yield return () => ("FFFFFFFFFFFFFFFF"u8.ToArray(), 
+			NumberStyles.HexNumber, CultureInfo.InvariantCulture, new UInt512(0, 0, 0, 0, 0, 0, 0, 0xFFFFFFFFFFFFFFFF));
+		yield return () => ("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"u8.ToArray(), 
+			NumberStyles.HexNumber, CultureInfo.InvariantCulture, new UInt512(0, 0, 0, 0, 0, 0, 0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF));
+		yield return () => ("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"u8.ToArray(), 
+			NumberStyles.HexNumber, CultureInfo.InvariantCulture, new UInt512(0, 0, 0, 0, 0, 0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF));
+		yield return () => ("FFFFFFFFFFFFFFFF00000000000000000000000000000000FFFFFFFFFFFFFFFF"u8.ToArray(), 
+			NumberStyles.HexNumber, CultureInfo.InvariantCulture, new UInt512(0, 0, 0, 0, 0xFFFFFFFFFFFFFFFF, 0x0000000000000000, 0x0000000000000000, 0xFFFFFFFFFFFFFFFF));
+		yield return () => ("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"u8.ToArray(), 
+			NumberStyles.HexNumber, CultureInfo.InvariantCulture, new UInt512(0, 0, 0, 0, 0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF));
+		yield return () => ("FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF"u8.ToArray(), 
+			NumberStyles.HexNumber, CultureInfo.InvariantCulture, new UInt512(0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF));
+		yield return () => ("FFFFFFFFFFFFFFFF000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000FFFFFFFFFFFFFFFF"u8.ToArray(), 
+			NumberStyles.HexNumber, CultureInfo.InvariantCulture, new UInt512(0xFFFFFFFFFFFFFFFF, 0x0000000000000000, 0x0000000000000000, 0x0000000000000000, 0x0000000000000000, 0x0000000000000000, 0x0000000000000000, 0xFFFFFFFFFFFFFFFF));
+		
+		yield return () => ("1010101010101010"u8.ToArray(), 
+			NumberStyles.BinaryNumber, CultureInfo.InvariantCulture, new UInt512(0, 0, 0, 0, 0, 0, 0, 0b1010101010101010));
+		yield return () => ("11111111"u8.ToArray(), 
+			NumberStyles.BinaryNumber, CultureInfo.InvariantCulture, new UInt512(0, 0, 0, 0, 0, 0, 0, 0b11111111));
+		yield return () => ("1111111111111111"u8.ToArray(), 
+			NumberStyles.BinaryNumber, CultureInfo.InvariantCulture, new UInt512(0, 0, 0, 0, 0, 0, 0, 0b1111111111111111));
+		yield return () => ("11111111111111111111111111111111"u8.ToArray(), 
+			NumberStyles.BinaryNumber, CultureInfo.InvariantCulture, new UInt512(0, 0, 0, 0, 0, 0, 0, 0b11111111111111111111111111111111));
+		yield return () => ("1111111111111111111111111111111111111111111111111111111111111111"u8.ToArray(), 
+			NumberStyles.BinaryNumber, CultureInfo.InvariantCulture, new UInt512(0, 0, 0, 0, 0, 0, 0, 0b1111111111111111111111111111111111111111111111111111111111111111));
+		yield return () => ("11111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111"u8.ToArray(), 
+			NumberStyles.BinaryNumber, CultureInfo.InvariantCulture, new UInt512(0, 0, 0, 0, 0, 0, 0b1111111111111111111111111111111111111111111111111111111111111111, 0b1111111111111111111111111111111111111111111111111111111111111111));
+		yield return () => ("1111111111111111111111111111111111111111111111111111111111111111000000000000000000000000000000000000000000000000000000000000000011111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111"u8.ToArray(), 
+			NumberStyles.BinaryNumber, CultureInfo.InvariantCulture, new UInt512(0, 0, 0, 0, 0b1111111111111111111111111111111111111111111111111111111111111111, 0, 0b1111111111111111111111111111111111111111111111111111111111111111, 0b1111111111111111111111111111111111111111111111111111111111111111));
+		yield return () => ("1111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111"u8.ToArray(), 
+			NumberStyles.BinaryNumber, CultureInfo.InvariantCulture, new UInt512(0, 0, 0, 0, 0b1111111111111111111111111111111111111111111111111111111111111111, 0b1111111111111111111111111111111111111111111111111111111111111111, 0b1111111111111111111111111111111111111111111111111111111111111111, 0b1111111111111111111111111111111111111111111111111111111111111111));
+		yield return () => ("11111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111"u8.ToArray(), 
+			NumberStyles.BinaryNumber, CultureInfo.InvariantCulture, new UInt512(0b1111111111111111111111111111111111111111111111111111111111111111, 0b1111111111111111111111111111111111111111111111111111111111111111, 0b1111111111111111111111111111111111111111111111111111111111111111, 0b1111111111111111111111111111111111111111111111111111111111111111, 0b1111111111111111111111111111111111111111111111111111111111111111, 0b1111111111111111111111111111111111111111111111111111111111111111, 0b1111111111111111111111111111111111111111111111111111111111111111, 0b1111111111111111111111111111111111111111111111111111111111111111));
 	}
 
 	public static IEnumerable<Func<(string, NumberStyles, IFormatProvider?, bool, UInt512)>> TryParseTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => ("0", NumberStyles.Integer, CultureInfo.InvariantCulture, true, UInt512.Zero);
+		yield return () => ("1", NumberStyles.Integer, CultureInfo.InvariantCulture, true, UInt512.One);
+		yield return () => ("4294967296", NumberStyles.Integer, CultureInfo.InvariantCulture, true, new UInt512(0, 0, 0, 4294967296));
+		yield return () => ("18446744073709551616", NumberStyles.Integer, CultureInfo.InvariantCulture, true, new UInt512(0, 0, 1, 0));
+		yield return () => ("340282366920938463463374607431768211456", NumberStyles.Integer, CultureInfo.InvariantCulture, true, new UInt512(0, 1, 0, 0));
+		yield return () => ("6277101735386680763835789423207666416102355444464034512896", NumberStyles.Integer, CultureInfo.InvariantCulture, true, new UInt512(1, 0, 0, 0));
+		yield return () => ("115792089237316195423570985008687907853269984665640564039457584007913129639936", NumberStyles.Integer, CultureInfo.InvariantCulture, false, new UInt512(0, 0, 0, 1, 0, 0, 0, 0));
+		yield return () => ("13407807929942597099574024998205846127479365820592393377723561443721764030073546976801874298166903427690031858186486050853753882811946569946433649006084095", NumberStyles.Integer, CultureInfo.InvariantCulture, true, UInt512.MaxValue);
+		yield return () => ("-1", NumberStyles.Integer, CultureInfo.InvariantCulture, false, default);
+		yield return () => ("2.25", NumberStyles.Integer, CultureInfo.InvariantCulture, false, default);
+		yield return () => ("13407807929942597099574024998205846127479365820592393377723561443721764030073546976801874298166903427690031858186486050853753882811946569946433649006084096", NumberStyles.Integer, CultureInfo.InvariantCulture, false, default);
+		yield return () => ("20000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000", NumberStyles.Integer, CultureInfo.InvariantCulture, false, default);
 	}
 
 	public static IEnumerable<Func<(char[], NumberStyles, IFormatProvider?, bool, UInt512)>> TryParseSpanTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => ("0".ToCharArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, true, UInt512.Zero);
+		yield return () => ("1".ToCharArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, true, UInt512.One);
+		yield return () => ("4294967296".ToCharArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, true, new UInt512(0, 0, 0, 4294967296));
+		yield return () => ("18446744073709551616".ToCharArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, true, new UInt512(0, 0, 1, 0));
+		yield return () => ("340282366920938463463374607431768211456".ToCharArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, true, new UInt512(0, 1, 0, 0));
+		yield return () => ("6277101735386680763835789423207666416102355444464034512896".ToCharArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, true, new UInt512(1, 0, 0, 0));
+		yield return () => ("115792089237316195423570985008687907853269984665640564039457584007913129639936".ToCharArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, false, new UInt512(0, 0, 0, 1, 0, 0, 0, 0));
+		yield return () => ("13407807929942597099574024998205846127479365820592393377723561443721764030073546976801874298166903427690031858186486050853753882811946569946433649006084095".ToCharArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, true, UInt512.MaxValue);
+		yield return () => ("-1".ToCharArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, false, default);
+		yield return () => ("2.25".ToCharArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, false, default);
+		yield return () => ("13407807929942597099574024998205846127479365820592393377723561443721764030073546976801874298166903427690031858186486050853753882811946569946433649006084096".ToCharArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, false, default);
+		yield return () => ("20000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000".ToCharArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, false, default);
 	}
 
 	public static IEnumerable<Func<(byte[], NumberStyles, IFormatProvider?, bool, UInt512)>> TryParseUtf8TestData()
 	{
-		throw new NotImplementedException();
+		yield return () => ("0"u8.ToArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, true, UInt512.Zero);
+		yield return () => ("1"u8.ToArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, true, UInt512.One);
+		yield return () => ("4294967296"u8.ToArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, true, new UInt512(0, 0, 0, 4294967296));
+		yield return () => ("18446744073709551616"u8.ToArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, true, new UInt512(0, 0, 1, 0));
+		yield return () => ("340282366920938463463374607431768211456"u8.ToArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, true, new UInt512(0, 1, 0, 0));
+		yield return () => ("6277101735386680763835789423207666416102355444464034512896"u8.ToArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, true, new UInt512(1, 0, 0, 0));
+		yield return () => ("115792089237316195423570985008687907853269984665640564039457584007913129639936"u8.ToArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, false, new UInt512(0, 0, 0, 1, 0, 0, 0, 0));
+		yield return () => ("13407807929942597099574024998205846127479365820592393377723561443721764030073546976801874298166903427690031858186486050853753882811946569946433649006084095"u8.ToArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, true, UInt512.MaxValue);
+		yield return () => ("-1"u8.ToArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, false, default);
+		yield return () => ("2.25"u8.ToArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, false, default);
+		yield return () => ("13407807929942597099574024998205846127479365820592393377723561443721764030073546976801874298166903427690031858186486050853753882811946569946433649006084096"u8.ToArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, false, default);
+		yield return () => ("20000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"u8.ToArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, false, default);
 	}
 
 	public static IEnumerable<Func<(UInt512, UInt512, UInt512, UInt512)>> ClampTestData()

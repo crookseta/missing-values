@@ -1,5 +1,7 @@
 ﻿using MissingValues.Internals;
+using MissingValues.Tests.Data;
 using TUnit.Assertions.AssertConditions.Throws;
+using static MissingValues.Tests.Data.CalculatorDataSources;
 
 namespace MissingValues.Tests.Core;
 
@@ -354,5 +356,17 @@ public class CalculatorTests
 		ulong right = 0;
 
 		await Assert.That(() => Calculator.DivRemByUInt64(left, right)).Throws<DivideByZeroException>();
+	}
+
+	[Test]
+	[MethodDataSource(typeof(CalculatorDataSources), nameof(Log10TestData))]
+	public async Task Log10_DataDriven(UInt512 value, int expected)
+	{
+		await Assert.That(BitHelper.Log10(in value)).IsEqualTo(expected);
+	}
+	[Test]
+	public async Task Log10_NegativeInput_Throws()
+	{
+		await Assert.That(() => BitHelper.Log10(in Int512.NegativeOne)).Throws<ArgumentException>();
 	}
 }
