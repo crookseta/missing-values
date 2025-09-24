@@ -207,17 +207,41 @@ public class UInt512DataSources
 
 	public static IEnumerable<Func<(UInt512, int, UInt512)>> op_ShiftLeftTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (new UInt512(1, 2, 3, 4, 5, 6, 7, 8), 0, new UInt512(1, 2, 3, 4, 5, 6, 7, 8));
+		yield return () => (new UInt512(0, 0, 0, 0, 0, 0, 0, 1), 1, new UInt512(0, 0, 0, 0, 0, 0, 0, 2));
+		yield return () => (new UInt512(0, 0, 0, 0, 0, 0, 0, 1), 63, new UInt512(0, 0, 0, 0, 0, 0, 0, 0x8000_0000_0000_0000));
+		yield return () => (new UInt512(0, 0, 0, 0, 0, 0, 0, 1), 64, new UInt512(0, 0, 0, 0, 0, 0, 1, 0));
+		yield return () => (new UInt512(0, 0, 0, 0, 0, 0, 0, 1), 128, new UInt512(0, 0, 0, 0, 0, 1, 0, 0));
+		yield return () => (new UInt512(0, 0, 0, 0, 0, 0, 0, 1), 256, new UInt512(0, 0, 0, 1, 0, 0, 0, 0));
+		yield return () => (new UInt512(0, 0, 0, 0, 0, 0, 0, 1), 511, new UInt512(0x8000_0000_0000_0000, 0, 0, 0, 0, 0, 0, 0));
+		yield return () => (new UInt512(1, 2, 3, 4, 5, 6, 7, 8), 512, new UInt512(1, 2, 3, 4, 5, 6, 7, 8));
+		yield return () => (new UInt512(0, 0, 0, 0, 0, 0, 0, 1), 513, new UInt512(0, 0, 0, 0, 0, 0, 0, 2));
 	}
 
 	public static IEnumerable<Func<(UInt512, int, UInt512)>> op_ShiftRightTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (new UInt512(1, 2, 3, 4, 5, 6, 7, 8), 0, new UInt512(1, 2, 3, 4, 5, 6, 7, 8));
+		yield return () => (new UInt512(0, 0, 0, 0, 0, 0, 0, 2), 1, new UInt512(0, 0, 0, 0, 0, 0, 0, 1));
+		yield return () => (new UInt512(0, 0, 0, 0, 0, 0, 0, 0x8000_0000_0000_0000), 63, new UInt512(0, 0, 0, 0, 0, 0, 0, 1));
+		yield return () => (new UInt512(0, 0, 0, 0, 0, 0, 1, 0), 64, new UInt512(0, 0, 0, 0, 0, 0, 0, 1));
+		yield return () => (new UInt512(0, 0, 0, 0, 0, 1, 0, 0), 128, new UInt512(0, 0, 0, 0, 0, 0, 0, 1));
+		yield return () => (new UInt512(0, 0, 0, 1, 0, 0, 0, 0), 256, new UInt512(0, 0, 0, 0, 0, 0, 0, 1));
+		yield return () => (new UInt512(0x8000_0000_0000_0000, 0, 0, 0, 0, 0, 0, 0), 511, new UInt512(0, 0, 0, 0, 0, 0, 0, 1));
+		yield return () => (new UInt512(1, 2, 3, 4, 5, 6, 7, 8), 512, new UInt512(1, 2, 3, 4, 5, 6, 7, 8));
+		yield return () => (new UInt512(0, 0, 0, 0, 0, 0, 0, 2), 513, new UInt512(0, 0, 0, 0, 0, 0, 0, 1));
 	}
 
 	public static IEnumerable<Func<(UInt512, int, UInt512)>> op_UnsignedShiftRightTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (new UInt512(1, 2, 3, 4, 5, 6, 7, 8), 0, new UInt512(1, 2, 3, 4, 5, 6, 7, 8));
+		yield return () => (new UInt512(0, 0, 0, 0, 0, 0, 0, 2), 1, new UInt512(0, 0, 0, 0, 0, 0, 0, 1));
+		yield return () => (new UInt512(0, 0, 0, 0, 0, 0, 0, 0x8000_0000_0000_0000), 63, new UInt512(0, 0, 0, 0, 0, 0, 0, 1));
+		yield return () => (new UInt512(0, 0, 0, 0, 0, 0, 1, 0), 64, new UInt512(0, 0, 0, 0, 0, 0, 0, 1));
+		yield return () => (new UInt512(0, 0, 0, 0, 0, 1, 0, 0), 128, new UInt512(0, 0, 0, 0, 0, 0, 0, 1));
+		yield return () => (new UInt512(0, 0, 0, 1, 0, 0, 0, 0), 256, new UInt512(0, 0, 0, 0, 0, 0, 0, 1));
+		yield return () => (new UInt512(0x8000_0000_0000_0000, 0, 0, 0, 0, 0, 0, 0), 511, new UInt512(0, 0, 0, 0, 0, 0, 0, 1));
+		yield return () => (new UInt512(1, 2, 3, 4, 5, 6, 7, 8), 512, new UInt512(1, 2, 3, 4, 5, 6, 7, 8));
+		yield return () => (new UInt512(0, 0, 0, 0, 0, 0, 0, 2), 513, new UInt512(0, 0, 0, 0, 0, 0, 0, 1));
 	}
 
 	public static IEnumerable<Func<(UInt512, UInt512, UInt512)>> op_BitwiseAndTestData()
