@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Text;
 using MissingValues.Tests.Data.Sources;
 
 namespace MissingValues.Tests.Data;
@@ -241,32 +242,113 @@ public class QuadDataSources
 
     public static IEnumerable<Func<(string, NumberStyles, IFormatProvider?, Quad)>> ParseTestData()
     {
-        throw new NotImplementedException();
+        yield return () => ("2,0", NumberStyles.Float, CultureInfo.CurrentCulture, Quad.Two);
+		yield return () => ("-2", NumberStyles.Float, CultureInfo.CurrentCulture, -Quad.Two);
+		yield return () => ("0", NumberStyles.Float, CultureInfo.CurrentCulture, Quad.Zero);
+		yield return () => (NumberFormatInfo.CurrentInfo.PositiveInfinitySymbol, NumberStyles.Float, CultureInfo.CurrentCulture, Quad.PositiveInfinity);
+		yield return () => (NumberFormatInfo.CurrentInfo.NegativeInfinitySymbol, NumberStyles.Float, CultureInfo.CurrentCulture, Quad.NegativeInfinity);
+		yield return () => (NumberFormatInfo.CurrentInfo.NaNSymbol, NumberStyles.Float, CultureInfo.CurrentCulture, Quad.NaN);
+		yield return () => ("256,4995", NumberStyles.Float, CultureInfo.CurrentCulture, Values.CreateFloat<Quad>(0x4007_007F_DF3B_645A, 0x1CAC_0831_26E9_78D5));
+		yield return () => ("471581881", NumberStyles.Float, CultureInfo.CurrentCulture, Values.CreateFloat<Quad>(0x401B_C1BC_4B90_0000, 0x0000_0000_0000_0000));
+		yield return () => ("1,93561113", NumberStyles.Float, CultureInfo.CurrentCulture, Values.CreateFloat<Quad>(0x3FFF_EF84_3605_1FA4, 0x8B0F_3D34_BECE_8762));
+		yield return () => ("9715574,2", NumberStyles.Float, CultureInfo.CurrentCulture, Values.CreateFloat<Quad>(0x4016_287E_EC66_6666, 0x6666_6666_6666_6666));
+		yield return () => ("0,51438427732005011792", NumberStyles.Float, CultureInfo.CurrentCulture, Values.CreateFloat<Quad>(0x3FFE_075D_6041_5519, 0x72D0_0AD3_7DB4_57E9));
+		yield return () => ("0,04201133209656899095", NumberStyles.Float, CultureInfo.CurrentCulture, Values.CreateFloat<Quad>(0x3FFA_5828_262D_512C, 0x8840_B3B3_D424_5947));
+		yield return () => ("7,7E777", NumberStyles.Float, CultureInfo.CurrentCulture, Values.CreateFloat<Quad>(0x4A17_0F28_5D1D_4C84, 0xA11F_6899_101B_A9A4));
+		yield return () => ("-7,7E-777", NumberStyles.Float, CultureInfo.CurrentCulture, Values.CreateFloat<Quad>(0xB5EC_BFCE_3AF6_4E08, 0x42C8_5750_BEBD_A572));
     }
 
     public static IEnumerable<Func<(char[], NumberStyles, IFormatProvider?, Quad)>> ParseSpanTestData()
     {
-        throw new NotImplementedException();
+	    yield return () => ("2,0".ToCharArray(), NumberStyles.Float, CultureInfo.CurrentCulture, Quad.Two);
+	    yield return () => ("-2".ToCharArray(), NumberStyles.Float, CultureInfo.CurrentCulture, -Quad.Two);
+	    yield return () => ("0".ToCharArray(), NumberStyles.Float, CultureInfo.CurrentCulture, Quad.Zero);
+	    yield return () => (NumberFormatInfo.CurrentInfo.PositiveInfinitySymbol.ToCharArray(), NumberStyles.Float, CultureInfo.CurrentCulture, Quad.PositiveInfinity);
+	    yield return () => (NumberFormatInfo.CurrentInfo.NegativeInfinitySymbol.ToCharArray(), NumberStyles.Float, CultureInfo.CurrentCulture, Quad.NegativeInfinity);
+	    yield return () => (NumberFormatInfo.CurrentInfo.NaNSymbol.ToCharArray(), NumberStyles.Float, CultureInfo.CurrentCulture, Quad.NaN);
+	    yield return () => ("256,4995".ToCharArray(), NumberStyles.Float, CultureInfo.CurrentCulture, Values.CreateFloat<Quad>(0x4007_007F_DF3B_645A, 0x1CAC_0831_26E9_78D5));
+	    yield return () => ("471581881".ToCharArray(), NumberStyles.Float, CultureInfo.CurrentCulture, Values.CreateFloat<Quad>(0x401B_C1BC_4B90_0000, 0x0000_0000_0000_0000));
+	    yield return () => ("1,93561113".ToCharArray(), NumberStyles.Float, CultureInfo.CurrentCulture, Values.CreateFloat<Quad>(0x3FFF_EF84_3605_1FA4, 0x8B0F_3D34_BECE_8762));
+	    yield return () => ("9715574,2".ToCharArray(), NumberStyles.Float, CultureInfo.CurrentCulture, Values.CreateFloat<Quad>(0x4016_287E_EC66_6666, 0x6666_6666_6666_6666));
+	    yield return () => ("0,51438427732005011792".ToCharArray(), NumberStyles.Float, CultureInfo.CurrentCulture, Values.CreateFloat<Quad>(0x3FFE_075D_6041_5519, 0x72D0_0AD3_7DB4_57E9));
+	    yield return () => ("0,04201133209656899095".ToCharArray(), NumberStyles.Float, CultureInfo.CurrentCulture, Values.CreateFloat<Quad>(0x3FFA_5828_262D_512C, 0x8840_B3B3_D424_5947));
+	    yield return () => ("7,7E777".ToCharArray(), NumberStyles.Float, CultureInfo.CurrentCulture, Values.CreateFloat<Quad>(0x4A17_0F28_5D1D_4C84, 0xA11F_6899_101B_A9A4));
+	    yield return () => ("-7,7E-777".ToCharArray(), NumberStyles.Float, CultureInfo.CurrentCulture, Values.CreateFloat<Quad>(0xB5EC_BFCE_3AF6_4E08, 0x42C8_5750_BEBD_A572));
     }
 
     public static IEnumerable<Func<(byte[], NumberStyles, IFormatProvider?, Quad)>> ParseUtf8TestData()
     {
-        throw new NotImplementedException();
+        yield return () => ("2,0"u8.ToArray(), NumberStyles.Float, CultureInfo.CurrentCulture, Quad.Two);
+	    yield return () => ("-2"u8.ToArray(), NumberStyles.Float, CultureInfo.CurrentCulture, -Quad.Two);
+	    yield return () => ("0"u8.ToArray(), NumberStyles.Float, CultureInfo.CurrentCulture, Quad.Zero);
+	    yield return () => (Encoding.UTF8.GetBytes(NumberFormatInfo.CurrentInfo.PositiveInfinitySymbol), NumberStyles.Float, CultureInfo.CurrentCulture, Quad.PositiveInfinity);
+	    yield return () => (Encoding.UTF8.GetBytes(NumberFormatInfo.CurrentInfo.NegativeInfinitySymbol), NumberStyles.Float, CultureInfo.CurrentCulture, Quad.NegativeInfinity);
+	    yield return () => (Encoding.UTF8.GetBytes(NumberFormatInfo.CurrentInfo.NaNSymbol), NumberStyles.Float, CultureInfo.CurrentCulture, Quad.NaN);
+	    yield return () => ("256,4995"u8.ToArray(), NumberStyles.Float, CultureInfo.CurrentCulture, Values.CreateFloat<Quad>(0x4007_007F_DF3B_645A, 0x1CAC_0831_26E9_78D5));
+	    yield return () => ("471581881"u8.ToArray(), NumberStyles.Float, CultureInfo.CurrentCulture, Values.CreateFloat<Quad>(0x401B_C1BC_4B90_0000, 0x0000_0000_0000_0000));
+	    yield return () => ("1,93561113"u8.ToArray(), NumberStyles.Float, CultureInfo.CurrentCulture, Values.CreateFloat<Quad>(0x3FFF_EF84_3605_1FA4, 0x8B0F_3D34_BECE_8762));
+	    yield return () => ("9715574,2"u8.ToArray(), NumberStyles.Float, CultureInfo.CurrentCulture, Values.CreateFloat<Quad>(0x4016_287E_EC66_6666, 0x6666_6666_6666_6666));
+	    yield return () => ("0,51438427732005011792"u8.ToArray(), NumberStyles.Float, CultureInfo.CurrentCulture, Values.CreateFloat<Quad>(0x3FFE_075D_6041_5519, 0x72D0_0AD3_7DB4_57E9));
+	    yield return () => ("0,04201133209656899095"u8.ToArray(), NumberStyles.Float, CultureInfo.CurrentCulture, Values.CreateFloat<Quad>(0x3FFA_5828_262D_512C, 0x8840_B3B3_D424_5947));
+	    yield return () => ("7,7E777"u8.ToArray(), NumberStyles.Float, CultureInfo.CurrentCulture, Values.CreateFloat<Quad>(0x4A17_0F28_5D1D_4C84, 0xA11F_6899_101B_A9A4));
+	    yield return () => ("-7,7E-777"u8.ToArray(), NumberStyles.Float, CultureInfo.CurrentCulture, Values.CreateFloat<Quad>(0xB5EC_BFCE_3AF6_4E08, 0x42C8_5750_BEBD_A572));
     }
 
     public static IEnumerable<Func<(string, NumberStyles, IFormatProvider?, bool, Quad)>> TryParseTestData()
     {
-        throw new NotImplementedException();
+		yield return () => ("2,0", NumberStyles.Float, CultureInfo.CurrentCulture, true, Quad.Two);
+		yield return () => ("-2", NumberStyles.Float, CultureInfo.CurrentCulture, true, -Quad.Two);
+		yield return () => ("0", NumberStyles.Float, CultureInfo.CurrentCulture, true, Quad.Zero);
+		yield return () => (NumberFormatInfo.CurrentInfo.PositiveInfinitySymbol, NumberStyles.Float, CultureInfo.CurrentCulture, true, Quad.PositiveInfinity);
+		yield return () => (NumberFormatInfo.CurrentInfo.NegativeInfinitySymbol, NumberStyles.Float, CultureInfo.CurrentCulture, true, Quad.NegativeInfinity);
+		yield return () => (NumberFormatInfo.CurrentInfo.NaNSymbol, NumberStyles.Float, CultureInfo.CurrentCulture, true, Quad.NaN);
+		yield return () => ("256,4995", NumberStyles.Float, CultureInfo.CurrentCulture, true, Values.CreateFloat<Quad>(0x4007_007F_DF3B_645A, 0x1CAC_0831_26E9_78D5));
+		yield return () => ("471581881", NumberStyles.Float, CultureInfo.CurrentCulture, true, Values.CreateFloat<Quad>(0x401B_C1BC_4B90_0000, 0x0000_0000_0000_0000));
+		yield return () => ("1,93561113", NumberStyles.Float, CultureInfo.CurrentCulture, true, Values.CreateFloat<Quad>(0x3FFF_EF84_3605_1FA4, 0x8B0F_3D34_BECE_8762));
+		yield return () => ("9715574,2", NumberStyles.Float, CultureInfo.CurrentCulture, true, Values.CreateFloat<Quad>(0x4016_287E_EC66_6666, 0x6666_6666_6666_6666));
+		yield return () => ("0,51438427732005011792", NumberStyles.Float, CultureInfo.CurrentCulture, true, Values.CreateFloat<Quad>(0x3FFE_075D_6041_5519, 0x72D0_0AD3_7DB4_57E9));
+		yield return () => ("0,04201133209656899095", NumberStyles.Float, CultureInfo.CurrentCulture, true, Values.CreateFloat<Quad>(0x3FFA_5828_262D_512C, 0x8840_B3B3_D424_5947));
+		yield return () => ("7,7E777", NumberStyles.Float, CultureInfo.CurrentCulture, true, Values.CreateFloat<Quad>(0x4A17_0F28_5D1D_4C84, 0xA11F_6899_101B_A9A4));
+		yield return () => ("-7,7E-777", NumberStyles.Float, CultureInfo.CurrentCulture, true, Values.CreateFloat<Quad>(0xB5EC_BFCE_3AF6_4E08, 0x42C8_5750_BEBD_A572));
+		yield return () => ("1A", NumberStyles.Float, CultureInfo.CurrentCulture, false, default);
     }
 
     public static IEnumerable<Func<(char[], NumberStyles, IFormatProvider?, bool, Quad)>> TryParseSpanTestData()
     {
-        throw new NotImplementedException();
+        yield return () => ("2,0".ToCharArray(), NumberStyles.Float, CultureInfo.CurrentCulture, true, Quad.Two);
+		yield return () => ("-2".ToCharArray(), NumberStyles.Float, CultureInfo.CurrentCulture, true, -Quad.Two);
+		yield return () => ("0".ToCharArray(), NumberStyles.Float, CultureInfo.CurrentCulture, true, Quad.Zero);
+		yield return () => (NumberFormatInfo.CurrentInfo.PositiveInfinitySymbol.ToCharArray(), NumberStyles.Float, CultureInfo.CurrentCulture, true, Quad.PositiveInfinity);
+		yield return () => (NumberFormatInfo.CurrentInfo.NegativeInfinitySymbol.ToCharArray(), NumberStyles.Float, CultureInfo.CurrentCulture, true, Quad.NegativeInfinity);
+		yield return () => (NumberFormatInfo.CurrentInfo.NaNSymbol.ToCharArray(), NumberStyles.Float, CultureInfo.CurrentCulture, true, Quad.NaN);
+		yield return () => ("256,4995".ToCharArray(), NumberStyles.Float, CultureInfo.CurrentCulture, true, Values.CreateFloat<Quad>(0x4007_007F_DF3B_645A, 0x1CAC_0831_26E9_78D5));
+		yield return () => ("471581881".ToCharArray(), NumberStyles.Float, CultureInfo.CurrentCulture, true, Values.CreateFloat<Quad>(0x401B_C1BC_4B90_0000, 0x0000_0000_0000_0000));
+		yield return () => ("1,93561113".ToCharArray(), NumberStyles.Float, CultureInfo.CurrentCulture, true, Values.CreateFloat<Quad>(0x3FFF_EF84_3605_1FA4, 0x8B0F_3D34_BECE_8762));
+		yield return () => ("9715574,2".ToCharArray(), NumberStyles.Float, CultureInfo.CurrentCulture, true, Values.CreateFloat<Quad>(0x4016_287E_EC66_6666, 0x6666_6666_6666_6666));
+		yield return () => ("0,51438427732005011792".ToCharArray(), NumberStyles.Float, CultureInfo.CurrentCulture, true, Values.CreateFloat<Quad>(0x3FFE_075D_6041_5519, 0x72D0_0AD3_7DB4_57E9));
+		yield return () => ("0,04201133209656899095".ToCharArray(), NumberStyles.Float, CultureInfo.CurrentCulture, true, Values.CreateFloat<Quad>(0x3FFA_5828_262D_512C, 0x8840_B3B3_D424_5947));
+		yield return () => ("7,7E777".ToCharArray(), NumberStyles.Float, CultureInfo.CurrentCulture, true, Values.CreateFloat<Quad>(0x4A17_0F28_5D1D_4C84, 0xA11F_6899_101B_A9A4));
+		yield return () => ("-7,7E-777".ToCharArray(), NumberStyles.Float, CultureInfo.CurrentCulture, true, Values.CreateFloat<Quad>(0xB5EC_BFCE_3AF6_4E08, 0x42C8_5750_BEBD_A572));
+		yield return () => ("1A".ToCharArray(), NumberStyles.Float, CultureInfo.CurrentCulture, false, default);
     }
 
     public static IEnumerable<Func<(byte[], NumberStyles, IFormatProvider?, bool, Quad)>> TryParseUtf8TestData()
     {
-        throw new NotImplementedException();
+        yield return () => ("2,0"u8.ToArray(), NumberStyles.Float, CultureInfo.CurrentCulture, true, Quad.Two);
+		yield return () => ("-2"u8.ToArray(), NumberStyles.Float, CultureInfo.CurrentCulture, true, -Quad.Two);
+		yield return () => ("0"u8.ToArray(), NumberStyles.Float, CultureInfo.CurrentCulture, true, Quad.Zero);
+		yield return () => (Encoding.UTF8.GetBytes(NumberFormatInfo.CurrentInfo.PositiveInfinitySymbol), NumberStyles.Float, CultureInfo.CurrentCulture, true, Quad.PositiveInfinity);
+		yield return () => (Encoding.UTF8.GetBytes(NumberFormatInfo.CurrentInfo.NegativeInfinitySymbol), NumberStyles.Float, CultureInfo.CurrentCulture, true, Quad.NegativeInfinity);
+		yield return () => (Encoding.UTF8.GetBytes(NumberFormatInfo.CurrentInfo.NaNSymbol), NumberStyles.Float, CultureInfo.CurrentCulture, true, Quad.NaN);
+		yield return () => ("256,4995"u8.ToArray(), NumberStyles.Float, CultureInfo.CurrentCulture, true, Values.CreateFloat<Quad>(0x4007_007F_DF3B_645A, 0x1CAC_0831_26E9_78D5));
+		yield return () => ("471581881"u8.ToArray(), NumberStyles.Float, CultureInfo.CurrentCulture, true, Values.CreateFloat<Quad>(0x401B_C1BC_4B90_0000, 0x0000_0000_0000_0000));
+		yield return () => ("1,93561113"u8.ToArray(), NumberStyles.Float, CultureInfo.CurrentCulture, true, Values.CreateFloat<Quad>(0x3FFF_EF84_3605_1FA4, 0x8B0F_3D34_BECE_8762));
+		yield return () => ("9715574,2"u8.ToArray(), NumberStyles.Float, CultureInfo.CurrentCulture, true, Values.CreateFloat<Quad>(0x4016_287E_EC66_6666, 0x6666_6666_6666_6666));
+		yield return () => ("0,51438427732005011792"u8.ToArray(), NumberStyles.Float, CultureInfo.CurrentCulture, true, Values.CreateFloat<Quad>(0x3FFE_075D_6041_5519, 0x72D0_0AD3_7DB4_57E9));
+		yield return () => ("0,04201133209656899095"u8.ToArray(), NumberStyles.Float, CultureInfo.CurrentCulture, true, Values.CreateFloat<Quad>(0x3FFA_5828_262D_512C, 0x8840_B3B3_D424_5947));
+		yield return () => ("7,7E777"u8.ToArray(), NumberStyles.Float, CultureInfo.CurrentCulture, true, Values.CreateFloat<Quad>(0x4A17_0F28_5D1D_4C84, 0xA11F_6899_101B_A9A4));
+		yield return () => ("-7,7E-777"u8.ToArray(), NumberStyles.Float, CultureInfo.CurrentCulture, true, Values.CreateFloat<Quad>(0xB5EC_BFCE_3AF6_4E08, 0x42C8_5750_BEBD_A572));
+		yield return () => ("1A"u8.ToArray(), NumberStyles.Float, CultureInfo.CurrentCulture, false, default);
     }
 
     public static IEnumerable<Func<(Quad, Quad, Quad, Quad)>> ClampTestData()
