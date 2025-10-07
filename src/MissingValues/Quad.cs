@@ -170,8 +170,8 @@ namespace MissingValues
 		public Quad(bool sign, ushort exp, UInt128 sig)
 		{
 			UInt128 value = (((sign ? UInt128.One : UInt128.Zero) << SignShift) + ((((UInt128)exp) << BiasedExponentShift) & BiasedExponentMask) + (sig & TrailingSignificandMask));
-			_lower = unchecked((ulong)value);
-			_upper = unchecked((ulong)(value >> 64));
+			_lower = value.Lower;
+			_upper = value.Upper;
 		}
 
 		/// <inheritdoc/>

@@ -359,7 +359,7 @@ internal static partial class NumberFormatter
 			TSignificand output = v.Mantissa;
 			uint olength = (uint)(output switch
 			{
-				UInt128 temp => CountDigits(temp),
+				UInt128 temp => UInt128.CountDigits(temp),
 				UInt256 temp => UInt256.CountDigits(in temp)
 			});
 

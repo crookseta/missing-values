@@ -51,39 +51,6 @@ internal static class Calculator
 		}
 		return Math.BigMul(a, b, out lower);
 	}
-	/// <summary>
-	/// Produces the full product of two unsigned 128-bit numbers.
-	/// </summary>
-	/// <param name="a">First number to multiply.</param>
-	/// <param name="b">Second number to multiply.</param>
-	/// <param name="lower">The low 128-bit of the product of the specified numbers.</param>
-	/// <returns>The high 128-bit of the product of the specified numbers.</returns>
-	public static UInt128 BigMul(UInt128 a, UInt128 b, out UInt128 lower)
-	{
-		#if NET10_0_OR_GREATER
-		return UInt128.BigMul(a, b, out lower);
-		#else
-		// Adaptation of algorithm for multiplication
-		// of 32-bit unsigned integers described
-		// in Hacker's Delight by Henry S. Warren, Jr. (ISBN 0-201-91465-4), Chapter 8
-		// Basically, it's an optimized version of FOIL method applied to
-		// low and high dwords of each operand
-
-		ulong al = a.GetLowerBits();
-		ulong ah = a.GetUpperBits();
-
-		ulong bl = b.GetLowerBits();
-		ulong bh = b.GetUpperBits();
-
-		UInt128 mull = BigMul(al, bl);
-		UInt128 t = BigMul(ah, bl) + mull.GetUpperBits();
-		UInt128 tl = BigMul(al, bh) + t.GetLowerBits();
-
-		lower = new UInt128(tl.GetLowerBits(), mull.GetLowerBits());
-
-		return BigMul(ah, bh) + t.GetUpperBits() + tl.GetUpperBits();
-		#endif
-	}
 	
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	public static (ulong hi, ulong lo) BigMulAdd(ulong a, ulong b, ulong c)
@@ -125,10 +92,10 @@ internal static class Calculator
 		}
 #endif
 		UInt128 quotient = left / right;
-		return (quotient, (ulong)left - ((ulong)quotient * right));
+		return (quotient, left.Lower - (quotient.Lower * right));
 	}
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	private static UInt128 DivideByUInt64(UInt128 left, ulong right)
+	internal static UInt128 DivideByUInt64(UInt128 left, ulong right)
 	{
 #if NET9_0_OR_GREATER
 		if (X86Base.X64.IsSupported)
@@ -188,8 +155,8 @@ internal static class Calculator
 				carry = (digit2 + (digit1 >> 1)) >> 31;
 			}
 			UInt128 digits = BigMul(v, v) + carry;
-			Unsafe.Add(ref resultPtr, i + i) = unchecked((ulong)digits);
-			Unsafe.Add(ref resultPtr, i + i + 1) = (ulong)(digits >> 64);
+			Unsafe.Add(ref resultPtr, i + i) = digits.Lower;
+			Unsafe.Add(ref resultPtr, i + i + 1) = digits.Upper;
 		}
 	}
 
@@ -257,7 +224,7 @@ internal static class Calculator
 				ref ulong elementPtr = ref Unsafe.Add(ref resultPtr, i + j);
 				UInt128 digits = elementPtr + carry + BigMul(Unsafe.Add(ref leftPtr, j), rv);
 				elementPtr = unchecked((ulong)digits);
-				carry = digits >> 64;
+				carry = digits.Upper;
 			}
 			Unsafe.Add(ref resultPtr, i + left.Length) = (ulong)carry;
 		}
@@ -311,7 +278,7 @@ internal static class Calculator
 		else
 		{
 			(value, remainder) = DivRemByUInt64(new UInt128(left.Part1, left.Part0), right);
-			quotient = new UInt256(0, 0, (ulong)(value >> 64), (ulong)value);
+			quotient = new UInt256(0, 0, value.Upper, (ulong)value);
 
 			return;
 		}
@@ -494,7 +461,7 @@ internal static class Calculator
 		else
 		{
 			(value, remainder) = DivRemByUInt64(new UInt128(left.Part1, left.Part0), right);
-			quotient = new UInt512(0, 0, 0, 0, 0, 0, (ulong)(value >> 64), (ulong)value);
+			quotient = new UInt512(0, 0, 0, 0, 0, 0, value.Upper, value.Lower);
 			return;
 		}
 
@@ -557,7 +524,7 @@ internal static class Calculator
 		{
 			value = DivideByUInt64(new UInt128(left.Part1, left.Part0), right);
 
-			return new UInt256(0, 0, (ulong)(value >> 64), (ulong)value);
+			return new UInt256(0, 0, value.Upper, value.Lower);
 		}
 
 		return new UInt256(p3, p2, p1, p0);
@@ -734,7 +701,7 @@ internal static class Calculator
 		else
 		{
 			value = DivideByUInt64(new UInt128(left.Part1, left.Part0), right);
-			return new UInt512(0, 0, 0, 0, 0, 0, (ulong)(value >> 64), (ulong)value);
+			return new UInt512(0, 0, 0, 0, 0, 0, value.Upper, value.Lower);
 		}
 
 		return new UInt512(
@@ -789,7 +756,7 @@ internal static class Calculator
 			// First guess for the current digit of the quotient,
 			// which naturally must have only 64 bits...
 			UInt128 digit = DivideByUInt64(valHi, divHi);
-			var digit64 = digit > new UInt128(0, 0xFFFF_FFFF_FFFF_FFFF) ? 0xFFFF_FFFF_FFFF_FFFF : (ulong)digit;
+			ulong digit64 = digit.Upper != 0 ? 0xFFFF_FFFF_FFFF_FFFF : (ulong)digit;
 
 			// Our first guess may be a little bit too big
 			while (DivideGuessTooBig(digit64, valHi, valLo, divHi, divLo))
@@ -839,8 +806,8 @@ internal static class Calculator
 				ref ulong leftElement = ref left[i];
 				UInt128 digit = (leftElement + carry) + right[i];
 
-				leftElement = unchecked((ulong)digit);
-				carry = digit >> 64;
+				leftElement = digit.Lower;
+				carry = digit.Upper;
 			}
 
 			return (ulong)carry;
@@ -855,8 +822,8 @@ internal static class Calculator
 			UInt128 chkHi = BigMul(divHi, q);
 			UInt128 chkLo = BigMul(divLo, q);
 
-			chkHi += (chkLo >> 64);
-			chkLo = (ulong)(chkLo);
+			chkHi += chkLo.Upper;
+			chkLo = chkLo.Lower;
 
 			return (chkHi > valHi) || ((chkHi == valHi) && (chkLo > valLo));
 		}
@@ -872,8 +839,8 @@ internal static class Calculator
 			{
 				carry += BigMul(right[i], q);
 
-				ulong digit = unchecked((ulong)carry);
-				carry >>= 64;
+				ulong digit = carry.Lower;
+				carry = carry.Upper;
 
 				ref ulong leftElement = ref left[i];
 
@@ -884,7 +851,7 @@ internal static class Calculator
 				leftElement = unchecked(leftElement - digit);
 			}
 
-			return (ulong)carry;
+			return carry.Lower;
 		}
 	}
 	

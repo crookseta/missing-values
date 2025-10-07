@@ -17,7 +17,7 @@ namespace MissingValues
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static UInt256 BigMul(UInt128 a, UInt128 b)
 		{
-			UInt128 high = Calculator.BigMul(a, b, out var low);
+			UInt128 high = UInt128.BigMul(a, b, out var low);
 			return new UInt256(high, low);
 		}
 
@@ -30,7 +30,7 @@ namespace MissingValues
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		public static Int256 BigMul(Int128 a, Int128 b)
 		{
-			UInt128 high = Calculator.BigMul((UInt128)a, (UInt128)b, out var low);
+			UInt128 high = UInt128.BigMul((UInt128)a, (UInt128)b, out var low);
 			return new Int256(high, low);
 		}
 

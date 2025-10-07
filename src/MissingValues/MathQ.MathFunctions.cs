@@ -2632,7 +2632,7 @@ namespace MissingValues
 			{
 				term = BitHelper.Mul64ByShifted32To128(x64 + sig64Z, q);
 				rem = y - term;
-				if (((rem.GetUpperBits()) & 0x8000_0000_0000_0000) == 0)
+				if (((rem.Upper) & 0x8000_0000_0000_0000) == 0)
 				{
 					break;
 				}
@@ -2680,13 +2680,13 @@ namespace MissingValues
 				 * The concatenation of `term' and `x.v0' is now the negative remainder
 				 * (3 words altogether).
 				 */
-				if ((term.GetUpperBits() & 0x8000_0000_0000_0000) != 0)
+				if ((term.Upper & 0x8000_0000_0000_0000) != 0)
 				{
 					sigZExtra |= 1;
 				}
 				else
 				{
-					if ((term | y.GetLowerBits()) != UInt128.Zero)
+					if ((term | y.Lower) != UInt128.Zero)
 					{
 						if (sigZExtra != 0)
 						{

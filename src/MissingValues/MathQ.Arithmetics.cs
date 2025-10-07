@@ -158,7 +158,7 @@ namespace MissingValues
 			sig256 = MathQ.BigMul(sigA, sigB);
 			ulong sigZExtra = Convert.ToUInt64(sig256 != UInt256.Zero);
 			sigZ = sig256.Upper + sigA;
-			if (0x0002_0000_0000_0000 <= (ulong)(sigZ >> 64))
+			if (0x0002_0000_0000_0000 <= sigZ.Upper)
 			{
 				++expZ;
 				sigZ = BitHelper.ShortShiftRightJamExtra(sigZ, sigZExtra, 1, out sigZExtra);
