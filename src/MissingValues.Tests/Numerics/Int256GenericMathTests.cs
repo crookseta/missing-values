@@ -5,8 +5,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using MissingValues.Tests.Data;
-using TUnit.Assertions.AssertConditions.Throws;
-
 using static MissingValues.Tests.Data.Int256DataSources;
 
 using DataSources = MissingValues.Tests.Data.Int256DataSources;

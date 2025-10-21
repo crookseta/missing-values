@@ -1,6 +1,5 @@
 ﻿using MissingValues.Internals;
 using MissingValues.Tests.Data;
-using TUnit.Assertions.AssertConditions.Throws;
 using static MissingValues.Tests.Data.CalculatorDataSources;
 
 namespace MissingValues.Tests.Core;

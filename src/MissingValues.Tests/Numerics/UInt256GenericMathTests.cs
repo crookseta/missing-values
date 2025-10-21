@@ -5,8 +5,6 @@ using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using TUnit.Assertions.AssertConditions.Throws;
-
 using static MissingValues.Tests.Data.UInt256DataSources;
 
 using DataSources = MissingValues.Tests.Data.UInt256DataSources;
