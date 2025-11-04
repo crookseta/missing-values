@@ -246,167 +246,294 @@ public class UInt512DataSources
 
 	public static IEnumerable<Func<(UInt512, UInt512, UInt512)>> op_BitwiseAndTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (UInt512.Zero, UInt512.Zero, UInt512.Zero);
+		yield return () => (UInt512.Zero, UInt512.MaxValue, UInt512.Zero);
+		yield return () => (new UInt512(1, 2, 3, 4, 5, 6, 7, 8), new UInt512(1, 2, 3, 4, 5, 6, 7, 8), new UInt512(1, 2, 3, 4, 5, 6, 7, 8));
+		yield return () => (new UInt512(1, 2, 3, 4, 5, 6, 7, 8), UInt512.MaxValue, new UInt512(1, 2, 3, 4, 5, 6, 7, 8));
 	}
 
 	public static IEnumerable<Func<(UInt512, UInt512, UInt512)>> op_BitwiseOrTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (UInt512.Zero, UInt512.Zero, UInt512.Zero);
+		yield return () => (UInt512.Zero, UInt512.MaxValue, UInt512.MaxValue);
+		yield return () => (new UInt512(1, 2, 3, 4, 5, 6, 7, 8), new UInt512(1, 2, 3, 4, 5, 6, 7, 8), new UInt512(1, 2, 3, 4, 5, 6, 7, 8));
+		yield return () => (new UInt512(1, 2, 3, 4, 5, 6, 7, 8), UInt512.MaxValue, UInt512.MaxValue);
 	}
 
 	public static IEnumerable<Func<(UInt512, UInt512, UInt512)>> op_BitwiseXorTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (UInt512.Zero, UInt512.Zero, UInt512.Zero);
+		yield return () => (UInt512.Zero, UInt512.MaxValue, UInt512.MaxValue);
+		yield return () => (new UInt512(1, 2, 3, 4, 5, 6, 7, 8), new UInt512(1, 2, 3, 4, 5, 6, 7, 8), UInt512.Zero);
 	}
 
 	public static IEnumerable<Func<(UInt512, UInt512)>> op_OnesComplementTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (UInt512.Zero, UInt512.MaxValue);
+		yield return () => (UInt512.MaxValue, UInt512.Zero);
+		yield return () => (new UInt512(0xAAAAAAAAAAAAAAAA, 0x5555555555555555, 0xAAAAAAAAAAAAAAAA, 0x5555555555555555, 0xAAAAAAAAAAAAAAAA, 0x5555555555555555, 0xAAAAAAAAAAAAAAAA, 0x5555555555555555), new UInt512(0x5555555555555555, 0xAAAAAAAAAAAAAAAA, 0x5555555555555555, 0xAAAAAAAAAAAAAAAA, 0x5555555555555555, 0xAAAAAAAAAAAAAAAA, 0x5555555555555555, 0xAAAAAAAAAAAAAAAA));
+		yield return () => (new UInt512(0x0123456789ABCDEF, 0xFEDCBA9876543210, 0x0F0F0F0F0F0F0F0F, 0xF0F0F0F0F0F0F0F0, 0x0123456789ABCDEF, 0xFEDCBA9876543210, 0x0F0F0F0F0F0F0F0F, 0xF0F0F0F0F0F0F0F0), new UInt512(~0x0123456789ABCDEFU, ~0xFEDCBA9876543210U, ~0x0F0F0F0F0F0F0F0FU, ~0xF0F0F0F0F0F0F0F0U, ~0x0123456789ABCDEFU, ~0xFEDCBA9876543210U, ~0x0F0F0F0F0F0F0F0FU, ~0xF0F0F0F0F0F0F0F0U));
 	}
 
 	public static IEnumerable<Func<(UInt512, UInt512, bool)>> op_EqualityTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (UInt512.Zero, UInt512.Zero, true);
+		yield return () => (new UInt512(1, 2, 3, 4, 5, 6, 7, 8), new UInt512(1, 2, 3, 4, 5, 6, 7, 8), true);
+		yield return () => (new UInt512(1, 2, 3, 4, 5, 6, 7, 8), new UInt512(1, 2, 3, 4, 5, 6, 7, 9), false);
+		yield return () => (new UInt512(1, 2, 3, 4, 5, 6, 7, 8), new UInt512(1, 2, 3, 4, 5, 6, 5, 8), false);
+		yield return () => (new UInt512(1, 2, 3, 4, 5, 6, 7, 8), new UInt512(1, 2, 3, 4, 5, 7, 7, 8), false);
+		yield return () => (new UInt512(1, 2, 3, 4, 5, 6, 7, 8), new UInt512(1, 2, 3, 4, 4, 6, 7, 8), false);
+		yield return () => (new UInt512(1, 2, 3, 4, 5, 6, 7, 8), new UInt512(1, 2, 3, 5, 5, 6, 7, 8), false);
+		yield return () => (new UInt512(1, 2, 3, 4, 5, 6, 7, 8), new UInt512(1, 2, 1, 4, 5, 6, 7, 8), false);
+		yield return () => (new UInt512(1, 2, 3, 4, 5, 6, 7, 8), new UInt512(1, 3, 3, 4, 5, 6, 7, 8), false);
+		yield return () => (new UInt512(1, 2, 3, 4, 5, 6, 7, 8), new UInt512(0, 2, 3, 4, 5, 6, 7, 8), false);
+		yield return () => (new UInt512(1, 2, 3, 4, 5, 6, 7, 9), new UInt512(1, 2, 3, 4, 5, 6, 7, 8), false);
+		yield return () => (new UInt512(1, 2, 3, 4, 5, 6, 5, 8), new UInt512(1, 2, 3, 4, 5, 6, 7, 8), false);
+		yield return () => (new UInt512(1, 2, 3, 4, 5, 7, 7, 8), new UInt512(1, 2, 3, 4, 5, 6, 7, 8), false);
+		yield return () => (new UInt512(1, 2, 3, 4, 4, 6, 7, 8), new UInt512(1, 2, 3, 4, 5, 6, 7, 8), false);
+		yield return () => (new UInt512(1, 2, 3, 5, 5, 6, 7, 8), new UInt512(1, 2, 3, 4, 5, 6, 7, 8), false);
+		yield return () => (new UInt512(1, 2, 1, 4, 5, 6, 7, 8), new UInt512(1, 2, 3, 4, 5, 6, 7, 8), false);
+		yield return () => (new UInt512(1, 3, 3, 4, 5, 6, 7, 8), new UInt512(1, 2, 3, 4, 5, 6, 7, 8), false);
+		yield return () => (new UInt512(0, 2, 3, 4, 5, 6, 7, 8), new UInt512(1, 2, 3, 4, 5, 6, 7, 8), false);
 	}
 
 	public static IEnumerable<Func<(UInt512, UInt512, bool)>> op_InequalityTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (UInt512.Zero, UInt512.Zero, false);
+		yield return () => (new UInt512(1, 2, 3, 4, 5, 6, 7, 8), new UInt512(1, 2, 3, 4, 5, 6, 7, 8), false);
+		yield return () => (new UInt512(1, 2, 3, 4, 5, 6, 7, 8), new UInt512(1, 2, 3, 4, 5, 6, 7, 9), true);
+		yield return () => (new UInt512(1, 2, 3, 4, 5, 6, 7, 8), new UInt512(1, 2, 3, 4, 5, 6, 5, 8), true);
+		yield return () => (new UInt512(1, 2, 3, 4, 5, 6, 7, 8), new UInt512(1, 2, 3, 4, 5, 7, 7, 8), true);
+		yield return () => (new UInt512(1, 2, 3, 4, 5, 6, 7, 8), new UInt512(1, 2, 3, 4, 4, 6, 7, 8), true);
+		yield return () => (new UInt512(1, 2, 3, 4, 5, 6, 7, 8), new UInt512(1, 2, 3, 5, 5, 6, 7, 8), true);
+		yield return () => (new UInt512(1, 2, 3, 4, 5, 6, 7, 8), new UInt512(1, 2, 1, 4, 5, 6, 7, 8), true);
+		yield return () => (new UInt512(1, 2, 3, 4, 5, 6, 7, 8), new UInt512(1, 3, 3, 4, 5, 6, 7, 8), true);
+		yield return () => (new UInt512(1, 2, 3, 4, 5, 6, 7, 8), new UInt512(0, 2, 3, 4, 5, 6, 7, 8), true);
+		yield return () => (new UInt512(1, 2, 3, 4, 5, 6, 7, 9), new UInt512(1, 2, 3, 4, 5, 6, 7, 8), true);
+		yield return () => (new UInt512(1, 2, 3, 4, 5, 6, 5, 8), new UInt512(1, 2, 3, 4, 5, 6, 7, 8), true);
+		yield return () => (new UInt512(1, 2, 3, 4, 5, 7, 7, 8), new UInt512(1, 2, 3, 4, 5, 6, 7, 8), true);
+		yield return () => (new UInt512(1, 2, 3, 4, 4, 6, 7, 8), new UInt512(1, 2, 3, 4, 5, 6, 7, 8), true);
+		yield return () => (new UInt512(1, 2, 3, 5, 5, 6, 7, 8), new UInt512(1, 2, 3, 4, 5, 6, 7, 8), true);
+		yield return () => (new UInt512(1, 2, 1, 4, 5, 6, 7, 8), new UInt512(1, 2, 3, 4, 5, 6, 7, 8), true);
+		yield return () => (new UInt512(1, 3, 3, 4, 5, 6, 7, 8), new UInt512(1, 2, 3, 4, 5, 6, 7, 8), true);
+		yield return () => (new UInt512(0, 2, 3, 4, 5, 6, 7, 8), new UInt512(1, 2, 3, 4, 5, 6, 7, 8), true);
 	}
 
 	public static IEnumerable<Func<(UInt512, UInt512, bool)>> op_GreaterThanOrEqualTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (UInt512.Zero, UInt512.Zero, true);
+		yield return () => (new UInt512(1, 2, 3, 4, 5, 6, 7, 8), new UInt512(1, 2, 3, 4, 5, 6, 7, 8), true);
+		yield return () => (new UInt512(1, 2, 3, 4, 5, 6, 7, 8), new UInt512(1, 2, 3, 4, 5, 6, 7, 9), false);
+		yield return () => (new UInt512(1, 2, 3, 4, 5, 6, 7, 8), new UInt512(1, 2, 3, 4, 5, 6, 5, 8), true);
+		yield return () => (new UInt512(1, 2, 3, 4, 5, 6, 7, 8), new UInt512(1, 2, 3, 4, 5, 7, 7, 8), false);
+		yield return () => (new UInt512(1, 2, 3, 4, 5, 6, 7, 8), new UInt512(1, 2, 3, 4, 4, 6, 7, 8), true);
+		yield return () => (new UInt512(1, 2, 3, 4, 5, 6, 7, 8), new UInt512(1, 2, 3, 5, 5, 6, 7, 8), false);
+		yield return () => (new UInt512(1, 2, 3, 4, 5, 6, 7, 8), new UInt512(1, 2, 1, 4, 5, 6, 7, 8), true);
+		yield return () => (new UInt512(1, 2, 3, 4, 5, 6, 7, 8), new UInt512(1, 3, 3, 4, 5, 6, 7, 8), false);
+		yield return () => (new UInt512(1, 2, 3, 4, 5, 6, 7, 8), new UInt512(0, 2, 3, 4, 5, 6, 7, 8), true);
+		yield return () => (new UInt512(1, 2, 3, 4, 5, 6, 7, 9), new UInt512(1, 2, 3, 4, 5, 6, 7, 8), true);
+		yield return () => (new UInt512(1, 2, 3, 4, 5, 6, 5, 8), new UInt512(1, 2, 3, 4, 5, 6, 7, 8), false);
+		yield return () => (new UInt512(1, 2, 3, 4, 5, 7, 7, 8), new UInt512(1, 2, 3, 4, 5, 6, 7, 8), true);
+		yield return () => (new UInt512(1, 2, 3, 4, 4, 6, 7, 8), new UInt512(1, 2, 3, 4, 5, 6, 7, 8), false);
+		yield return () => (new UInt512(1, 2, 3, 5, 5, 6, 7, 8), new UInt512(1, 2, 3, 4, 5, 6, 7, 8), true);
+		yield return () => (new UInt512(1, 2, 1, 4, 5, 6, 7, 8), new UInt512(1, 2, 3, 4, 5, 6, 7, 8), false);
+		yield return () => (new UInt512(1, 3, 3, 4, 5, 6, 7, 8), new UInt512(1, 2, 3, 4, 5, 6, 7, 8), true);
+		yield return () => (new UInt512(0, 2, 3, 4, 5, 6, 7, 8), new UInt512(1, 2, 3, 4, 5, 6, 7, 8), false);
 	}
 
 	public static IEnumerable<Func<(UInt512, UInt512, bool)>> op_GreaterThanTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (UInt512.Zero, UInt512.Zero, false);
+		yield return () => (new UInt512(1, 2, 3, 4, 5, 6, 7, 8), new UInt512(1, 2, 3, 4, 5, 6, 7, 8), false);
+		yield return () => (new UInt512(1, 2, 3, 4, 5, 6, 7, 8), new UInt512(1, 2, 3, 4, 5, 6, 7, 9), false);
+		yield return () => (new UInt512(1, 2, 3, 4, 5, 6, 7, 8), new UInt512(1, 2, 3, 4, 5, 6, 5, 8), true);
+		yield return () => (new UInt512(1, 2, 3, 4, 5, 6, 7, 8), new UInt512(1, 2, 3, 4, 5, 7, 7, 8), false);
+		yield return () => (new UInt512(1, 2, 3, 4, 5, 6, 7, 8), new UInt512(1, 2, 3, 4, 4, 6, 7, 8), true);
+		yield return () => (new UInt512(1, 2, 3, 4, 5, 6, 7, 8), new UInt512(1, 2, 3, 5, 5, 6, 7, 8), false);
+		yield return () => (new UInt512(1, 2, 3, 4, 5, 6, 7, 8), new UInt512(1, 2, 1, 4, 5, 6, 7, 8), true);
+		yield return () => (new UInt512(1, 2, 3, 4, 5, 6, 7, 8), new UInt512(1, 3, 3, 4, 5, 6, 7, 8), false);
+		yield return () => (new UInt512(1, 2, 3, 4, 5, 6, 7, 8), new UInt512(0, 2, 3, 4, 5, 6, 7, 8), true);
+		yield return () => (new UInt512(1, 2, 3, 4, 5, 6, 7, 9), new UInt512(1, 2, 3, 4, 5, 6, 7, 8), true);
+		yield return () => (new UInt512(1, 2, 3, 4, 5, 6, 5, 8), new UInt512(1, 2, 3, 4, 5, 6, 7, 8), false);
+		yield return () => (new UInt512(1, 2, 3, 4, 5, 7, 7, 8), new UInt512(1, 2, 3, 4, 5, 6, 7, 8), true);
+		yield return () => (new UInt512(1, 2, 3, 4, 4, 6, 7, 8), new UInt512(1, 2, 3, 4, 5, 6, 7, 8), false);
+		yield return () => (new UInt512(1, 2, 3, 5, 5, 6, 7, 8), new UInt512(1, 2, 3, 4, 5, 6, 7, 8), true);
+		yield return () => (new UInt512(1, 2, 1, 4, 5, 6, 7, 8), new UInt512(1, 2, 3, 4, 5, 6, 7, 8), false);
+		yield return () => (new UInt512(1, 3, 3, 4, 5, 6, 7, 8), new UInt512(1, 2, 3, 4, 5, 6, 7, 8), true);
+		yield return () => (new UInt512(0, 2, 3, 4, 5, 6, 7, 8), new UInt512(1, 2, 3, 4, 5, 6, 7, 8), false);
 	}
 
 	public static IEnumerable<Func<(UInt512, UInt512, bool)>> op_LessThanOrEqualTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (UInt512.Zero, UInt512.Zero, true);
+		yield return () => (new UInt512(1, 2, 3, 4, 5, 6, 7, 8), new UInt512(1, 2, 3, 4, 5, 6, 7, 8), true);
+		yield return () => (new UInt512(1, 2, 3, 4, 5, 6, 7, 8), new UInt512(1, 2, 3, 4, 5, 6, 7, 9), true);
+		yield return () => (new UInt512(1, 2, 3, 4, 5, 6, 7, 8), new UInt512(1, 2, 3, 4, 5, 6, 5, 8), false);
+		yield return () => (new UInt512(1, 2, 3, 4, 5, 6, 7, 8), new UInt512(1, 2, 3, 4, 5, 7, 7, 8), true);
+		yield return () => (new UInt512(1, 2, 3, 4, 5, 6, 7, 8), new UInt512(1, 2, 3, 4, 4, 6, 7, 8), false);
+		yield return () => (new UInt512(1, 2, 3, 4, 5, 6, 7, 8), new UInt512(1, 2, 3, 5, 5, 6, 7, 8), true);
+		yield return () => (new UInt512(1, 2, 3, 4, 5, 6, 7, 8), new UInt512(1, 2, 1, 4, 5, 6, 7, 8), false);
+		yield return () => (new UInt512(1, 2, 3, 4, 5, 6, 7, 8), new UInt512(1, 3, 3, 4, 5, 6, 7, 8), true);
+		yield return () => (new UInt512(1, 2, 3, 4, 5, 6, 7, 8), new UInt512(0, 2, 3, 4, 5, 6, 7, 8), false);
+		yield return () => (new UInt512(1, 2, 3, 4, 5, 6, 7, 9), new UInt512(1, 2, 3, 4, 5, 6, 7, 8), false);
+		yield return () => (new UInt512(1, 2, 3, 4, 5, 6, 5, 8), new UInt512(1, 2, 3, 4, 5, 6, 7, 8), true);
+		yield return () => (new UInt512(1, 2, 3, 4, 5, 7, 7, 8), new UInt512(1, 2, 3, 4, 5, 6, 7, 8), false);
+		yield return () => (new UInt512(1, 2, 3, 4, 4, 6, 7, 8), new UInt512(1, 2, 3, 4, 5, 6, 7, 8), true);
+		yield return () => (new UInt512(1, 2, 3, 5, 5, 6, 7, 8), new UInt512(1, 2, 3, 4, 5, 6, 7, 8), false);
+		yield return () => (new UInt512(1, 2, 1, 4, 5, 6, 7, 8), new UInt512(1, 2, 3, 4, 5, 6, 7, 8), true);
+		yield return () => (new UInt512(1, 3, 3, 4, 5, 6, 7, 8), new UInt512(1, 2, 3, 4, 5, 6, 7, 8), false);
+		yield return () => (new UInt512(0, 2, 3, 4, 5, 6, 7, 8), new UInt512(1, 2, 3, 4, 5, 6, 7, 8), true);
 	}
 
 	public static IEnumerable<Func<(UInt512, UInt512, bool)>> op_LessThanTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (UInt512.Zero, UInt512.Zero, false);
+		yield return () => (new UInt512(1, 2, 3, 4, 5, 6, 7, 8), new UInt512(1, 2, 3, 4, 5, 6, 7, 8), false);
+		yield return () => (new UInt512(1, 2, 3, 4, 5, 6, 7, 8), new UInt512(1, 2, 3, 4, 5, 6, 7, 9), true);
+		yield return () => (new UInt512(1, 2, 3, 4, 5, 6, 7, 8), new UInt512(1, 2, 3, 4, 5, 6, 5, 8), false);
+		yield return () => (new UInt512(1, 2, 3, 4, 5, 6, 7, 8), new UInt512(1, 2, 3, 4, 5, 7, 7, 8), true);
+		yield return () => (new UInt512(1, 2, 3, 4, 5, 6, 7, 8), new UInt512(1, 2, 3, 4, 4, 6, 7, 8), false);
+		yield return () => (new UInt512(1, 2, 3, 4, 5, 6, 7, 8), new UInt512(1, 2, 3, 5, 5, 6, 7, 8), true);
+		yield return () => (new UInt512(1, 2, 3, 4, 5, 6, 7, 8), new UInt512(1, 2, 1, 4, 5, 6, 7, 8), false);
+		yield return () => (new UInt512(1, 2, 3, 4, 5, 6, 7, 8), new UInt512(1, 3, 3, 4, 5, 6, 7, 8), true);
+		yield return () => (new UInt512(1, 2, 3, 4, 5, 6, 7, 8), new UInt512(0, 2, 3, 4, 5, 6, 7, 8), false);
+		yield return () => (new UInt512(1, 2, 3, 4, 5, 6, 7, 9), new UInt512(1, 2, 3, 4, 5, 6, 7, 8), false);
+		yield return () => (new UInt512(1, 2, 3, 4, 5, 6, 5, 8), new UInt512(1, 2, 3, 4, 5, 6, 7, 8), true);
+		yield return () => (new UInt512(1, 2, 3, 4, 5, 7, 7, 8), new UInt512(1, 2, 3, 4, 5, 6, 7, 8), false);
+		yield return () => (new UInt512(1, 2, 3, 4, 4, 6, 7, 8), new UInt512(1, 2, 3, 4, 5, 6, 7, 8), true);
+		yield return () => (new UInt512(1, 2, 3, 5, 5, 6, 7, 8), new UInt512(1, 2, 3, 4, 5, 6, 7, 8), false);
+		yield return () => (new UInt512(1, 2, 1, 4, 5, 6, 7, 8), new UInt512(1, 2, 3, 4, 5, 6, 7, 8), true);
+		yield return () => (new UInt512(1, 3, 3, 4, 5, 6, 7, 8), new UInt512(1, 2, 3, 4, 5, 6, 7, 8), false);
+		yield return () => (new UInt512(0, 2, 3, 4, 5, 6, 7, 8), new UInt512(1, 2, 3, 4, 5, 6, 7, 8), true);
 	}
 
 	public static IEnumerable<Func<(UInt512, UInt512)>> AbsTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (UInt512.Zero, UInt512.Zero);
+		yield return () => (UInt512.One, UInt512.One);
+		yield return () => (UInt512.MaxValue, UInt512.MaxValue);
+		yield return () => (UInt512.MinValue, UInt512.MinValue);
 	}
 
 	public static IEnumerable<Func<(UInt512, bool)>> IsCanonicalTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (UInt512.Zero, true);
 	}
 
 	public static IEnumerable<Func<(UInt512, bool)>> IsComplexNumberTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (UInt512.Zero, false);
 	}
 
 	public static IEnumerable<Func<(UInt512, bool)>> IsEvenIntegerTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (UInt512.Zero, true);
+		
 	}
 
 	public static IEnumerable<Func<(UInt512, bool)>> IsFiniteTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (UInt512.Zero, true);
 	}
 
 	public static IEnumerable<Func<(UInt512, bool)>> IsImaginaryNumberTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (UInt512.Zero, false);
 	}
 
 	public static IEnumerable<Func<(UInt512, bool)>> IsInfinityTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (UInt512.Zero, false);
 	}
 
 	public static IEnumerable<Func<(UInt512, bool)>> IsIntegerTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (UInt512.Zero, true);
 	}
 
 	public static IEnumerable<Func<(UInt512, bool)>> IsNaNTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (UInt512.Zero, false);
 	}
 
 	public static IEnumerable<Func<(UInt512, bool)>> IsNegativeTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (UInt512.Zero, false);
 	}
 
 	public static IEnumerable<Func<(UInt512, bool)>> IsNegativeInfinityTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (UInt512.Zero, false);
 	}
 
 	public static IEnumerable<Func<(UInt512, bool)>> IsNormalTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (UInt512.Zero, false);
+		yield return () => (UInt512.One, true);
+		yield return () => (UInt512.MaxValue, true);
+		yield return () => (UInt512.MinValue, false);
 	}
 
 	public static IEnumerable<Func<(UInt512, bool)>> IsOddIntegerTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (UInt512.Zero, false);
+		yield return () => (UInt512.One, true);
+		yield return () => (UInt512.MaxValue, true);
+		yield return () => (UInt512.MinValue, false);
 	}
 
 	public static IEnumerable<Func<(UInt512, bool)>> IsPositiveTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (UInt512.Zero, true);
 	}
 
 	public static IEnumerable<Func<(UInt512, bool)>> IsPositiveInfinityTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (UInt512.Zero, false);
 	}
 
 	public static IEnumerable<Func<(UInt512, bool)>> IsRealNumberTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (UInt512.Zero, true);
 	}
 
 	public static IEnumerable<Func<(UInt512, bool)>> IsSubnormalTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (UInt512.Zero, false);
 	}
 
 	public static IEnumerable<Func<(UInt512, bool)>> IsZeroTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (UInt512.Zero, true);
+		yield return () => (UInt512.One, false);
+		yield return () => (UInt512.MaxValue, false);
+		yield return () => (UInt512.MinValue, true);
 	}
 
 	public static IEnumerable<Func<(UInt512, UInt512, UInt512)>> MaxMagnitudeTestData()
 	{
-		throw new NotImplementedException();
+		return MaxTestData();
 	}
 
 	public static IEnumerable<Func<(UInt512, UInt512, UInt512)>> MaxMagnitudeNumberTestData()
 	{
-		throw new NotImplementedException();
+		return MaxTestData();
 	}
 
 	public static IEnumerable<Func<(UInt512, UInt512, UInt512)>> MinMagnitudeTestData()
 	{
-		throw new NotImplementedException();
+		return MinTestData();
 	}
 
 	public static IEnumerable<Func<(UInt512, UInt512, UInt512)>> MinMagnitudeNumberTestData()
 	{
-		throw new NotImplementedException();
+		return MinTestData();
 	}
 
 	public static IEnumerable<Func<(UInt512, UInt512, UInt512, UInt512)>> MultiplyAddEstimateTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (UInt512.Zero, UInt512.Zero, UInt512.Zero, UInt512.Zero);
+		yield return () => (UInt512.Zero, UInt512.Zero, UInt512.One, UInt512.One);
 	}
 
 	public static IEnumerable<Func<(string, NumberStyles, IFormatProvider?, UInt512)>> ParseTestData()
@@ -584,11 +711,11 @@ public class UInt512DataSources
 	{
 		yield return () => ("0", NumberStyles.Integer, CultureInfo.InvariantCulture, true, UInt512.Zero);
 		yield return () => ("1", NumberStyles.Integer, CultureInfo.InvariantCulture, true, UInt512.One);
-		yield return () => ("4294967296", NumberStyles.Integer, CultureInfo.InvariantCulture, true, new UInt512(0, 0, 0, 4294967296));
-		yield return () => ("18446744073709551616", NumberStyles.Integer, CultureInfo.InvariantCulture, true, new UInt512(0, 0, 1, 0));
-		yield return () => ("340282366920938463463374607431768211456", NumberStyles.Integer, CultureInfo.InvariantCulture, true, new UInt512(0, 1, 0, 0));
-		yield return () => ("6277101735386680763835789423207666416102355444464034512896", NumberStyles.Integer, CultureInfo.InvariantCulture, true, new UInt512(1, 0, 0, 0));
-		yield return () => ("115792089237316195423570985008687907853269984665640564039457584007913129639936", NumberStyles.Integer, CultureInfo.InvariantCulture, false, new UInt512(0, 0, 0, 1, 0, 0, 0, 0));
+		yield return () => ("4294967296", NumberStyles.Integer, CultureInfo.InvariantCulture, true, new UInt512(0, 0, 0, 0, 0, 0, 0, 4294967296));
+		yield return () => ("18446744073709551616", NumberStyles.Integer, CultureInfo.InvariantCulture, true, new UInt512(0, 0, 0, 0, 0, 0, 1, 0));
+		yield return () => ("340282366920938463463374607431768211456", NumberStyles.Integer, CultureInfo.InvariantCulture, true, new UInt512(0, 0, 0, 0, 0, 1, 0, 0));
+		yield return () => ("6277101735386680763835789423207666416102355444464034512896", NumberStyles.Integer, CultureInfo.InvariantCulture, true, new UInt512(0, 0, 0, 0, 1, 0, 0, 0));
+		yield return () => ("115792089237316195423570985008687907853269984665640564039457584007913129639936", NumberStyles.Integer, CultureInfo.InvariantCulture, true, new UInt512(0, 0, 0, 1, 0, 0, 0, 0));
 		yield return () => ("13407807929942597099574024998205846127479365820592393377723561443721764030073546976801874298166903427690031858186486050853753882811946569946433649006084095", NumberStyles.Integer, CultureInfo.InvariantCulture, true, UInt512.MaxValue);
 		yield return () => ("-1", NumberStyles.Integer, CultureInfo.InvariantCulture, false, default);
 		yield return () => ("2.25", NumberStyles.Integer, CultureInfo.InvariantCulture, false, default);
@@ -600,11 +727,11 @@ public class UInt512DataSources
 	{
 		yield return () => ("0".ToCharArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, true, UInt512.Zero);
 		yield return () => ("1".ToCharArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, true, UInt512.One);
-		yield return () => ("4294967296".ToCharArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, true, new UInt512(0, 0, 0, 4294967296));
-		yield return () => ("18446744073709551616".ToCharArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, true, new UInt512(0, 0, 1, 0));
-		yield return () => ("340282366920938463463374607431768211456".ToCharArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, true, new UInt512(0, 1, 0, 0));
-		yield return () => ("6277101735386680763835789423207666416102355444464034512896".ToCharArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, true, new UInt512(1, 0, 0, 0));
-		yield return () => ("115792089237316195423570985008687907853269984665640564039457584007913129639936".ToCharArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, false, new UInt512(0, 0, 0, 1, 0, 0, 0, 0));
+		yield return () => ("4294967296".ToCharArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, true, new UInt512(0, 0, 0, 0, 0, 0, 0, 4294967296));
+		yield return () => ("18446744073709551616".ToCharArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, true, new UInt512(0, 0, 0, 0, 0, 0, 1, 0));
+		yield return () => ("340282366920938463463374607431768211456".ToCharArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, true, new UInt512(0, 0, 0, 0, 0, 1, 0, 0));
+		yield return () => ("6277101735386680763835789423207666416102355444464034512896".ToCharArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, true, new UInt512(0, 0, 0, 0, 1, 0, 0, 0));
+		yield return () => ("115792089237316195423570985008687907853269984665640564039457584007913129639936".ToCharArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, true, new UInt512(0, 0, 0, 1, 0, 0, 0, 0));
 		yield return () => ("13407807929942597099574024998205846127479365820592393377723561443721764030073546976801874298166903427690031858186486050853753882811946569946433649006084095".ToCharArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, true, UInt512.MaxValue);
 		yield return () => ("-1".ToCharArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, false, default);
 		yield return () => ("2.25".ToCharArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, false, default);
@@ -616,11 +743,11 @@ public class UInt512DataSources
 	{
 		yield return () => ("0"u8.ToArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, true, UInt512.Zero);
 		yield return () => ("1"u8.ToArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, true, UInt512.One);
-		yield return () => ("4294967296"u8.ToArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, true, new UInt512(0, 0, 0, 4294967296));
-		yield return () => ("18446744073709551616"u8.ToArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, true, new UInt512(0, 0, 1, 0));
-		yield return () => ("340282366920938463463374607431768211456"u8.ToArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, true, new UInt512(0, 1, 0, 0));
-		yield return () => ("6277101735386680763835789423207666416102355444464034512896"u8.ToArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, true, new UInt512(1, 0, 0, 0));
-		yield return () => ("115792089237316195423570985008687907853269984665640564039457584007913129639936"u8.ToArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, false, new UInt512(0, 0, 0, 1, 0, 0, 0, 0));
+		yield return () => ("4294967296"u8.ToArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, true, new UInt512(0, 0, 0, 0, 0, 0, 0, 4294967296));
+		yield return () => ("18446744073709551616"u8.ToArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, true, new UInt512(0, 0, 0, 0, 0, 0, 1, 0));
+		yield return () => ("340282366920938463463374607431768211456"u8.ToArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, true, new UInt512(0, 0, 0, 0, 0, 1, 0, 0));
+		yield return () => ("6277101735386680763835789423207666416102355444464034512896"u8.ToArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, true, new UInt512(0, 0, 0, 0, 1, 0, 0, 0));
+		yield return () => ("115792089237316195423570985008687907853269984665640564039457584007913129639936"u8.ToArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, true, new UInt512(0, 0, 0, 1, 0, 0, 0, 0));
 		yield return () => ("13407807929942597099574024998205846127479365820592393377723561443721764030073546976801874298166903427690031858186486050853753882811946569946433649006084095"u8.ToArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, true, UInt512.MaxValue);
 		yield return () => ("-1"u8.ToArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, false, default);
 		yield return () => ("2.25"u8.ToArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, false, default);
@@ -630,12 +757,17 @@ public class UInt512DataSources
 
 	public static IEnumerable<Func<(UInt512, UInt512, UInt512, UInt512)>> ClampTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (new UInt512(0, 0, 0, 0, 0, 0, 0, 15), new UInt512(0, 0, 0, 0, 0, 0, 0, 10), new UInt512(0, 0, 0, 0, 0, 0, 0, 20), new UInt512(0, 0, 0, 0, 0, 0, 0, 15));
+		yield return () => (new UInt512(0, 0, 0, 0, 0, 0, 0, 10), new UInt512(0, 0, 0, 0, 0, 0, 0, 10), new UInt512(0, 0, 0, 0, 0, 0, 0, 20), new UInt512(0, 0, 0, 0, 0, 0, 0, 10));
+		yield return () => (new UInt512(0, 0, 0, 0, 0, 0, 0, 20), new UInt512(0, 0, 0, 0, 0, 0, 0, 10), new UInt512(0, 0, 0, 0, 0, 0, 0, 20), new UInt512(0, 0, 0, 0, 0, 0, 0, 20));
+		yield return () => (new UInt512(0, 0, 0, 0, 0, 0, 0, 05), new UInt512(0, 0, 0, 0, 0, 0, 0, 10), new UInt512(0, 0, 0, 0, 0, 0, 0, 20), new UInt512(0, 0, 0, 0, 0, 0, 0, 10));
+		yield return () => (new UInt512(0, 0, 0, 0, 0, 0, 0, 25), new UInt512(0, 0, 0, 0, 0, 0, 0, 10), new UInt512(0, 0, 0, 0, 0, 0, 0, 20), new UInt512(0, 0, 0, 0, 0, 0, 0, 20));
+		yield return () => (new UInt512(0, 0, 0, 0, 0, 0, 0, 25), new UInt512(0, 0, 0, 0, 0, 0, 0, 30), new UInt512(0, 0, 0, 0, 0, 0, 0, 20), default);
 	}
 
 	public static IEnumerable<Func<(UInt512, UInt512, UInt512)>> CopySignTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (UInt512.MaxValue, UInt512.MaxValue, UInt512.MaxValue);
 	}
 
 	public static IEnumerable<Func<(UInt512, UInt512, UInt512)>> MaxTestData()
@@ -645,7 +777,7 @@ public class UInt512DataSources
 
 	public static IEnumerable<Func<(UInt512, UInt512, UInt512)>> MaxNumberTestData()
 	{
-		throw new NotImplementedException();
+		return MaxTestData();
 	}
 
 	public static IEnumerable<Func<(UInt512, UInt512, UInt512)>> MinTestData()
@@ -655,7 +787,7 @@ public class UInt512DataSources
 
 	public static IEnumerable<Func<(UInt512, UInt512, UInt512)>> MinNumberTestData()
 	{
-		throw new NotImplementedException();
+		return MinTestData();
 	}
 
 	public static IEnumerable<Func<(UInt512, int)>> SignTestData()
