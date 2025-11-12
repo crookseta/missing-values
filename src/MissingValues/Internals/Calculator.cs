@@ -78,7 +78,7 @@ internal static class Calculator
 		if (X86Base.X64.IsSupported)
 		{
 			ulong highRes = 0ul;
-			ulong remainder = (ulong)(left >> 64);
+			ulong remainder = left.Upper;
             
 #pragma warning disable SYSLIB5004
 			if (remainder >= right)
@@ -101,7 +101,7 @@ internal static class Calculator
 		if (X86Base.X64.IsSupported)
 		{
 			ulong highRes = 0ul;
-			ulong remainder = (ulong)(left >> 64);
+			ulong remainder = left.Upper;
             
 #pragma warning disable SYSLIB5004
 			if (remainder >= right)

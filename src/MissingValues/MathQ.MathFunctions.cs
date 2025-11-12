@@ -1528,12 +1528,12 @@ namespace MissingValues
 			{ // Scale up x
 				x *= new Quad(0x4070_0000_0000_0000, 0x0000_0000_0000_0000);
 				k = -16383 - 113;
-				lx = (ulong)(x.TrailingSignificand >> 64);
+				lx = x.TrailingSignificand.Upper;
 				hx = x.BiasedExponent;
 			}
 			else
 			{
-				lx = (ulong)(x.TrailingSignificand >> 64);
+				lx = x.TrailingSignificand.Upper;
 			}
 
 			k += hx | (Quad.IsNegative(x) ? 1 << 15 : 0);
@@ -2271,7 +2271,7 @@ namespace MissingValues
 				lastBitMask64 = (ulong)1 << (0x402F - biasedExponent);
 				roundBitsMask = lastBitMask64 - 1;
 				uiZ += new UInt128(lastBitMask64 >> 1, 0);
-				if ((((ulong)(uiZ >> 64) & roundBitsMask) | (ulong)bits) == 0)
+				if ((((uiZ.Upper) & roundBitsMask) | (ulong)bits) == 0)
 				{
 					uiZ &= new UInt128(~lastBitMask64, 0xFFFF_FFFF_FFFF_FFFF);
 				}
@@ -2651,7 +2651,7 @@ namespace MissingValues
 				term += (ulong)q << 6;
 				term *= q;
 				rem = y - term;
-				if (((ulong)(rem >> 64) & 0x8000_0000_0000_0000) == 0)
+				if ((rem.Upper & 0x8000_0000_0000_0000) == 0)
 				{
 					break;
 				}
@@ -2672,8 +2672,8 @@ namespace MissingValues
 				y |= sigZExtra >> 58;
 				term = y - q;
 				y = BitHelper.Mul64ByShifted32To128((ulong)term, q);
-				term = BitHelper.Mul64ByShifted32To128((ulong)(term >> 64), q);
-				term += (y >> 64);
+				term = BitHelper.Mul64ByShifted32To128(term.Upper, q);
+				term += y.Upper;
 				rem <<= 20;
 				term -= rem;
 				/*

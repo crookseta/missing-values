@@ -1417,7 +1417,7 @@ namespace MissingValues
 			}
 
 			sig <<= 14;
-			ulong sigQuad = (ulong)(sig >> 64) | ((ulong)sig != 0 ? 1UL : 0UL);
+			ulong sigQuad = sig.Upper | ((ulong)sig != 0 ? 1UL : 0UL);
 
 			if (((uint)exp | sigQuad) == 0)
 			{
@@ -1450,7 +1450,7 @@ namespace MissingValues
 				return sign ? float.NegativeInfinity : float.PositiveInfinity;
 			}
 
-			uint sigQuad = (uint)BitHelper.ShiftRightJam((ulong)((sig >> 64) | ((ulong)sig != 0 ? 1UL : 0UL)), 18);
+			uint sigQuad = (uint)BitHelper.ShiftRightJam((sig.Upper | ((ulong)sig != 0 ? 1UL : 0UL)), 18);
 
 			if (((uint)exp | sigQuad) == 0)
 			{
@@ -1483,7 +1483,7 @@ namespace MissingValues
 				return sign ? Half.NegativeInfinity : Half.PositiveInfinity;
 			}
 
-			ushort sigHalf = (ushort)BitHelper.ShiftRightJam((ulong)((sig >> 64) | ((ulong)sig != 0 ? 1UL : 0UL)), 34);
+			ushort sigHalf = (ushort)BitHelper.ShiftRightJam(((sig.Upper) | ((ulong)sig != 0 ? 1UL : 0UL)), 34);
 
 			if (((uint)exp | sigHalf) == 0)
 			{

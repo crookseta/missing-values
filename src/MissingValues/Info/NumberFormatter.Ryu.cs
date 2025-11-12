@@ -252,7 +252,7 @@ internal static partial class NumberFormatter
 					ReadOnlySpan<ulong> a =
 					[
 						(ulong)mm,
-						(ulong)(mm >> 64)
+						mm.Upper
 					];
 					Span<ulong> result = stackalloc ulong[4];
 					Mul128To256Shift(a, mul, j, 0, result);
@@ -797,9 +797,9 @@ internal static partial class NumberFormatter
 			}
 
 			result[0] = (ulong)r0;
-			result[1] = (ulong)(r0 >> 64);
+			result[1] = (ulong)r0.Upper;
 			result[2] = (ulong)r1;
-			result[3] = (ulong)(r1 >> 64);
+			result[3] = (ulong)r1.Upper;
 		}
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		private static void Mul256To512Shift(ReadOnlySpan<ulong> a, ReadOnlySpan<ulong> b, int shift, uint corr, Span<ulong> result)
