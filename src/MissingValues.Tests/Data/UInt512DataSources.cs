@@ -792,7 +792,8 @@ public class UInt512DataSources
 
 	public static IEnumerable<Func<(UInt512, int)>> SignTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (UInt512.MaxValue, 1);
+		yield return () => (UInt512.Zero, 0);
 	}
 
 	public static IEnumerable<Func<(UInt512, bool)>> IsPow2TestData()
