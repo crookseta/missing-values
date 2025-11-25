@@ -928,7 +928,7 @@ namespace MissingValues
 		{
 			if (value.Upper == UInt128.Zero)
 			{
-				return NumberFormatter.CountDigits(value.Lower);
+				return UInt128.CountDigits(value.Lower);
 			}
 			
 			return BitHelper.Log10(in value) + 1;

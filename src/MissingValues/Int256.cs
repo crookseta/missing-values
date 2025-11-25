@@ -80,8 +80,12 @@ namespace MissingValues
 		/// Initializes a new instance of the <see cref="Int256" /> struct.
 		/// </summary>
 		/// <param name="lower">The lower 128-bits of the 256-bit value.</param>
-		public Int256(UInt128 lower) : this(UInt128.Zero, lower)
+		public Int256(UInt128 lower)
 		{
+			_p0 = lower.Lower;
+			_p1 = lower.Upper;
+			_p2 = 0;
+			_p3 = 0;
 		}
 		/// <summary>
 		/// Initializes a new instance of the <see cref="Int256" /> struct.
@@ -90,10 +94,10 @@ namespace MissingValues
 		/// <param name="lower">The lower 128-bits of the 256-bit value.</param>
 		public Int256(UInt128 upper, UInt128 lower)
 		{
-			_p0 = (ulong)lower;
-			_p1 = (ulong)(lower >> 64);
-			_p2 = (ulong)upper;
-			_p3 = (ulong)(upper >> 64);
+			_p0 = lower.Lower;
+			_p1 = lower.Upper;
+			_p2 = upper.Lower;
+			_p3 = upper.Upper;
 		}
 
 		/// <inheritdoc/>
