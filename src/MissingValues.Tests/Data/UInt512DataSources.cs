@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -772,7 +773,13 @@ public class UInt512DataSources
 
 	public static IEnumerable<Func<(UInt512, UInt512, UInt512)>> MaxTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (UInt512.One, UInt512.One, UInt512.One);
+		yield return () => (UInt512.MinValue, UInt512.MaxValue, UInt512.MaxValue);
+		yield return () => (new UInt512(0, 0, 0, 0, 0, 0, 0, ulong.MaxValue), UInt512.MaxValue, UInt512.MaxValue);
+		yield return () => (new UInt512(0, 0, 0, 0, 0, 0, ulong.MaxValue, ulong.MaxValue), new UInt512(0, 0, 0, 0, 0, 0, 0, ulong.MaxValue), new UInt512(0, 0, 0, 0, 0, 0, ulong.MaxValue, ulong.MaxValue));
+		yield return () => (new UInt512(0, 0, 0, 0, 0, 1, ulong.MaxValue, ulong.MaxValue), new UInt512(0, 0, 0, 0, 0, 0, ulong.MaxValue, ulong.MaxValue), new UInt512(0, 0, 0, 0, 0, 1, ulong.MaxValue, ulong.MaxValue));
+		yield return () => (new UInt512(0, 0, 0, 0, 0, 1, 0, 0), new UInt512(0, 0, 0, 0, 0, 0, ulong.MaxValue, ulong.MaxValue), new UInt512(0, 0, 0, 0, 0, 1, 0, 0));
+		yield return () => (new UInt512(1, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue), new UInt512(0, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue), new UInt512(1, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue));
 	}
 
 	public static IEnumerable<Func<(UInt512, UInt512, UInt512)>> MaxNumberTestData()
@@ -782,7 +789,13 @@ public class UInt512DataSources
 
 	public static IEnumerable<Func<(UInt512, UInt512, UInt512)>> MinTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (UInt512.One, UInt512.One, UInt512.One);
+		yield return () => (UInt512.MinValue, UInt512.MaxValue, UInt512.MinValue);
+		yield return () => (new UInt512(0, 0, 0, 0, 0, 0, 0, ulong.MaxValue), UInt512.MaxValue, new UInt512(0, 0, 0, 0, 0, 0, 0, ulong.MaxValue));
+		yield return () => (new UInt512(0, 0, 0, 0, 0, 0, ulong.MaxValue, ulong.MaxValue), new UInt512(0, 0, 0, 0, 0, 0, 0, ulong.MaxValue), new UInt512(0, 0, 0, 0, 0, 0, 0, ulong.MaxValue));
+		yield return () => (new UInt512(0, 0, 0, 0, 0, 1, ulong.MaxValue, ulong.MaxValue), new UInt512(0, 0, 0, 0, 0, 0, ulong.MaxValue, ulong.MaxValue), new UInt512(0, 0, 0, 0, 0, 0, ulong.MaxValue, ulong.MaxValue));
+		yield return () => (new UInt512(0, 0, 0, 0, 0, 1, 0, 0), new UInt512(0, 0, 0, 0, 0, 0, ulong.MaxValue, ulong.MaxValue), new UInt512(0, 0, 0, 0, 0, 0, ulong.MaxValue, ulong.MaxValue));
+		yield return () => (new UInt512(1, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue), new UInt512(0, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue), new UInt512(0, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue));
 	}
 
 	public static IEnumerable<Func<(UInt512, UInt512, UInt512)>> MinNumberTestData()
@@ -798,12 +811,32 @@ public class UInt512DataSources
 
 	public static IEnumerable<Func<(UInt512, bool)>> IsPow2TestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (new UInt512(0, 0, 0, 0, 0, 0, 0, 1), true);
+		yield return () => (new UInt512(0, 0, 0, 0, 0, 0, 0, 2), true);
+		yield return () => (new UInt512(0, 0, 0, 0, 0, 0, 0, 4), true);
+		yield return () => (new UInt512(0, 0, 0, 0, 0, 0, 0, 8), true);
+		yield return () => (new UInt512(0, 0, 0, 0, 0, 0, 0, 16), true);
+		yield return () => (new UInt512(0, 0, 0, 0, 0, 0, 0, 1UL << 63), true);
+		yield return () => (new UInt512(0, 0, 0, 0, 1UL << 63, 0, 0, 0), true);
+		yield return () => (new UInt512(1UL << 63, 0, 0, 0, 0, 0, 0, 0), true);
+		yield return () => (UInt512.Zero, false);
+		yield return () => (new UInt512(0, 0, 0, 0, 0, 0, 0, 3), false);
+		yield return () => (UInt512.MaxValue, false);
 	}
 
 	public static IEnumerable<Func<(UInt512, UInt512)>> Log2TestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (new UInt512(0, 0, 0, 0, 0, 0, 0, 1), new UInt512(0, 0, 0, 0, 0, 0, 0, 0));
+		yield return () => (new UInt512(0, 0, 0, 0, 0, 0, 0, 2), new UInt512(0, 0, 0, 0, 0, 0, 0, 1));
+		yield return () => (new UInt512(0, 0, 0, 0, 0, 0, 0, 4), new UInt512(0, 0, 0, 0, 0, 0, 0, 2));
+		yield return () => (new UInt512(0, 0, 0, 0, 0, 0, 0, 8), new UInt512(0, 0, 0, 0, 0, 0, 0, 3));
+		yield return () => (new UInt512(0, 0, 0, 0, 0, 0, 0, 1UL << 63), new UInt512(0, 0, 0, 0, 0, 0, 0, 63));
+		yield return () => (new UInt512(0, 0, 0, 0, 0, 0, 1UL << 5, 0), new UInt512(0, 0, 0, 0, 0, 0, 0, 69));
+		yield return () => (new UInt512(0, 0, 0, 0, 0, 1UL << 42, 0, 0), new UInt512(0, 0, 0, 0, 0, 0, 0, 170));
+		yield return () => (new UInt512(0, 0, 0, 0, 1UL << 13, 0, 0, 0), new UInt512(0, 0, 0, 0, 0, 0, 0, 205));
+		yield return () => (new UInt512(0, 0, 0, 0, 1UL << 63, 0, 0, 0), new UInt512(0, 0, 0, 0, 0, 0, 0, 255));
+		yield return () => (new UInt512(1UL << 63, 0, 0, 0, 0, 0, 0, 0), new UInt512(0, 0, 0, 0, 0, 0, 0, 511));
+		yield return () => (new UInt512(0, 0, 0, 0, 0, 0, 0, 0), new UInt512(0, 0, 0, 0, 0, 0, 0, 0));
 	}
 
 	public static IEnumerable<Func<(UInt512, UInt512, (UInt512, UInt512))>> DivRemTestData()
@@ -823,12 +856,54 @@ public class UInt512DataSources
 
 	public static IEnumerable<Func<(byte[], bool, UInt512)>> ReadBigEndianTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => ([], true, UInt512.Zero);
+		yield return () => ([0x01], true, UInt512.One);
+		yield return () =>
+		{
+			byte[] array = new byte[64];
+			Array.Fill(array, byte.MaxValue);
+			return (array, true, UInt512.MaxValue);
+		};
+		yield return () =>
+		{
+			byte[] array = new byte[67];
+			for (int i = 3; i < 67; i++)
+				array[i] = byte.MaxValue;
+			return (array, true, UInt512.MaxValue);
+		};
+		yield return () => ([0x12, 0x34], true, new UInt512(0, 0, 0, 0, 0, 0, 0, 0x1234));
+		yield return () =>
+		{
+			byte[] array = new byte[64];
+			array[0] = 0x80;
+			return (array, true, new UInt512(1UL << 63, 0, 0, 0, 0, 0, 0, 0));
+		};
 	}
 
 	public static IEnumerable<Func<(byte[], bool, UInt512)>> ReadLittleEndianTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => ([], true, UInt512.Zero);
+		yield return () => ([0x01], true, UInt512.One);
+		yield return () =>
+		{
+			byte[] array = new byte[64];
+			Array.Fill(array, byte.MaxValue);
+			return (array, true, UInt512.MaxValue);
+		};
+		yield return () =>
+		{
+			byte[] array = new byte[67];
+			for (int i = 0; i < 64; i++)
+				array[i] = byte.MaxValue;
+			return (array, true, UInt512.MaxValue);
+		};
+		yield return () => ([0x34, 0x12], true, new UInt512(0, 0, 0, 0, 0, 0, 0, 0x1234));
+		yield return () =>
+		{
+			byte[] array = new byte[64];
+			array[63] = 0x80;
+			return (array, true, new UInt512(1UL << 63, 0, 0, 0, 0, 0, 0, 0));
+		};
 	}
 
 	public static IEnumerable<Func<(UInt512, int, UInt512)>> RotateLeftTestData()
@@ -848,12 +923,16 @@ public class UInt512DataSources
 
 	public static IEnumerable<Func<(UInt512, int)>> GetByteCountTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (new UInt512(0, 0, 0, 0, 0, 0, 0, 0), Unsafe.SizeOf<UInt512>());
 	}
 
 	public static IEnumerable<Func<(UInt512, int)>> GetShortestBitLengthTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (new UInt512(0, 0, 0, 0, 0, 0, 0, 0), 0);
+		yield return () => (new UInt512(0, 0, 0, 0, 0, 0, 0, 1), 1);
+		yield return () => (new UInt512(0, 0, 0, 0, 1, 0, 0, 0), 193);
+		yield return () => (new UInt512(1, 0, 0, 0, 0, 0, 0, 0), 449);
+		yield return () => (UInt512.MaxValue, 512);
 	}
 
 	public static IEnumerable<Func<(UInt512, byte[], int)>> WriteBigEndianTestData()
