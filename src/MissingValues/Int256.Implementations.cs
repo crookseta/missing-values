@@ -88,8 +88,38 @@ namespace MissingValues
 		/// <inheritdoc/>
 		public static (Int256 Quotient, Int256 Remainder) DivRem(Int256 left, Int256 right)
 		{
-			Int256 quotient = left / right;
-			return (quotient, left - (quotient * right));
+			DivRem(in left, in right, out Int256 quotient, out Int256 remainder);
+			return (quotient, remainder);
+		}
+
+		private static void DivRem(in Int256 left, in Int256 right, out Int256 quotient, out Int256 remainder)
+		{
+			if (right == NegativeOne && left == MinValue)
+			{
+				Thrower.ArithmeticOverflow(Thrower.ArithmeticOperation.Division);
+			}
+
+			// We simplify the logic here by just doing unsigned division on the
+			// two's complement representation and then taking the correct sign.
+
+			ulong sign = (left._p3 ^ right._p3) & (1UL << 63);
+
+			UInt256.DivRem(
+				(UInt256)((long)left._p3 < 0 ? (~left + One) : left),
+				(UInt256)((long)right._p3 < 0 ? (~right + One) : right),
+				out UInt256 quo,
+				out UInt256 rem);
+			
+			if (sign != 0)
+			{
+				quotient = unchecked((Int256)(~quo + UInt256.One));
+				remainder = unchecked((Int256)(~rem + UInt256.One));
+			}
+			else
+			{
+				quotient = unchecked((Int256)quo);
+				remainder = unchecked((Int256)rem);
+			}
 		}
 
 		static bool INumberBase<Int256>.IsCanonical(Int256 value) => true;
@@ -1199,7 +1229,7 @@ namespace MissingValues
 		{
 			Int256 upper = BigMul(left, right, out Int256 lower);
 
-			if (((upper != 0) || (lower < 0)) && ((~upper != 0) || (lower >= 0)))
+			if (((upper != Zero) || (lower < Zero)) && ((~upper != Zero) || (lower >= Zero)))
 			{
 				// The upper bits can safely be either Zero or AllBitsSet
 				// where the former represents a positive value and the
@@ -1223,43 +1253,15 @@ namespace MissingValues
 		/// <inheritdoc/>
 		public static Int256 operator /(in Int256 left, in Int256 right)
 		{
-			if (right == NegativeOne && left == MinValue)
-			{
-				Thrower.ArithmeticOverflow(Thrower.ArithmeticOperation.Division);
-			}
-
-			// We simplify the logic here by just doing unsigned division on the
-			// two's complement representation and then taking the correct sign.
-
-			ulong sign = (left._p3 ^ right._p3) & (1UL << 63);
-
-			Int256 a = left, b = right;
-
-			if ((long)left._p3 < 0)
-			{
-				a = ~left + One;
-			}
-
-			if ((long)right._p3 < 0)
-			{
-				b = ~right + One;
-			}
-
-			UInt256 result = (UInt256)(a) / (UInt256)(b);
-
-			if (sign != 0)
-			{
-				result = ~result + UInt256.One;
-			}
-
-			return unchecked((Int256)result);
+			DivRem(in left, in right, out Int256 quotient, out _);
+			return quotient;
 		}
 
 		/// <inheritdoc/>
 		public static Int256 operator %(in Int256 left, in Int256 right)
 		{
-			Int256 quotient = left / right;
-			return left - (quotient * right);
+			DivRem(in left, in right, out _, out Int256 remainder);
+			return remainder;
 		}
 
 		/// <inheritdoc/>

@@ -204,8 +204,38 @@ namespace MissingValues
 		/// <inheritdoc/>
 		public static (Int512 Quotient, Int512 Remainder) DivRem(Int512 left, Int512 right)
 		{
-			Int512 quotient = left / right;
-			return (quotient, left - (quotient * right));
+			DivRem(in left, in right, out Int512 quotient, out Int512 remainder);
+			return (quotient, remainder);
+		}
+		
+		private static void DivRem(in Int512 left, in Int512 right, out Int512 quotient, out Int512 remainder)
+		{
+			if (right == NegativeOne && left == MinValue)
+			{
+				Thrower.ArithmeticOverflow(Thrower.ArithmeticOperation.Division);
+			}
+
+			// We simplify the logic here by just doing unsigned division on the
+			// two's complement representation and then taking the correct sign.
+
+			ulong sign = (left._p7 ^ right._p7) & (1UL << 63);
+
+			UInt512.DivRem(
+				(UInt512)((long)left._p7 < 0 ? (~left + One) : left),
+				(UInt512)((long)right._p7 < 0 ? (~right + One) : right),
+				out UInt512 quo,
+				out UInt512 rem);
+			
+			if (sign != 0)
+			{
+				quotient = unchecked((Int512)(~quo + UInt512.One));
+				remainder = unchecked((Int512)(~rem + UInt512.One));
+			}
+			else
+			{
+				quotient = unchecked((Int512)quo);
+				remainder = unchecked((Int512)rem);
+			}
 		}
 
 		/// <inheritdoc/>
@@ -1229,7 +1259,7 @@ namespace MissingValues
 		{
 			Int512 upper = BigMul(left, right, out Int512 lower);
 
-			if (((upper != 0) || (lower < 0)) && ((~upper != 0) || (lower >= 0)))
+			if (((upper != Zero) || (lower < Zero)) && ((~upper != Zero) || (lower >= Zero)))
 			{
 				// The upper bits can safely be either Zero or AllBitsSet
 				// where the former represents a positive value and the
@@ -1253,43 +1283,15 @@ namespace MissingValues
 		/// <inheritdoc/>
 		public static Int512 operator /(in Int512 left, in Int512 right)
 		{
-			if (right == NegativeOne && (left == MinValue))
-			{
-				Thrower.ArithmeticOverflow(Thrower.ArithmeticOperation.Division);
-			}
-
-			// We simplify the logic here by just doing unsigned division on the
-			// two's complement representation and then taking the correct sign.
-
-			ulong sign = (left._p7 ^ right._p7) & (1UL << 63);
-
-			Int512 a = left, b = right;
-
-			if ((long)left._p7 < 0)
-			{
-				a = ~left + One;
-			}
-
-			if ((long)right._p7 < 0)
-			{
-				b = ~right + One;
-			}
-
-			UInt512 result = (UInt512)(a) / (UInt512)(b);
-
-			if (sign != 0)
-			{
-				result = ~result + UInt512.One;
-			}
-
-			return unchecked((Int512)result);
+			DivRem(in left, in right, out Int512 quotient, out _);
+			return quotient;
 		}
 
 		/// <inheritdoc/>
 		public static Int512 operator %(in Int512 left, in Int512 right)
 		{
-			Int512 quotient = left / right;
-			return left - (quotient * right);
+			DivRem(in left, in right, out _, out Int512 remainder);
+			return remainder;
 		}
 
 		/// <inheritdoc/>
