@@ -851,7 +851,13 @@ public class UInt512DataSources
 
 	public static IEnumerable<Func<(UInt512, UInt512)>> PopCountTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (new UInt512(0, 0, 0, 0, 0, 0, 0, 0), new UInt512(0, 0, 0, 0, 0, 0, 0, 0));
+		yield return () => (new UInt512(0, 0, 0, 0, 0, 0, 0, 1), new UInt512(0, 0, 0, 0, 0, 0, 0, 1));
+		yield return () => (UInt512.MaxValue, new UInt512(0, 0, 0, 0, 0, 0, 0, 512));
+		yield return () => (new UInt512(ulong.MaxValue, 0, 0, 0, 0, 0, 0, 0), new UInt512(0, 0, 0, 0, 0, 0, 0, 64));
+		yield return () => (new UInt512(0xAAAAAAAAAAAAAAAA, 0xAAAAAAAAAAAAAAAA, 0xAAAAAAAAAAAAAAAA, 0xAAAAAAAAAAAAAAAA, 0xAAAAAAAAAAAAAAAA, 0xAAAAAAAAAAAAAAAA, 0xAAAAAAAAAAAAAAAA, 0xAAAAAAAAAAAAAAAA), new UInt512(0, 0, 0, 0, 0, 0, 0, 256));
+		yield return () => (new UInt512(0, 0, 0, 0, 1UL << 63, 1UL << 62, 1UL << 61, 1UL << 60), new UInt512(0, 0, 0, 0, 0, 0, 0, 4));
+		yield return () => (new UInt512(1UL << 63, 1UL << 62, 1UL << 61, 1UL << 60, 1UL << 59, 1UL << 58, 1UL << 57, 1UL << 56), new UInt512(0, 0, 0, 0, 0, 0, 0, 8));
 	}
 
 	public static IEnumerable<Func<(byte[], bool, UInt512)>> ReadBigEndianTestData()
@@ -937,12 +943,51 @@ public class UInt512DataSources
 
 	public static IEnumerable<Func<(UInt512, byte[], int)>> WriteBigEndianTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (new UInt512(0, 0, 0, 0, 0, 0, 0, 0), new byte[64], Unsafe.SizeOf<UInt512>());
+		yield return () =>
+		{
+			var buffer = new byte[64];
+			
+			for (int i = 0; i < 63; i++)
+				buffer[i] = 0;
+
+			buffer[63] = 1;
+			
+			return (new UInt512(0, 0, 0, 0, 0, 0, 0, 1), buffer, Unsafe.SizeOf<UInt512>());
+		};
+		yield return () =>
+		{
+			var buffer = new byte[64];
+			
+			for (int i = 0; i < 64; i++)
+				buffer[i] = 0xFF;
+			
+			return (UInt512.MaxValue, buffer, Unsafe.SizeOf<UInt512>());
+		};
 	}
 
 	public static IEnumerable<Func<(UInt512, byte[], int)>> WriteLittleEndianTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (new UInt512(0, 0, 0, 0, 0, 0, 0, 0), new byte[64], Unsafe.SizeOf<UInt512>());
+		yield return () =>
+		{
+			var buffer = new byte[64];
+			
+			buffer[0] = 1;
+			for (int i = 1; i < 64; i++)
+				buffer[i] = 0;
+			
+			return (new UInt512(0, 0, 0, 0, 0, 0, 0, 1), buffer, Unsafe.SizeOf<UInt512>());
+		};
+		yield return () =>
+		{
+			var buffer = new byte[64];
+			
+			for (int i = 0; i < 64; i++)
+				buffer[i] = 0xFF;
+			
+			return (UInt512.MaxValue, buffer, Unsafe.SizeOf<UInt512>());
+		};
 	}
 	
 	public static IEnumerable<Func<(UInt512, byte)>> ConvertToCheckedByteTestData()
