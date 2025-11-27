@@ -1,11 +1,10 @@
-﻿using MissingValues.Internals;
-using System.Buffers.Binary;
+﻿using System.Buffers.Binary;
 using System.Diagnostics;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-namespace MissingValues
+namespace MissingValues.Internals
 {
 	internal static partial class BitHelper
 	{
@@ -218,28 +217,28 @@ namespace MissingValues
 			UInt256 x = value | UInt256.One;
 			int num1 = Log2(in x) + 1;
 			int num2 = (num1 * 1233) >> 12;
-			return x < Unsafe.Add(ref Unsafe.As<ulong, UInt512>(ref MemoryMarshal.GetReference(Tables.Pow10Table64)), num2) ? num2 - 1 : num2;
+			return x < Unsafe.Add(ref Unsafe.As<ulong, UInt512>(ref MemoryMarshal.GetReference(Tables.Pow10Table)), num2) ? num2 - 1 : num2;
 		}
 		internal static int Log10(in Int256 value)
 		{
 			Int256 x = value | Int256.One;
 			int num1 = Log2(in x) + 1;
 			int num2 = (num1 * 1233) >> 12;
-			return (UInt512)x < Unsafe.Add(ref Unsafe.As<ulong, UInt512>(ref MemoryMarshal.GetReference(Tables.Pow10Table64)), num2) ? num2 - 1 : num2;
+			return (UInt512)x < Unsafe.Add(ref Unsafe.As<ulong, UInt512>(ref MemoryMarshal.GetReference(Tables.Pow10Table)), num2) ? num2 - 1 : num2;
 		}
 		internal static int Log10(in UInt512 value)
 		{
 			UInt512 x = value | UInt512.One;
 			int num1 = Log2(in x) + 1;
 			int num2 = (num1 * 1233) >> 12;
-			return x < Unsafe.Add(ref Unsafe.As<ulong, UInt512>(ref MemoryMarshal.GetReference(Tables.Pow10Table64)), num2) ? num2 - 1 : num2;
+			return x < Unsafe.Add(ref Unsafe.As<ulong, UInt512>(ref MemoryMarshal.GetReference(Tables.Pow10Table)), num2) ? num2 - 1 : num2;
 		}
 		internal static int Log10(in Int512 value)
 		{
 			Int512 x = value | Int512.One;
 			int num1 = Log2(in x) + 1;
 			int num2 = (num1 * 1233) >> 12;
-			return (UInt512)x < Unsafe.Add(ref Unsafe.As<ulong, UInt512>(ref MemoryMarshal.GetReference(Tables.Pow10Table64)), num2) ? num2 - 1 : num2;
+			return (UInt512)x < Unsafe.Add(ref Unsafe.As<ulong, UInt512>(ref MemoryMarshal.GetReference(Tables.Pow10Table)), num2) ? num2 - 1 : num2;
 		}
 
 		internal static int PopCount(in UInt256 value)
@@ -532,7 +531,7 @@ namespace MissingValues
 		/// </summary>
 		private static class Tables
 		{
-			public static ReadOnlySpan<ulong> Pow10Table64 =>
+			public static ReadOnlySpan<ulong> Pow10Table =>
 			[
 			    // 10^0
 			    0x0000000000000001, 0x0000000000000000, 0x0000000000000000, 0x0000000000000000, 0x0000000000000000, 0x0000000000000000, 0x0000000000000000, 0x0000000000000000,

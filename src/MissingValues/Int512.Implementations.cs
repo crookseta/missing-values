@@ -1253,7 +1253,7 @@ namespace MissingValues
 		/// <inheritdoc/>
 		public static Int512 operator /(in Int512 left, in Int512 right)
 		{
-			if ((right == NegativeOne) && (left.Upper == _upperMin) && (left.Lower == _lowerMin))
+			if (right == NegativeOne && (left == MinValue))
 			{
 				Thrower.ArithmeticOverflow(Thrower.ArithmeticOperation.Division);
 			}

@@ -1,13 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.CompilerServices;
+﻿using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using System.Text;
-using System.Threading.Tasks;
-using MissingValues.Internals;
 
-namespace MissingValues
+namespace MissingValues.Internals
 {
 	internal static partial class BitHelper
 	{
@@ -30,7 +24,7 @@ namespace MissingValues
 				var x = value | UInt128.One;
 				int num1 = (int)UInt128.Log2(x) + 1;
 				int num2 = (num1 * 1233) >> 12;
-				return (x < Unsafe.Add(ref MemoryMarshal.GetArrayDataReference(Tables.Pow10Table), num2) ? num2 - 1 : num2) + 1;
+				return (x < Unsafe.Add(ref Unsafe.As<ulong, UInt512>(ref MemoryMarshal.GetReference(Tables.Pow10Table)), num2) ? num2 - 1 : num2) + 1;
 			}
 			
 			#if !NET10_0_OR_GREATER

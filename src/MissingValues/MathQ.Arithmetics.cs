@@ -1,4 +1,5 @@
 ﻿using System.Runtime.CompilerServices;
+using MissingValues.Internals;
 
 namespace MissingValues
 {

@@ -1223,7 +1223,7 @@ namespace MissingValues
 		/// <inheritdoc/>
 		public static Int256 operator /(in Int256 left, in Int256 right)
 		{
-			if ((right == NegativeOne) && (left.Upper == _upperMin) && (left.Lower == _lowerMin))
+			if (right == NegativeOne && left == MinValue)
 			{
 				Thrower.ArithmeticOverflow(Thrower.ArithmeticOperation.Division);
 			}

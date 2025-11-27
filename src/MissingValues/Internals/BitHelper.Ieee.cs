@@ -1,14 +1,8 @@
-﻿using MissingValues.Internals;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
+﻿using System.Diagnostics;
 using System.Numerics;
 using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace MissingValues
+namespace MissingValues.Internals
 {
 	internal static partial class BitHelper
 	{
