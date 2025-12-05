@@ -846,7 +846,12 @@ public class UInt512DataSources
 
 	public static IEnumerable<Func<(UInt512, UInt512)>> LeadingZeroCountTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (new UInt512(0, 0, 0, 0, 0, 0, 0, 0), new UInt512(0, 0, 0, 0, 0, 0, 0, 512));
+		yield return () => (new UInt512(0, 0, 0, 0, 0, 0, 0, 1), new UInt512(0, 0, 0, 0, 0, 0, 0, 511));
+		yield return () => (new UInt512(0, 0, 0, 0, 0, 0, 1, 0), new UInt512(0, 0, 0, 0, 0, 0, 0, 447));
+		yield return () => (new UInt512(0, 0, 0, 0, 0, 0, 1UL << 36, 0), new UInt512(0, 0, 0, 0, 0, 0, 0, 411));
+		yield return () => (new UInt512(0, 0, 0, 1, 0, 0, 0, 0), new UInt512(0, 0, 0, 0, 0, 0, 0, 255));
+		yield return () => (new UInt512(1UL << 63, 0, 0, 0, 0, 0, 0, 0), new UInt512(0, 0, 0, 0, 0, 0, 0, 0));
 	}
 
 	public static IEnumerable<Func<(UInt512, UInt512)>> PopCountTestData()
