@@ -1,14 +1,8 @@
-﻿using MissingValues.Internals;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
+﻿using System.Diagnostics;
 using System.Numerics;
 using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace MissingValues
+namespace MissingValues.Internals
 {
 	internal static partial class BitHelper
 	{
@@ -342,7 +336,7 @@ namespace MissingValues
 		{
 			int negDist = -dist;
 
-			ulong a64 = a.GetUpperBits(), a0 = a.GetLowerBits();
+			ulong a64 = a.Upper, a0 = a.Lower;
 
 			ulong z64 = a64 >> dist, z0 = a64 << (negDist & 63) | a0 >> dist;
 			ext = a0 << (negDist & 63) | ((extra != 0) ? 1UL : 0UL);
@@ -375,7 +369,7 @@ namespace MissingValues
 		{
 			ushort u8NegDist;
 			UInt128 z;
-			ulong a64 = a.GetUpperBits(), a0 = a.GetLowerBits();
+			ulong a64 = a.Upper, a0 = a.Lower;
 
 			u8NegDist = (ushort)-dist;
 			if (dist < 64)
@@ -1119,7 +1113,7 @@ namespace MissingValues
 			UInt256 sig256Z = (UInt256)sigA * sigB;
 			UInt128 sigZ = sig256Z.Upper;
 			int shiftDist = 0;
-			if ((sigZ.GetUpperBits() & 0x0100000000000000) == UInt128.Zero)
+			if ((sigZ.Upper & 0x0100000000000000) == UInt128.Zero)
 			{
 				--expZ;
 				shiftDist = -1;
@@ -1192,7 +1186,7 @@ namespace MissingValues
 					sigZ = sig256Z.Upper;
 				}
 
-				if ((sigZ.GetUpperBits() & 0x0200000000000000) != UInt128.Zero)
+				if ((sigZ.Upper & 0x0200000000000000) != UInt128.Zero)
 				{
 					++expZ;
 					shiftDist = 9;
@@ -1211,7 +1205,7 @@ namespace MissingValues
 						{
 							--sigZ;
 						}
-						if ((sigZ.GetUpperBits() & 0x0100000000000000) == 0)
+						if ((sigZ.Upper & 0x0100000000000000) == 0)
 						{
 							--expZ;
 							shiftDist = 7;
@@ -1234,7 +1228,7 @@ namespace MissingValues
 					}
 
 					sig256Z = new UInt256(sigZ, sig256Z.Lower);
-					if ((sigZ.GetUpperBits() & 0x8000000000000000) != 0)
+					if ((sigZ.Upper & 0x8000000000000000) != 0)
 					{
 						signZ = !signZ;
 						sig256Z = -sig256Z;
@@ -1247,7 +1241,7 @@ namespace MissingValues
 					if (1 < expDiff)
 					{
 						sigZ = sig256Z.Upper;
-						if ((sigZ.GetUpperBits() & 0x0100000000000000) == 0)
+						if ((sigZ.Upper & 0x0100000000000000) == 0)
 						{
 							--expZ;
 							shiftDist = 7;
@@ -1259,7 +1253,7 @@ namespace MissingValues
 				sigZ = sig256Z.Upper;
 				sigZExtra = sig256Z.Part1;
 				ulong sig256Z0 = sig256Z.Part0;
-				if (sigZ.GetUpperBits() != 0)
+				if (sigZ.Upper != 0)
 				{
 					if (sig256Z0 != 0)
 					{
@@ -1269,21 +1263,21 @@ namespace MissingValues
 				else
 				{
 					expZ -= 64;
-					sigZ = new UInt128(sigZ.GetLowerBits(), sigZExtra);
+					sigZ = new UInt128(sigZ.Lower, sigZExtra);
 					sigZExtra = sig256Z0;
-					if (sigZ.GetUpperBits() == 0)
+					if (sigZ.Upper == 0)
 					{
 						expZ -= 64;
-						sigZ = new UInt128(sigZ.GetLowerBits(), sigZExtra);
+						sigZ = new UInt128(sigZ.Lower, sigZExtra);
 						sigZExtra = sig256Z0;
-						if (sigZ.GetUpperBits() == 0)
+						if (sigZ.Upper == 0)
 						{
 							expZ -= 64;
-							sigZ = new UInt128(sigZ.GetLowerBits(), 0);
+							sigZ = new UInt128(sigZ.Lower, 0);
 						}
 					}
 				}
-				shiftDist = BitOperations.LeadingZeroCount(sigZ.GetUpperBits());
+				shiftDist = BitOperations.LeadingZeroCount(sigZ.Upper);
 				expZ += (short)(7 - shiftDist);
 				shiftDist = 15 - shiftDist;
 				if (0 < shiftDist)
@@ -1303,7 +1297,7 @@ namespace MissingValues
 		sigZ:
 			sigZExtra = sig256Z.Part1 | sig256Z.Part0;
 		shiftRightRoundPack:
-			sigZExtra = ((sigZ.GetLowerBits() << (64 - shiftDist)) | (sigZExtra != 0 ? 1UL : 0UL));
+			sigZExtra = ((sigZ.Lower << (64 - shiftDist)) | (sigZExtra != 0 ? 1UL : 0UL));
 			sigZ = sigZ >> shiftDist;
 		roundPack:
 			return RoundPackToQuad(signZ, expZ - 1, sigZ, sigZExtra);

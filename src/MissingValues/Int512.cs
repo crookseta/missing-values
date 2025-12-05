@@ -117,14 +117,14 @@ namespace MissingValues
 		/// <param name="ll">The fourth 128-bits of the 512-bit value.</param>
 		public Int512(UInt128 uu, UInt128 ul, UInt128 lu, UInt128 ll)
 		{
-			_p0 = (ulong)ll;
-			_p1 = (ulong)(ll >>> 64);
-			_p2 = (ulong)lu;
-			_p3 = (ulong)(lu >>> 64);
-			_p4 = (ulong)ul;
-			_p5 = (ulong)(ul >>> 64);
-			_p6 = (ulong)uu;
-			_p7 = (ulong)(uu >>> 64);
+			_p0 = ll.Lower;
+			_p1 = ll.Upper;
+			_p2 = lu.Lower;
+			_p3 = lu.Upper;
+			_p4 = ul.Lower;
+			_p5 = ul.Upper;
+			_p6 = uu.Lower;
+			_p7 = uu.Upper;
 		}
 		/// <summary>
 		/// Initializes a new instance of the <see cref="Int512"/> struct.

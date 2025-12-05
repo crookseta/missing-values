@@ -1138,7 +1138,7 @@ namespace MissingValues
 			f_lo = (f_hi - x) + f_lo;
 
 			hx = (short)x.BiasedExponent;
-			lx = (ulong)(x.TrailingSignificand >> 64);
+			lx = x.TrailingSignificand.Upper;
 			k = -16383;
 
 			k += hx | (Quad.IsNegative(x) ? 1 << 15 : 0);

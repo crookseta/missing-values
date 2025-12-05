@@ -91,8 +91,8 @@ internal unsafe ref partial struct BigNumber
 		while (smallIndex < smallLength)
 		{
 			UInt128 sum = carry + large._blocks[largeIndex] + small._blocks[smallIndex];
-			carry = sum >> 64;
-			result._blocks[resultIndex] = (ulong)(sum);
+			carry = new UInt128(0, sum.Upper);
+			result._blocks[resultIndex] = sum.Lower;
 
 			largeIndex++;
 			smallIndex++;
@@ -103,8 +103,8 @@ internal unsafe ref partial struct BigNumber
 		while (largeIndex < largeLength)
 		{
 			UInt128 sum = carry + large._blocks[largeIndex];
-			carry = sum >> 64;
-			result._blocks[resultIndex] = (ulong)(sum);
+			carry = new UInt128(0, sum.Upper);
+			result._blocks[resultIndex] = sum.Lower;
 
 			largeIndex++;
 			resultIndex++;
@@ -146,9 +146,9 @@ internal unsafe ref partial struct BigNumber
 		{
 			Int128 delta = (Int128)(lhs._blocks[index]) - rhs._blocks[index];
 
-			if (delta != 0)
+			if (delta != Int128.Zero)
 			{
-				return delta > 0 ? 1 : -1;
+				return delta > Int128.Zero ? 1 : -1;
 			}
 		}
 
@@ -231,7 +231,7 @@ internal unsafe ref partial struct BigNumber
 
 			for (int i = quoLength - 1; i >= 0; i--)
 			{
-				UInt128 value = new UInt128((ulong)carry, lhs._blocks[i]);
+				UInt128 value = new UInt128(carry.Lower, lhs._blocks[i]);
 				UInt128 digit;
 				(digit, carry) = UInt128.DivRem(value, rhsValue);
 
@@ -241,12 +241,12 @@ internal unsafe ref partial struct BigNumber
 				}
 				else
 				{
-					quo._blocks[i] = (ulong)(digit);
+					quo._blocks[i] = digit.Lower;
 				}
 			}
 
 			quo._length = quoLength;
-			SetUInt64(out rem, (ulong)(carry));
+			SetUInt64(out rem, carry.Lower);
 
 			return;
 		}
@@ -312,11 +312,11 @@ internal unsafe ref partial struct BigNumber
 
 				// First guess for the current digit of the quotient,
 				// which naturally must have only 64 bits...
-				UInt128 digit = valHi / divHi;
+				UInt128 digit = Calculator.DivideByUInt64(valHi, divHi);
 
-				if (digit > ulong.MaxValue)
+				if (digit.Upper != 0)
 				{
-					digit = ulong.MaxValue;
+					digit = new UInt128(0, ulong.MaxValue);
 				}
 
 				// Our first guess may be a little bit to big
@@ -357,7 +357,7 @@ internal unsafe ref partial struct BigNumber
 					}
 					else
 					{
-						quo._blocks[n] = (ulong)(digit);
+						quo._blocks[n] = digit.Lower;
 					}
 				}
 
@@ -414,12 +414,12 @@ internal unsafe ref partial struct BigNumber
 			do
 			{
 				UInt128 product = ((UInt128)(divisor._blocks[index]) * quotient) + carry;
-				carry = product >> 64;
+				carry = product.Upper;
 
-				UInt128 difference = (UInt128)(dividend._blocks[index]) - (uint)(product) - borrow;
-				borrow = (difference >> 64) & 1;
+				UInt128 difference = (UInt128)(dividend._blocks[index]) - product.Lower - borrow;
+				borrow = (difference.Upper) & 1;
 
-				dividend._blocks[index] = (uint)(difference);
+				dividend._blocks[index] = difference.Lower;
 
 				index++;
 			}
@@ -447,9 +447,9 @@ internal unsafe ref partial struct BigNumber
 			do
 			{
 				UInt128 difference = (UInt128)(dividend._blocks[index]) - divisor._blocks[index] - borrow;
-				borrow = (difference >> 64) & 1;
+				borrow = difference.Upper & 1;
 
-				dividend._blocks[index] = (uint)(difference);
+				dividend._blocks[index] = difference.Lower;
 
 				index++;
 			}
@@ -494,9 +494,9 @@ internal unsafe ref partial struct BigNumber
 
 		while (index < lhsLength)
 		{
-			UInt128 product = ((UInt128)(lhs._blocks[index]) * value) + carry;
-			result._blocks[index] = (ulong)(product);
-			carry = (ulong)(product >> 64);
+			UInt128 product = Calculator.BigMul(lhs._blocks[index], value) + carry;
+			result._blocks[index] = product.Lower;
+			carry = product.Upper;
 
 			index++;
 		}
@@ -564,16 +564,16 @@ internal unsafe ref partial struct BigNumber
 
 				do
 				{
-					UInt128 product = result._blocks[resultIndex] + ((UInt128)(small._blocks[smallIndex]) * large._blocks[largeIndex]) + carry;
-					carry = product >> 64;
-					result._blocks[resultIndex] = (ulong)(product);
+					UInt128 product = result._blocks[resultIndex] + Calculator.BigMul(small._blocks[smallIndex], large._blocks[largeIndex]) + carry;
+					carry = product.Upper;
+					result._blocks[resultIndex] = product.Lower;
 
 					resultIndex++;
 					largeIndex++;
 				}
 				while (largeIndex < largeLength);
 
-				result._blocks[resultIndex] = (ulong)(carry);
+				result._blocks[resultIndex] = carry.Lower;
 			}
 
 			smallIndex++;
@@ -676,18 +676,18 @@ internal unsafe ref partial struct BigNumber
 
 		// Repairs the dividend, if the last subtract was too much
 
-		UInt128 carry = 0UL;
+		UInt128 carry = default;
 
 		for (int i = 0; i < rhsLength; i++)
 		{
 			ref ulong lhsValue = ref lhs._blocks[lhsStartIndex + i];
 
 			UInt128 digit = lhsValue + carry + rhs._blocks[i];
-			lhsValue = unchecked((ulong)digit);
-			carry = digit >> 64;
+			lhsValue = digit.Lower;
+			carry = digit.Upper;
 		}
 
-		return (ulong)(carry);
+		return carry.Lower;
 	}
 
 	private static bool DivideGuessTooBig(UInt128 q, UInt128 valHi, ulong valLo, ulong divHi, ulong divLo)
@@ -702,7 +702,7 @@ internal unsafe ref partial struct BigNumber
 		UInt128 chkHi = divHi * q;
 		UInt128 chkLo = divLo * q;
 
-		chkHi += (chkLo >> 64);
+		chkHi += chkLo.Upper;
 		chkLo &= ulong.MaxValue;
 
 		if (chkHi < valHi)
@@ -738,8 +738,8 @@ internal unsafe ref partial struct BigNumber
 		for (int i = 0; i < rhsLength; i++)
 		{
 			carry += rhs._blocks[i] * q;
-			ulong digit = unchecked((ulong)carry);
-			carry >>= 64;
+			ulong digit = carry.Lower;
+			carry = carry.Upper;
 
 			ref ulong lhsValue = ref lhs._blocks[lhsStartIndex + i];
 
@@ -751,7 +751,7 @@ internal unsafe ref partial struct BigNumber
 			lhsValue = unchecked(lhsValue - digit);
 		}
 
-		return (ulong)(carry);
+		return carry.Lower;
 	}
 
 	public ulong GetBlock(uint index)
@@ -803,8 +803,8 @@ internal unsafe ref partial struct BigNumber
 		{
 			UInt128 block = (UInt128)(_blocks[index]);
 			UInt128 product = (block << 3) + (block << 1) + carry;
-			carry = product >> 64;
-			_blocks[index] = (ulong)(product);
+			carry = product.Upper;
+			_blocks[index] = product.Lower;
 
 			index++;
 		} while (index < length);
@@ -812,7 +812,7 @@ internal unsafe ref partial struct BigNumber
 		if (carry != UInt128.Zero)
 		{
 			Debug.Assert(unchecked((uint)(_length)) + 1 <= MaxBlockCount);
-			_blocks[index] = (ulong)carry;
+			_blocks[index] = carry.Lower;
 			_length++;
 		}
 	}
@@ -858,14 +858,14 @@ internal unsafe ref partial struct BigNumber
 
 	public static void SetUInt128(out BigNumber result, UInt128 value)
 	{
-		if (value <= ulong.MaxValue)
+		if (value.Upper == 0)
 		{
-			SetUInt64(out result, (ulong)(value));
+			SetUInt64(out result, value.Lower);
 		}
 		else
 		{
-			result._blocks[0] = (ulong)(value);
-			result._blocks[1] = (ulong)(value >> 64);
+			result._blocks[0] = value.Lower;
+			result._blocks[1] =value.Upper;
 
 			result._length = 2;
 		}
@@ -873,22 +873,32 @@ internal unsafe ref partial struct BigNumber
 
 	public static void SetUInt256(out BigNumber result, UInt256 value)
 	{
-		if (value <= ulong.MaxValue)
+		if (value.Part2 == 0 && value.Part3 == 0)
 		{
-			SetUInt64(out result, (ulong)(value));
-		}
-		else if (value <= UInt128.MaxValue)
-		{
-			SetUInt128(out result, (UInt128)(value));
+			if (value.Part1 == 0)
+			{
+				SetUInt64(out result, value.Part0);
+			}
+			else
+			{
+				SetUInt128(out result, value.Lower);
+			}
 		}
 		else
 		{
 			result._blocks[0] = value.Part0;
 			result._blocks[1] = value.Part1;
 			result._blocks[2] = value.Part2;
-			result._blocks[3] = value.Part3;
+			if (value.Part3 != 0)
+			{
+				result._blocks[3] = value.Part3;
+				result._length = 4;
+			}
+			else
+			{
+				result._length = 3;
+			}
 
-			result._length = 4;
 		}
 	}
 
@@ -898,15 +908,15 @@ internal unsafe ref partial struct BigNumber
 		Debug.Assert(typeof(T) == typeof(ulong) || typeof(T) == typeof(UInt128) || typeof(T) == typeof(UInt256));
 		if (typeof(T) == typeof(UInt256))
 		{
-			SetUInt256(out result, UInt256.CreateChecked(value));
+			SetUInt256(out result, (UInt256)(object)value);
 		}
 		else if (typeof(T) == typeof(UInt128))
 		{
-			SetUInt128(out result, UInt128.CreateChecked(value));
+			SetUInt128(out result, (UInt128)(object)value);
 		}
 		else
 		{
-			SetUInt64(out result, ulong.CreateChecked(value));
+			SetUInt64(out result, (ulong)(object)value);
 		}
 	}
 
