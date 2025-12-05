@@ -914,17 +914,30 @@ public class UInt512DataSources
 
 	public static IEnumerable<Func<(UInt512, int, UInt512)>> RotateLeftTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (new UInt512(1, 2, 3, 4, 5, 6, 7, 8), 0, new UInt512(1, 2, 3, 4, 5, 6, 7, 8));
+		yield return () => (new UInt512(1, 2, 3, 4, 5, 6, 7, 8), 512, new UInt512(1, 2, 3, 4, 5, 6, 7, 8));
+		yield return () => (new UInt512(0, 0, 0, 0, 0, 0, 0x8000_0000_0000_0000, 0), 64, new UInt512(0, 0, 0, 0, 0, 0x8000_0000_0000_0000, 0, 0));
+		yield return () => (new UInt512(0x8000_0000_0000_0000, 0, 0, 0, 0, 0, 0, 0), 64, new UInt512(0, 0, 0, 0, 0, 0, 0, 0x8000_0000_0000_0000));
+		yield return () => (new UInt512(0, 0, 0, 0, 0x8000_0000_0000_0000, 0, 0, 0), 128, new UInt512(0, 0, 0x8000_0000_0000_0000, 0, 0, 0, 0, 0));
 	}
 
 	public static IEnumerable<Func<(UInt512, int, UInt512)>> RotateRightTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (new UInt512(1, 2, 3, 4, 5, 6, 7, 8), 0, new UInt512(1, 2, 3, 4, 5, 6, 7, 8));
+		yield return () => (new UInt512(1, 2, 3, 4, 5, 6, 7, 8), 512, new UInt512(1, 2, 3, 4, 5, 6, 7, 8));
+		yield return () => (new UInt512(0, 0, 0, 0, 0, 0, 0x8000_0000_0000_0000, 0), 64, new UInt512(0, 0, 0, 0, 0, 0, 0, 0x8000_0000_0000_0000));
+		yield return () => (new UInt512(0, 0, 0, 0, 0, 0, 0, 0x8000_0000_0000_0000), 64, new UInt512(0x8000_0000_0000_0000, 0, 0, 0, 0, 0, 0, 0));
+		yield return () => (new UInt512(0, 0, 0, 0, 0x8000_0000_0000_0000, 0, 0, 0), 128, new UInt512(0, 0, 0, 0, 0, 0, 0x8000_0000_0000_0000, 0));
 	}
 
 	public static IEnumerable<Func<(UInt512, UInt512)>> TrailingZeroCountTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (new UInt512(0, 0, 0, 0, 0, 0, 0, 0), new UInt512(0, 0, 0, 0, 0, 0, 0, 512));
+		yield return () => (new UInt512(0, 0, 0, 0, 0, 0, 0, 1), new UInt512(0, 0, 0, 0, 0, 0, 0, 0));
+		yield return () => (new UInt512(0, 0, 0, 0, 0, 0, 1, 0), new UInt512(0, 0, 0, 0, 0, 0, 0, 64));
+		yield return () => (new UInt512(0, 0, 0, 0, 0, 0, 1UL << 36, 0), new UInt512(0, 0, 0, 0, 0, 0, 0, 100));
+		yield return () => (new UInt512(0, 0, 0, 1, 0, 0, 0, 0), new UInt512(0, 0, 0, 0, 0, 0, 0, 256));
+		yield return () => (new UInt512(1UL << 63, 0, 0, 0, 0, 0, 0, 0), new UInt512(0, 0, 0, 0, 0, 0, 0, 511));
 	}
 
 	public static IEnumerable<Func<(UInt512, int)>> GetByteCountTestData()
