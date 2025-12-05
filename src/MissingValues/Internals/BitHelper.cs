@@ -217,28 +217,28 @@ namespace MissingValues.Internals
 			UInt256 x = value | UInt256.One;
 			int num1 = Log2(in x) + 1;
 			int num2 = (num1 * 1233) >> 12;
-			return x < Unsafe.Add(ref Unsafe.As<ulong, UInt512>(ref MemoryMarshal.GetReference(Tables.Pow10Table)), num2) ? num2 - 1 : num2;
+			return x < Read<UInt256>(Tables.Pow10Table[(num2 << 3)..]) ? num2 - 1 : num2;
 		}
 		internal static int Log10(in Int256 value)
 		{
 			Int256 x = value | Int256.One;
 			int num1 = Log2(in x) + 1;
 			int num2 = (num1 * 1233) >> 12;
-			return (UInt512)x < Unsafe.Add(ref Unsafe.As<ulong, UInt512>(ref MemoryMarshal.GetReference(Tables.Pow10Table)), num2) ? num2 - 1 : num2;
+			return x < Read<Int256>(Tables.Pow10Table[(num2 << 3)..]) ? num2 - 1 : num2;
 		}
 		internal static int Log10(in UInt512 value)
 		{
 			UInt512 x = value | UInt512.One;
 			int num1 = Log2(in x) + 1;
 			int num2 = (num1 * 1233) >> 12;
-			return x < Unsafe.Add(ref Unsafe.As<ulong, UInt512>(ref MemoryMarshal.GetReference(Tables.Pow10Table)), num2) ? num2 - 1 : num2;
+			return x < Read<UInt512>(Tables.Pow10Table[(num2 << 3)..]) ? num2 - 1 : num2;
 		}
 		internal static int Log10(in Int512 value)
 		{
 			Int512 x = value | Int512.One;
 			int num1 = Log2(in x) + 1;
 			int num2 = (num1 * 1233) >> 12;
-			return (UInt512)x < Unsafe.Add(ref Unsafe.As<ulong, UInt512>(ref MemoryMarshal.GetReference(Tables.Pow10Table)), num2) ? num2 - 1 : num2;
+			return x < Read<Int512>(Tables.Pow10Table[(num2 << 3)..]) ? num2 - 1 : num2;
 		}
 
 		internal static int PopCount(in UInt256 value)
@@ -481,10 +481,11 @@ namespace MissingValues.Internals
 			return 1;
 		}
 
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		internal static void Write<T>(Span<ulong> destination, in T value)
 			where T : unmanaged, IBigInteger<T>
 		{
-			Debug.Assert(((typeof(T) == typeof(UInt256) || typeof(T) == typeof(Int256)) && destination.Length == 4) || ((typeof(T) == typeof(UInt512) || typeof(T) == typeof(Int512)) && destination.Length == 8));
+			Debug.Assert(((typeof(T) == typeof(UInt256) || typeof(T) == typeof(Int256)) && destination.Length >= 4) || ((typeof(T) == typeof(UInt512) || typeof(T) == typeof(Int512)) && destination.Length >= 8));
 			
 			if (BitConverter.IsLittleEndian)
 			{
@@ -503,10 +504,11 @@ namespace MissingValues.Internals
 			Unsafe.WriteUnaligned(ref Unsafe.Add(ref dest, sizeof(ulong) * 7), ulong.CreateTruncating(value >>> 448));
 		}
 		
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		internal static T Read<T>(ReadOnlySpan<ulong> source)
 			where T : unmanaged, IBigInteger<T>
 		{
-			Debug.Assert(((typeof(T) == typeof(UInt256) || typeof(T) == typeof(Int256)) && source.Length == 4) || ((typeof(T) == typeof(UInt512) || typeof(T) == typeof(Int512)) && source.Length == 8));
+			Debug.Assert(((typeof(T) == typeof(UInt256) || typeof(T) == typeof(Int256)) && source.Length >= 4) || ((typeof(T) == typeof(UInt512) || typeof(T) == typeof(Int512)) && source.Length >= 8));
 
 			if (BitConverter.IsLittleEndian)
 			{
