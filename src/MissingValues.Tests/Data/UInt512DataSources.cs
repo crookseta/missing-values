@@ -841,7 +841,12 @@ public class UInt512DataSources
 
 	public static IEnumerable<Func<(UInt512, UInt512, (UInt512, UInt512))>> DivRemTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (new UInt512(1, 2, 3, 4, 5, 6, 7, 8), new UInt512(0, 0, 0, 0, 0, 0, 0, 1), (new UInt512(1, 2, 3, 4, 5, 6, 7, 8), new UInt512(0, 0, 0, 0, 0, 0, 0, 0)));
+		yield return () => (new UInt512(1, 2, 3, 4, 5, 6, 7, 8), new UInt512(1, 2, 3, 4, 5, 6, 7, 8), (new UInt512(0, 0, 0, 0, 0, 0, 0, 1), new UInt512(0, 0, 0, 0, 0, 0, 0, 0)));
+		yield return () => (new UInt512(1, 2, 3, 4, 5, 6, 7, 8), new UInt512(1, 2, 3, 4, 5, 6, 7, 8), (new UInt512(0, 0, 0, 0, 0, 0, 0, 1), new UInt512(0, 0, 0, 0, 0, 0, 0, 0)));
+		yield return () => (new UInt512(1, 2, 3, 4, 5, 6, 7, 8), new UInt512(1, 2, 3, 4, 5, 6, 7, 9), (new UInt512(0, 0, 0, 0, 0, 0, 0, 0), new UInt512(1, 2, 3, 4, 5, 6, 7, 8)));
+		yield return () => (UInt512.MaxValue, UInt256.MaxValue, (UInt512.Parse("115792089237316195423570985008687907853269984665640564039457584007913129639937"), UInt512.Zero));
+		yield return () => (UInt512.MaxValue, new UInt512(0, 0, 0, 1, 0, 0, 0, 0), (UInt512.Parse("115792089237316195423570985008687907853269984665640564039457584007913129639935"), UInt512.Parse("115792089237316195423570985008687907853269984665640564039457584007913129639935")));
 	}
 
 	public static IEnumerable<Func<(UInt512, UInt512)>> LeadingZeroCountTestData()
