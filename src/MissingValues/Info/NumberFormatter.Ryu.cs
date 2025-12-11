@@ -303,14 +303,23 @@ internal static partial class NumberFormatter
 			where TSignificand : unmanaged, IBinaryInteger<TSignificand>, IUnsignedNumber<TSignificand>
 			where TChar : unmanaged, IUtfCharacter<TChar>
 		{
-			var fd = FloatToDecimal<TFloat, FloatingDecimal<TSignificand>, TSignificand>(in value);
+			int digits = TFloat.MaxSignificandPrecision;
+			if (!format.IsEmpty)
+			{
+				GetFormat(format, out int formatDigits);
+				if (formatDigits > 0)
+				{
+					digits = formatDigits;
+				}
+			}
+			var fd = FloatToDecimal<TFloat, FloatingDecimal<TSignificand>, TSignificand>(in value, digits);
 			charsWritten = ToCharSpan<FloatingDecimal<TSignificand>, TSignificand, TChar>(in fd, destination, format, info is null ? NumberFormatInfo.CurrentInfo : info!, out isExceptional);
 		}
 		public static void Format<TFloat, TSignificand>(in TFloat value, scoped ref NumberInfo number, out bool isExceptional)
 			where TFloat : struct, IBinaryFloatingPointInfo<TFloat, TSignificand>
 			where TSignificand : unmanaged, IBinaryInteger<TSignificand>, IUnsignedNumber<TSignificand>
 		{
-			var fd = FloatToDecimal<TFloat, FloatingDecimal<TSignificand>, TSignificand>(in value);
+			var fd = FloatToDecimal<TFloat, FloatingDecimal<TSignificand>, TSignificand>(in value, TFloat.MaxSignificandPrecision);
 			UInt256 significand = UInt256.CreateTruncating(fd.Mantissa);
 			UIntToNumber<UInt256>(in significand, ref number);
 			number.Scale += fd.Exponent;
@@ -426,7 +435,7 @@ internal static partial class NumberFormatter
 			return index;
 		}
 
-		public static TDecimal FloatToDecimal<TFloat, TDecimal, TSignificand>(in TFloat value)
+		public static TDecimal FloatToDecimal<TFloat, TDecimal, TSignificand>(in TFloat value, int digits)
 			where TFloat : struct, IBinaryFloatingPointInfo<TFloat, TSignificand>
 			where TDecimal : struct, IBinaryFloatingPointDecimalFormat<TDecimal, TSignificand>
 			where TSignificand : unmanaged, IBinaryInteger<TSignificand>, IUnsignedNumber<TSignificand>
@@ -601,6 +610,38 @@ internal static partial class NumberFormatter
 				}
 			}
 
+			if (digits < TFloat.MaxSignificandPrecision)
+			{
+				int currDigits = (vr switch
+				{
+					UInt128 temp => UInt128.CountDigits(temp),
+					UInt256 temp => UInt256.CountDigits(in temp)
+				});
+
+				while (currDigits-- > digits)
+				{
+					vmIsTrailingZeros &= vm % ten == TSignificand.Zero;
+					vrIsTrailingZeros &= lastRemovedDigit == 0;
+					lastRemovedDigit = (byte)TDecimal.ToUInt32(vr % ten);
+					vr /= ten;
+					vp /= ten;
+					vm /= ten;
+					++removed;
+				}
+				if (vmIsTrailingZeros)
+				{
+					while (vm % ten == TSignificand.Zero)
+					{
+						vrIsTrailingZeros &= lastRemovedDigit == 0;
+						lastRemovedDigit = (byte)TDecimal.ToUInt32(vr % ten);
+						vr /= ten;
+						vp /= ten;
+						vm /= ten;
+						++removed;
+					}
+				}
+			}
+
 			if (vrIsTrailingZeros && (lastRemovedDigit == 5) && (vr % TDecimal.Two == TSignificand.Zero))
 			{
 				lastRemovedDigit = 4;
@@ -616,7 +657,7 @@ internal static partial class NumberFormatter
 			where TFloat : struct, IBinaryFloatingPointInfo<TFloat, TSignificand>
 			where TSignificand : unmanaged, IBinaryInteger<TSignificand>, IUnsignedNumber<TSignificand>
 		{
-			var fd = FloatToDecimal<TFloat, FloatingDecimal<TSignificand>, TSignificand>(in value);
+			var fd = FloatToDecimal<TFloat, FloatingDecimal<TSignificand>, TSignificand>(in value, TFloat.MaxSignificandPrecision);
 			return (fd.Mantissa, fd.Exponent, fd.Sign);
 		}
 
