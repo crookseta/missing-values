@@ -168,9 +168,9 @@ public class Int256DataSources
 		yield return () => (Int256.One, Int256.Zero, Int256.One);
 		yield return () => (Int256.One, Int256.One, Int256.Zero);
 		yield return () => (Int256.Zero, Int256.One, Int256.NegativeOne);
-		yield return () => (Int256.MaxValue,Int256.One, Int256.Parse("57896044618658097711785492504343953926634992332820282019728792003956564819966"));
+		yield return () => (Int256.MaxValue,Int256.One, new Int256(ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue - 1));
 		yield return () => (Int256.MinValue,Int256.One,Int256.MaxValue);
-		yield return () => (Int256.MinValue,Int256.NegativeOne, Int256.Parse("-57896044618658097711785492504343953926634992332820282019728792003956564819967"));
+		yield return () => (Int256.MinValue,Int256.NegativeOne, new Int256(unchecked((ulong)-1), ulong.MaxValue, ulong.MaxValue, ulong.MaxValue));
 		yield return () => (new Int256(1, 2, 3, 4),new Int256(0, 1, 2, 3),new Int256(1, 1, 1, 1));
 		yield return () => (new Int256(0, 0, 0, 0),new Int256(0, 0, 0, 1),new Int256(unchecked((ulong)-1), ulong.MaxValue, ulong.MaxValue, ulong.MaxValue));
 	}
