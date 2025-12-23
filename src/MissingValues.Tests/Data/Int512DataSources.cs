@@ -62,12 +62,53 @@ public class Int512DataSources
 
 	public static IEnumerable<Func<(Int512, Int512, bool)>> op_CheckedDecrementTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int512.Zero, Int512.NegativeOne, false);
+		yield return () => (Int512.One, Int512.Zero, false);
+		yield return () => (
+			new Int512(0, 0, 0, 0, 0, 0, 0, 2), 
+			new Int512(0, 0, 0, 0, 0, 0, 0, 1), 
+			false);
+		yield return () => (
+			new Int512(0, 0, 0, 0, 0, 0, 1, 0), 
+			new Int512(0, 0, 0, 0, 0, 0, 0, ulong.MaxValue), 
+			false);
+		yield return () => (
+			new Int512(0, 0, 0, 0, 1, 0, 0, 0), 
+			new Int512(0, 0, 0, 0, 0, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue), 
+			false);
+		yield return () => (
+			new Int512(0, 0, 0, 1, 0, 0, 0, 0), 
+			new Int512(0, 0, 0, 0, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue), 
+			false);
+		yield return () => (
+			new Int512(1, 0, 0, 0, 0, 0, 0, 0), 
+			new Int512(0, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue), 
+			false);
+		yield return () => (Int512.MinValue, Int512.MaxValue, true);
 	}
 
 	public static IEnumerable<Func<(Int512, Int512, bool)>> op_CheckedIncrementTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int512.Zero, Int512.One, false);
+		yield return () => (Int512.One, new Int512(0, 0, 0, 0, 0, 0, 0, 2), false);
+		yield return () => (Int512.MaxValue, Int512.Zero, true);
+		yield return () => (Int512.NegativeOne, Int512.Zero, false);
+		yield return () => (
+			new Int512(0, 0, 0, 0, 0, 0, 0, ulong.MaxValue), 
+			new Int512(0, 0, 0, 0, 0, 0, 1, 0), 
+			false);
+		yield return () => (
+			new Int512(0, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue), 
+			new Int512(1, 0, 0, 0, 0, 0, 0, 0), 
+			false);
+		yield return () => (
+			new Int512(0, 0, 0, 0, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue), 
+			new Int512(0, 0, 0, 1, 0, 0, 0, 0), 
+			false);
+		yield return () => (
+			new Int512(unchecked((ulong)-123456789), 987654321, 555555555, 444444444, 333333333, 222222222, 111111111, 999999999), 
+			new Int512(unchecked((ulong)-123456789), 987654321, 555555555, 444444444, 333333333, 222222222, 111111111, 1000000000), 
+			false);
 	}
 
 	public static IEnumerable<Func<(Int512, Int512, Int512, bool)>> op_CheckedMultiplyTestData()
@@ -101,7 +142,14 @@ public class Int512DataSources
 
 	public static IEnumerable<Func<(Int512, Int512)>> op_DecrementTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int512.Zero, Int512.NegativeOne);
+		yield return () => (Int512.One, Int512.Zero);
+		yield return () => (new Int512(0, 0, 0, 0, 0, 0, 0, 2), new Int512(0, 0, 0, 0, 0, 0, 0, 1));
+		yield return () => (new Int512(0, 0, 0, 0, 0, 0, 1, 0), new Int512(0, 0, 0, 0, 0, 0, 0, ulong.MaxValue));
+		yield return () => (new Int512(0, 0, 0, 0, 0, 1, 0, 0), new Int512(0, 0, 0, 0, 0, 0, ulong.MaxValue, ulong.MaxValue));
+		yield return () => (new Int512(0, 0, 0, 0, 1, 0, 0, 0), new Int512(0, 0, 0, 0, 0, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue));
+		yield return () => (new Int512(1, 0, 0, 0, 0, 0, 0, 0), new Int512(0, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue));
+		yield return () => (Int512.MinValue, Int512.MaxValue);
 	}
 
 	public static IEnumerable<Func<(Int512, Int512, Int512)>> op_DivisionTestData()
@@ -111,7 +159,16 @@ public class Int512DataSources
 
 	public static IEnumerable<Func<(Int512, Int512)>> op_IncrementTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int512.Zero, Int512.One);
+		yield return () => (Int512.One, new Int512(0, 0, 0, 0, 0, 0, 0, 2));
+		yield return () => (Int512.MaxValue, Int512.MinValue);
+		yield return () => (Int512.NegativeOne, Int512.Zero);
+		yield return () => (new Int512(0, 0, 0, 0, 0, 0, 0, ulong.MaxValue), new Int512(0, 0, 0, 0, 0, 0, 1, 0));
+		yield return () => (new Int512(0, 0, 0, 0, 0, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue), new Int512(0, 0, 0, 0, 1, 0, 0, 0));
+		yield return () => (
+			new Int512(unchecked((ulong)-123456789), 987654321, 555555555, 444444444, 333333333, 222222222, 111111111, 999999999), 
+			new Int512(unchecked((ulong)-123456789), 987654321, 555555555, 444444444, 333333333, 222222222, 111111111, 1000000000));
+		yield return () => (new Int512(0, 0, 0, 0, 0x8000000000000000, 0, 0, 0),new Int512(0, 0, 0, 0, 0x8000000000000000, 0, 0, 1));
 	}
 
 	public static IEnumerable<Func<(Int512, Int512, Int512)>> op_ModulusTestData()
