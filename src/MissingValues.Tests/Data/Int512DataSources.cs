@@ -113,7 +113,37 @@ public class Int512DataSources
 
 	public static IEnumerable<Func<(Int512, Int512, Int512, bool)>> op_CheckedMultiplyTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int512.Zero, Int512.Zero, Int512.Zero, false);
+		yield return () => (Int512.Zero, Int512.One, Int512.Zero, false);
+		yield return () => (Int512.One, Int512.One, Int512.One, false);
+		yield return () => (Int512.One, Int512.NegativeOne, Int512.NegativeOne, false);
+		yield return () => (Int512.NegativeOne, Int512.NegativeOne, Int512.One, false);
+		yield return () => (new Int512(0, 0, 0, 0, 0, 0, 0, 2), new Int512(0, 0, 0, 0, 0, 0, 0, 3), new Int512(0, 0, 0, 0, 0, 0, 0, 6), false);
+		yield return () => (new Int512(0, 0, 0, 0, 0, 0, 0, ulong.MaxValue), new Int256(0, 0, 0, 2), new Int256(0, 0, 1, ulong.MaxValue - 1), false);
+		yield return () => (
+			new Int512(0, 0, 0, 0, 0, 0, 0, ulong.MaxValue), 
+			new Int512(0, 0, 0, 0, 0, 0, 0, ulong.MaxValue), 
+			new Int512(0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0xFFFF_FFFF_FFFF_FFFE, 0x0000_0000_0000_0001),
+			false
+		);
+		yield return () => (
+			new Int512(0, 0, 0, 0, 0, 0, 1, 0), 
+			new Int512(0, 0, 0, 0, 0, 0, 1, 0), 
+			new Int512(0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0001, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000),
+			false
+		);
+		yield return () => (
+			new Int512(0, 0, 0, 0, 0, 1, 0, 0), 
+			new Int512(0, 0, 0, 0, 0, 1, 0, 0), 
+			new Int512(0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0001, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000),
+			false
+		);
+		yield return () => (
+			Int512.MaxValue, 
+			new Int512(0, 0, 0, 0, 0, 0, 0, 1), 
+			default,
+			true
+		);
 	}
 
 	public static IEnumerable<Func<(Int512, Int512, Int512, bool)>> op_CheckedSubtractionTestData()
@@ -154,7 +184,22 @@ public class Int512DataSources
 
 	public static IEnumerable<Func<(Int512, Int512, Int512)>> op_DivisionTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int512.Zero, Int512.One, Int512.Zero);
+		yield return () => (Int512.One, Int512.One, Int512.One);
+		yield return () => (Int512.One, Int512.NegativeOne, Int512.NegativeOne);
+		yield return () => (Int512.NegativeOne, Int512.One, Int512.NegativeOne);
+		yield return () => (new Int512(0, 0, 0, 0, 0, 0, 0, 4), new Int512(0, 0, 0, 0, 0, 0, 0, 2), new Int512(0, 0, 0, 0, 0, 0, 0, 2));
+		yield return () => (Int512.MaxValue, Int512.One, Int512.MaxValue);
+		yield return () => (Int512.MinValue, Int512.One, Int512.MinValue);
+		yield return () => (Int512.Zero, Int512.MaxValue, Int256.Zero);
+		yield return () => (Int512.MaxValue, Int512.MaxValue, Int512.One);
+		yield return () => (Int512.MinValue, Int512.MinValue, Int512.One);
+		yield return () => (new Int512(0, 0, 0, 0, 0, 0, 1, 0), new Int512(0, 0, 0, 0, 0, 1, 0, 0), Int512.Zero);
+		yield return () => (
+			new Int512(0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0001, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000), 
+			new Int512(0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0001, 0x0000_0000_0000_0000), 
+			new Int512(0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0001, 0x0000_0000_0000_0000)
+			);
 	}
 
 	public static IEnumerable<Func<(Int512, Int512)>> op_IncrementTestData()
@@ -173,12 +218,43 @@ public class Int512DataSources
 
 	public static IEnumerable<Func<(Int512, Int512, Int512)>> op_ModulusTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int512.Zero, Int512.One, Int512.Zero);
+		yield return () => (Int512.One, Int512.One, Int512.Zero);
+		yield return () => (new Int512(0, 0, 0, 0, 0, 0, 0, 123456789), Int512.One, Int512.Zero);
+		yield return () => (Int512.MaxValue, Int512.MaxValue, Int512.Zero);
+		yield return () => (new Int512(0, 0, 0, 0, 0, 0, 1, 0), new Int512(0, 0, 0, 0, 0, 1, 0, 0), new Int512(0, 0, 0, 0, 0, 0, 1, 0));
+		yield return () => (new Int512(0, 0, 0, 0, 0, 0, 0, 10), new Int512(0, 0, 0, 0, 0, 0, 0, 3), new Int512(0, 0, 0, 0, 0, 0, 0, 1));
+		yield return () => (new Int512(0, 0, 0, 0, 0, 0, 0, 15), new Int512(0, 0, 0, 0, 0, 0, 0, 5), Int512.Zero);
+		yield return () => (Int512.NegativeOne, new Int512(0, 0, 0, 0, 0, 0, 0, 2), Int512.NegativeOne);
+		yield return () => (new Int512(0, 0, 0, 0, 0, 0, 0, 7), Int512.NegativeOne, Int512.Zero);
+		yield return () => (Int512.MaxValue, new Int512(0, 0, 0, 0, 0, 0, 0, 123456789), new Int512(0, 0, 0, 0, 0, 0, 0, 77645365));
+		yield return () => (new Int512(0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0040, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000), new Int512(0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_000F, 0xEE50_B702_5C36_A080, 0x2F23_6D04_753D_5B48, 0xE800_0000_0000_0000), new Int512(0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x46BD_23F6_8F25_7DFF, 0x4372_4BEE_2B0A_92DC, 0x6000_0000_0000_0000));
 	}
 
 	public static IEnumerable<Func<(Int512, Int512, Int512)>> op_MultiplyTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int512.Zero, Int512.Zero, Int512.Zero);
+		yield return () => (Int512.Zero, Int512.One, Int512.Zero);
+		yield return () => (Int512.One, Int512.One, Int512.One);
+		yield return () => (Int512.One, Int512.NegativeOne, Int512.NegativeOne);
+		yield return () => (Int512.NegativeOne, Int512.NegativeOne, Int512.One);
+		yield return () => (new Int512(0, 0, 0, 0, 0, 0, 0, 2), new Int512(0, 0, 0, 0, 0, 0, 0, 3), new Int512(0, 0, 0, 0, 0, 0, 0, 6));
+		yield return () => (new Int512(0, 0, 0, 0, 0, 0, 0, ulong.MaxValue), new Int256(0, 0, 0, 2), new Int256(0, 0, 1, ulong.MaxValue - 1));
+		yield return () => (
+			new Int512(0, 0, 0, 0, 0, 0, 0, ulong.MaxValue), 
+			new Int512(0, 0, 0, 0, 0, 0, 0, ulong.MaxValue), 
+			new Int512(0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0xFFFF_FFFF_FFFF_FFFE, 0x0000_0000_0000_0001)
+			);
+		yield return () => (
+			new Int512(0, 0, 0, 0, 0, 0, 1, 0), 
+			new Int512(0, 0, 0, 0, 0, 0, 1, 0), 
+			new Int512(0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0001, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000)
+			);
+		yield return () => (
+			new Int512(0, 0, 0, 0, 0, 1, 0, 0), 
+			new Int512(0, 0, 0, 0, 0, 1, 0, 0), 
+			new Int512(0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0001, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000)
+			);
 	}
 
 	public static IEnumerable<Func<(Int512, Int512, Int512)>> op_SubtractionTestData()
