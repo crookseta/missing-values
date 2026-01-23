@@ -228,27 +228,9 @@ namespace MissingValues
 			Multiply(in left, right._p6, ref Unsafe.Add(ref resultPtr, 6));
 			Multiply(in left, right._p7, ref Unsafe.Add(ref resultPtr, 7));
 
-			lower = new UInt512(
-				Unsafe.Add(ref resultPtr, 7),
-				Unsafe.Add(ref resultPtr, 6),
-				Unsafe.Add(ref resultPtr, 5),
-				Unsafe.Add(ref resultPtr, 3),
-				Unsafe.Add(ref resultPtr, 2),
-				Unsafe.Add(ref resultPtr, 4),
-				Unsafe.Add(ref resultPtr, 1),
-				Unsafe.Add(ref resultPtr, 0)
-				);
+			lower = BitHelper.Read<UInt512>(rawBits);
 
-			return new UInt512(
-				Unsafe.Add(ref resultPtr, 15),
-				Unsafe.Add(ref resultPtr, 14),
-				Unsafe.Add(ref resultPtr, 13),
-				Unsafe.Add(ref resultPtr, 12),
-				Unsafe.Add(ref resultPtr, 11),
-				Unsafe.Add(ref resultPtr, 10),
-				Unsafe.Add(ref resultPtr, 09),
-				Unsafe.Add(ref resultPtr, 08)
-				);
+			return BitHelper.Read<UInt512>(rawBits[8..]);
 
 			static void Multiply(in UInt512 left, ulong right, ref ulong resultPtr)
 			{

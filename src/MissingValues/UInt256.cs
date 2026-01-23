@@ -151,19 +151,9 @@ namespace MissingValues
 			Multiply(in left, right._p2, ref Unsafe.Add(ref resultPtr, 2));
 			Multiply(in left, right._p3, ref Unsafe.Add(ref resultPtr, 3));
 
-			lower = new UInt256(
-				Unsafe.Add(ref resultPtr, 3),
-				Unsafe.Add(ref resultPtr, 2),
-				Unsafe.Add(ref resultPtr, 1),
-				Unsafe.Add(ref resultPtr, 0)
-				);
+			lower = BitHelper.Read<UInt256>(rawBits);
 
-			return new UInt256(
-				Unsafe.Add(ref resultPtr, 7),
-				Unsafe.Add(ref resultPtr, 6),
-				Unsafe.Add(ref resultPtr, 5),
-				Unsafe.Add(ref resultPtr, 4)
-				);
+			return BitHelper.Read<UInt256>(rawBits[4..]);
 
 			static void Multiply(in UInt256 left, ulong right, ref ulong resultPtr)
 			{
