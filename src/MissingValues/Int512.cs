@@ -840,11 +840,11 @@ namespace MissingValues
 		/// <param name="value">The value to convert.</param>
 		public static implicit operator Int512(Int128 value)
 		{
-			ref long v = ref Unsafe.As<Int128, long>(ref value);
-			ulong lowerShifted = (ulong)(Unsafe.Add(ref v, 1) >> 63);
+			long v = unchecked((long)value.Upper);
+			ulong lowerShifted = unchecked((ulong)(v >> 63));
 			return new(
 				lowerShifted, lowerShifted, lowerShifted, lowerShifted,
-				lowerShifted, lowerShifted, (ulong)Unsafe.Add(ref v, 1), (ulong)v
+				lowerShifted, lowerShifted, value.Upper, value.Lower
 				);
 		}
 

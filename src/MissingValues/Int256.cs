@@ -405,7 +405,16 @@ namespace MissingValues
 		/// Implicitly converts a <see cref="Int256" /> value to a <see cref="Int512"/>.
 		/// </summary>
 		/// <param name="value">The value to convert.</param>
-		public static implicit operator Int512(in Int256 value) => new Int512(0, 0, 0, 0, value._p3, value._p2, value._p1, value._p0);
+		public static implicit operator Int512(in Int256 value)
+		{
+			long v = unchecked((long)value._p3);
+			ulong lowerShifted = unchecked((ulong)(v >> 63));
+			return new Int512(
+				lowerShifted, lowerShifted, lowerShifted, lowerShifted, 
+				value._p3, value._p2, value._p1, value._p0
+				);
+		}
+
 		/// <summary>
 		/// Explicitly converts a <see cref="Int256" /> value to a <see cref="nint"/>.
 		/// </summary>
