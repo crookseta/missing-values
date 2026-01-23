@@ -265,10 +265,10 @@ namespace MissingValues.Internals
 		{
 			if (Vector256.IsHardwareAccelerated)
 			{
-				return Unsafe.BitCast<Vector256<ulong>, UInt256>(
+				return Unsafe.BitCast<Vector256<byte>, UInt256>(
 					Vector256.Shuffle(
-						Unsafe.BitCast<UInt256, Vector256<ulong>>(value),
-						Vector256.Create((byte)31, 30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0).AsUInt64()
+						Unsafe.BitCast<UInt256, Vector256<byte>>(value),
+						Vector256.Create((byte)31, 30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0)
 						)
 					);
 			}
@@ -278,10 +278,10 @@ namespace MissingValues.Internals
 		{
 			if (Vector256.IsHardwareAccelerated)
 			{
-				return Unsafe.BitCast<Vector256<ulong>, Int256>(
+				return Unsafe.BitCast<Vector256<byte>, Int256>(
 					Vector256.Shuffle(
-						Unsafe.BitCast<Int256, Vector256<ulong>>(value),
-						Vector256.Create((byte)31, 30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0).AsUInt64()
+						Unsafe.BitCast<Int256, Vector256<byte>>(value),
+						Vector256.Create((byte)31, 30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0)
 					)
 				);
 			}
@@ -291,13 +291,13 @@ namespace MissingValues.Internals
 		{
 			if (Vector512.IsHardwareAccelerated)
 			{
-				return Unsafe.BitCast<Vector512<ulong>, UInt512>(
+				return Unsafe.BitCast<Vector512<byte>, UInt512>(
 					Vector512.Shuffle(
-						Unsafe.BitCast<UInt512, Vector512<ulong>>(value),
+						Unsafe.BitCast<UInt512, Vector512<byte>>(value),
 						Vector512.Create(
 							(byte)63, 62, 61, 60, 59, 58, 57, 56, 55, 54, 53, 52, 51, 50, 49, 48, 47, 46, 45, 44, 43, 42, 41, 40, 39, 38, 37, 36, 35, 34, 33, 32,
 							31, 30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0
-							).AsUInt64()
+							)
 					)
 				);
 			}
@@ -314,13 +314,13 @@ namespace MissingValues.Internals
 		{
 			if (Vector512.IsHardwareAccelerated)
 			{
-				return Unsafe.BitCast<Vector512<ulong>, Int512>(
+				return Unsafe.BitCast<Vector512<byte>, Int512>(
 					Vector512.Shuffle(
-						Unsafe.BitCast<Int512, Vector512<ulong>>(value),
+						Unsafe.BitCast<Int512, Vector512<byte>>(value),
 						Vector512.Create(
 							(byte)63, 62, 61, 60, 59, 58, 57, 56, 55, 54, 53, 52, 51, 50, 49, 48, 47, 46, 45, 44, 43, 42, 41, 40, 39, 38, 37, 36, 35, 34, 33, 32,
 							31, 30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0
-						).AsUInt64()
+						)
 					)
 				);
 			}
