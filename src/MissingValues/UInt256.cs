@@ -6,6 +6,7 @@ using System.Globalization;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Runtime.Intrinsics;
 using System.Text.Json.Serialization;
 
 namespace MissingValues
@@ -678,22 +679,25 @@ namespace MissingValues
 		/// <param name="value">The value to convert.</param>
 		public static explicit operator double(in UInt256 value)
 		{
-			const double TwoPow204 = 25711008708143844408671393477458601640355247900524685364822016.0d;
-			const double TwoPow256 = 115792089237316195423570985008687907853269984665640564039457584007913129639936.0d;
+			const double TwoPow64 = 18446744073709551616.0d;
+			const double TwoPow128 = 340282366920938463463374607431768211456.0d;
+			const double TwoPow192 = 6277101735386680763835789423207666416102355444464034512896.0d;
 
-			const ulong TwoPow204bits = 0x4CB0_0000_0000_0000;
-			const ulong TwoPow256bits = 0x4FF0_0000_0000_0000;
+			if (Vector256.IsHardwareAccelerated)
+			{
+				Vector256<double> vValue = Vector256.ConvertToDouble(Unsafe.BitCast<UInt256, Vector256<ulong>>(value));
+				return Vector256.Sum(vValue * Vector256.Create(0, TwoPow64, TwoPow128, TwoPow192));
+			}
 
 			if (value.Upper == 0)
 			{
 				return value._p1 != 0 ? (double)value.Lower : value._p0;
 			}
 
-
-			double lower = BitConverter.UInt64BitsToDouble(TwoPow204bits | ((ulong)(value.Lower >> 12) >> 12) | (value.Part0 & 0xFFFFFF)) - TwoPow204;
-			double upper = BitConverter.UInt64BitsToDouble(TwoPow256bits | (ulong)(value >> 204)) - TwoPow256;
-
-			return lower + upper;
+			return value._p3 * TwoPow192
+			       + value._p2 * TwoPow128
+			       + value._p1 * TwoPow64
+			       + value._p0;
 		}
 		/// <summary>
 		/// Explicitly converts a <see cref="UInt256" /> value to a <see cref="float"/>.

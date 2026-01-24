@@ -7,6 +7,7 @@ using System.Globalization;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Runtime.Intrinsics;
 using System.Text.Json.Serialization;
 
 namespace MissingValues
@@ -794,21 +795,44 @@ namespace MissingValues
 		/// <param name="value">The value to convert.</param>
 		public static explicit operator double(in UInt512 value)
 		{
-			const double TwoPow460 = 2977131414714805823690030317109266572712515013375254774912983855843898524112477893944078543723575564536883288499266264815757728270805630976.0d;
-			const double TwoPow512 = 13407807929942597099574024998205846127479365820592393377723561443721764030073546976801874298166903427690031858186486050853753882811946569946433649006084096.0d;
+			const double TwoPow64 = 18446744073709551616.0d;
+			const double TwoPow128 = 340282366920938463463374607431768211456.0d;
+			const double TwoPow192 = 6277101735386680763835789423207666416102355444464034512896.0d;
+			const double TwoPow256 = 115792089237316195423570985008687907853269984665640564039457584007913129639936.0d;
+			const double TwoPow320 = 2135987035920910082395021706169552114602704522356652769947041607822219725780640550022962086936576.0d;
+			const double TwoPow384 = 39402006196394479212279040100143613805079739270465446667948293404245721771497210611414266254884915640806627990306816.0d;
+			const double TwoPow448 = 726838724295606890549323807888004534353641360687318060281490199180639288113397923326191050713763565560762521606266177933534601628614656.0d;
 
-			const ulong TwoPow460bits = 0x5CB0_0000_0000_0000;
-			const ulong TwoPow512bits = 0x5FF0_0000_0000_0000;
+			if (Vector512.IsHardwareAccelerated)
+			{
+				Vector512<double> vValue = Vector512.ConvertToDouble(Unsafe.BitCast<UInt512, Vector512<ulong>>(value));
+				
+				return Vector512.Sum(vValue * Vector512.Create(0, TwoPow64, TwoPow128, TwoPow192, TwoPow256, TwoPow320, TwoPow384, TwoPow448));
+			}
+			if (Vector256.IsHardwareAccelerated)
+			{
+				Vector256<double> vUpper = Vector256.ConvertToDouble(Vector256.Create(value._p4, value._p5, value._p6, value._p7));
+				Vector256<double> vLower = Vector256.ConvertToDouble(Vector256.Create(value._p0, value._p1, value._p2, value._p3));
+
+				double upper = Vector256.Sum(vUpper * Vector256.Create(TwoPow256, TwoPow320, TwoPow384, TwoPow448));
+				double lower = Vector256.Sum(vLower * Vector256.Create(0, TwoPow64, TwoPow128, TwoPow192));
+				
+				return upper + lower;
+			}
 
 			if (value.Upper == 0)
 			{
 				return (double)value.Lower;
 			}
-
-			double lower = BitConverter.UInt64BitsToDouble(TwoPow460bits | ((ulong)(value >> 12) >> 12) | ((ulong)(value.Lower) & 0xFFFFFF)) - TwoPow460;
-			double upper = BitConverter.UInt64BitsToDouble(TwoPow512bits | (ulong)(value >> 460)) - TwoPow512;
-
-			return lower + upper;
+			
+			return value._p7 * TwoPow448
+			       + value._p6 * TwoPow384
+			       + value._p5 * TwoPow320
+			       + value._p4 * TwoPow256
+			       + value._p3 * TwoPow192
+			       + value._p2 * TwoPow128
+			       + value._p1 * TwoPow64
+			       + value._p0;
 		}
 		/// <summary>
 		/// Explicitly converts a <see cref="UInt512" /> value to a <see cref="float"/>.
