@@ -1276,7 +1276,7 @@ public class Int256DataSources
 
 	public static IEnumerable<Func<(Int256, Int512)>> ConvertToCheckedInt512TestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int256.Parse("-465182250000"), Int512.Parse("-465182250000"));
 	}
 	
 	public static IEnumerable<Func<(Int256, Int512)>> ConvertToSaturatingInt512TestData()
@@ -1321,17 +1321,26 @@ public class Int256DataSources
 
 	public static IEnumerable<Func<(Int256, double)>> ConvertToCheckedDoubleTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int256.Parse("781377183594418599030564404241984000000000000000000"),
+			781377183594418599030564404241984000000000000000000.0d);
+		yield return () => (Int256.Parse("-781377183594418599030564404241984000000000000000000"),
+			-781377183594418599030564404241984000000000000000000.0d);
 	}
 	
 	public static IEnumerable<Func<(Int256, double)>> ConvertToSaturatingDoubleTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int256.Parse("781377183594418599030564404241984000000000000000000"),
+			781377183594418599030564404241984000000000000000000.0d);
+		yield return () => (Int256.Parse("-781377183594418599030564404241984000000000000000000"),
+			-781377183594418599030564404241984000000000000000000.0d);
 	}
 	
 	public static IEnumerable<Func<(Int256, double)>> ConvertToTruncatingDoubleTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int256.Parse("781377183594418599030564404241984000000000000000000"),
+			781377183594418599030564404241984000000000000000000.0d);
+		yield return () => (Int256.Parse("-781377183594418599030564404241984000000000000000000"),
+			-781377183594418599030564404241984000000000000000000.0d);
 	}
 
 	public static IEnumerable<Func<(Int256, Quad)>> ConvertToCheckedQuadTestData()

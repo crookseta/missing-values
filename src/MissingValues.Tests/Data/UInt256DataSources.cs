@@ -1068,17 +1068,20 @@ public class UInt256DataSources
 
 	public static IEnumerable<Func<(UInt256, double)>> ConvertToCheckedDoubleTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (UInt256.Parse("781377183594418599030564404241984000000000000000000"),
+			781377183594418599030564404241984000000000000000000.0d);
 	}
 	
 	public static IEnumerable<Func<(UInt256, double)>> ConvertToSaturatingDoubleTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (UInt256.Parse("781377183594418599030564404241984000000000000000000"),
+			781377183594418599030564404241984000000000000000000.0d);
 	}
 	
 	public static IEnumerable<Func<(UInt256, double)>> ConvertToTruncatingDoubleTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (UInt256.Parse("781377183594418599030564404241984000000000000000000"),
+			781377183594418599030564404241984000000000000000000.0d);
 	}
 
 	public static IEnumerable<Func<(UInt256, Quad)>> ConvertToCheckedQuadTestData()
