@@ -1682,10 +1682,9 @@ namespace MissingValues
 				return bits64[0];
 			}
 
-			// The maximum exponent for quads is 16383, which corresponds to a uint bit length of 64.
-			// All BigIntegers with bits[] longer than 64 evaluate to Quad.Infinity (or NegativeInfinity).
-			// Cases where the exponent is between 16384 and 16398 are handled in BitHelper.GetQuadFromParts.
-			const int InfinityLength = MaxExponent / 64;
+			// The maximum exponent for quads is 16383, which corresponds to ulong bit length of 256.
+			// All BigIntegers with bits[] longer than 512 evaluate to Quad.Infinity (or NegativeInfinity).
+			const int InfinityLength = (MaxExponent + 1) / 64;
 
 			if (length > InfinityLength)
 			{

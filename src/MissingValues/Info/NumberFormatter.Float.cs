@@ -269,17 +269,6 @@ internal static partial class NumberFormatter
 		if (actualValue.EndsWith(numberDecimalSeparator))
 		{
 			actualValue = actualValue[..^numberDecimalSeparator.Length];
-			containsDecimalSeparator = false;
-			dotIndex = -1;
-		}
-		else
-		{
-			containsDecimalSeparator = (dotIndex = actualValue.IndexOf(numberDecimalSeparator)) > -1;
-		}
-
-		if (containsDecimalSeparator && actualValue[dotIndex..].Length > precision)
-		{
-			actualValue = actualValue[..precision];
 		}
 
 		return actualValue;

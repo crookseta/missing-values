@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Runtime.Intrinsics;
 
 namespace MissingValues.Internals
 {
@@ -262,22 +263,72 @@ namespace MissingValues.Internals
 
 		internal static UInt256 ReverseEndianness(in UInt256 value)
 		{
-			return new(BinaryPrimitives.ReverseEndianness(value.Part0), BinaryPrimitives.ReverseEndianness(value.Part1), BinaryPrimitives.ReverseEndianness(value.Part2), BinaryPrimitives.ReverseEndianness(value.Part3));
+			if (Vector256.IsHardwareAccelerated)
+			{
+				return Unsafe.BitCast<Vector256<byte>, UInt256>(
+					Vector256.Shuffle(
+						Unsafe.BitCast<UInt256, Vector256<byte>>(value),
+						Vector256.Create((byte)31, 30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0)
+						)
+					);
+			}
+			return new UInt256(BinaryPrimitives.ReverseEndianness(value.Part0), BinaryPrimitives.ReverseEndianness(value.Part1), BinaryPrimitives.ReverseEndianness(value.Part2), BinaryPrimitives.ReverseEndianness(value.Part3));
 		}
 		internal static Int256 ReverseEndianness(in Int256 value)
 		{
-			return new(BinaryPrimitives.ReverseEndianness(value.Part0), BinaryPrimitives.ReverseEndianness(value.Part1), BinaryPrimitives.ReverseEndianness(value.Part2), BinaryPrimitives.ReverseEndianness(value.Part3));
+			if (Vector256.IsHardwareAccelerated)
+			{
+				return Unsafe.BitCast<Vector256<byte>, Int256>(
+					Vector256.Shuffle(
+						Unsafe.BitCast<Int256, Vector256<byte>>(value),
+						Vector256.Create((byte)31, 30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0)
+					)
+				);
+			}
+			return new Int256(BinaryPrimitives.ReverseEndianness(value.Part0), BinaryPrimitives.ReverseEndianness(value.Part1), BinaryPrimitives.ReverseEndianness(value.Part2), BinaryPrimitives.ReverseEndianness(value.Part3));
 		}
 		internal static UInt512 ReverseEndianness(in UInt512 value)
 		{
-			return new(
+			if (Vector512.IsHardwareAccelerated)
+			{
+				return Unsafe.BitCast<Vector512<byte>, UInt512>(
+					Vector512.Shuffle(
+						Unsafe.BitCast<UInt512, Vector512<byte>>(value),
+						Vector512.Create(
+							(byte)63, 62, 61, 60, 59, 58, 57, 56, 55, 54, 53, 52, 51, 50, 49, 48, 47, 46, 45, 44, 43, 42, 41, 40, 39, 38, 37, 36, 35, 34, 33, 32,
+							31, 30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0
+							)
+					)
+				);
+			}
+			if (Vector256.IsHardwareAccelerated)
+			{
+				return new UInt512(ReverseEndianness(value.Lower), ReverseEndianness(value.Upper));
+			}
+			return new UInt512(
 				BinaryPrimitives.ReverseEndianness(value.Part0), BinaryPrimitives.ReverseEndianness(value.Part1), BinaryPrimitives.ReverseEndianness(value.Part2), BinaryPrimitives.ReverseEndianness(value.Part3),
 				BinaryPrimitives.ReverseEndianness(value.Part4), BinaryPrimitives.ReverseEndianness(value.Part5), BinaryPrimitives.ReverseEndianness(value.Part6), BinaryPrimitives.ReverseEndianness(value.Part7)
 				);
 		}
 		internal static Int512 ReverseEndianness(in Int512 value)
 		{
-			return new(
+			if (Vector512.IsHardwareAccelerated)
+			{
+				return Unsafe.BitCast<Vector512<byte>, Int512>(
+					Vector512.Shuffle(
+						Unsafe.BitCast<Int512, Vector512<byte>>(value),
+						Vector512.Create(
+							(byte)63, 62, 61, 60, 59, 58, 57, 56, 55, 54, 53, 52, 51, 50, 49, 48, 47, 46, 45, 44, 43, 42, 41, 40, 39, 38, 37, 36, 35, 34, 33, 32,
+							31, 30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0
+						)
+					)
+				);
+			}
+			if (Vector256.IsHardwareAccelerated)
+			{
+				return new Int512(ReverseEndianness(value.Lower), ReverseEndianness(value.Upper));
+			}
+			return new Int512(
 				BinaryPrimitives.ReverseEndianness(value.Part0), BinaryPrimitives.ReverseEndianness(value.Part1), BinaryPrimitives.ReverseEndianness(value.Part2), BinaryPrimitives.ReverseEndianness(value.Part3),
 				BinaryPrimitives.ReverseEndianness(value.Part4), BinaryPrimitives.ReverseEndianness(value.Part5), BinaryPrimitives.ReverseEndianness(value.Part6), BinaryPrimitives.ReverseEndianness(value.Part7)
 				);
