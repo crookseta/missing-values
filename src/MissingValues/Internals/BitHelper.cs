@@ -215,6 +215,7 @@ namespace MissingValues.Internals
 
 		internal static int Log10(in UInt256 value)
 		{
+			// https://graphics.stanford.edu/~seander/bithacks.html#IntegerLog10
 			UInt256 x = value | UInt256.One;
 			int num1 = Log2(in x) + 1;
 			int num2 = (num1 * 1233) >> 12;

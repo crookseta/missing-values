@@ -1560,11 +1560,19 @@ namespace MissingValues
 				var v2 = Unsafe.BitCast<UInt512, Vector512<ulong>>(right);
 				return v1 == v2;
 			}
-			else
+			if (Vector256.IsHardwareAccelerated)
 			{
-				return (left._p7 == right._p7) && (left._p6 == right._p6) && (left._p5 == right._p5) && (left._p4 == right._p4)
-					&& (left._p3 == right._p3) && (left._p2 == right._p2) && (left._p1 == right._p1) && (left._p0 == right._p0);
+				Vector256<ulong> vUpper1 = Vector256.Create(left._p4, left._p5, left._p6, left._p7);
+				Vector256<ulong> vLower1 = Vector256.Create(left._p0, left._p1, left._p2, left._p3);
+				
+				Vector256<ulong> vUpper2 = Vector256.Create(left._p4, left._p5, left._p6, left._p7);
+				Vector256<ulong> vLower2 = Vector256.Create(left._p0, left._p1, left._p2, left._p3);
+
+				return vUpper1 == vUpper2 && vLower1 == vLower2;
 			}
+
+			return (left._p7 == right._p7) && (left._p6 == right._p6) && (left._p5 == right._p5) && (left._p4 == right._p4)
+			       && (left._p3 == right._p3) && (left._p2 == right._p2) && (left._p1 == right._p1) && (left._p0 == right._p0);
 		}
 
 		/// <inheritdoc/>
@@ -1576,11 +1584,19 @@ namespace MissingValues
 				var v2 = Unsafe.BitCast<UInt512, Vector512<ulong>>(right);
 				return v1 != v2;
 			}
-			else
+			if (Vector256.IsHardwareAccelerated)
 			{
-				return (left._p7 != right._p7) || (left._p6 != right._p6) || (left._p5 != right._p5) || (left._p4 != right._p4)
-					|| (left._p3 != right._p3) || (left._p2 != right._p2) || (left._p1 != right._p1) || (left._p0 != right._p0);
+				Vector256<ulong> vUpper1 = Vector256.Create(left._p4, left._p5, left._p6, left._p7);
+				Vector256<ulong> vLower1 = Vector256.Create(left._p0, left._p1, left._p2, left._p3);
+				
+				Vector256<ulong> vUpper2 = Vector256.Create(left._p4, left._p5, left._p6, left._p7);
+				Vector256<ulong> vLower2 = Vector256.Create(left._p0, left._p1, left._p2, left._p3);
+
+				return vUpper1 != vUpper2 || vLower1 != vLower2;
 			}
+
+			return (left._p7 != right._p7) || (left._p6 != right._p6) || (left._p5 != right._p5) || (left._p4 != right._p4)
+			       || (left._p3 != right._p3) || (left._p2 != right._p2) || (left._p1 != right._p1) || (left._p0 != right._p0);
 		}
 
 		/// <inheritdoc/>
