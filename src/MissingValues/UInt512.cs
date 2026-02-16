@@ -795,6 +795,7 @@ namespace MissingValues
 		/// <param name="value">The value to convert.</param>
 		public static explicit operator double(in UInt512 value)
 		{
+			const double TwoPow0 = 1.0d;
 			const double TwoPow64 = 18446744073709551616.0d;
 			const double TwoPow128 = 340282366920938463463374607431768211456.0d;
 			const double TwoPow192 = 6277101735386680763835789423207666416102355444464034512896.0d;
@@ -807,7 +808,7 @@ namespace MissingValues
 			{
 				Vector512<double> vValue = Vector512.ConvertToDouble(Unsafe.BitCast<UInt512, Vector512<ulong>>(value));
 				
-				return Vector512.Sum(vValue * Vector512.Create(0, TwoPow64, TwoPow128, TwoPow192, TwoPow256, TwoPow320, TwoPow384, TwoPow448));
+				return Vector512.Sum(vValue * Vector512.Create(TwoPow0, TwoPow64, TwoPow128, TwoPow192, TwoPow256, TwoPow320, TwoPow384, TwoPow448));
 			}
 			if (Vector256.IsHardwareAccelerated)
 			{
@@ -815,7 +816,7 @@ namespace MissingValues
 				Vector256<double> vLower = Vector256.ConvertToDouble(Vector256.Create(value._p0, value._p1, value._p2, value._p3));
 
 				double upper = Vector256.Sum(vUpper * Vector256.Create(TwoPow256, TwoPow320, TwoPow384, TwoPow448));
-				double lower = Vector256.Sum(vLower * Vector256.Create(0, TwoPow64, TwoPow128, TwoPow192));
+				double lower = Vector256.Sum(vLower * Vector256.Create(TwoPow0, TwoPow64, TwoPow128, TwoPow192));
 				
 				return upper + lower;
 			}
@@ -832,7 +833,7 @@ namespace MissingValues
 			       + value._p3 * TwoPow192
 			       + value._p2 * TwoPow128
 			       + value._p1 * TwoPow64
-			       + value._p0;
+			       + value._p0 * TwoPow0;
 		}
 		/// <summary>
 		/// Explicitly converts a <see cref="UInt512" /> value to a <see cref="float"/>.

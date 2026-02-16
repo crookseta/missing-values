@@ -679,6 +679,7 @@ namespace MissingValues
 		/// <param name="value">The value to convert.</param>
 		public static explicit operator double(in UInt256 value)
 		{
+			const double TwoPow0 = 1.0d;
 			const double TwoPow64 = 18446744073709551616.0d;
 			const double TwoPow128 = 340282366920938463463374607431768211456.0d;
 			const double TwoPow192 = 6277101735386680763835789423207666416102355444464034512896.0d;
@@ -686,7 +687,7 @@ namespace MissingValues
 			if (Vector256.IsHardwareAccelerated)
 			{
 				Vector256<double> vValue = Vector256.ConvertToDouble(Unsafe.BitCast<UInt256, Vector256<ulong>>(value));
-				return Vector256.Sum(vValue * Vector256.Create(0, TwoPow64, TwoPow128, TwoPow192));
+				return Vector256.Sum(vValue * Vector256.Create(TwoPow0, TwoPow64, TwoPow128, TwoPow192));
 			}
 
 			if (value.Upper == 0)
@@ -697,7 +698,7 @@ namespace MissingValues
 			return value._p3 * TwoPow192
 			       + value._p2 * TwoPow128
 			       + value._p1 * TwoPow64
-			       + value._p0;
+			       + value._p0 * TwoPow0;
 		}
 		/// <summary>
 		/// Explicitly converts a <see cref="UInt256" /> value to a <see cref="float"/>.
