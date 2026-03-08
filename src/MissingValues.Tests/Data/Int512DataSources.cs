@@ -284,37 +284,73 @@ public class Int512DataSources
 
 	public static IEnumerable<Func<(Int512, int, Int512)>> op_ShiftLeftTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (new Int512(1, 2, 3, 4, 5, 6, 7, 8), 0, new Int512(1, 2, 3, 4, 5, 6, 7, 8));
+		yield return () => (new Int512(0, 0, 0, 0, 0, 0, 0, 1), 1, new Int512(0, 0, 0, 0, 0, 0, 0, 2));
+		yield return () => (new Int512(0, 0, 0, 0, 0, 0, 0, 1), 63, new Int512(0, 0, 0, 0, 0, 0, 0, 0x8000_0000_0000_0000));
+		yield return () => (new Int512(0, 0, 0, 0, 0, 0, 0, 1), 64, new Int512(0, 0, 0, 0, 0, 0, 1, 0));
+		yield return () => (new Int512(0, 0, 0, 0, 0, 0, 0, 1), 128, new Int512(0, 0, 0, 0, 0, 1, 0, 0));
+		yield return () => (new Int512(0, 0, 0, 0, 0, 0, 0, 1), 256, new Int512(0, 0, 0, 1, 0, 0, 0, 0));
+		yield return () => (new Int512(0, 0, 0, 0, 0, 0, 0, 1), 511, new Int512(0x8000_0000_0000_0000, 0, 0, 0, 0, 0, 0, 0));
+		yield return () => (new Int512(1, 2, 3, 4, 5, 6, 7, 8), 512, new Int512(1, 2, 3, 4, 5, 6, 7, 8));
+		yield return () => (new Int512(0, 0, 0, 0, 0, 0, 0, 1), 513, new Int512(0, 0, 0, 0, 0, 0, 0, 2));
 	}
 
 	public static IEnumerable<Func<(Int512, int, Int512)>> op_ShiftRightTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int512.Zero, 100, Int512.Zero);
+		yield return () => (Int512.One, 0, Int512.One);
+		yield return () => (new Int512(1, 0, 0, 0, 0, 0, 0, 0), 64, new Int512(0, 1, 0, 0, 0, 0, 0, 0));
+		yield return () => (new Int512(1, 0, 0, 0, 0, 0, 0, 0), 128, new Int512(0, 0, 1, 0, 0, 0, 0, 0));
+		yield return () => (new Int512(1, 0, 0, 0, 0, 0, 0, 0), 192, new Int512(0, 0, 0, 1, 0, 0, 0, 0));
+		yield return () => (new Int512(0b1000000000000000000000000000000000000000000000000000000000000000, 0, 0, 0, 0, 0, 0, 0), 031, new Int512(0b1111111111111111111111111111111100000000000000000000000000000000, 0, 0, 0, 0, 0, 0, 0));
+		yield return () => (new Int512(0b1000000000000000000000000000000000000000000000000000000000000000, 0, 0, 0, 0, 0, 0, 0), 127, new Int512(0b1111111111111111111111111111111111111111111111111111111111111111, 0b1111111111111111111111111111111111111111111111111111111111111111, 0, 0, 0, 0, 0, 0));
+		yield return () => (new Int512(0b1000000000000000000000000000000000000000000000000000000000000000, 0, 0, 0, 0, 0, 0, 0), 255, new Int512(0b1111111111111111111111111111111111111111111111111111111111111111, 0b1111111111111111111111111111111111111111111111111111111111111111, 0b1111111111111111111111111111111111111111111111111111111111111111, 0b1111111111111111111111111111111111111111111111111111111111111111, 0, 0, 0, 0));
+		yield return () => (new Int512(0b1000000000000000000000000000000000000000000000000000000000000000, 0, 0, 0, 0, 0, 0, 0), 511, new Int512(0b1111111111111111111111111111111111111111111111111111111111111111, 0b1111111111111111111111111111111111111111111111111111111111111111, 0b1111111111111111111111111111111111111111111111111111111111111111, 0b1111111111111111111111111111111111111111111111111111111111111111, 0b1111111111111111111111111111111111111111111111111111111111111111, 0b1111111111111111111111111111111111111111111111111111111111111111, 0b1111111111111111111111111111111111111111111111111111111111111111, 0b1111111111111111111111111111111111111111111111111111111111111111));
+		yield return () => (Int512.One, 256, Int512.One);
 	}
 
 	public static IEnumerable<Func<(Int512, int, Int512)>> op_UnsignedShiftRightTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (new Int512(1, 2, 3, 4, 5, 6, 7, 8), 0, new Int512(1, 2, 3, 4, 5, 6, 7, 8));
+		yield return () => (new Int512(0, 0, 0, 0, 0, 0, 0, 2), 1, new Int512(0, 0, 0, 0, 0, 0, 0, 1));
+		yield return () => (new Int512(0, 0, 0, 0, 0, 0, 0, 0x8000_0000_0000_0000), 63, new Int512(0, 0, 0, 0, 0, 0, 0, 1));
+		yield return () => (new Int512(0, 0, 0, 0, 0, 0, 1, 0), 64, new Int512(0, 0, 0, 0, 0, 0, 0, 1));
+		yield return () => (new Int512(0, 0, 0, 0, 0, 1, 0, 0), 128, new Int512(0, 0, 0, 0, 0, 0, 0, 1));
+		yield return () => (new Int512(0, 0, 0, 1, 0, 0, 0, 0), 256, new Int512(0, 0, 0, 0, 0, 0, 0, 1));
+		yield return () => (new Int512(0x8000_0000_0000_0000, 0, 0, 0, 0, 0, 0, 0), 511, new Int512(0, 0, 0, 0, 0, 0, 0, 1));
+		yield return () => (new Int512(1, 2, 3, 4, 5, 6, 7, 8), 512, new Int512(1, 2, 3, 4, 5, 6, 7, 8));
+		yield return () => (new Int512(0, 0, 0, 0, 0, 0, 0, 2), 513, new Int512(0, 0, 0, 0, 0, 0, 0, 1));
 	}
 
 	public static IEnumerable<Func<(Int512, Int512, Int512)>> op_BitwiseAndTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int512.Zero, Int512.Zero, Int512.Zero);
+		yield return () => (Int512.Zero, Int512.MaxValue, Int512.Zero);
+		yield return () => (new Int512(1, 2, 3, 4, 5, 6, 7, 8), new Int512(1, 2, 3, 4, 5, 6, 7, 8), new Int512(1, 2, 3, 4, 5, 6, 7, 8));
+		yield return () => (new Int512(1, 2, 3, 4, 5, 6, 7, 8), Int512.MaxValue, new Int512(1, 2, 3, 4, 5, 6, 7, 8));
 	}
 
 	public static IEnumerable<Func<(Int512, Int512, Int512)>> op_BitwiseOrTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int512.Zero, Int512.Zero, Int512.Zero);
+		yield return () => (Int512.Zero, Int512.MaxValue, Int512.MaxValue);
+		yield return () => (new Int512(1, 2, 3, 4, 5, 6, 7, 8), new Int512(1, 2, 3, 4, 5, 6, 7, 8), new Int512(1, 2, 3, 4, 5, 6, 7, 8));
+		yield return () => (new Int512(1, 2, 3, 4, 5, 6, 7, 8), Int512.MaxValue, Int512.MaxValue);
 	}
 
 	public static IEnumerable<Func<(Int512, Int512, Int512)>> op_BitwiseXorTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int512.Zero, Int512.Zero, Int512.Zero);
+		yield return () => (Int512.Zero, Int512.MaxValue, Int512.MaxValue);
+		yield return () => (new Int512(1, 2, 3, 4, 5, 6, 7, 8), new Int512(1, 2, 3, 4, 5, 6, 7, 8), Int512.Zero);
 	}
 
 	public static IEnumerable<Func<(Int512, Int512)>> op_OnesComplementTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int512.Zero, Int512.MaxValue);
+		yield return () => (Int512.MaxValue, Int512.Zero);
+		yield return () => (new Int512(0xAAAAAAAAAAAAAAAA, 0x5555555555555555, 0xAAAAAAAAAAAAAAAA, 0x5555555555555555, 0xAAAAAAAAAAAAAAAA, 0x5555555555555555, 0xAAAAAAAAAAAAAAAA, 0x5555555555555555), new Int512(0x5555555555555555, 0xAAAAAAAAAAAAAAAA, 0x5555555555555555, 0xAAAAAAAAAAAAAAAA, 0x5555555555555555, 0xAAAAAAAAAAAAAAAA, 0x5555555555555555, 0xAAAAAAAAAAAAAAAA));
+		yield return () => (new Int512(0x0123456789ABCDEF, 0xFEDCBA9876543210, 0x0F0F0F0F0F0F0F0F, 0xF0F0F0F0F0F0F0F0, 0x0123456789ABCDEF, 0xFEDCBA9876543210, 0x0F0F0F0F0F0F0F0F, 0xF0F0F0F0F0F0F0F0), new Int512(~0x0123456789ABCDEFU, ~0xFEDCBA9876543210U, ~0x0F0F0F0F0F0F0F0FU, ~0xF0F0F0F0F0F0F0F0U, ~0x0123456789ABCDEFU, ~0xFEDCBA9876543210U, ~0x0F0F0F0F0F0F0F0FU, ~0xF0F0F0F0F0F0F0F0U));
 	}
 
 	public static IEnumerable<Func<(Int512, Int512, bool)>> op_EqualityTestData()
