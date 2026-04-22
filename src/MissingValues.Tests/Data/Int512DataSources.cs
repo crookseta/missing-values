@@ -355,122 +355,219 @@ public class Int512DataSources
 
 	public static IEnumerable<Func<(Int512, Int512, bool)>> op_EqualityTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int512.Zero, Int512.Zero, true);
+		yield return () => (new Int512(1, 2, 3, 4, 5, 6, 7, 8), new Int512(1, 2, 3, 4, 5, 6, 7, 8), true);
+		yield return () => (new Int512(1, 2, 3, 4, 5, 6, 7, 8), new Int512(1, 2, 3, 4, 5, 6, 7, 9), false);
+		yield return () => (new Int512(1, 2, 3, 4, 5, 6, 6, 8), new Int512(1, 2, 3, 4, 5, 6, 7, 8), false);
+		yield return () => (new Int512(1, 2, 3, 4, 5, 6, 7, 9), new Int512(1, 2, 3, 4, 5, 6, 7, 1), false);
+		yield return () => (new Int512(1, 2, 3, 4, 5, 6, 7, 8), new Int512(1, 2, 3, 4, 4, 6, 7, 8), false);
+		yield return () => (new Int512(1, 2, 2, 4, 5, 6, 7, 8), new Int512(1, 2, 3, 4, 5, 6, 7, 8), false);
+		yield return () => (new Int512(1, 2, 3, 4, 5, 6, 7, 8), new Int512(2, 2, 3, 4, 5, 6, 7, 8), false);
+		yield return () => (new Int512(1, 1, 3, 4, 5, 6, 7, 8), new Int512(1, 2, 3, 4, 5, 6, 7, 8), false);
 	}
 
 	public static IEnumerable<Func<(Int512, Int512, bool)>> op_InequalityTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int512.Zero, Int512.Zero, false);
+		yield return () => (new Int512(1, 2, 3, 4, 5, 6, 7, 8), new Int512(1, 2, 3, 4, 5, 6, 7, 8), false);
+		yield return () => (new Int512(1, 2, 3, 4, 5, 6, 7, 8), new Int512(1, 2, 3, 4, 5, 6, 7, 9), true);
+		yield return () => (new Int512(1, 2, 3, 4, 5, 6, 6, 8), new Int512(1, 2, 3, 4, 5, 6, 7, 8), true);
+		yield return () => (new Int512(1, 2, 3, 4, 5, 6, 7, 9), new Int512(1, 2, 3, 4, 5, 6, 7, 1), true);
+		yield return () => (new Int512(1, 2, 3, 4, 5, 6, 7, 8), new Int512(1, 2, 3, 4, 4, 6, 7, 8), true);
+		yield return () => (new Int512(1, 2, 2, 4, 5, 6, 7, 8), new Int512(1, 2, 3, 4, 5, 6, 7, 8), true);
+		yield return () => (new Int512(1, 2, 3, 4, 5, 6, 7, 8), new Int512(2, 2, 3, 4, 5, 6, 7, 8), true);
+		yield return () => (new Int512(1, 1, 3, 4, 5, 6, 7, 8), new Int512(1, 2, 3, 4, 5, 6, 7, 8), true);
 	}
 
 	public static IEnumerable<Func<(Int512, Int512, bool)>> op_GreaterThanOrEqualTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int512.Zero, Int512.Zero, true);
+		yield return () => (new Int512(1, 2, 3, 4, 5, 6, 7, 8), new Int512(1, 2, 3, 4, 5, 6, 7, 8), true);
+		yield return () => (new Int512(1, 2, 3, 4, 5, 6, 7, 8), new Int512(1, 2, 3, 4, 5, 6, 7, 9), false);
+		yield return () => (new Int512(1, 2, 3, 4, 5, 6, 6, 8), new Int512(1, 2, 3, 4, 5, 6, 7, 8), false);
+		yield return () => (new Int512(1, 2, 3, 4, 5, 6, 7, 9), new Int512(1, 2, 3, 4, 5, 6, 7, 1), true);
+		yield return () => (new Int512(1, 2, 3, 4, 5, 6, 7, 8), new Int512(1, 2, 3, 4, 4, 6, 7, 8), true);
+		yield return () => (new Int512(1, 2, 2, 4, 5, 6, 7, 8), new Int512(1, 2, 3, 4, 5, 6, 7, 8), false);
+		yield return () => (new Int512(1, 2, 3, 4, 5, 6, 7, 8), new Int512(2, 2, 3, 4, 5, 6, 7, 8), false);
+		yield return () => (new Int512(1, 1, 3, 4, 5, 6, 7, 8), new Int512(1, 2, 3, 4, 5, 6, 7, 8), false);
 	}
 
 	public static IEnumerable<Func<(Int512, Int512, bool)>> op_GreaterThanTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int512.Zero, Int512.Zero, false);
+		yield return () => (new Int512(1, 2, 3, 4, 5, 6, 7, 8), new Int512(1, 2, 3, 4, 5, 6, 7, 8), false);
+		yield return () => (new Int512(1, 2, 3, 4, 5, 6, 7, 8), new Int512(1, 2, 3, 4, 5, 6, 7, 9), false);
+		yield return () => (new Int512(1, 2, 3, 4, 5, 6, 6, 8), new Int512(1, 2, 3, 4, 5, 6, 7, 8), false);
+		yield return () => (new Int512(1, 2, 3, 4, 5, 6, 7, 9), new Int512(1, 2, 3, 4, 5, 6, 7, 1), true);
+		yield return () => (new Int512(1, 2, 3, 4, 5, 6, 7, 8), new Int512(1, 2, 3, 4, 4, 6, 7, 8), true);
+		yield return () => (new Int512(1, 2, 2, 4, 5, 6, 7, 8), new Int512(1, 2, 3, 4, 5, 6, 7, 8), false);
+		yield return () => (new Int512(1, 2, 3, 4, 5, 6, 7, 8), new Int512(2, 2, 3, 4, 5, 6, 7, 8), false);
+		yield return () => (new Int512(1, 1, 3, 4, 5, 6, 7, 8), new Int512(1, 2, 3, 4, 5, 6, 7, 8), false);
 	}
 
 	public static IEnumerable<Func<(Int512, Int512, bool)>> op_LessThanOrEqualTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int512.Zero, Int512.Zero, true);
+		yield return () => (new Int512(1, 2, 3, 4, 5, 6, 7, 8), new Int512(1, 2, 3, 4, 5, 6, 7, 8), true);
+		yield return () => (new Int512(1, 2, 3, 4, 5, 6, 7, 8), new Int512(1, 2, 3, 4, 5, 6, 7, 9), true);
+		yield return () => (new Int512(1, 2, 3, 4, 5, 6, 6, 8), new Int512(1, 2, 3, 4, 5, 6, 7, 8), true);
+		yield return () => (new Int512(1, 2, 3, 4, 5, 6, 7, 9), new Int512(1, 2, 3, 4, 5, 6, 7, 1), false);
+		yield return () => (new Int512(1, 2, 3, 4, 5, 6, 7, 8), new Int512(1, 2, 3, 4, 4, 6, 7, 8), false);
+		yield return () => (new Int512(1, 2, 2, 4, 5, 6, 7, 8), new Int512(1, 2, 3, 4, 5, 6, 7, 8), true);
+		yield return () => (new Int512(1, 2, 3, 4, 5, 6, 7, 8), new Int512(2, 2, 3, 4, 5, 6, 7, 8), true);
+		yield return () => (new Int512(1, 1, 3, 4, 5, 6, 7, 8), new Int512(1, 2, 3, 4, 5, 6, 7, 8), true);
 	}
 
 	public static IEnumerable<Func<(Int512, Int512, bool)>> op_LessThanTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int512.Zero, Int512.Zero, false);
+		yield return () => (new Int512(1, 2, 3, 4, 5, 6, 7, 8), new Int512(1, 2, 3, 4, 5, 6, 7, 8), false);
+		yield return () => (new Int512(1, 2, 3, 4, 5, 6, 7, 8), new Int512(1, 2, 3, 4, 5, 6, 7, 9), true);
+		yield return () => (new Int512(1, 2, 3, 4, 5, 6, 6, 8), new Int512(1, 2, 3, 4, 5, 6, 7, 8), true);
+		yield return () => (new Int512(1, 2, 3, 4, 5, 6, 7, 9), new Int512(1, 2, 3, 4, 5, 6, 7, 1), false);
+		yield return () => (new Int512(1, 2, 3, 4, 5, 6, 7, 8), new Int512(1, 2, 3, 4, 4, 6, 7, 8), false);
+		yield return () => (new Int512(1, 2, 2, 4, 5, 6, 7, 8), new Int512(1, 2, 3, 4, 5, 6, 7, 8), true);
+		yield return () => (new Int512(1, 2, 3, 4, 5, 6, 7, 8), new Int512(2, 2, 3, 4, 5, 6, 7, 8), true);
+		yield return () => (new Int512(1, 1, 3, 4, 5, 6, 7, 8), new Int512(1, 2, 3, 4, 5, 6, 7, 8), true);
 	}
 
 	public static IEnumerable<Func<(Int512, Int512)>> AbsTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int512.Zero, Int512.Zero);
+		yield return () => (Int512.One, Int512.One);
+		yield return () => (Int512.NegativeOne, Int512.One);
+		yield return () => (Int512.MinValue + Int512.One, Int512.MaxValue);
 	}
 
 	public static IEnumerable<Func<(Int512, bool)>> IsCanonicalTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int512.Zero, true);
 	}
 
 	public static IEnumerable<Func<(Int512, bool)>> IsComplexNumberTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int512.Zero, false);
 	}
 
 	public static IEnumerable<Func<(Int512, bool)>> IsEvenIntegerTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int512.Zero, true);
+		yield return () => (Int512.One, false);
+		yield return () => (Int512.NegativeOne, false);
+		yield return () => (new Int512(0, 0, 0, 2), true);
+		yield return () => (new Int512(0, 0, 0, 3), false);
+		yield return () => (new Int512(0, 0, 0, 4), true);
+		yield return () => (new Int512(0, 0, 0, 6), true);
+		yield return () => (new Int512(0, 0, 0, 8), true);
+		yield return () => (new Int512(0, 0, 0, 16), true);
+		yield return () => (-new Int512(0, 0, 0, 2), true);
+		yield return () => (-new Int512(0, 0, 0, 3), false);
+		yield return () => (-new Int512(0, 0, 0, 4), true);
+		yield return () => (-new Int512(0, 0, 0, 6), true);
+		yield return () => (-new Int512(0, 0, 0, 8), true);
+		yield return () => (-new Int512(0, 0, 0, 16), true);
 	}
 
 	public static IEnumerable<Func<(Int512, bool)>> IsFiniteTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int512.Zero, true);
 	}
 
 	public static IEnumerable<Func<(Int512, bool)>> IsImaginaryNumberTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int512.Zero, false);
 	}
 
 	public static IEnumerable<Func<(Int512, bool)>> IsInfinityTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int512.Zero, false);
 	}
 
 	public static IEnumerable<Func<(Int512, bool)>> IsIntegerTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int512.Zero, true);
 	}
 
 	public static IEnumerable<Func<(Int512, bool)>> IsNaNTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int512.Zero, false);
 	}
 
 	public static IEnumerable<Func<(Int512, bool)>> IsNegativeTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int512.Zero, false);
+		yield return () => (Int512.One, false);
+		yield return () => (Int512.MaxValue, false);
+		yield return () => (Int512.NegativeOne, true);
+		yield return () => (-Int512.One, true);
+		yield return () => (-Int512.MaxValue, true);
+		yield return () => (Int512.MinValue, true);
 	}
 
 	public static IEnumerable<Func<(Int512, bool)>> IsNegativeInfinityTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int512.Zero, false);
 	}
 
 	public static IEnumerable<Func<(Int512, bool)>> IsNormalTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int512.Zero, false);
+		yield return () => (Int512.One, true);
+		yield return () => (Int512.NegativeOne, true);
 	}
 
 	public static IEnumerable<Func<(Int512, bool)>> IsOddIntegerTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int512.Zero, false);
+		yield return () => (Int512.One, true);
+		yield return () => (Int512.NegativeOne, true);
+		yield return () => (new Int512(0, 0, 0, 0, 0, 0, 0, 2), false);
+		yield return () => (new Int512(0, 0, 0, 0, 0, 0, 0, 3), true);
+		yield return () => (new Int512(0, 0, 0, 0, 0, 0, 0, 4), false);
+		yield return () => (new Int512(0, 0, 0, 0, 0, 0, 0, 6), false);
+		yield return () => (new Int512(0, 0, 0, 0, 0, 0, 0, 8), false);
+		yield return () => (new Int512(0, 0, 0, 0, 0, 0, 0, 16), false);
+		yield return () => (-new Int512(0, 0, 0, 0, 0, 0, 0, 2), false);
+		yield return () => (-new Int512(0, 0, 0, 0, 0, 0, 0, 3), true);
+		yield return () => (-new Int512(0, 0, 0, 0, 0, 0, 0, 4), false);
+		yield return () => (-new Int512(0, 0, 0, 0, 0, 0, 0, 6), false);
+		yield return () => (-new Int512(0, 0, 0, 0, 0, 0, 0, 8), false);
+		yield return () => (-new Int512(0, 0, 0, 0, 0, 0, 0, 16), false);
 	}
 
 	public static IEnumerable<Func<(Int512, bool)>> IsPositiveTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int512.Zero, true);
+		yield return () => (Int512.One, true);
+		yield return () => (Int512.MaxValue, true);
+		yield return () => (Int512.NegativeOne, false);
+		yield return () => (-Int512.One, false);
+		yield return () => (-Int512.MaxValue, false);
+		yield return () => (Int512.MinValue, false);
 	}
 
 	public static IEnumerable<Func<(Int512, bool)>> IsPositiveInfinityTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int512.Zero, false);
 	}
 
 	public static IEnumerable<Func<(Int512, bool)>> IsRealNumberTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int512.Zero, true);
 	}
 
 	public static IEnumerable<Func<(Int512, bool)>> IsSubnormalTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int512.Zero, false);
 	}
 
 	public static IEnumerable<Func<(Int512, bool)>> IsZeroTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int512.Zero, true);
+		yield return () => (Int512.One, false);
+		yield return () => (Int512.NegativeOne, false);
+		yield return () => (Int512.MaxValue, false);
+		yield return () => (Int512.MinValue, false);
 	}
 
 	public static IEnumerable<Func<(Int512, Int512, Int512)>> MaxMagnitudeTestData()
