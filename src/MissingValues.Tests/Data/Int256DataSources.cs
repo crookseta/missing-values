@@ -915,7 +915,7 @@ public class Int256DataSources
 		yield return () => (new Int256(0, 0, 0, 0), new Int256(0, 0, 0, 0));
 	}
 
-	public static IEnumerable<Func<(Int256, Int256, (Int256, Int256))>> DivRemTestData()
+	public static IEnumerable<Func<(Int256, Int256, Pair<Int256>)>> DivRemTestData()
 	{
 		yield return () => (new Int256(0, 0, 0, 0xFFFF_FFFF_FFFF_FFFF), new Int256(0, 0, 0, 10), (new Int256(0, 0, 0, 0xFFFF_FFFF_FFFF_FFFF / 10), new Int256(0, 0, 0, 0xFFFF_FFFF_FFFF_FFFF % 10)));
 		yield return () => (new Int256(0, 0, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF), new Int256(0, 0, 0, 10), (new Int256(0, new UInt128(0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF) / 10), new Int256(0, new UInt128(0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF) % 10)));

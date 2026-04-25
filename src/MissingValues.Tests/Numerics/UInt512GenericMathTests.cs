@@ -556,10 +556,10 @@ public class UInt512GenericMathTests
 	#region IBinaryInteger
 	[Test]
 	[MethodDataSource(typeof(DataSources), nameof(DivRemTestData))]
-	public async Task DivRemTest(UInt512 left, UInt512 right, (UInt512, UInt512) expected)
+	public async Task DivRemTest(UInt512 left, UInt512 right, Pair<UInt512> expected)
 	{
 		var result = Helper.DivRem(left, right);
-		await Assert.That(result).IsEqualTo(expected);
+		await Assert.That((Pair<UInt512>)result).IsEqualTo(expected);
 	}
 	[Test]
 	[MethodDataSource(typeof(DataSources), nameof(LeadingZeroCountTestData))]

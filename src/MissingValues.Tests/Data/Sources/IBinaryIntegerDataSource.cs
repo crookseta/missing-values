@@ -5,7 +5,7 @@ namespace MissingValues.Tests.Data.Sources;
 public interface IBinaryIntegerDataSource<T>
     where T : IBinaryInteger<T>
 {
-    static abstract IEnumerable<Func<(T, T, (T, T))>> DivRemTestData();
+    static abstract IEnumerable<Func<(T, T, Pair<T>)>> DivRemTestData();
     static abstract IEnumerable<Func<(T, T)>> LeadingZeroCountTestData();
     static abstract IEnumerable<Func<(T, T)>> PopCountTestData();
     static abstract IEnumerable<Func<(byte[], bool, T)>> ReadBigEndianTestData();

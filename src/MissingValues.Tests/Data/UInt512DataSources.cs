@@ -839,7 +839,7 @@ public class UInt512DataSources
 		yield return () => (new UInt512(0, 0, 0, 0, 0, 0, 0, 0), new UInt512(0, 0, 0, 0, 0, 0, 0, 0));
 	}
 
-	public static IEnumerable<Func<(UInt512, UInt512, (UInt512, UInt512))>> DivRemTestData()
+	public static IEnumerable<Func<(UInt512, UInt512, Pair<UInt512>)>> DivRemTestData()
 	{
 		yield return () => (new UInt512(1, 2, 3, 4, 5, 6, 7, 8), new UInt512(0, 0, 0, 0, 0, 0, 0, 1), (new UInt512(1, 2, 3, 4, 5, 6, 7, 8), new UInt512(0, 0, 0, 0, 0, 0, 0, 0)));
 		yield return () => (new UInt512(1, 2, 3, 4, 5, 6, 7, 8), new UInt512(1, 2, 3, 4, 5, 6, 7, 8), (new UInt512(0, 0, 0, 0, 0, 0, 0, 1), new UInt512(0, 0, 0, 0, 0, 0, 0, 0)));

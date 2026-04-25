@@ -664,7 +664,7 @@ public class UInt256DataSources
 		yield return () => (new UInt256(0, 0, 0, 0), new UInt256(0, 0, 0, 0));
 	}
 
-	public static IEnumerable<Func<(UInt256, UInt256, (UInt256, UInt256))>> DivRemTestData()
+	public static IEnumerable<Func<(UInt256, UInt256, Pair<UInt256>)>> DivRemTestData()
 	{
 		yield return () => (new UInt256(1, 2, 3, 4), UInt256.One, (new UInt256(1, 2, 3, 4), new UInt256(0, 0, 0, 0)));
 		yield return () => (new UInt256(1, 2, 3, 4), new UInt256(1, 2, 3, 4), (new UInt256(0, 0, 0, 1), new UInt256(0, 0, 0, 0)));

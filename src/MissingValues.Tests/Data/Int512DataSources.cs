@@ -572,27 +572,56 @@ public class Int512DataSources
 
 	public static IEnumerable<Func<(Int512, Int512, Int512)>> MaxMagnitudeTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int512.MaxValue, 5, Int512.MaxValue);
+		yield return () => (Int512.One, 5, 5);
+		yield return () => (Int512.One, Int512.NegativeOne, Int512.One);
+		yield return () => (Int512.One, -2, -2);
+		yield return () => (Int512.NegativeOne, Int512.MaxValue, Int512.MaxValue);
+		yield return () => (Int512.MinValue, -2, Int512.MinValue);
+		yield return () => (Int512.MaxValue, Int512.MinValue, Int512.MinValue);
 	}
 
 	public static IEnumerable<Func<(Int512, Int512, Int512)>> MaxMagnitudeNumberTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int512.MaxValue, 5, Int512.MaxValue);
+		yield return () => (Int512.One, 5, 5);
+		yield return () => (Int512.One, Int512.NegativeOne, Int512.One);
+		yield return () => (Int512.One, -2, -2);
+		yield return () => (Int512.NegativeOne, Int512.MaxValue, Int512.MaxValue);
+		yield return () => (Int512.MinValue, -2, Int512.MinValue);
+		yield return () => (Int512.MaxValue, Int512.MinValue, Int512.MinValue);
 	}
 
 	public static IEnumerable<Func<(Int512, Int512, Int512)>> MinMagnitudeTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int512.MaxValue, 5, 5);
+		yield return () => (Int512.One, 5, Int512.One);
+		yield return () => (Int512.One, Int512.NegativeOne, Int512.NegativeOne);
+		yield return () => (Int512.One, -2, Int512.One);
+		yield return () => (Int512.NegativeOne, Int512.MaxValue, Int512.NegativeOne);
+		yield return () => (Int512.MinValue, -2, -2);
+		yield return () => (Int512.MaxValue, Int512.MinValue, Int512.MaxValue);
 	}
 
 	public static IEnumerable<Func<(Int512, Int512, Int512)>> MinMagnitudeNumberTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int512.MaxValue, 5, 5);
+		yield return () => (Int512.One, 5, Int512.One);
+		yield return () => (Int512.One, Int512.NegativeOne, Int512.NegativeOne);
+		yield return () => (Int512.One, -2, Int512.One);
+		yield return () => (Int512.NegativeOne, Int512.MaxValue, Int512.NegativeOne);
+		yield return () => (Int512.MinValue, -2, -2);
+		yield return () => (Int512.MaxValue, Int512.MinValue, Int512.MaxValue);
 	}
 
 	public static IEnumerable<Func<(Int512, Int512, Int512, Int512)>> MultiplyAddEstimateTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int512.One, Int512.One, Int512.One, 2);
+		yield return () => (Int512.One, Int512.Zero, Int512.One, Int512.One);
+		yield return () => (Int512.MaxValue, Int512.NegativeOne, Int512.NegativeOne, Int512.MinValue);
+		yield return () => (200, 100, 500, 20500);
+		yield return () => (new Int512(0, 0, 0, 0, 0, 0, ulong.MaxValue, ulong.MaxValue), new Int512(0, 0, 0, 0, 0, 0, ulong.MaxValue, ulong.MaxValue), new Int512(0, 0, 0, 0, 0, 0, ulong.MaxValue, ulong.MaxValue), Int512.Parse("115792089237316195423570985008687907852929702298719625575994209400481361428480"));
+		yield return () => (new Int512(0, 0, 0, 0, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue), new Int512(0, 0, 0, 0, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue), new Int512(0, 0, 0, 0, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue), new Int512(ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, 0, 0, 0, 0));
 	}
 
 	public static IEnumerable<Func<(string, NumberStyles, IFormatProvider?, Int512)>> ParseTestData()
@@ -627,7 +656,30 @@ public class Int512DataSources
 
 	public static IEnumerable<Func<(Int512, Int512, Int512, Int512)>> ClampTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (
+			new Int512(0, 0, 0, 0, 0, 0, 0, 1),
+			new Int512(0, 0, 0, 0, 0, 0, 0, 2),
+			new Int512(0, 0, 0, 0, 0, 0, 0, 4),
+			new Int512(0, 0, 0, 0, 0, 0, 0, 2)
+		);
+		yield return () => (
+			new Int512(0, 0, 0, 0, 0, 0, 0, 1),
+			new Int512(0, 0, 0, 0, 0, 0, 0, 1),
+			new Int512(0, 0, 0, 0, 0, 0, 0, 4),
+			new Int512(0, 0, 0, 0, 0, 0, 0, 1)
+		);
+		yield return () => (
+			new Int512(0, 0, 0, 0, 0, 1, 0, 0),
+			new Int512(0, 0, 0, 0, 0, 0, 0, 1),
+			new Int512(0, 0, 0, 0, 1, 0, 0, 0),
+			new Int512(0, 0, 0, 0, 0, 1, 0, 0)
+		);
+		yield return () => (
+			new Int512(0, 0, 0, 0, 0, 1, 0, 0),
+			new Int512(0, 0, 0, 0, 0, 0, 0, 1),
+			new Int512(1, 0, 0, 0, 0, 0, 0, 0),
+			new Int512(0, 0, 0, 0, 0, 1, 0, 0)
+		);
 	}
 
 	public static IEnumerable<Func<(Int512, Int512, Int512)>> CopySignTestData()
@@ -670,7 +722,7 @@ public class Int512DataSources
 		throw new NotImplementedException();
 	}
 
-	public static IEnumerable<Func<(Int512, Int512, (Int512, Int512))>> DivRemTestData()
+	public static IEnumerable<Func<(Int512, Int512, Pair<Int512>)>> DivRemTestData()
 	{
 		throw new NotImplementedException();
 	}
