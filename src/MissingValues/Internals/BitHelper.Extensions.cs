@@ -5,6 +5,22 @@ namespace MissingValues.Internals
 {
 	internal static partial class BitHelper
 	{
+		extension<TChar>(ref ValueListBuilder<TChar> builder)
+			where TChar : unmanaged, IUtfCharacter<TChar>
+		{
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			public void AppendUtf16(ReadOnlySpan<char> source)
+			{
+				Span<TChar> span = builder.AppendSpan(TChar.GetLength(source));
+				TChar.Copy(source, span);
+			}
+			[MethodImpl(MethodImplOptions.AggressiveInlining)]
+			public void AppendUtf8(ReadOnlySpan<byte> source)
+			{
+				Span<TChar> span = builder.AppendSpan(TChar.GetLength(source));
+				TChar.Copy(source, span);
+			}
+		}
 		extension(UInt128 uInt128)
 		{
 			public ulong Upper

@@ -58,6 +58,10 @@ namespace MissingValues
 
 		static int IBinaryFloatingPointInfo<Octo, UInt256>.DenormalMantissaBits => BiasedExponentShift;
 
+		static int IBinaryFloatingPointInfo<Octo, UInt256>.MinimumBinaryExponent => 1 - MaxExponent;
+
+		static int IBinaryFloatingPointInfo<Octo, UInt256>.MaximumBinaryExponent => MaxExponent;
+
 		static int IBinaryFloatingPointInfo<Octo, UInt256>.MinimumDecimalExponent => -78984;
 
 		static int IBinaryFloatingPointInfo<Octo, UInt256>.MaximumDecimalExponent => 78913;
@@ -73,6 +77,8 @@ namespace MissingValues
 		static int IBinaryFloatingPointInfo<Octo, UInt256>.ExponentBias => ExponentBias;
 
 		static int IBinaryFloatingPointInfo<Octo, UInt256>.OverflowDecimalExponent => (ExponentBias + (2 * 237) / 3);
+		
+		static int IBinaryFloatingPointInfo<Octo, UInt256>.InfinityExponent => 0x7FFFF;
 
 		static UInt256 IBinaryFloatingPointInfo<Octo, UInt256>.DenormalMantissaMask => TrailingSignificandMask;
 

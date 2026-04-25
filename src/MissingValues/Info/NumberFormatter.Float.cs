@@ -1,6 +1,8 @@
-﻿using MissingValues.Internals;
+﻿using System.Diagnostics;
+using MissingValues.Internals;
 using System.Globalization;
 using System.Numerics;
+using System.Runtime.CompilerServices;
 
 namespace MissingValues.Info;
 
@@ -21,6 +23,8 @@ internal interface IBinaryFloatingPointInfo<TFloat, TSignificand> : IBinaryFloat
 	abstract static bool ExplicitLeadingBit { get; }
 	abstract static int NormalMantissaBits { get; }
 	abstract static int DenormalMantissaBits { get; }
+	abstract static int MinimumBinaryExponent { get; }
+	abstract static int MaximumBinaryExponent { get; }
 	abstract static int MinimumDecimalExponent { get; }
 	abstract static int MaximumDecimalExponent { get; }
 	abstract static int MinBiasedExponent { get; }
@@ -29,6 +33,7 @@ internal interface IBinaryFloatingPointInfo<TFloat, TSignificand> : IBinaryFloat
 	abstract static int ExponentBits { get; }
 	abstract static int ExponentBias { get; }
 	abstract static int OverflowDecimalExponent { get; }
+	abstract static int InfinityExponent { get; }
 	abstract static TSignificand DenormalMantissaMask { get; }
 	abstract static TSignificand NormalMantissaMask { get; }
 	abstract static TSignificand TrailingSignificandMask { get; }
@@ -61,7 +66,7 @@ internal static partial class NumberFormatter
 		}
 		else
 		{
-			if (format!.Length > 1 && int.TryParse(format![1..].TrimEnd(), out int p))
+			if (format!.Length > 1 && int.TryParse(format!.AsSpan()[1..].TrimEnd(), out int p))
 			{
 				precision = p > maxSignificandPrecision ? maxSignificandPrecision : p;
 			}
@@ -71,22 +76,28 @@ internal static partial class NumberFormatter
 			}
 		}
 
-		ReadOnlySpan<char> fmt = noFormat ? ['G'] : format;
+		ReadOnlySpan<char> fmt = noFormat ? ['G'] : format.AsSpan().TrimStart();
 
 		NumberFormatInfo info = NumberFormatInfo.GetInstance(provider);
 
 		Span<Utf16Char> buffer = stackalloc Utf16Char[maxBufferAlloc];
-		if (!(fmt.Contains("G", StringComparison.OrdinalIgnoreCase)
-			|| fmt.Contains("E", StringComparison.OrdinalIgnoreCase)))
+		int charsWritten;
+		if (fmt.StartsWith("X", StringComparison.OrdinalIgnoreCase) 
+		    && TryFormatFloatToHex<TFloat, TSignificand, Utf16Char>(in value, buffer, out charsWritten, fmt[0], precision, info))
+		{
+			return new string(Utf16Char.CastToCharSpan(buffer).Slice(0, charsWritten));
+		}
+		if (!(fmt.StartsWith("G", StringComparison.OrdinalIgnoreCase)
+			|| fmt.StartsWith("E", StringComparison.OrdinalIgnoreCase)))
 		{
 			return FormatNumber(in value, format!, info);
 		}
 
-		Ryu.Format<TFloat, TSignificand, Utf16Char>(in value, buffer, out _, fmt, out bool isExceptional, info, precision);
+		Ryu.Format<TFloat, TSignificand, Utf16Char>(in value, buffer, out charsWritten, fmt, out bool isExceptional, info, precision);
 
-		if (isExceptional || fmt.Contains("E", StringComparison.OrdinalIgnoreCase))
+		if (isExceptional || fmt.StartsWith("E", StringComparison.OrdinalIgnoreCase))
 		{
-			return new string(Utf16Char.CastToCharSpan(buffer).TrimEnd('\0'));
+			return new string(Utf16Char.CastToCharSpan(buffer).Slice(0, charsWritten));
 		}
 
 		return new string(Utf16Char.CastToCharSpan(GetGeneralFromScientificFloatChars(buffer, info, precision, maxSignificandPrecision)));
@@ -125,7 +136,10 @@ internal static partial class NumberFormatter
 			}
 		}
 
-
+		if (format.Contains("X", StringComparison.OrdinalIgnoreCase))
+		{
+			return TryFormatFloatToHex<TFloat, TSignificand, TChar>(in value, destination, out charsWritten, format.TrimStart()[0], precision, info);
+		}
 		if (!(format.Contains("G", StringComparison.OrdinalIgnoreCase)
 			|| format.Contains("E", StringComparison.OrdinalIgnoreCase)))
 		{
@@ -143,6 +157,250 @@ internal static partial class NumberFormatter
 		ReadOnlySpan<TChar> general = GetGeneralFromScientificFloatChars(buffer, info, precision, maxSignificandPrecision);
 		charsWritten = general.Length;
 		return general.TryCopyTo(destination);
+	}
+	
+	private static bool TryFormatFloatToHex<TFloat, TSignificand, TChar>(in TFloat value, Span<TChar> destination, out int charsWritten, char format, int precision, NumberFormatInfo info)
+		where TFloat : unmanaged, IBinaryFloatingPointInfo<TFloat, TSignificand>
+		where TSignificand : unmanaged, IBinaryInteger<TSignificand>, IUnsignedNumber<TSignificand>
+		where TChar : unmanaged, IUtfCharacter<TChar>
+	{
+		// Based on CoreLib implementation: https://github.com/dotnet/runtime/blob/1cf40e98f541b9bbcb614f86caf3a2504459c919/src/libraries/System.Private.CoreLib/src/System/Number.Formatting.cs#L544
+		
+		Debug.Assert((format | 0x20) == 'x');
+		Debug.Assert(TFloat.IsFinite(value));
+
+		ValueListBuilder<TChar> builder = new ValueListBuilder<TChar>(stackalloc TChar[256]);
+		
+		bool isNegative = TFloat.IsNegative(value);
+
+		if (isNegative)
+		{
+			builder.AppendUtf16(info.NegativeSign);
+		}
+		
+		builder.Append((TChar)'0');
+		builder.Append((TChar)format);
+
+		TSignificand fraction = ExtractFractionAndBiasedExponent(in value, out int exponent);
+
+		if (fraction == TSignificand.Zero)
+		{
+			// +/- 0
+			builder.Append((TChar)'0');
+
+			if (precision > 0)
+			{
+				builder.AppendUtf16(info.NumberDecimalSeparator);
+				builder.AppendSpan(precision).Fill((TChar)'0');
+			}
+			
+			// Exponent sign is always emitted ('+' or '-'), consistent with the 'E' format.
+			builder.Append((TChar)(format == 'X' ? 'P' : 'p'));
+			builder.Append((TChar)'+');
+			builder.Append((TChar)'0');
+
+			return builder.TryCopyTo(destination, out charsWritten);
+		}
+		
+		// ExtractFractionAndBiasedExponent returns (note: despite the name, the exponent is unbiased):
+		//   For normal:   fraction = (1 << DenormalMantissaBits) | mantissa, exponent = biasedExp - ExponentBias - DenormalMantissaBits
+		//   For denormal: fraction = mantissa, exponent = MinBinaryExponent - DenormalMantissaBits
+		//
+		// We want the form: 1.xxxxx * 2^e
+		// So we need to normalize so that the leading 1 bit is at bit DenormalMantissaBits.
+		// For normal numbers, this is already the case.
+		// For denormal numbers, we need to shift left until the leading 1 is there.
+
+		int mantissaBits = TFloat.DenormalMantissaBits;
+
+		if (fraction < (TSignificand.One << mantissaBits))
+		{
+			// Denormal: shift the leading 1 up to the implicit bit position
+			int lz = int.CreateTruncating(TSignificand.LeadingZeroCount(fraction)) - ((Unsafe.SizeOf<TSignificand>() * 8 - 1) - mantissaBits);
+			fraction <<= lz;
+			exponent -= lz;
+		}
+		
+		// Now fraction has the leading 1 at bit [mantissaBits], and the remaining bits below.
+		// The unbiased exponent for the value is: exponent + mantissaBits (since fraction is
+		// really fraction * 2^exponent, and we want 1.xxx * 2^actualExponent).
+		int actualExponent = exponent + mantissaBits;
+
+		// Strip the implicit leading 1 to get the fractional bits
+		TSignificand significandBits = fraction & ((TSignificand.One << mantissaBits) - TSignificand.One);
+
+		// Leading digit is normally '1' for non-zero (the implicit bit)
+		int leadingDigit = 1;
+
+		// Determine how many hex digits to emit for the fractional part
+		int defaultHexDigits = (mantissaBits + 3) / 4;
+		
+		if (precision == 0)
+		{
+			// Round significandBits into the leading digit
+			TSignificand half = (mantissaBits > 0) ? (TSignificand.One << (mantissaBits - 1)) : TSignificand.Zero;
+			if (significandBits > half || (significandBits == half && (leadingDigit & 1) != 0))
+			{
+				leadingDigit++;
+				// leadingDigit can't exceed 2 since it started at 1
+			}
+
+			significandBits = TSignificand.Zero;
+		}
+		
+		builder.Append((TChar)(char)('0' + leadingDigit));
+
+		if (precision > 0)
+		{
+			TSignificand shifted;
+
+			if (precision < defaultHexDigits)
+			{
+				// Need to round
+				int bitsToKeep = precision * 4;
+				int bitsToDiscard = mantissaBits - bitsToKeep;
+
+				// bitsToDiscard is always in (0, mantissaBits) here because precision >= 1
+				// (we're in the precision > 0 branch) and precision < defaultHexDigits
+				// (checked above), so bitsToKeep < mantissaBits and bitsToDiscard > 0.
+				// For all IEEE types mantissaBits <= 52, so bitsToDiscard < 64.
+				Debug.Assert(bitsToDiscard > 0 && bitsToDiscard < (Unsafe.SizeOf<TSignificand>() * 8));
+				if (bitsToDiscard > 0 && bitsToDiscard < (Unsafe.SizeOf<TSignificand>() * 8))
+				{
+					TSignificand roundBit = TSignificand.One << (bitsToDiscard - 1);
+					TSignificand discardedBits = significandBits & ((TSignificand.One << bitsToDiscard) - TSignificand.One);
+					bool roundUp = discardedBits > roundBit || (discardedBits == roundBit && ((significandBits >> bitsToDiscard) & TSignificand.One) != TSignificand.Zero);
+
+					if (roundUp)
+					{
+						significandBits = (significandBits >> bitsToDiscard) + TSignificand.One;
+
+						// Check if rounding overflowed into leading digit
+						if (significandBits >= (TSignificand.One << bitsToKeep))
+						{
+							significandBits = TSignificand.Zero;
+							actualExponent++;
+						}
+					}
+					else
+					{
+						significandBits >>= bitsToDiscard;
+					}
+
+					shifted = significandBits << ((Unsafe.SizeOf<TSignificand>() * 8) - bitsToKeep);
+				}
+				else
+				{
+					shifted = significandBits << ((Unsafe.SizeOf<TSignificand>() * 8) - mantissaBits);
+				}
+			}
+			else
+			{
+				shifted = significandBits << ((Unsafe.SizeOf<TSignificand>() * 8) - mantissaBits);
+			}
+			
+			builder.AppendUtf16(info.NumberDecimalSeparator);
+			
+			// Emit real nibbles
+			int realDigits = Math.Min(precision, defaultHexDigits);
+			for (int i = 0; i < realDigits; i++)
+			{
+				builder.Append(format == 'X' 
+					? TChar.ToCharUpper(uint.CreateTruncating(shifted >> (Unsafe.SizeOf<TSignificand>() * 8 - 4)))
+					: TChar.ToCharLower(uint.CreateTruncating(shifted >> (Unsafe.SizeOf<TSignificand>() * 8 - 4))));
+				shifted <<= 4;
+			}
+			
+			// Emit padding zeros (when precision > defaultHexDigits)
+			int padCount = precision - realDigits;
+			if (padCount > 0)
+			{
+				builder.AppendSpan(padCount).Fill((TChar)'0');
+			}
+		}
+		else if (precision < 0)
+		{
+			// Default precision: emit significant hex digits, trimming trailing zeros.
+			// Compute trailing zero nibbles from the nibble-aligned representation.
+			int trimmedDigits = 0;
+			if (significandBits != TSignificand.Zero)
+			{
+				// Align significand to nibble boundary (pad LSB so total bits = defaultHexDigits * 4),
+				// then count trailing zero nibbles via trailing zero bits.
+				int paddingBits = defaultHexDigits * 4 - mantissaBits;
+				TSignificand nibbleAligned = significandBits << paddingBits;
+				int trailingZeroBits = int.CreateTruncating(TSignificand.TrailingZeroCount(nibbleAligned));
+				trimmedDigits = defaultHexDigits - (trailingZeroBits / 4);
+				
+				if (trimmedDigits > 0)
+				{
+					builder.AppendUtf16(info.NumberDecimalSeparator);
+
+					TSignificand shifted = significandBits << ((Unsafe.SizeOf<TSignificand>() * 8) - mantissaBits);
+					for (int i = 0; i < trimmedDigits; i++)
+					{
+						builder.Append(format == 'X' 
+							? TChar.ToUpper((TChar)uint.CreateTruncating(shifted >> (Unsafe.SizeOf<TSignificand>() * 8 - 4)))
+							: TChar.ToLower((TChar)uint.CreateTruncating(shifted >> (Unsafe.SizeOf<TSignificand>() * 8 - 4))));
+						shifted <<= 4;
+					}
+				}
+			}
+		}
+		
+		// Emit exponent: p+NNN or p-NNN
+		// The exponent sign is always ASCII '+'/'-' per IEEE 754 §5.12.3,
+		// independent of NumberFormatInfo (which only governs the leading value sign).
+		builder.Append((TChar)(format == 'X' ? 'P' : 'p'));
+		
+		if (actualExponent >= 0)
+		{
+			builder.Append((TChar)'+');
+		}
+		else
+		{
+			builder.Append((TChar)'-');
+			actualExponent = -actualExponent;
+		}
+		
+		// Write exponent digits
+		Debug.Assert(actualExponent >= 0);
+		int digitCount = CountDigits((ulong)actualExponent);
+		Span<TChar> digits = stackalloc TChar[digitCount + 1];
+		UInt64ToDecChars((ulong)actualExponent, ref digits[digitCount], digitCount);
+		builder.Append(digits[..digitCount]);
+		
+		return builder.TryCopyTo(destination, out charsWritten);
+
+		static TSignificand ExtractFractionAndBiasedExponent(in TFloat value, out int exponent)
+		{
+			TSignificand bits = TFloat.FloatToBits(value);
+			TSignificand fraction = (bits & TFloat.DenormalMantissaMask);
+			exponent = int.CreateTruncating(bits >> TFloat.DenormalMantissaBits) & TFloat.InfinityExponent;
+
+			if (exponent != 0)
+			{
+				// For normalized value,
+				// value = 1.fraction * 2^(exp - ExponentBias)
+				//       = (1 + mantissa / 2^TrailingSignificandLength) * 2^(exp - ExponentBias)
+				//       = (2^TrailingSignificandLength + mantissa) * 2^(exp - ExponentBias - TrailingSignificandLength)
+				//
+				// So f = (2^TrailingSignificandLength + mantissa), e = exp - ExponentBias - TrailingSignificandLength;
+				fraction |= (TSignificand.One << TFloat.DenormalMantissaBits);
+				exponent -= TFloat.ExponentBias + TFloat.DenormalMantissaBits;
+			}
+			else
+			{
+				// For denormalized value,
+				// value = 0.fraction * 2^(MinBinaryExponent)
+				//       = (mantissa / 2^TrailingSignificandLength) * 2^(MinBinaryExponent)
+				//       = mantissa * 2^(MinBinaryExponent - TrailingSignificandLength)
+				//       = mantissa * 2^(MinBinaryExponent - TrailingSignificandLength)
+				// So f = mantissa, e = MinBinaryExponent - TrailingSignificandLength
+				exponent = TFloat.MinimumBinaryExponent - TFloat.DenormalMantissaBits;
+			}
+			return fraction;
+		}
 	}
 
 	private static ReadOnlySpan<TChar> GetGeneralFromScientificFloatChars<TChar>(Span<TChar> buffer, NumberFormatInfo info, int precision, int maxSignificandPrecision)

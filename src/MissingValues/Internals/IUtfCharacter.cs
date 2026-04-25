@@ -37,6 +37,32 @@ namespace MissingValues.Internals
 
 		abstract static TSelf ToUpper(TSelf value);
 		abstract static TSelf ToLower(TSelf value);
+
+		virtual static TSelf ToCharUpper(uint value)
+		{
+			value &= 0xF;
+			value += '0';
+
+			if (value > '9')
+			{
+				value += ('A' - ('9' + 1));
+			}
+
+			return (TSelf)value;
+		}
+
+		virtual static TSelf ToCharLower(uint value)
+		{
+			value &= 0xF;
+			value += '0';
+
+			if (value > '9')
+			{
+				value += ('a' - ('9' + 1));
+			}
+
+			return (TSelf)value;
+		}
 		abstract static bool IsWhiteSpace(TSelf value);
 		abstract static bool IsDigit(TSelf value);
 		abstract static bool IsHexDigit(TSelf value);
