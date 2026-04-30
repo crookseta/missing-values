@@ -896,6 +896,8 @@ namespace MissingValues
 				return 0;
 			}
 		}
+		
+		static Int256 IBigInteger<Int256>.Create(ReadOnlySpan<ulong> parts) => new(parts);
 
 		/// <inheritdoc/>
 		public static Int256 CreateChecked<TOther>(TOther value)

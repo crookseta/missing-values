@@ -108,6 +108,8 @@ namespace MissingValues
 			else if (this > other) return 1;
 			else return 0;
 		}
+		
+		static UInt512 IBigInteger<UInt512>.Create(ReadOnlySpan<ulong> parts) => new(parts);
 
 		/// <inheritdoc/>
 		public static UInt512 CreateChecked<TOther>(TOther value)

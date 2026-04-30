@@ -146,6 +146,8 @@ namespace MissingValues
 			}
 			return -absValue;
 		}
+		
+		static Int512 IBigInteger<Int512>.Create(ReadOnlySpan<ulong> parts) => new(parts);
 
 		/// <inheritdoc/>
 		public static Int512 CreateChecked<TOther>(TOther value)

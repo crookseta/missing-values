@@ -1,6 +1,7 @@
 ﻿using MissingValues.Info;
 using MissingValues.Internals;
 using System.Buffers;
+using System.Buffers.Binary;
 using System.Diagnostics;
 using System.Globalization;
 using System.Numerics;
@@ -95,6 +96,19 @@ namespace MissingValues
 			_p1 = lower.Upper;
 			_p2 = upper.Lower;
 			_p3 = upper.Upper;
+		}
+		/// <summary>
+		/// Initializes a new instance of the <see cref="UInt256" /> struct.
+		/// </summary>
+		/// <param name="parts">Span holding the 64-bit parts of the 256-bit value</param>
+		/// <exception cref="ArgumentOutOfRangeException">Span is too small for the value</exception>
+		public UInt256(ReadOnlySpan<ulong> parts)
+		{
+			ArgumentOutOfRangeException.ThrowIfLessThan(parts.Length, Size / 8);
+			_p0 = parts[0];
+			_p1 = parts[1];
+			_p2 = parts[2];
+			_p3 = parts[3];
 		}
 
 

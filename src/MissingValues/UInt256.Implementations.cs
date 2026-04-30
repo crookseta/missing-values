@@ -108,6 +108,8 @@ namespace MissingValues
 			Thrower.MustBeType<UInt256>();
 			return default;
 		}
+		
+		static UInt256 IBigInteger<UInt256>.Create(ReadOnlySpan<ulong> parts) => new(parts);
 
 		/// <inheritdoc/>
 		public static UInt256 CreateChecked<TOther>(TOther value)
