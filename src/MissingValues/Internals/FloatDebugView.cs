@@ -2,6 +2,7 @@
 using System.Globalization;
 using System.Numerics;
 using System.Runtime.CompilerServices;
+using MissingValues.Primitives;
 
 namespace MissingValues.Internals
 {
@@ -17,15 +18,15 @@ namespace MissingValues.Internals
 			_sign = T.IsNegative(floating);
 			if (floating is Quad quad)
 			{
-				uint e = Quad.ExtractBiasedExponentFromBits(Quad.QuadToUInt128Bits(quad));
-				UInt256 s = Quad.ExtractTrailingSignificandFromBits(Quad.QuadToUInt128Bits(quad));
+				uint e = Quad.ExtractBiasedExponentFromBits(BinaryOperations.QuadToUInt128Bits(quad));
+				UInt256 s = Quad.ExtractTrailingSignificandFromBits(BinaryOperations.QuadToUInt128Bits(quad));
 				_exponent = Unsafe.As<uint, UInt32Wrapper>(ref e);
 				_significand = Unsafe.As<UInt256, UInt256Wrapper>(ref s);
 			}
 			else if (floating is Octo octo)
 			{
-				uint e = Octo.ExtractBiasedExponentFromBits(Octo.OctoToUInt256Bits(octo));
-				UInt256 s = Octo.ExtractTrailingSignificandFromBits(Octo.OctoToUInt256Bits(octo));
+				uint e = Octo.ExtractBiasedExponentFromBits(BinaryOperations.OctoToUInt256Bits(octo));
+				UInt256 s = Octo.ExtractTrailingSignificandFromBits(BinaryOperations.OctoToUInt256Bits(octo));
 				_exponent = Unsafe.As<uint, UInt32Wrapper>(ref e);
 				_significand = Unsafe.As<UInt256, UInt256Wrapper>(ref s);
 			}

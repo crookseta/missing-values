@@ -8,6 +8,7 @@ using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text.Json.Serialization;
+using MissingValues.Primitives;
 
 namespace MissingValues
 {
@@ -200,7 +201,7 @@ namespace MissingValues
 		{
 			get
 			{
-				UInt256 bits = OctoToUInt256Bits(this);
+				UInt256 bits = BinaryOperations.OctoToUInt256Bits(this);
 				return ExtractBiasedExponentFromBits(in bits);
 			}
 		}
@@ -222,21 +223,21 @@ namespace MissingValues
 		{
 			get
 			{
-				UInt256 bits = OctoToUInt256Bits(this);
+				UInt256 bits = BinaryOperations.OctoToUInt256Bits(this);
 				return ExtractTrailingSignificandFromBits(in bits);
 			}
 		}
 
 #if BIGENDIAN
-		private readonly ulong _bits3;
-		private readonly ulong _bits2;
-		private readonly ulong _bits1;
-		private readonly ulong _bits0;
+		internal readonly ulong _bits3;
+		internal readonly ulong _bits2;
+		internal readonly ulong _bits1;
+		internal readonly ulong _bits0;
 #else
-		private readonly ulong _bits0;
-		private readonly ulong _bits1;
-		private readonly ulong _bits2;
-		private readonly ulong _bits3;
+		internal readonly ulong _bits0;
+		internal readonly ulong _bits1;
+		internal readonly ulong _bits2;
+		internal readonly ulong _bits3;
 #endif
 
 		internal Octo(ulong u1, ulong u2, ulong l1, ulong l2)
@@ -270,7 +271,12 @@ namespace MissingValues
 		/// <inheritdoc/>
 		public override int GetHashCode()
 		{
-			return base.GetHashCode();
+			if (IsNaNOrZero(this))
+			{
+				// All NaNs should have the same hash code, as should both Zeros.
+				return HashCode.Combine(BinaryOperations.OctoToUInt256Bits(this) & PositiveInfinityBits);
+			}
+			return HashCode.Combine(_bits0, _bits1, _bits2, _bits3);
 		}
 
 		/// <inheritdoc/>
@@ -301,19 +307,19 @@ namespace MissingValues
 		}
 
 		/// <summary>
-		/// Reinterprets the specified 256-bit unsigned integer to a octuple-precision floating point number.
+		/// Reinterprets the specified 256-bit unsigned integer to an octuple-precision floating point number.
 		/// </summary>
 		/// <param name="bits">The number to convert.</param>
-		/// <returns>A octuple-precision floating point number whose bits are identical to <paramref name="bits"/>.</returns>
+		/// <returns>An octuple-precision floating point number whose bits are identical to <paramref name="bits"/>.</returns>
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static Octo UInt256BitsToOcto(UInt256 bits) => System.Runtime.CompilerServices.Unsafe.BitCast<UInt256, Octo>(bits);
+		public static Octo UInt256BitsToOcto(UInt256 bits) => BinaryOperations.UInt256BitsToOcto(bits);
 		/// <summary>
-		/// Reinterprets the specified 256-bit signed integer to a octuple-precision floating point number.
+		/// Reinterprets the specified 256-bit signed integer to an octuple-precision floating point number.
 		/// </summary>
 		/// <param name="bits">The number to convert.</param>
-		/// <returns>A octuple-precision floating point number whose bits are identical to <paramref name="bits"/>.</returns>
+		/// <returns>An octuple-precision floating point number whose bits are identical to <paramref name="bits"/>.</returns>
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static Octo Int256BitsToOcto(Int256 bits) => System.Runtime.CompilerServices.Unsafe.BitCast<Int256, Octo>(bits);
+		public static Octo Int256BitsToOcto(Int256 bits) => BinaryOperations.Int256BitsToOcto(bits);
 
 		/// <summary>
 		/// Converts the specified octuple-precision floating point number to a 256-bit unsigned integer.
@@ -321,19 +327,23 @@ namespace MissingValues
 		/// <param name="value">The number to convert.</param>
 		/// <returns>A 256-bit unsigned integer whose value is equivalent to <paramref name="value"/>.</returns>
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static UInt256 OctoToUInt256Bits(Octo value) => System.Runtime.CompilerServices.Unsafe.BitCast<Octo, UInt256>(value);
+		public static UInt256 OctoToUInt256Bits(Octo value) => BinaryOperations.OctoToUInt256Bits(value);
 		/// <summary>
 		/// Converts the specified octuple-precision floating point number to a 256-bit signed integer.
 		/// </summary>
 		/// <param name="value">The number to convert.</param>
 		/// <returns>A 256-bit signed integer whose value is equivalent to <paramref name="value"/>.</returns>
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static Int256 OctoToInt256Bits(Octo value) => System.Runtime.CompilerServices.Unsafe.BitCast<Octo, Int256>(value);
+		public static Int256 OctoToInt256Bits(Octo value) => BinaryOperations.OctoToInt256Bits(value);
 
 
 		internal static bool AreZero(in Octo x, in Octo y)
 		{
-			return ((OctoToUInt256Bits(x) | OctoToUInt256Bits(y)) & ~SignMask) == UInt256.Zero;
+			return ((BinaryOperations.OctoToUInt256Bits(x) | BinaryOperations.OctoToUInt256Bits(y)) & ~SignMask) == UInt256.Zero;
+		}
+		internal static bool IsNaNOrZero(Octo value)
+		{
+			return ((BinaryOperations.OctoToUInt256Bits(value) - UInt256.One) & ~SignMask) >= PositiveInfinityBits;
 		}
 		internal static UInt256 CreateOctoNaNBits(bool sign, UInt256 significand)
 		{
@@ -356,7 +366,7 @@ namespace MissingValues
 		}
 		internal static UInt256 StripSign(Octo value)
 		{
-			return OctoToUInt256Bits(value) & ~SignMask;
+			return BinaryOperations.OctoToUInt256Bits(value) & ~SignMask;
 		}
 		#region From Octo
 		// Unsigned
@@ -380,7 +390,7 @@ namespace MissingValues
 
 			if (value >= Octo.One)
 			{
-				UInt256 bits = Octo.OctoToUInt256Bits(value);
+				UInt256 bits = BinaryOperations.OctoToUInt256Bits(value);
 				byte result = (byte)((byte)(bits.Part3 >> 37) | 0x80);
 
 				result >>>= (Octo.ExponentBias + 8 - 1 - (int)(bits.Part3 >> 44));
@@ -408,7 +418,7 @@ namespace MissingValues
 
 			if (value >= Octo.One)
 			{
-				UInt256 bits = Octo.OctoToUInt256Bits(value);
+				UInt256 bits = BinaryOperations.OctoToUInt256Bits(value);
 				byte result = (byte)((byte)(bits.Part3 >> 37) | 0x80);
 
 				result >>>= (Octo.ExponentBias + 8 - 1 - (int)(bits.Part3 >> 44));
@@ -439,7 +449,7 @@ namespace MissingValues
 
 			if (value >= Octo.One)
 			{
-				UInt256 bits = Octo.OctoToUInt256Bits(value);
+				UInt256 bits = BinaryOperations.OctoToUInt256Bits(value);
 				ushort result = (ushort)((ushort)(bits.Part3 >> 29) | 0x8000);
 
 				result >>>= (Octo.ExponentBias + 16 - 1 - (int)(bits.Part3 >> 44));
@@ -467,7 +477,7 @@ namespace MissingValues
 
 			if (value >= Octo.One)
 			{
-				UInt256 bits = Octo.OctoToUInt256Bits(value);
+				UInt256 bits = BinaryOperations.OctoToUInt256Bits(value);
 				ushort result = (ushort)((ushort)(bits.Part3 >> 29) | 0x8000);
 
 				result >>>= (Octo.ExponentBias + 16 - 1 - (int)(bits.Part3 >> 44));
@@ -498,7 +508,7 @@ namespace MissingValues
 
 			if (value >= Octo.One)
 			{
-				UInt256 bits = Octo.OctoToUInt256Bits(value);
+				UInt256 bits = BinaryOperations.OctoToUInt256Bits(value);
 				uint result = ((uint)(bits.Part3 >> 13) | 0x8000_0000);
 
 				result >>>= (Octo.ExponentBias + 32 - 1 - (int)(bits.Part3 >> 44));
@@ -526,7 +536,7 @@ namespace MissingValues
 
 			if (value >= Octo.One)
 			{
-				UInt256 bits = Octo.OctoToUInt256Bits(value);
+				UInt256 bits = BinaryOperations.OctoToUInt256Bits(value);
 				uint result = ((uint)(bits.Part3 >> 13) | 0x8000_0000);
 
 				result >>>= (Octo.ExponentBias + 32 - 1 - (int)(bits.Part3 >> 44));
@@ -557,7 +567,7 @@ namespace MissingValues
 
 			if (value >= Octo.One)
 			{
-				UInt256 bits = Octo.OctoToUInt256Bits(value);
+				UInt256 bits = BinaryOperations.OctoToUInt256Bits(value);
 				ulong result = ((ulong)(bits.Upper >> 45) | 0x8000_0000_0000_0000);
 
 				result >>>= (Octo.ExponentBias + 64 - 1 - (int)(bits.Part3 >> 44));
@@ -585,7 +595,7 @@ namespace MissingValues
 
 			if (value >= Octo.One)
 			{
-				UInt256 bits = Octo.OctoToUInt256Bits(value);
+				UInt256 bits = BinaryOperations.OctoToUInt256Bits(value);
 				ulong result = ((ulong)(bits.Upper >> 45) | 0x8000_0000_0000_0000);
 
 				result >>>= (Octo.ExponentBias + 64 - 1 - (int)(bits.Part3 >> 44));
@@ -616,7 +626,7 @@ namespace MissingValues
 
 			if (value >= Octo.One)
 			{
-				UInt256 bits = Octo.OctoToUInt256Bits(value);
+				UInt256 bits = BinaryOperations.OctoToUInt256Bits(value);
 				UInt128 result = ((UInt128)(bits >> 109) | new UInt128(0x8000_0000_0000_0000, 0x0000_0000_0000_0000));
 
 				result >>>= (Octo.ExponentBias + 128 - 1 - (int)(bits.Part3 >> 44));
@@ -644,7 +654,7 @@ namespace MissingValues
 
 			if (value >= Octo.One)
 			{
-				UInt256 bits = Octo.OctoToUInt256Bits(value);
+				UInt256 bits = BinaryOperations.OctoToUInt256Bits(value);
 				UInt128 result = ((UInt128)(bits >> 109) | new UInt128(0x8000_0000_0000_0000, 0x0000_0000_0000_0000));
 
 				result >>>= (Octo.ExponentBias + 128 - 1 - (int)(bits.Part3 >> 44));
@@ -675,7 +685,7 @@ namespace MissingValues
 
 			if (value >= Octo.One)
 			{
-				UInt256 bits = Octo.OctoToUInt256Bits(value);
+				UInt256 bits = BinaryOperations.OctoToUInt256Bits(value);
 				UInt256 result = ((bits << 20) >> 1 | Octo.SignMask);
 
 				result >>>= (Octo.ExponentBias + 256 - 1 - (int)(bits.Part3 >> 44));
@@ -703,7 +713,7 @@ namespace MissingValues
 
 			if (value >= Octo.One)
 			{
-				UInt256 bits = Octo.OctoToUInt256Bits(value);
+				UInt256 bits = BinaryOperations.OctoToUInt256Bits(value);
 				UInt256 result = ((bits << 20) >> 1 | Octo.SignMask);
 
 				result >>>= (Octo.ExponentBias + 256 - 1 - (int)(bits.Part3 >> 44));
@@ -734,7 +744,7 @@ namespace MissingValues
 
 			if (value >= Octo.One)
 			{
-				UInt256 bits = Octo.OctoToUInt256Bits(value);
+				UInt256 bits = BinaryOperations.OctoToUInt256Bits(value);
 				UInt512 result = new UInt512((bits << 20) >> 1 | Octo.SignMask, UInt256.Zero);
 
 				result >>= Octo.ExponentBias + 512 - 1 - (int)(bits.Part3 >> 44);
@@ -762,7 +772,7 @@ namespace MissingValues
 
 			if (value >= Octo.One)
 			{
-				UInt256 bits = Octo.OctoToUInt256Bits(value);
+				UInt256 bits = BinaryOperations.OctoToUInt256Bits(value);
 				UInt512 result = new UInt512((bits << 20) >> 1 | Octo.SignMask, UInt256.Zero);
 
 				result >>= Octo.ExponentBias + 512 - 1 - (int)(bits.Part3 >> 44);
@@ -801,7 +811,7 @@ namespace MissingValues
 
 			if (abs >= Octo.One)
 			{
-				UInt256 bits = Octo.OctoToUInt256Bits(abs);
+				UInt256 bits = BinaryOperations.OctoToUInt256Bits(abs);
 				sbyte result = (sbyte)(((byte)(bits.Part3 >> 37) | 0x80) >>> (Octo.ExponentBias + 8 - 1 - (int)(bits.Part3 >> 44)));
 
 				if (isNegative)
@@ -836,7 +846,7 @@ namespace MissingValues
 
 			if (abs >= Octo.One)
 			{
-				UInt256 bits = Octo.OctoToUInt256Bits(abs);
+				UInt256 bits = BinaryOperations.OctoToUInt256Bits(abs);
 				sbyte result = (sbyte)(((byte)(bits.Part3 >> 37) | 0x80) >>> (Octo.ExponentBias + 8 - 1 - (int)(bits.Part3 >> 44)));
 
 				if (isNegative)
@@ -878,7 +888,7 @@ namespace MissingValues
 
 			if (abs >= Octo.One)
 			{
-				UInt256 bits = Octo.OctoToUInt256Bits(abs);
+				UInt256 bits = BinaryOperations.OctoToUInt256Bits(abs);
 				short result = (short)(((ushort)(bits.Part3 >> 29) | 0x8000) >>> (Octo.ExponentBias + 16 - 1 - (int)(bits.Part3 >> 44)));
 
 				if (isNegative)
@@ -913,7 +923,7 @@ namespace MissingValues
 
 			if (abs >= Octo.One)
 			{
-				UInt256 bits = Octo.OctoToUInt256Bits(abs);
+				UInt256 bits = BinaryOperations.OctoToUInt256Bits(abs);
 				short result = (short)(((ushort)(bits.Part3 >> 29) | 0x8000) >>> (Octo.ExponentBias + 16 - 1 - (int)(bits.Part3 >> 44)));
 
 				if (isNegative)
@@ -955,7 +965,7 @@ namespace MissingValues
 
 			if (abs >= Octo.One)
 			{
-				UInt256 bits = Octo.OctoToUInt256Bits(abs);
+				UInt256 bits = BinaryOperations.OctoToUInt256Bits(abs);
 				int result = (int)((uint)(bits.Part3 >> 13) | 0x8000_0000);
 
 				result >>>= (Octo.ExponentBias + 32 - 1 - (int)(bits.Part3 >> 44));
@@ -992,7 +1002,7 @@ namespace MissingValues
 
 			if (abs >= Octo.One)
 			{
-				UInt256 bits = Octo.OctoToUInt256Bits(abs);
+				UInt256 bits = BinaryOperations.OctoToUInt256Bits(abs);
 				int result = (int)((uint)(bits.Part3 >> 13) | 0x8000_0000);
 
 				result >>>= (Octo.ExponentBias + 32 - 1 - (int)(bits.Part3 >> 44));
@@ -1036,7 +1046,7 @@ namespace MissingValues
 
 			if (abs >= Octo.One)
 			{
-				UInt256 bits = Octo.OctoToUInt256Bits(abs);
+				UInt256 bits = BinaryOperations.OctoToUInt256Bits(abs);
 				long result = (long)((ulong)(bits.Upper >> 45) | 0x8000_0000_0000_0000);
 
 				result >>>= (Octo.ExponentBias + 64 - 1 - (int)(bits.Part3 >> 44));
@@ -1073,7 +1083,7 @@ namespace MissingValues
 
 			if (abs >= Octo.One)
 			{
-				UInt256 bits = Octo.OctoToUInt256Bits(abs);
+				UInt256 bits = BinaryOperations.OctoToUInt256Bits(abs);
 				long result = (long)((ulong)(bits.Upper >> 45) | 0x8000_0000_0000_0000);
 
 				result >>>= (Octo.ExponentBias + 64 - 1 - (int)(bits.Part3 >> 44));
@@ -1117,7 +1127,7 @@ namespace MissingValues
 
 			if (abs >= Octo.One)
 			{
-				UInt256 bits = Octo.OctoToUInt256Bits(abs);
+				UInt256 bits = BinaryOperations.OctoToUInt256Bits(abs);
 				Int128 result = (Int128)((UInt128)(bits >> 109) | new UInt128(0x8000_0000_0000_0000, 0x0000_0000_0000_0000));
 
 				result >>>= (Octo.ExponentBias + 128 - 1 - (int)(bits.Part3 >> 44));
@@ -1154,7 +1164,7 @@ namespace MissingValues
 
 			if (abs >= Octo.One)
 			{
-				UInt256 bits = Octo.OctoToUInt256Bits(abs);
+				UInt256 bits = BinaryOperations.OctoToUInt256Bits(abs);
 				Int128 result = (Int128)((UInt128)(bits >> 109) | new UInt128(0x8000_0000_0000_0000, 0x0000_0000_0000_0000));
 
 				result >>>= (Octo.ExponentBias + 128 - 1 - (int)(bits.Part3 >> 44));
@@ -1198,7 +1208,7 @@ namespace MissingValues
 
 			if (abs >= Octo.One)
 			{
-				UInt256 bits = Octo.OctoToUInt256Bits(abs);
+				UInt256 bits = BinaryOperations.OctoToUInt256Bits(abs);
 				Int256 result = (Int256)((bits << 20) >> 1 | Octo.SignMask);
 
 				result >>>= (Octo.ExponentBias + 256 - 1 - (int)(bits.Part3 >> 44));
@@ -1235,7 +1245,7 @@ namespace MissingValues
 
 			if (abs >= Octo.One)
 			{
-				UInt256 bits = Octo.OctoToUInt256Bits(abs);
+				UInt256 bits = BinaryOperations.OctoToUInt256Bits(abs);
 				Int256 result = (Int256)((bits << 20) >> 1 | Octo.SignMask);
 
 				result >>>= (Octo.ExponentBias + 256 - 1 - (int)(bits.Part3 >> 44));
@@ -1284,7 +1294,7 @@ namespace MissingValues
 				// this down to the represented integer by y shifting by the unbiased exponent, taking
 				// into account the significand is now represented as 512-bits.
 
-				UInt256 bits = Octo.OctoToUInt256Bits(abs);
+				UInt256 bits = BinaryOperations.OctoToUInt256Bits(abs);
 				Int512 result = new Int512((bits << 20) >> 1 | Octo.SignMask, UInt256.Zero);
 
 				result >>>= (Octo.ExponentBias + 512 - 1 - (int)(bits.Part3 >> 44));
@@ -1326,7 +1336,7 @@ namespace MissingValues
 				// this down to the represented integer by y shifting by the unbiased exponent, taking
 				// into account the significand is now represented as 512-bits.
 
-				UInt256 bits = Octo.OctoToUInt256Bits(abs);
+				UInt256 bits = BinaryOperations.OctoToUInt256Bits(abs);
 				Int512 result = new Int512((bits << 20) >> 1 | Octo.SignMask, UInt256.Zero);
 
 				result >>>= (Octo.ExponentBias + 512 - 1 - (int)(bits.Part3 >> 44));
@@ -1416,7 +1426,7 @@ namespace MissingValues
 		/// <param name="value">The value to convert.</param>
 		public static explicit operator Quad(in Octo value)
 		{
-			UInt256 octoInt = OctoToUInt256Bits(value);
+			UInt256 octoInt = BinaryOperations.OctoToUInt256Bits(value);
 			bool sign = (octoInt & Octo.SignMask) >> Octo.SignShift != UInt256.Zero;
 			int exp = (int)((octoInt & Octo.BiasedExponentMask) >> Octo.BiasedExponentShift);
 			UInt256 sig = octoInt & Octo.TrailingSignificandMask;
@@ -1442,7 +1452,7 @@ namespace MissingValues
 
 			exp = exp < -0x1_0000 ? -0x1_0000 : exp;
 
-			return Quad.UInt128BitsToQuad(BitHelper.PackToQuad(sign, exp, sigOcto));
+			return BinaryOperations.UInt128BitsToQuad(BitHelper.PackToQuad(sign, exp, sigOcto));
 		}
 		/// <summary>
 		/// Explicitly converts a <see cref="Octo" /> value to a <see cref="double"/>.
@@ -1450,7 +1460,7 @@ namespace MissingValues
 		/// <param name="value">The value to convert.</param>
 		public static explicit operator double(in Octo value)
 		{
-			UInt256 octoInt = OctoToUInt256Bits(value);
+			UInt256 octoInt = BinaryOperations.OctoToUInt256Bits(value);
 			bool sign = (octoInt & Octo.SignMask) >> Octo.SignShift != UInt256.Zero;
 			int exp = (int)((octoInt & Octo.BiasedExponentMask) >> Octo.BiasedExponentShift);
 			UInt256 sig = octoInt & Octo.TrailingSignificandMask;
@@ -1484,7 +1494,7 @@ namespace MissingValues
 		/// <param name="value">The value to convert.</param>
 		public static explicit operator float(in Octo value)
 		{
-			UInt256 octoInt = OctoToUInt256Bits(value);
+			UInt256 octoInt = BinaryOperations.OctoToUInt256Bits(value);
 			bool sign = (octoInt & Octo.SignMask) >> Octo.SignShift != UInt256.Zero;
 			int exp = (int)((octoInt & Octo.BiasedExponentMask) >> Octo.BiasedExponentShift);
 			UInt256 sig = octoInt & Octo.TrailingSignificandMask;
@@ -1517,7 +1527,7 @@ namespace MissingValues
 		/// <param name="value">The value to convert.</param>
 		public static explicit operator Half(in Octo value)
 		{
-			UInt256 octoInt = OctoToUInt256Bits(value);
+			UInt256 octoInt = BinaryOperations.OctoToUInt256Bits(value);
 			bool sign = (octoInt & Octo.SignMask) >> Octo.SignShift != UInt256.Zero;
 			int exp = (int)((octoInt & Octo.BiasedExponentMask) >> Octo.BiasedExponentShift);
 			UInt256 sig = octoInt & Octo.TrailingSignificandMask;
@@ -1790,7 +1800,7 @@ namespace MissingValues
 			{
 				if (sig == 0)
 				{
-					return Octo.UInt256BitsToOcto(sign ? Octo.SignMask : UInt256.Zero);
+					return BinaryOperations.UInt256BitsToOcto(sign ? Octo.SignMask : UInt256.Zero);
 				}
 				(exp, sig) = BitHelper.NormalizeSubnormalF64Sig(sig);
 				exp -= 1;
@@ -1825,7 +1835,7 @@ namespace MissingValues
 			{
 				if (sig == 0)
 				{
-					return Octo.UInt256BitsToOcto(sign ? Octo.SignMask : UInt256.Zero);
+					return BinaryOperations.UInt256BitsToOcto(sign ? Octo.SignMask : UInt256.Zero);
 				}
 				(exp, sig) = BitHelper.NormalizeSubnormalF32Sig(sig);
 				exp -= 1;
@@ -1860,7 +1870,7 @@ namespace MissingValues
 			{
 				if (sig == 0)
 				{
-					return Octo.UInt256BitsToOcto(sign ? Octo.SignMask : UInt256.Zero);
+					return BinaryOperations.UInt256BitsToOcto(sign ? Octo.SignMask : UInt256.Zero);
 				}
 				(exp, sig) = BitHelper.NormalizeSubnormalF16Sig(sig);
 				exp -= 1;

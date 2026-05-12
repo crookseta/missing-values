@@ -8,6 +8,7 @@ using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text.Json.Serialization;
+using MissingValues.Primitives;
 
 namespace MissingValues
 {
@@ -98,6 +99,19 @@ namespace MissingValues
 			_p1 = lower.Upper;
 			_p2 = upper.Lower;
 			_p3 = upper.Upper;
+		}
+		/// <summary>
+		/// Initializes a new instance of the <see cref="Int256" /> struct.
+		/// </summary>
+		/// <param name="parts">Span holding the 64-bit parts of the 256-bit value</param>
+		/// <exception cref="ArgumentOutOfRangeException">Span is too small for the value</exception>
+		public Int256(ReadOnlySpan<ulong> parts)
+		{
+			ArgumentOutOfRangeException.ThrowIfLessThan(parts.Length, Size / 8);
+			_p0 = parts[0];
+			_p1 = parts[1];
+			_p2 = parts[2];
+			_p3 = parts[3];
 		}
 
 		/// <inheritdoc/>
@@ -601,7 +615,7 @@ namespace MissingValues
 			}
 
 			Span<byte> span = stackalloc byte[Size];
-			value.WriteLittleEndianUnsafe(span);
+			BinaryOperations.WriteInt256LittleEndian(span, in value);
 			return new BigInteger(span, (long)value._p3 >= 0);
 		}
 		// Floating

@@ -9,6 +9,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics;
 using System.Text.Json.Serialization;
+using MissingValues.Primitives;
 
 namespace MissingValues
 {
@@ -153,6 +154,24 @@ namespace MissingValues
 			_p5 = ulu;
 			_p6 = uul;
 			_p7 = uuu;
+		}
+		
+		/// <summary>
+		/// Initializes a new instance of the <see cref="UInt512" /> struct.
+		/// </summary>
+		/// <param name="parts">Span holding the 64-bit parts of the 512-bit value</param>
+		/// <exception cref="ArgumentOutOfRangeException">Span is too small for the value</exception>
+		public UInt512(ReadOnlySpan<ulong> parts)
+		{
+			ArgumentOutOfRangeException.ThrowIfLessThan(parts.Length, Size / 8);
+			_p0 = parts[0];
+			_p1 = parts[1];
+			_p2 = parts[2];
+			_p3 = parts[3];
+			_p4 = parts[4];
+			_p5 = parts[5];
+			_p6 = parts[6];
+			_p7 = parts[7];
 		}
 
 		/// <inheritdoc/>
@@ -699,7 +718,7 @@ namespace MissingValues
 				return new BigInteger(value._p0);
 			}
 			Span<byte> span = stackalloc byte[Size];
-			value.WriteLittleEndianUnsafe(span);
+			BinaryOperations.WriteUInt512LittleEndian(span, in value);
 			return new BigInteger(span, true);
 		}
 		// Floating
@@ -736,11 +755,11 @@ namespace MissingValues
 				Octo twoPow236 = new Octo(0x400E_B000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
 				Octo twoPow472 = new Octo(0x401D_7000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
 
-				UInt256 twoPow236bits = Octo.OctoToUInt256Bits(twoPow236);
-				UInt256 twoPow472bits = Octo.OctoToUInt256Bits(twoPow472);
+				UInt256 twoPow236bits = BinaryOperations.OctoToUInt256Bits(twoPow236);
+				UInt256 twoPow472bits = BinaryOperations.OctoToUInt256Bits(twoPow472);
 
-				Octo lower = Octo.UInt256BitsToOcto(twoPow236bits | ((value.Lower << 20) >> 20)) - twoPow236;
-				Octo upper = Octo.UInt256BitsToOcto(twoPow472bits | (UInt256)(value >> 236)) - twoPow472;
+				Octo lower = BinaryOperations.UInt256BitsToOcto(twoPow236bits | ((value.Lower << 20) >> 20)) - twoPow236;
+				Octo upper = BinaryOperations.UInt256BitsToOcto(twoPow472bits | (UInt256)(value >> 236)) - twoPow472;
 
 				return lower + upper;
 			}
@@ -753,11 +772,11 @@ namespace MissingValues
 				Octo twoPow276 = new Octo(0x4011_3000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
 				Octo twoPow512 = new Octo(0x401F_F000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
 
-				UInt256 twoPow276bits = Octo.OctoToUInt256Bits(twoPow276);
-				UInt256 twoPow512bits = Octo.OctoToUInt256Bits(twoPow512);
+				UInt256 twoPow276bits = BinaryOperations.OctoToUInt256Bits(twoPow276);
+				UInt256 twoPow512bits = BinaryOperations.OctoToUInt256Bits(twoPow512);
 
-				Octo lower = Octo.UInt256BitsToOcto(twoPow276bits | ((UInt256)(value >> 20) >> 20) | (value._p0 & 0xFF_FFFF_FFFF)) - twoPow276;
-				Octo upper = Octo.UInt256BitsToOcto(twoPow512bits | (UInt256)(value >> 276)) - twoPow512;
+				Octo lower = BinaryOperations.UInt256BitsToOcto(twoPow276bits | ((UInt256)(value >> 20) >> 20) | (value._p0 & 0xFF_FFFF_FFFF)) - twoPow276;
+				Octo upper = BinaryOperations.UInt256BitsToOcto(twoPow512bits | (UInt256)(value >> 276)) - twoPow512;
 
 				return lower + upper;
 			}
@@ -780,11 +799,11 @@ namespace MissingValues
 				Quad twoPow400 = new Quad(0x418F_0000_0000_0000, 0x0000_0000_0000_0000);
 				Quad twoPow512 = new Quad(0x41FF_0000_0000_0000, 0x0000_0000_0000_0000);
 
-				UInt128 twoPow400bits = Quad.QuadToUInt128Bits(twoPow400);
-				UInt128 twoPow512bits = Quad.QuadToUInt128Bits(twoPow512);
+				UInt128 twoPow400bits = BinaryOperations.QuadToUInt128Bits(twoPow400);
+				UInt128 twoPow512bits = BinaryOperations.QuadToUInt128Bits(twoPow512);
 
-				Quad lower = Quad.UInt128BitsToQuad(twoPow400bits | (UInt128)((UInt256)(value >> 144) >> 144) | (value.Upper.Lower & 0xFFFF_FFFF)) - twoPow400;
-				Quad upper = Quad.UInt128BitsToQuad(twoPow512bits | (UInt128)(value >> 400)) - twoPow512;
+				Quad lower = BinaryOperations.UInt128BitsToQuad(twoPow400bits | (UInt128)((UInt256)(value >> 144) >> 144) | (value.Upper.Lower & 0xFFFF_FFFF)) - twoPow400;
+				Quad upper = BinaryOperations.UInt128BitsToQuad(twoPow512bits | (UInt128)(value >> 400)) - twoPow512;
 
 				return lower + upper;
 			}
@@ -795,6 +814,7 @@ namespace MissingValues
 		/// <param name="value">The value to convert.</param>
 		public static explicit operator double(in UInt512 value)
 		{
+			const double TwoPow0 = 1.0d;
 			const double TwoPow64 = 18446744073709551616.0d;
 			const double TwoPow128 = 340282366920938463463374607431768211456.0d;
 			const double TwoPow192 = 6277101735386680763835789423207666416102355444464034512896.0d;
@@ -807,7 +827,7 @@ namespace MissingValues
 			{
 				Vector512<double> vValue = Vector512.ConvertToDouble(Unsafe.BitCast<UInt512, Vector512<ulong>>(value));
 				
-				return Vector512.Sum(vValue * Vector512.Create(0, TwoPow64, TwoPow128, TwoPow192, TwoPow256, TwoPow320, TwoPow384, TwoPow448));
+				return Vector512.Sum(vValue * Vector512.Create(TwoPow0, TwoPow64, TwoPow128, TwoPow192, TwoPow256, TwoPow320, TwoPow384, TwoPow448));
 			}
 			if (Vector256.IsHardwareAccelerated)
 			{
@@ -815,7 +835,7 @@ namespace MissingValues
 				Vector256<double> vLower = Vector256.ConvertToDouble(Vector256.Create(value._p0, value._p1, value._p2, value._p3));
 
 				double upper = Vector256.Sum(vUpper * Vector256.Create(TwoPow256, TwoPow320, TwoPow384, TwoPow448));
-				double lower = Vector256.Sum(vLower * Vector256.Create(0, TwoPow64, TwoPow128, TwoPow192));
+				double lower = Vector256.Sum(vLower * Vector256.Create(TwoPow0, TwoPow64, TwoPow128, TwoPow192));
 				
 				return upper + lower;
 			}
@@ -832,7 +852,7 @@ namespace MissingValues
 			       + value._p3 * TwoPow192
 			       + value._p2 * TwoPow128
 			       + value._p1 * TwoPow64
-			       + value._p0;
+			       + value._p0 * TwoPow0;
 		}
 		/// <summary>
 		/// Explicitly converts a <see cref="UInt512" /> value to a <see cref="float"/>.

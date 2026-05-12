@@ -9,6 +9,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics;
 using System.Runtime.Intrinsics.X86;
+using MissingValues.Primitives;
 
 namespace MissingValues
 {
@@ -108,6 +109,8 @@ namespace MissingValues
 			Thrower.MustBeType<UInt256>();
 			return default;
 		}
+		
+		static UInt256 IBigInteger<UInt256>.Create(ReadOnlySpan<ulong> parts) => new(parts);
 
 		/// <inheritdoc/>
 		public static UInt256 CreateChecked<TOther>(TOther value)
@@ -372,6 +375,21 @@ namespace MissingValues
 
 		/// <inheritdoc/>
 		public static UInt256 TrailingZeroCount(UInt256 value) => (UInt256)BitHelper.TrailingZeroCount(in value);
+		
+		bool IBigInteger<UInt256>.TryCopyTo(Span<ulong> destination)
+		{
+			if (destination.Length < 4)
+			{
+				return false;
+			}
+
+			destination[0] = _p0;
+			destination[1] = _p1;
+			destination[2] = _p2;
+			destination[3] = _p3;
+
+			return true;
+		}
 
 		/// <inheritdoc/>
 		public static bool TryParse(ReadOnlySpan<char> s, NumberStyles style, IFormatProvider? provider, [MaybeNullWhen(false)] out UInt256 result)
@@ -469,19 +487,10 @@ namespace MissingValues
 					return false;
 				}
 
-				ref byte sourceRef = ref MemoryMarshal.GetReference(source);
-
 				if (source.Length >= Size)
 				{
-					sourceRef = ref Unsafe.Add(ref sourceRef, source.Length - Size);
-
 					// We have at least 32 bytes, so just read the ones we need directly
-					result = Unsafe.ReadUnaligned<UInt256>(ref sourceRef);
-
-					if (BitConverter.IsLittleEndian)
-					{
-						result = BitHelper.ReverseEndianness(in result);
-					}
+					result = BinaryOperations.ReadUInt256BigEndian(source);
 				}
 				else
 				{
@@ -492,7 +501,7 @@ namespace MissingValues
 					for (int i = 0; i < source.Length; i++)
 					{
 						result <<= 8;
-						result |= Unsafe.Add(ref sourceRef, i);
+						result |= source[i];
 					}
 				}
 			}
@@ -525,17 +534,10 @@ namespace MissingValues
 					return false;
 				}
 
-				ref byte sourceRef = ref MemoryMarshal.GetReference(source);
-
 				if (source.Length >= Size)
 				{
 					// We have at least 32 bytes, so just read the ones we need directly
-					result = Unsafe.ReadUnaligned<UInt256>(ref sourceRef);
-
-					if (!BitConverter.IsLittleEndian)
-					{
-						result = BitHelper.ReverseEndianness(in result);
-					}
+					result = BinaryOperations.ReadUInt256LittleEndian(source);
 				}
 				else
 				{
@@ -547,7 +549,7 @@ namespace MissingValues
 
 					for (int i = 0; i < source.Length; i++)
 					{
-						UInt256 part = Unsafe.Add(ref sourceRef, i);
+						UInt256 part = source[i];
 						part <<= (i * 8);
 						result |= part;
 					}
@@ -805,97 +807,24 @@ namespace MissingValues
 
 		bool IBinaryInteger<UInt256>.TryWriteBigEndian(Span<byte> destination, out int bytesWritten)
 		{
-			if (TryWriteBigEndian(destination))
+			if (BinaryOperations.TryWriteUInt256BigEndian(destination, in this))
 			{
 				bytesWritten = Size;
 				return true;
 			}
 			bytesWritten = 0;
 			return false;
-		}
-
-		internal bool TryWriteBigEndian(Span<byte> destination)
-		{
-			if (destination.Length >= Size)
-			{
-				WriteBigEndianUnsafe(destination);
-				return true;
-			}
-			else
-			{
-				return false;
-			}
 		}
 
 		bool IBinaryInteger<UInt256>.TryWriteLittleEndian(Span<byte> destination, out int bytesWritten)
 		{
-			if (TryWriteLittleEndian(destination))
+			if (BinaryOperations.TryWriteUInt256LittleEndian(destination, in this))
 			{
 				bytesWritten = Size;
 				return true;
 			}
 			bytesWritten = 0;
 			return false;
-		}
-
-		internal bool TryWriteLittleEndian(Span<byte> destination)
-		{
-			if (destination.Length >= Size)
-			{
-				WriteLittleEndianUnsafe(destination);
-				return true;
-			}
-			else
-			{
-				return false;
-			}
-		}
-
-		private void WriteBigEndianUnsafe(Span<byte> destination)
-		{
-			ulong p0 = _p0;
-			ulong p1 = _p1;
-			ulong p2 = _p2;
-			ulong p3 = _p3;
-
-			if (BitConverter.IsLittleEndian)
-			{
-				p0 = BinaryPrimitives.ReverseEndianness(p0);
-				p1 = BinaryPrimitives.ReverseEndianness(p1);
-				p2 = BinaryPrimitives.ReverseEndianness(p2);
-				p3 = BinaryPrimitives.ReverseEndianness(p3);
-			}
-
-			ref byte address = ref MemoryMarshal.GetReference(destination);
-
-			Unsafe.WriteUnaligned(ref address, p3);
-			Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref address, sizeof(ulong)), p2);
-			Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref address, sizeof(ulong) * 2), p1);
-			Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref address, sizeof(ulong) * 3), p0);
-		}
-		private void WriteLittleEndianUnsafe(Span<byte> destination)
-		{
-			Debug.Assert(destination.Length >= Size);
-
-			ulong p0 = _p0;
-			ulong p1 = _p1;
-			ulong p2 = _p2;
-			ulong p3 = _p3;
-
-			if (!BitConverter.IsLittleEndian)
-			{
-				p0 = BinaryPrimitives.ReverseEndianness(p0);
-				p1 = BinaryPrimitives.ReverseEndianness(p1);
-				p2 = BinaryPrimitives.ReverseEndianness(p2);
-				p3 = BinaryPrimitives.ReverseEndianness(p3);
-			}
-
-			ref byte address = ref MemoryMarshal.GetReference(destination);
-
-			Unsafe.WriteUnaligned(ref address, p0);
-			Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref address, sizeof(ulong)), p1);
-			Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref address, sizeof(ulong) * 2), p2);
-			Unsafe.WriteUnaligned(ref Unsafe.AddByteOffset(ref address, sizeof(ulong) * 3), p3);
 		}
 
 		static UInt256 IFormattableNumber<UInt256>.GetDecimalValue(char value)

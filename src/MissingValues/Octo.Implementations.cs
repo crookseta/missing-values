@@ -9,6 +9,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics;
 using System.Runtime.Intrinsics.X86;
+using MissingValues.Primitives;
 
 namespace MissingValues
 {
@@ -58,6 +59,10 @@ namespace MissingValues
 
 		static int IBinaryFloatingPointInfo<Octo, UInt256>.DenormalMantissaBits => BiasedExponentShift;
 
+		static int IBinaryFloatingPointInfo<Octo, UInt256>.MinimumBinaryExponent => 1 - MaxExponent;
+
+		static int IBinaryFloatingPointInfo<Octo, UInt256>.MaximumBinaryExponent => MaxExponent;
+
 		static int IBinaryFloatingPointInfo<Octo, UInt256>.MinimumDecimalExponent => -78984;
 
 		static int IBinaryFloatingPointInfo<Octo, UInt256>.MaximumDecimalExponent => 78913;
@@ -73,6 +78,8 @@ namespace MissingValues
 		static int IBinaryFloatingPointInfo<Octo, UInt256>.ExponentBias => ExponentBias;
 
 		static int IBinaryFloatingPointInfo<Octo, UInt256>.OverflowDecimalExponent => (ExponentBias + (2 * 237) / 3);
+		
+		static int IBinaryFloatingPointInfo<Octo, UInt256>.InfinityExponent => 0x7FFFF;
 
 		static UInt256 IBinaryFloatingPointInfo<Octo, UInt256>.DenormalMantissaMask => TrailingSignificandMask;
 
@@ -87,7 +94,7 @@ namespace MissingValues
 		static UInt256 IBinaryFloatingPointInfo<Octo, UInt256>.NegativeInfinityBits => NegativeInfinityBits;
 
 		/// <inheritdoc/>
-		public static Octo Abs(Octo value) => Octo.UInt256BitsToOcto(Octo.OctoToUInt256Bits(value) & Octo.InvertedSignMask);
+		public static Octo Abs(Octo value) => BinaryOperations.UInt256BitsToOcto(BinaryOperations.OctoToUInt256Bits(value) & Octo.InvertedSignMask);
 
 		/// <inheritdoc/>
 		public static Octo Acos(Octo x) => Quad.Acos((Quad)x);
@@ -125,7 +132,7 @@ namespace MissingValues
 		/// <inheritdoc/>
 		public static Octo BitDecrement(Octo x)
 		{
-			UInt256 bits = Octo.OctoToUInt256Bits(x);
+			UInt256 bits = BinaryOperations.OctoToUInt256Bits(x);
 
 			if ((bits & Octo.PositiveInfinityBits) >= Octo.PositiveInfinityBits)
 			{
@@ -145,13 +152,13 @@ namespace MissingValues
 			// Positive values need to be decremented
 
 			bits += unchecked((UInt256)(((Int256)bits < Int256.Zero) ? Int256.One : Int256.NegativeOne));
-			return Octo.UInt256BitsToOcto(bits);
+			return BinaryOperations.UInt256BitsToOcto(bits);
 		}
 
 		/// <inheritdoc/>
 		public static Octo BitIncrement(Octo x)
 		{
-			UInt256 bits = Octo.OctoToUInt256Bits(x);
+			UInt256 bits = BinaryOperations.OctoToUInt256Bits(x);
 
 			if ((bits & Octo.PositiveInfinityBits) >= Octo.PositiveInfinityBits)
 			{
@@ -171,7 +178,7 @@ namespace MissingValues
 			// Positive values need to be incremented
 
 			bits += unchecked((UInt256)(((Int256)bits < Int256.Zero) ? Int256.NegativeOne : Int256.One));
-			return Octo.UInt256BitsToOcto(bits);
+			return BinaryOperations.UInt256BitsToOcto(bits);
 		}
 
 		/// <inheritdoc/>
@@ -235,15 +242,15 @@ namespace MissingValues
 		{
 			// This method is required to work for all inputs,
 			// including NaN, so we operate on the raw bits.
-			UInt256 xbits = Octo.OctoToUInt256Bits(value);
-			UInt256 ybits = Octo.OctoToUInt256Bits(sign);
+			UInt256 xbits = BinaryOperations.OctoToUInt256Bits(value);
+			UInt256 ybits = BinaryOperations.OctoToUInt256Bits(sign);
 
 			// Remove the sign from y, and remove everything but the sign from x
 			xbits &= Octo.InvertedSignMask;
 			ybits &= Octo.SignMask;
 
 			// Simply OR them to get the correct sign
-			return Octo.UInt256BitsToOcto(xbits | ybits);
+			return BinaryOperations.UInt256BitsToOcto(xbits | ybits);
 		}
 
 		/// <inheritdoc/>
@@ -365,7 +372,7 @@ namespace MissingValues
 		}
 
 		/// <inheritdoc/>
-		public static Octo FusedMultiplyAdd(Octo left, Octo right, Octo addend) => Octo.UInt256BitsToOcto(BitHelper.MulAddOctoBits(Octo.OctoToUInt256Bits(left), Octo.OctoToUInt256Bits(right), Octo.OctoToUInt256Bits(addend)));
+		public static Octo FusedMultiplyAdd(Octo left, Octo right, Octo addend) => BinaryOperations.UInt256BitsToOcto(BitHelper.MulAddOctoBits(BinaryOperations.OctoToUInt256Bits(left), BinaryOperations.OctoToUInt256Bits(right), BinaryOperations.OctoToUInt256Bits(addend)));
 
 		/// <inheritdoc/>
 		public static Octo Hypot(Octo x, Octo y) => Quad.Hypot((Quad)x, (Quad)y);
@@ -411,7 +418,7 @@ namespace MissingValues
 		/// <inheritdoc/>
 		public static bool IsFinite(Octo value)
 		{
-			Int256 bits = Octo.OctoToInt256Bits(value);
+			Int256 bits = BinaryOperations.OctoToInt256Bits(value);
 			return (bits & new Int256(0x7FFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF))
 				< new Int256(0x7FFF_F000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
 		}
@@ -421,7 +428,7 @@ namespace MissingValues
 		/// <inheritdoc/>
 		public static bool IsInfinity(Octo value)
 		{
-			Int256 bits = Octo.OctoToInt256Bits(value);
+			Int256 bits = BinaryOperations.OctoToInt256Bits(value);
 			return (bits & new Int256(0x7FFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF))
 				== new Int256(0x7FFF_F000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
 		}
@@ -433,7 +440,7 @@ namespace MissingValues
 		public static bool IsNaN(Octo value) => StripSign(value) > PositiveInfinityBits;
 
 		/// <inheritdoc/>
-		public static bool IsNegative(Octo value) => Int256.IsNegative(Octo.OctoToInt256Bits(value));
+		public static bool IsNegative(Octo value) => Int256.IsNegative(BinaryOperations.OctoToInt256Bits(value));
 
 		/// <inheritdoc/>
 		public static bool IsNegativeInfinity(Octo value) => value == NegativeInfinity;
@@ -441,7 +448,7 @@ namespace MissingValues
 		/// <inheritdoc/>
 		public static bool IsNormal(Octo value)
 		{
-			Int256 bits = Octo.OctoToInt256Bits(value);
+			Int256 bits = BinaryOperations.OctoToInt256Bits(value);
 			bits &= new Int256(0x7FFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF);
 			Int256 infBits = new Int256(0x7FFF_F000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
 			return (bits < infBits) && (bits != Int256.Zero) && ((bits & infBits) != Int256.Zero);
@@ -451,7 +458,7 @@ namespace MissingValues
 		public static bool IsOddInteger(Octo value) => IsInteger(value) && (Abs(value % Two) == One);
 
 		/// <inheritdoc/>
-		public static bool IsPositive(Octo value) => Int256.IsPositive(Octo.OctoToInt256Bits(value));
+		public static bool IsPositive(Octo value) => Int256.IsPositive(BinaryOperations.OctoToInt256Bits(value));
 
 		/// <inheritdoc/>
 		public static bool IsPositiveInfinity(Octo value) => value == PositiveInfinity;
@@ -459,7 +466,7 @@ namespace MissingValues
 		/// <inheritdoc/>
 		public static bool IsPow2(Octo value)
 		{
-			UInt256 bits = Octo.OctoToUInt256Bits(value);
+			UInt256 bits = BinaryOperations.OctoToUInt256Bits(value);
 
 			if ((Int256)bits <= Int256.Zero)
 			{
@@ -490,7 +497,7 @@ namespace MissingValues
 		/// <inheritdoc/>
 		public static bool IsSubnormal(Octo value)
 		{
-			Int256 bits = Octo.OctoToInt256Bits(value);
+			Int256 bits = BinaryOperations.OctoToInt256Bits(value);
 			bits &= new Int256(0x7FFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF);
 			Int256 infBits = new Int256(0x7FFF_F000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
 			return (bits < infBits) && (bits != Int256.Zero) && ((bits & infBits) == Int256.Zero);
@@ -833,7 +840,7 @@ namespace MissingValues
 
 			// Uses Newton Raphton Series to find 1/y
 			Octo x0;
-			var bits = Octo.ExtractFromBits(Octo.OctoToUInt256Bits(x));
+			var bits = Octo.ExtractFromBits(BinaryOperations.OctoToUInt256Bits(x));
 
 			// we save the original sign and exponent for later
 			bool sign = bits.sign;
@@ -865,7 +872,7 @@ namespace MissingValues
 				x0 = x1;
 			}
 
-			bits = Octo.ExtractFromBits(Octo.OctoToUInt256Bits(x0));
+			bits = Octo.ExtractFromBits(BinaryOperations.OctoToUInt256Bits(x0));
 
 			bits.exponent -= (exp - Octo.ExponentBias);
 
@@ -1140,7 +1147,7 @@ namespace MissingValues
 		/// <inheritdoc/>
 		public static Octo Sqrt(Octo x)
 		{
-			UInt256 bits = Octo.OctoToUInt256Bits(x);
+			UInt256 bits = BinaryOperations.OctoToUInt256Bits(x);
 			bool signA = Octo.IsNegative(x);
 			uint exp = Octo.ExtractBiasedExponentFromBits(in bits);
 			UInt256 sig = Octo.ExtractTrailingSignificandFromBits(in bits);
@@ -1271,7 +1278,7 @@ namespace MissingValues
 				}
 			}
 
-			return Octo.UInt256BitsToOcto(BitHelper.RoundPackToOcto(false, (int)expZ, sigZ, sigZExtra));
+			return BinaryOperations.UInt256BitsToOcto(BitHelper.RoundPackToOcto(false, (int)expZ, sigZ, sigZExtra));
 		}
 
 		/// <inheritdoc/>
@@ -1350,9 +1357,9 @@ namespace MissingValues
 			return NumberParser.TryParseFloat<Octo, UInt256, Utf8Char>(Utf8Char.CastFromByteSpan(utf8Text), NumberStyles.Float, provider, out result);
 		}
 
-		static Octo IBinaryFloatingPointInfo<Octo, UInt256>.BitsToFloat(UInt256 bits) => UInt256BitsToOcto(bits);
+		static Octo IBinaryFloatingPointInfo<Octo, UInt256>.BitsToFloat(UInt256 bits) => BinaryOperations.UInt256BitsToOcto(bits);
 
-		static UInt256 IBinaryFloatingPointInfo<Octo, UInt256>.FloatToBits(Octo value) => OctoToUInt256Bits(value);
+		static UInt256 IBinaryFloatingPointInfo<Octo, UInt256>.FloatToBits(Octo value) => BinaryOperations.OctoToUInt256Bits(value);
 
 		static bool INumberBase<Octo>.TryConvertFromChecked<TOther>(TOther value, out Octo result) => TryConvertFrom(value, out result);
 
@@ -1673,13 +1680,13 @@ namespace MissingValues
 
 			if (signA == signB)
 			{
-				return Octo.UInt256BitsToOcto(BitHelper.AddOctoBits(
-					 Octo.OctoToUInt256Bits(left), Octo.OctoToUInt256Bits(right), signA));
+				return BinaryOperations.UInt256BitsToOcto(BitHelper.AddOctoBits(
+					BinaryOperations.OctoToUInt256Bits(left), BinaryOperations.OctoToUInt256Bits(right), signA));
 			}
 			else
 			{
-				return Octo.UInt256BitsToOcto(BitHelper.SubOctoBits(
-					Octo.OctoToUInt256Bits(left), Octo.OctoToUInt256Bits(right), signA));
+				return BinaryOperations.UInt256BitsToOcto(BitHelper.SubOctoBits(
+					BinaryOperations.OctoToUInt256Bits(left), BinaryOperations.OctoToUInt256Bits(right), signA));
 			}
 		}
 
@@ -1687,7 +1694,7 @@ namespace MissingValues
 		public static Octo operator -(in Octo value)
 		{
 			// Invert the sign bit
-			return UInt256BitsToOcto(OctoToUInt256Bits(value) ^ new UInt256(0x8000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000));
+			return BinaryOperations.UInt256BitsToOcto(BinaryOperations.OctoToUInt256Bits(value) ^ new UInt256(0x8000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000));
 		}
 
 		/// <inheritdoc/>
@@ -1702,13 +1709,13 @@ namespace MissingValues
 
 			if (signA == signB)
 			{
-				return Octo.UInt256BitsToOcto(BitHelper.SubOctoBits(
-					Octo.OctoToUInt256Bits(left), Octo.OctoToUInt256Bits(right), signA));
+				return BinaryOperations.UInt256BitsToOcto(BitHelper.SubOctoBits(
+					BinaryOperations.OctoToUInt256Bits(left), BinaryOperations.OctoToUInt256Bits(right), signA));
 			}
 			else
 			{
-				return Octo.UInt256BitsToOcto(BitHelper.AddOctoBits(
-					Octo.OctoToUInt256Bits(left), Octo.OctoToUInt256Bits(right), signA));
+				return BinaryOperations.UInt256BitsToOcto(BitHelper.AddOctoBits(
+					BinaryOperations.OctoToUInt256Bits(left), BinaryOperations.OctoToUInt256Bits(right), signA));
 			}
 		}
 
@@ -1811,7 +1818,7 @@ namespace MissingValues
 				sigZ = BitHelper.ShortShiftRightJamExtra(sigZ, sigZExtra, 1, out sigZExtra);
 			}
 
-			return Octo.UInt256BitsToOcto(BitHelper.RoundPackToOcto(signZ, (int)expZ, sigZ, sigZExtra));
+			return BinaryOperations.UInt256BitsToOcto(BitHelper.RoundPackToOcto(signZ, (int)expZ, sigZ, sigZExtra));
 		}
 
 		/// <inheritdoc/>
@@ -2018,8 +2025,8 @@ namespace MissingValues
 			}
 
 			// IEEE defines that positive and negative zero are equivalent.
-			var lvalue = OctoToUInt256Bits(left);
-			var rvalue = OctoToUInt256Bits(right);
+			var lvalue = BinaryOperations.OctoToUInt256Bits(left);
+			var rvalue = BinaryOperations.OctoToUInt256Bits(right);
 
 			return (lvalue == rvalue) || AreZero(in left, in right);
 		}
@@ -2046,8 +2053,8 @@ namespace MissingValues
 				return leftIsNegative && !AreZero(in left, in right);
 			}
 
-			var lvalue = OctoToUInt256Bits(left);
-			var rvalue = OctoToUInt256Bits(right);
+			var lvalue = BinaryOperations.OctoToUInt256Bits(left);
+			var rvalue = BinaryOperations.OctoToUInt256Bits(right);
 
 			return (lvalue != rvalue) && ((lvalue < rvalue) ^ leftIsNegative);
 		}
@@ -2074,8 +2081,8 @@ namespace MissingValues
 				return leftIsNegative || AreZero(in left, in right);
 			}
 
-			var lvalue = OctoToUInt256Bits(left);
-			var rvalue = OctoToUInt256Bits(right);
+			var lvalue = BinaryOperations.OctoToUInt256Bits(left);
+			var rvalue = BinaryOperations.OctoToUInt256Bits(right);
 
 			return (lvalue == rvalue) || ((lvalue < rvalue) ^ leftIsNegative);
 		}

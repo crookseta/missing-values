@@ -7,6 +7,7 @@ using System.Globalization;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using MissingValues.Primitives;
 
 namespace MissingValues
 {
@@ -47,7 +48,7 @@ namespace MissingValues
 
 		static Quad IMinMaxValue<Quad>.MinValue => MinValue;
 
-		static Quad IBinaryNumber<Quad>.AllBitsSet => Quad.UInt128BitsToQuad(new UInt128(0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF));
+		static Quad IBinaryNumber<Quad>.AllBitsSet => BinaryOperations.UInt128BitsToQuad(new UInt128(0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF));
 
 		static ReadOnlySpan<Quad> IFormattableFloatingPoint<Quad>.PowersOfTen => MathQ.RoundPower10;
 
@@ -56,6 +57,10 @@ namespace MissingValues
 		static int IBinaryFloatingPointInfo<Quad, UInt128>.NormalMantissaBits => BiasedExponentShift + 1;
 
 		static int IBinaryFloatingPointInfo<Quad, UInt128>.DenormalMantissaBits => BiasedExponentShift;
+
+		static int IBinaryFloatingPointInfo<Quad, UInt128>.MinimumBinaryExponent => 1 - MaxExponent;
+
+		static int IBinaryFloatingPointInfo<Quad, UInt128>.MaximumBinaryExponent => MaxExponent;
 
 		static int IBinaryFloatingPointInfo<Quad, UInt128>.MinimumDecimalExponent => -4966;
 
@@ -72,6 +77,8 @@ namespace MissingValues
 		static int IBinaryFloatingPointInfo<Quad, UInt128>.ExponentBias => ExponentBias;
 
 		static int IBinaryFloatingPointInfo<Quad, UInt128>.OverflowDecimalExponent => (ExponentBias + (2 * 113) / 3);
+		
+		static int IBinaryFloatingPointInfo<Quad, UInt128>.InfinityExponent => 0x7FFF;
 
 		static UInt128 IBinaryFloatingPointInfo<Quad, UInt128>.DenormalMantissaMask => TrailingSignificandMask;
 
@@ -163,7 +170,7 @@ namespace MissingValues
 		/// <inheritdoc/>
 		public static bool IsFinite(Quad value)
 		{
-			Int128 bits = Quad.QuadToInt128Bits(value);
+			Int128 bits = BinaryOperations.QuadToInt128Bits(value);
 			return (bits & new Int128(0x7FFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF)) < new Int128(0x7FFF_0000_0000_0000, 0x0000_0000_0000_0000);
 		}
 
@@ -172,7 +179,7 @@ namespace MissingValues
 		/// <inheritdoc/>
 		public static bool IsInfinity(Quad value)
 		{
-			Int128 bits = Quad.QuadToInt128Bits(value);
+			Int128 bits = BinaryOperations.QuadToInt128Bits(value);
 			return (bits & new Int128(0x7FFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF)) == new Int128(0x7FFF_0000_0000_0000, 0x0000_0000_0000_0000);
 		}
 
@@ -183,7 +190,7 @@ namespace MissingValues
 		public static bool IsNaN(Quad value) => StripSign(value) > PositiveInfinityBits;
 
 		/// <inheritdoc/>
-		public static bool IsNegative(Quad value) => Int128.IsNegative(Quad.QuadToInt128Bits(value));
+		public static bool IsNegative(Quad value) => Int128.IsNegative(BinaryOperations.QuadToInt128Bits(value));
 
 		/// <inheritdoc/>
 		public static bool IsNegativeInfinity(Quad value) => value == NegativeInfinity;
@@ -191,7 +198,7 @@ namespace MissingValues
 		/// <inheritdoc/>
 		public static bool IsNormal(Quad value)
 		{
-			Int128 bits = Quad.QuadToInt128Bits(value);
+			Int128 bits = BinaryOperations.QuadToInt128Bits(value);
 			bits &= new Int128(0x7FFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF);
 			Int128 infBits = new Int128(0x7FFF_0000_0000_0000, 0x0000_0000_0000_0000);
 			return (bits < infBits) && (bits != Int128.Zero) && ((bits & infBits) != Int128.Zero);
@@ -201,7 +208,7 @@ namespace MissingValues
 		public static bool IsOddInteger(Quad value) => IsInteger(value) && (Abs(value % Two) == One);
 
 		/// <inheritdoc/>
-		public static bool IsPositive(Quad value) => Int128.IsPositive(Quad.QuadToInt128Bits(value));
+		public static bool IsPositive(Quad value) => Int128.IsPositive(BinaryOperations.QuadToInt128Bits(value));
 
 		/// <inheritdoc/>
 		public static bool IsPositiveInfinity(Quad value) => value == PositiveInfinity;
@@ -209,7 +216,7 @@ namespace MissingValues
 		/// <inheritdoc/>
 		public static bool IsPow2(Quad value)
 		{
-			UInt128 bits = Quad.QuadToUInt128Bits(value);
+			UInt128 bits = BinaryOperations.QuadToUInt128Bits(value);
 
 			if ((Int128)bits <= Int128.Zero)
 			{
@@ -240,7 +247,7 @@ namespace MissingValues
 		/// <inheritdoc/>
 		public static bool IsSubnormal(Quad value)
 		{
-			Int128 bits = Quad.QuadToInt128Bits(value);
+			Int128 bits = BinaryOperations.QuadToInt128Bits(value);
 			bits &= new Int128(0x7FFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF);
 			Int128 infBits = new Int128(0x7FFF_0000_0000_0000, 0x0000_0000_0000_0000);
 			return (bits < infBits) && (bits != Int128.Zero) && ((bits & infBits) == Int128.Zero);
@@ -1749,7 +1756,7 @@ namespace MissingValues
 		public static Quad operator -(Quad value)
 		{
 			// Invert the sign bit
-			return Quad.UInt128BitsToQuad(Quad.QuadToUInt128Bits(value) ^ new UInt128(0x8000_0000_0000_0000, 0x0000_0000_0000_0000));
+			return BinaryOperations.UInt128BitsToQuad(BinaryOperations.QuadToUInt128Bits(value) ^ new UInt128(0x8000_0000_0000_0000, 0x0000_0000_0000_0000));
 		}
 
 		/// <inheritdoc/>
@@ -1820,8 +1827,8 @@ namespace MissingValues
 				return leftIsNegative && !AreZero(left, right);
 			}
 
-			UInt128 leftBits = QuadToUInt128Bits(left);
-			UInt128 rightBits = QuadToUInt128Bits(right);
+			UInt128 leftBits = BinaryOperations.QuadToUInt128Bits(left);
+			UInt128 rightBits = BinaryOperations.QuadToUInt128Bits(right);
 
 			return (leftBits != rightBits) && ((leftBits < rightBits) ^ leftIsNegative);
 		}
@@ -1842,8 +1849,8 @@ namespace MissingValues
 				return rightIsNegative && !AreZero(right, left);
 			}
 
-			UInt128 leftBits = QuadToUInt128Bits(left);
-			UInt128 rightBits = QuadToUInt128Bits(right);
+			UInt128 leftBits = BinaryOperations.QuadToUInt128Bits(left);
+			UInt128 rightBits = BinaryOperations.QuadToUInt128Bits(right);
 
 			return (rightBits != leftBits) && ((rightBits < leftBits) ^ rightIsNegative);
 		}
@@ -1867,8 +1874,8 @@ namespace MissingValues
 				return leftIsNegative || AreZero(left, right);
 			}
 
-			UInt128 leftBits = QuadToUInt128Bits(left);
-			UInt128 rightBits = QuadToUInt128Bits(right);
+			UInt128 leftBits = BinaryOperations.QuadToUInt128Bits(left);
+			UInt128 rightBits = BinaryOperations.QuadToUInt128Bits(right);
 
 			return (leftBits == rightBits) || ((leftBits < rightBits) ^ leftIsNegative);
 		}
@@ -1889,8 +1896,8 @@ namespace MissingValues
 				return rightIsNegative || AreZero(right, left);
 			}
 
-			UInt128 leftBits = QuadToUInt128Bits(left);
-			UInt128 rightBits = QuadToUInt128Bits(right);
+			UInt128 leftBits = BinaryOperations.QuadToUInt128Bits(left);
+			UInt128 rightBits = BinaryOperations.QuadToUInt128Bits(right);
 
 			return (rightBits == leftBits) || ((rightBits < leftBits) ^ rightIsNegative);
 		}
@@ -1926,8 +1933,8 @@ namespace MissingValues
 			return MathQ.__sin(hi, lo, 1);
 		}
 
-		static Quad IBinaryFloatingPointInfo<Quad, UInt128>.BitsToFloat(UInt128 bits) => UInt128BitsToQuad(bits);
+		static Quad IBinaryFloatingPointInfo<Quad, UInt128>.BitsToFloat(UInt128 bits) => BinaryOperations.UInt128BitsToQuad(bits);
 
-		static UInt128 IBinaryFloatingPointInfo<Quad, UInt128>.FloatToBits(Quad value) => QuadToUInt128Bits(value);
+		static UInt128 IBinaryFloatingPointInfo<Quad, UInt128>.FloatToBits(Quad value) => BinaryOperations.QuadToUInt128Bits(value);
 	}
 }
