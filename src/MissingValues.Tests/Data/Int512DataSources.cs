@@ -684,32 +684,47 @@ public class Int512DataSources
 
 	public static IEnumerable<Func<(Int512, Int512, Int512)>> CopySignTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int512.One, Int512.One, Int512.One);
+		yield return () => (Int512.One, Int512.NegativeOne, Int512.NegativeOne);
+		yield return () => (Int512.NegativeOne, Int512.NegativeOne, Int512.NegativeOne);
+		yield return () => (Int512.NegativeOne, Int512.One, Int512.One);
 	}
 
 	public static IEnumerable<Func<(Int512, Int512, Int512)>> MaxTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int512.One, Int512.One, Int512.One);
+		yield return () => (Int512.One, Int512.NegativeOne, Int512.One);
+		yield return () => (Int512.MinValue, Int512.NegativeOne, Int512.NegativeOne);
+		yield return () => (Int512.Zero, Int512.One, Int512.One);
+		yield return () => (Int512.One, Int512.MaxValue, Int512.MaxValue);
 	}
 
 	public static IEnumerable<Func<(Int512, Int512, Int512)>> MaxNumberTestData()
 	{
-		throw new NotImplementedException();
+		return MaxTestData();
 	}
 
 	public static IEnumerable<Func<(Int512, Int512, Int512)>> MinTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int512.One, Int512.One, Int512.One);
+		yield return () => (Int512.One, Int512.NegativeOne, Int512.NegativeOne);
+		yield return () => (Int512.MinValue, Int512.NegativeOne, Int512.MinValue);
+		yield return () => (Int512.Zero, Int512.One, Int512.Zero);
+		yield return () => (Int512.One, Int512.MaxValue, Int512.One);
 	}
 
 	public static IEnumerable<Func<(Int512, Int512, Int512)>> MinNumberTestData()
 	{
-		throw new NotImplementedException();
+		return MinTestData();
 	}
 
 	public static IEnumerable<Func<(Int512, int)>> SignTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int512.Zero, 0);
+		yield return () => (Int512.MaxValue, 1);
+		yield return () => (Int512.One, 1);
+		yield return () => (Int512.MinValue, -1);
+		yield return () => (Int512.NegativeOne, -1);
 	}
 
 	public static IEnumerable<Func<(Int512, bool)>> IsPow2TestData()
