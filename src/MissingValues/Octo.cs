@@ -228,15 +228,15 @@ namespace MissingValues
 		}
 
 #if BIGENDIAN
-		private readonly ulong _bits3;
-		private readonly ulong _bits2;
-		private readonly ulong _bits1;
-		private readonly ulong _bits0;
+		internal readonly ulong _bits3;
+		internal readonly ulong _bits2;
+		internal readonly ulong _bits1;
+		internal readonly ulong _bits0;
 #else
-		private readonly ulong _bits0;
-		private readonly ulong _bits1;
-		private readonly ulong _bits2;
-		private readonly ulong _bits3;
+		internal readonly ulong _bits0;
+		internal readonly ulong _bits1;
+		internal readonly ulong _bits2;
+		internal readonly ulong _bits3;
 #endif
 
 		internal Octo(ulong u1, ulong u2, ulong l1, ulong l2)

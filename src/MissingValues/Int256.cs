@@ -8,6 +8,7 @@ using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text.Json.Serialization;
+using MissingValues.Primitives;
 
 namespace MissingValues
 {
@@ -614,7 +615,7 @@ namespace MissingValues
 			}
 
 			Span<byte> span = stackalloc byte[Size];
-			value.WriteLittleEndianUnsafe(span);
+			BinaryOperations.WriteInt256LittleEndian(span, in value);
 			return new BigInteger(span, (long)value._p3 >= 0);
 		}
 		// Floating
