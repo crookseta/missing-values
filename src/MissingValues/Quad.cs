@@ -7,6 +7,7 @@ using System.Globalization;
 using System.Numerics;
 using System.Runtime.InteropServices;
 using System.Text.Json.Serialization;
+using MissingValues.Primitives;
 
 namespace MissingValues
 {
@@ -122,7 +123,7 @@ namespace MissingValues
 		{
 			get
 			{
-				UInt128 bits = QuadToUInt128Bits(this);
+				UInt128 bits = BinaryOperations.QuadToUInt128Bits(this);
 				return ExtractBiasedExponentFromBits(bits);
 			}
 		}
@@ -144,7 +145,7 @@ namespace MissingValues
 		{
 			get
 			{
-				UInt128 bits = QuadToUInt128Bits(this);
+				UInt128 bits = BinaryOperations.QuadToUInt128Bits(this);
 				return ExtractTrailingSignificandFromBits(bits);
 			}
 		}
@@ -186,7 +187,7 @@ namespace MissingValues
 			if (IsNaNOrZero(this))
 			{
 				// All NaNs should have the same hash code, as should both Zeros.
-				return HashCode.Combine(QuadToUInt128Bits(this) & PositiveInfinityBits);
+				return HashCode.Combine(BinaryOperations.QuadToUInt128Bits(this) & PositiveInfinityBits);
 			}
 			return HashCode.Combine(_lower, _upper);
 		}
@@ -223,14 +224,14 @@ namespace MissingValues
 		/// <param name="bits">The number to convert.</param>
 		/// <returns>A quadruple-precision floating point number whose bits are identical to <paramref name="bits"/>.</returns>
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static Quad UInt128BitsToQuad(UInt128 bits) => System.Runtime.CompilerServices.Unsafe.BitCast<UInt128, Quad>(bits);
+		public static Quad UInt128BitsToQuad(UInt128 bits) => BinaryOperations.UInt128BitsToQuad(bits);
 		/// <summary>
 		/// Reinterprets the specified 128-bit signed integer to a quadruple-precision floating point number.
 		/// </summary>
 		/// <param name="bits">The number to convert.</param>
 		/// <returns>A quadruple-precision floating point number whose bits are identical to <paramref name="bits"/>.</returns>
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static Quad Int128BitsToQuad(Int128 bits) => System.Runtime.CompilerServices.Unsafe.BitCast<Int128, Quad>(bits);
+		public static Quad Int128BitsToQuad(Int128 bits) => BinaryOperations.Int128BitsToQuad(bits);
 
 		/// <summary>
 		/// Converts the specified quadruple-precision floating point number to a 128-bit unsigned integer.
@@ -238,14 +239,14 @@ namespace MissingValues
 		/// <param name="value">The number to convert.</param>
 		/// <returns>A 128-bit unsigned integer whose value is equivalent to <paramref name="value"/>.</returns>
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static UInt128 QuadToUInt128Bits(Quad value) => new UInt128(value._upper, value._lower);
+		public static UInt128 QuadToUInt128Bits(Quad value) => BinaryOperations.QuadToUInt128Bits(value);
 		/// <summary>
 		/// Converts the specified quadruple-precision floating point number to a 128-bit signed integer.
 		/// </summary>
 		/// <param name="value">The number to convert.</param>
 		/// <returns>A 128-bit signed integer whose value is equivalent to <paramref name="value"/>.</returns>
 		[EditorBrowsable(EditorBrowsableState.Never)]
-		public static Int128 QuadToInt128Bits(Quad value) => new Int128(value._upper, value._lower);
+		public static Int128 QuadToInt128Bits(Quad value) => BinaryOperations.QuadToInt128Bits(value);
 
 
 		internal static ushort ExtractBiasedExponentFromBits(UInt128 bits)
@@ -263,22 +264,22 @@ namespace MissingValues
 
 		internal static bool AreZero(Quad x, Quad y)
 		{
-			return ((QuadToUInt128Bits(x) | QuadToUInt128Bits(y)) & ~SignMask) == UInt128.Zero;
+			return ((BinaryOperations.QuadToUInt128Bits(x) | BinaryOperations.QuadToUInt128Bits(y)) & ~SignMask) == UInt128.Zero;
 		}
 
 		internal static bool IsNaNOrZero(Quad value)
 		{
-			return ((QuadToUInt128Bits(value) - 1) & ~SignMask) >= PositiveInfinityBits;
+			return ((BinaryOperations.QuadToUInt128Bits(value) - 1) & ~SignMask) >= PositiveInfinityBits;
 		}
 
 		internal static UInt128 StripSign(Quad value)
 		{
-			return QuadToUInt128Bits(value) & ~SignMask;
+			return BinaryOperations.QuadToUInt128Bits(value) & ~SignMask;
 		}
 
 		internal static Quad CreateQuadNaN(bool sign, UInt128 significand)
 		{
-			return UInt128BitsToQuad(CreateQuadNaNBits(sign, significand));
+			return BinaryOperations.UInt128BitsToQuad(CreateQuadNaNBits(sign, significand));
 		}
 		internal static UInt128 CreateQuadNaNBits(bool sign, UInt128 significand)
 		{
@@ -309,7 +310,7 @@ namespace MissingValues
 			}
 			if (value >= Quad.One)
 			{
-				UInt128 bits = Quad.QuadToUInt128Bits(value);
+				UInt128 bits = BinaryOperations.QuadToUInt128Bits(value);
 				byte result = (byte)((uint)(bits >> 105) | 0x80);
 
 				result >>= (Quad.ExponentBias + 8 - 1 - (int)(bits >> 112));
@@ -336,7 +337,7 @@ namespace MissingValues
 			}
 			if (value >= Quad.One)
 			{
-				UInt128 bits = Quad.QuadToUInt128Bits(value);
+				UInt128 bits = BinaryOperations.QuadToUInt128Bits(value);
 				byte result = (byte)((uint)(bits >> 105) | 0x80);
 
 				result >>= (Quad.ExponentBias + 8 - 1 - (int)(bits >> 112));
@@ -366,7 +367,7 @@ namespace MissingValues
 			}
 			if (value >= Quad.One)
 			{
-				UInt128 bits = Quad.QuadToUInt128Bits(value);
+				UInt128 bits = BinaryOperations.QuadToUInt128Bits(value);
 				ushort result = (ushort)((uint)(bits >> 97) | 0x8000);
 
 				result >>= Quad.ExponentBias + 16 - 1 - (int)(bits >> 112);
@@ -393,7 +394,7 @@ namespace MissingValues
 			}
 			if (value >= Quad.One)
 			{
-				UInt128 bits = Quad.QuadToUInt128Bits(value);
+				UInt128 bits = BinaryOperations.QuadToUInt128Bits(value);
 				ushort result = (ushort)((uint)(bits >> 97) | 0x8000);
 
 				result >>= Quad.ExponentBias + 16 - 1 - (int)(bits >> 112);
@@ -423,7 +424,7 @@ namespace MissingValues
 			}
 			if (value >= Quad.One)
 			{
-				UInt128 bits = Quad.QuadToUInt128Bits(value);
+				UInt128 bits = BinaryOperations.QuadToUInt128Bits(value);
 				uint result = (uint)(bits >> 81) | 0x8000_0000;
 
 				result >>= Quad.ExponentBias + 32 - 1 - (int)(bits >> 112);
@@ -450,7 +451,7 @@ namespace MissingValues
 			}
 			if (value >= Quad.One)
 			{
-				UInt128 bits = Quad.QuadToUInt128Bits(value);
+				UInt128 bits = BinaryOperations.QuadToUInt128Bits(value);
 				uint result = (uint)(bits >> 81) | 0x8000_0000;
 
 				result >>= Quad.ExponentBias + 32 - 1 - (int)(bits >> 112);
@@ -480,7 +481,7 @@ namespace MissingValues
 			}
 			if (value >= Quad.One)
 			{
-				UInt128 bits = Quad.QuadToUInt128Bits(value);
+				UInt128 bits = BinaryOperations.QuadToUInt128Bits(value);
 				ulong result = (ulong)(bits >> 49) | 0x8000_0000_0000_0000;
 
 				result >>= Quad.ExponentBias + 64 - 1 - (int)(bits >> 112);
@@ -507,7 +508,7 @@ namespace MissingValues
 			}
 			if (value >= Quad.One)
 			{
-				UInt128 bits = Quad.QuadToUInt128Bits(value);
+				UInt128 bits = BinaryOperations.QuadToUInt128Bits(value);
 				ulong result = (ulong)(bits >> 49) | 0x8000_0000_0000_0000;
 
 				result >>= Quad.ExponentBias + 64 - 1 - (int)(bits >> 112);
@@ -537,7 +538,7 @@ namespace MissingValues
 			}
 			if (value >= Quad.One)
 			{
-				UInt128 bits = Quad.QuadToUInt128Bits(value);
+				UInt128 bits = BinaryOperations.QuadToUInt128Bits(value);
 				UInt128 result = (bits << 16) >> 1 | new UInt128(0x8000_0000_0000_0000, 0x0);
 
 				result >>= Quad.ExponentBias + 128 - 1 - (int)(bits >> 112);
@@ -565,7 +566,7 @@ namespace MissingValues
 
 			if (value >= Quad.One)
 			{
-				UInt128 bits = Quad.QuadToUInt128Bits(value);
+				UInt128 bits = BinaryOperations.QuadToUInt128Bits(value);
 				UInt128 result = (bits << 16) >> 1 | new UInt128(0x8000_0000_0000_0000, 0x0);
 
 				result >>= Quad.ExponentBias + 128 - 1 - (int)(bits >> 112);
@@ -596,7 +597,7 @@ namespace MissingValues
 
 			if (value >= Quad.One)
 			{
-				UInt128 bits = Quad.QuadToUInt128Bits(value);
+				UInt128 bits = BinaryOperations.QuadToUInt128Bits(value);
 				UInt256 result = new UInt256((bits << 16) >> 1 | new UInt128(0x8000_0000_0000_0000, 0x0), UInt128.Zero);
 
 				result >>= Quad.ExponentBias + 256 - 1 - (int)(bits >> 112);
@@ -624,7 +625,7 @@ namespace MissingValues
 
 			if (value >= Quad.One)
 			{
-				UInt128 bits = Quad.QuadToUInt128Bits(value);
+				UInt128 bits = BinaryOperations.QuadToUInt128Bits(value);
 				UInt256 result = new UInt256((bits << 16) >> 1 | new UInt128(0x8000_0000_0000_0000, 0x0), UInt128.Zero);
 
 				result >>= Quad.ExponentBias + 256 - 1 - (int)(bits >> 112);
@@ -655,7 +656,7 @@ namespace MissingValues
 
 			if (value >= Quad.One)
 			{
-				UInt128 bits = Quad.QuadToUInt128Bits(value);
+				UInt128 bits = BinaryOperations.QuadToUInt128Bits(value);
 				UInt512 result = new UInt512((bits << 16) >> 1 | new UInt128(0x8000_0000_0000_0000, 0x0), UInt128.Zero, UInt128.Zero, UInt128.Zero);
 
 				result >>= Quad.ExponentBias + 512 - 1 - (int)(bits >> 112);
@@ -683,7 +684,7 @@ namespace MissingValues
 
 			if (value >= Quad.One)
 			{
-				UInt128 bits = Quad.QuadToUInt128Bits(value);
+				UInt128 bits = BinaryOperations.QuadToUInt128Bits(value);
 				UInt512 result = new UInt512((bits << 16) >> 1 | new UInt128(0x8000_0000_0000_0000, 0x0), UInt128.Zero, UInt128.Zero, UInt128.Zero);
 
 				result >>= Quad.ExponentBias + 512 - 1 - (int)(bits >> 112);
@@ -724,7 +725,7 @@ namespace MissingValues
 			}
 			if (value >= Quad.One)
 			{
-				UInt128 bits = Quad.QuadToUInt128Bits(value);
+				UInt128 bits = BinaryOperations.QuadToUInt128Bits(value);
 				// For some reason, sbyte and short dont perform logical shifts correctly, so we have to perform the shifting with byte and ushort.
 				sbyte result = (sbyte)(((byte)(bits >> 105) | 0x80) >>> (Quad.ExponentBias + 8 - 1 - (int)(bits >> 112)));
 
@@ -761,7 +762,7 @@ namespace MissingValues
 			}
 			if (value >= Quad.One)
 			{
-				UInt128 bits = Quad.QuadToUInt128Bits(value);
+				UInt128 bits = BinaryOperations.QuadToUInt128Bits(value);
 				sbyte result = (sbyte)(((byte)(bits >> 105) | 0x80) >>> (Quad.ExponentBias + 8 - 1 - (int)(bits >> 112)));
 
 				if (isNegative)
@@ -804,7 +805,7 @@ namespace MissingValues
 			}
 			if (value >= Quad.One)
 			{
-				UInt128 bits = Quad.QuadToUInt128Bits(value);
+				UInt128 bits = BinaryOperations.QuadToUInt128Bits(value);
 				// For some reason, sbyte and short dont perform logical shifts correctly, so we have to perform the shifting with byte and ushort.
 				short result = (short)(((ushort)(bits >> 97) | 0x8000) >>> (Quad.ExponentBias + 16 - 1 - (int)(bits >> 112)));
 
@@ -841,7 +842,7 @@ namespace MissingValues
 			}
 			if (value >= Quad.One)
 			{
-				UInt128 bits = Quad.QuadToUInt128Bits(value);
+				UInt128 bits = BinaryOperations.QuadToUInt128Bits(value);
 				short result = (short)(((ushort)(bits >> 97) | 0x8000) >>> (Quad.ExponentBias + 16 - 1 - (int)(bits >> 112)));
 
 				if (isNegative)
@@ -884,7 +885,7 @@ namespace MissingValues
 			}
 			if (value >= Quad.One)
 			{
-				UInt128 bits = Quad.QuadToUInt128Bits(value);
+				UInt128 bits = BinaryOperations.QuadToUInt128Bits(value);
 				int result = (int)((uint)(bits >> 81) | 0x8000_0000);
 
 				result >>>= Quad.ExponentBias + 32 - 1 - (int)(bits >> 112);
@@ -922,7 +923,7 @@ namespace MissingValues
 			}
 			if (value >= Quad.One)
 			{
-				UInt128 bits = Quad.QuadToUInt128Bits(value);
+				UInt128 bits = BinaryOperations.QuadToUInt128Bits(value);
 				int result = (int)((uint)(bits >> 81) | 0x8000_0000);
 
 				result >>>= Quad.ExponentBias + 32 - 1 - (int)(bits >> 112);
@@ -967,7 +968,7 @@ namespace MissingValues
 			}
 			if (value >= Quad.One)
 			{
-				UInt128 bits = Quad.QuadToUInt128Bits(value);
+				UInt128 bits = BinaryOperations.QuadToUInt128Bits(value);
 				long result = (long)((ulong)(bits >> 49) | 0x8000_0000_0000_0000);
 
 				result >>>= Quad.ExponentBias + 64 - 1 - (int)(bits >> 112);
@@ -1005,7 +1006,7 @@ namespace MissingValues
 			}
 			if (value >= Quad.One)
 			{
-				UInt128 bits = Quad.QuadToUInt128Bits(value);
+				UInt128 bits = BinaryOperations.QuadToUInt128Bits(value);
 				long result = (long)((ulong)(bits >> 49) | 0x8000_0000_0000_0000);
 
 				result >>>= Quad.ExponentBias + 64 - 1 - (int)(bits >> 112);
@@ -1050,7 +1051,7 @@ namespace MissingValues
 			}
 			if (value >= Quad.One)
 			{
-				UInt128 bits = Quad.QuadToUInt128Bits(value);
+				UInt128 bits = BinaryOperations.QuadToUInt128Bits(value);
 				Int128 result = (Int128)(((bits << 16) >> 1) | Quad.SignMask);
 
 				result >>>= Quad.ExponentBias + 128 - 1 - (int)(bits >> 112);
@@ -1088,7 +1089,7 @@ namespace MissingValues
 			}
 			if (value >= Quad.One)
 			{
-				UInt128 bits = Quad.QuadToUInt128Bits(value);
+				UInt128 bits = BinaryOperations.QuadToUInt128Bits(value);
 				Int128 result = (Int128)(((bits << 16) >> 1) | Quad.SignMask);
 
 				result >>>= Quad.ExponentBias + 128 - 1 - (int)(bits >> 112);
@@ -1139,7 +1140,7 @@ namespace MissingValues
 				// this down to the represented integer by y shifting by the unbiased exponent, taking
 				// into account the significand is now represented as 256-bits.
 
-				UInt128 bits = Quad.QuadToUInt128Bits(value);
+				UInt128 bits = BinaryOperations.QuadToUInt128Bits(value);
 				Int256 result = new Int256((bits << 16) >> 1 | Quad.SignMask, UInt128.Zero);
 
 				result >>>= (Quad.ExponentBias + 256 - 1 - (int)(bits >> 112));
@@ -1184,7 +1185,7 @@ namespace MissingValues
 				// this down to the represented integer by y shifting by the unbiased exponent, taking
 				// into account the significand is now represented as 256-bits.
 
-				UInt128 bits = Quad.QuadToUInt128Bits(value);
+				UInt128 bits = BinaryOperations.QuadToUInt128Bits(value);
 				Int256 result = new Int256((bits << 16) >> 1 | Quad.SignMask, UInt128.Zero);
 
 				result >>>= (Quad.ExponentBias + 256 - 1 - (int)(bits >> 112));
@@ -1236,7 +1237,7 @@ namespace MissingValues
 				// this down to the represented integer by y shifting by the unbiased exponent, taking
 				// into account the significand is now represented as 512-bits.
 
-				UInt128 bits = Quad.QuadToUInt128Bits(value);
+				UInt128 bits = BinaryOperations.QuadToUInt128Bits(value);
 				Int512 result = new Int512((bits << 16) >> 1 | Quad.SignMask, UInt128.Zero, UInt128.Zero, UInt128.Zero);
 
 				result >>>= (Quad.ExponentBias + 512 - 1 - (int)(bits >> 112));
@@ -1281,7 +1282,7 @@ namespace MissingValues
 				// this down to the represented integer by y shifting by the unbiased exponent, taking
 				// into account the significand is now represented as 512-bits.
 
-				UInt128 bits = Quad.QuadToUInt128Bits(value);
+				UInt128 bits = BinaryOperations.QuadToUInt128Bits(value);
 				Int512 result = new Int512((bits << 16) >> 1 | Quad.SignMask, UInt128.Zero, UInt128.Zero, UInt128.Zero);
 
 				result >>>= (Quad.ExponentBias + 512 - 1 - (int)(bits >> 112));
@@ -1388,7 +1389,7 @@ namespace MissingValues
 			{
 				if (sig == UInt128.Zero)
 				{
-					return Octo.UInt256BitsToOcto(sign ? Octo.SignMask : UInt256.Zero);
+					return BinaryOperations.UInt256BitsToOcto(sign ? Octo.SignMask : UInt256.Zero);
 				}
 				(exp, sig) = BitHelper.NormalizeSubnormalF128Sig(sig);
 				exp -= 1;
@@ -1402,7 +1403,7 @@ namespace MissingValues
 		/// <param name="value">The value to convert.</param>
 		public static explicit operator double(Quad value)
 		{
-			UInt128 quadInt = QuadToUInt128Bits(value);
+			UInt128 quadInt = BinaryOperations.QuadToUInt128Bits(value);
 			bool sign = (quadInt & Quad.SignMask) >> Quad.SignShift != 0;
 			int exp = (int)((quadInt & Quad.BiasedExponentMask) >> Quad.BiasedExponentShift);
 			UInt128 sig = quadInt & Quad.TrailingSignificandMask;
@@ -1436,7 +1437,7 @@ namespace MissingValues
 		/// <param name="value">The value to convert.</param>
 		public static explicit operator float(Quad value)
 		{
-			UInt128 quadInt = QuadToUInt128Bits(value);
+			UInt128 quadInt = BinaryOperations.QuadToUInt128Bits(value);
 			bool sign = (quadInt & Quad.SignMask) >> Quad.SignShift != 0;
 			int exp = (int)((quadInt & Quad.BiasedExponentMask) >> Quad.BiasedExponentShift);
 			UInt128 sig = quadInt & Quad.TrailingSignificandMask;
@@ -1469,7 +1470,7 @@ namespace MissingValues
 		/// <param name="value">The value to convert.</param>
 		public static explicit operator Half(Quad value)
 		{
-			UInt128 quadInt = QuadToUInt128Bits(value);
+			UInt128 quadInt = BinaryOperations.QuadToUInt128Bits(value);
 			bool sign = (quadInt & Quad.SignMask) >> Quad.SignShift != 0;
 			int exp = (int)((quadInt & Quad.BiasedExponentMask) >> Quad.BiasedExponentShift);
 			UInt128 sig = quadInt & Quad.TrailingSignificandMask;
@@ -1575,7 +1576,7 @@ namespace MissingValues
 			UInt128 b = (value << shiftDist << 113); // Insignificant bits, only relevant for rounding.
 			UInt128 m = a + ((b - (b >> 127 & (a == UInt128.Zero ? UInt128.One : UInt128.Zero))) >> 127); // Add one when we need to round up. Break ties to even.
 			UInt128 e = (UInt128)(0x407D - shiftDist); // Exponent plus 16383, minus one, except for zero.
-			return Quad.UInt128BitsToQuad((e << 112) + m);
+			return BinaryOperations.UInt128BitsToQuad((e << 112) + m);
 		}
 		// Signed
 		/// <summary>
@@ -1741,7 +1742,7 @@ namespace MissingValues
 			{
 				if (sig == 0)
 				{
-					return UInt128BitsToQuad(sign ? SignMask : 0); // Positive / Negative zero
+					return BinaryOperations.UInt128BitsToQuad(sign ? SignMask : 0); // Positive / Negative zero
 				}
 				(exp, sig) = BitHelper.NormalizeSubnormalF64Sig(sig);
 				exp -= 1;
@@ -1776,7 +1777,7 @@ namespace MissingValues
 			{
 				if (sig == 0)
 				{
-					return UInt128BitsToQuad(sign ? SignMask : 0); // Positive / Negative zero
+					return BinaryOperations.UInt128BitsToQuad(sign ? SignMask : 0); // Positive / Negative zero
 				}
 				(exp, sig) = BitHelper.NormalizeSubnormalF32Sig(sig);
 				exp -= 1;
@@ -1811,7 +1812,7 @@ namespace MissingValues
 			{
 				if (sig == 0)
 				{
-					return UInt128BitsToQuad(sign ? SignMask : 0); // Positive / Negative zero
+					return BinaryOperations.UInt128BitsToQuad(sign ? SignMask : 0); // Positive / Negative zero
 				}
 				(exp, sig) = BitHelper.NormalizeSubnormalF32Sig(sig);
 				exp -= 1;

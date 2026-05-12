@@ -642,7 +642,7 @@ namespace MissingValues
 			UInt256 b = (value << shiftDist << 237); // Insignificant bits, only relevant for rounding.
 			UInt256 m = a + ((b - (b >> 255 & (a == UInt256.Zero ? UInt256.One : UInt256.Zero))) >> 255); // Add one when we need to round up. Break ties to even.
 			UInt256 e = (UInt256)(0x400FD - shiftDist); // Exponent plus 262143, minus one, except for zero.
-			return Octo.UInt256BitsToOcto((e << 236) + m);
+			return BinaryOperations.UInt256BitsToOcto((e << 236) + m);
 		}
 		/// <summary>
 		/// Explicitly converts a <see cref="UInt256" /> value to a <see cref="Quad"/>.
@@ -662,11 +662,11 @@ namespace MissingValues
 				Quad twoPow112 = new Quad(0x406F_0000_0000_0000, 0x0000_0000_0000_0000);
 				Quad twoPow224 = new Quad(0x40DF_0000_0000_0000, 0x0000_0000_0000_0000);
 
-				UInt128 twoPow112bits = Quad.QuadToUInt128Bits(twoPow112);
-				UInt128 twoPow224bits = Quad.QuadToUInt128Bits(twoPow224);
+				UInt128 twoPow112bits = BinaryOperations.QuadToUInt128Bits(twoPow112);
+				UInt128 twoPow224bits = BinaryOperations.QuadToUInt128Bits(twoPow224);
 
-				Quad lower = Quad.UInt128BitsToQuad(twoPow112bits | ((value.Lower << 16) >> 16)) - twoPow112;
-				Quad upper = Quad.UInt128BitsToQuad(twoPow224bits | (UInt128)(value >> 112)) - twoPow224;
+				Quad lower = BinaryOperations.UInt128BitsToQuad(twoPow112bits | ((value.Lower << 16) >> 16)) - twoPow112;
+				Quad upper = BinaryOperations.UInt128BitsToQuad(twoPow224bits | (UInt128)(value >> 112)) - twoPow224;
 
 				return lower + upper;
 			}
@@ -679,11 +679,11 @@ namespace MissingValues
 				Quad twoPow144 = new Quad(0x408F_0000_0000_0000, 0x0000_0000_0000_0000);
 				Quad twoPow256 = new Quad(0x40FF_0000_0000_0000, 0x0000_0000_0000_0000);
 
-				UInt128 twoPow144bits = Quad.QuadToUInt128Bits(twoPow144);
-				UInt128 twoPow256bits = Quad.QuadToUInt128Bits(twoPow256);
+				UInt128 twoPow144bits = BinaryOperations.QuadToUInt128Bits(twoPow144);
+				UInt128 twoPow256bits = BinaryOperations.QuadToUInt128Bits(twoPow256);
 
-				Quad lower = Quad.UInt128BitsToQuad(twoPow144bits | ((UInt128)(value >> 16) >> 16) | (value.Part0 & 0xFFFF_FFFF)) - twoPow144;
-				Quad upper = Quad.UInt128BitsToQuad(twoPow256bits | (UInt128)(value >> 144)) - twoPow256;
+				Quad lower = BinaryOperations.UInt128BitsToQuad(twoPow144bits | ((UInt128)(value >> 16) >> 16) | (value.Part0 & 0xFFFF_FFFF)) - twoPow144;
+				Quad upper = BinaryOperations.UInt128BitsToQuad(twoPow256bits | (UInt128)(value >> 144)) - twoPow256;
 
 				return lower + upper;
 			}

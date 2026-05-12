@@ -755,11 +755,11 @@ namespace MissingValues
 				Octo twoPow236 = new Octo(0x400E_B000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
 				Octo twoPow472 = new Octo(0x401D_7000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
 
-				UInt256 twoPow236bits = Octo.OctoToUInt256Bits(twoPow236);
-				UInt256 twoPow472bits = Octo.OctoToUInt256Bits(twoPow472);
+				UInt256 twoPow236bits = BinaryOperations.OctoToUInt256Bits(twoPow236);
+				UInt256 twoPow472bits = BinaryOperations.OctoToUInt256Bits(twoPow472);
 
-				Octo lower = Octo.UInt256BitsToOcto(twoPow236bits | ((value.Lower << 20) >> 20)) - twoPow236;
-				Octo upper = Octo.UInt256BitsToOcto(twoPow472bits | (UInt256)(value >> 236)) - twoPow472;
+				Octo lower = BinaryOperations.UInt256BitsToOcto(twoPow236bits | ((value.Lower << 20) >> 20)) - twoPow236;
+				Octo upper = BinaryOperations.UInt256BitsToOcto(twoPow472bits | (UInt256)(value >> 236)) - twoPow472;
 
 				return lower + upper;
 			}
@@ -772,11 +772,11 @@ namespace MissingValues
 				Octo twoPow276 = new Octo(0x4011_3000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
 				Octo twoPow512 = new Octo(0x401F_F000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
 
-				UInt256 twoPow276bits = Octo.OctoToUInt256Bits(twoPow276);
-				UInt256 twoPow512bits = Octo.OctoToUInt256Bits(twoPow512);
+				UInt256 twoPow276bits = BinaryOperations.OctoToUInt256Bits(twoPow276);
+				UInt256 twoPow512bits = BinaryOperations.OctoToUInt256Bits(twoPow512);
 
-				Octo lower = Octo.UInt256BitsToOcto(twoPow276bits | ((UInt256)(value >> 20) >> 20) | (value._p0 & 0xFF_FFFF_FFFF)) - twoPow276;
-				Octo upper = Octo.UInt256BitsToOcto(twoPow512bits | (UInt256)(value >> 276)) - twoPow512;
+				Octo lower = BinaryOperations.UInt256BitsToOcto(twoPow276bits | ((UInt256)(value >> 20) >> 20) | (value._p0 & 0xFF_FFFF_FFFF)) - twoPow276;
+				Octo upper = BinaryOperations.UInt256BitsToOcto(twoPow512bits | (UInt256)(value >> 276)) - twoPow512;
 
 				return lower + upper;
 			}
@@ -799,11 +799,11 @@ namespace MissingValues
 				Quad twoPow400 = new Quad(0x418F_0000_0000_0000, 0x0000_0000_0000_0000);
 				Quad twoPow512 = new Quad(0x41FF_0000_0000_0000, 0x0000_0000_0000_0000);
 
-				UInt128 twoPow400bits = Quad.QuadToUInt128Bits(twoPow400);
-				UInt128 twoPow512bits = Quad.QuadToUInt128Bits(twoPow512);
+				UInt128 twoPow400bits = BinaryOperations.QuadToUInt128Bits(twoPow400);
+				UInt128 twoPow512bits = BinaryOperations.QuadToUInt128Bits(twoPow512);
 
-				Quad lower = Quad.UInt128BitsToQuad(twoPow400bits | (UInt128)((UInt256)(value >> 144) >> 144) | (value.Upper.Lower & 0xFFFF_FFFF)) - twoPow400;
-				Quad upper = Quad.UInt128BitsToQuad(twoPow512bits | (UInt128)(value >> 400)) - twoPow512;
+				Quad lower = BinaryOperations.UInt128BitsToQuad(twoPow400bits | (UInt128)((UInt256)(value >> 144) >> 144) | (value.Upper.Lower & 0xFFFF_FFFF)) - twoPow400;
+				Quad upper = BinaryOperations.UInt128BitsToQuad(twoPow512bits | (UInt128)(value >> 400)) - twoPow512;
 
 				return lower + upper;
 			}
