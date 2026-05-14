@@ -490,7 +490,7 @@ namespace MissingValues
 				if (source.Length >= Size)
 				{
 					// We have at least 32 bytes, so just read the ones we need directly
-					result = BinaryOperations.ReadUInt256BigEndian(source);
+					result = BinaryOperations.ReadUInt256BigEndian(source[^Size..]);
 				}
 				else
 				{

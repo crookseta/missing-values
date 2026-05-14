@@ -659,7 +659,7 @@ namespace MissingValues
 				if (source.Length >= Size)
 				{
 					// We have at least 64 bytes, so just read the ones we need directly
-					result = BinaryOperations.ReadInt512BigEndian(source);
+					result = BinaryOperations.ReadInt512BigEndian(source[^Size..]);
 				}
 				else
 				{
@@ -748,7 +748,7 @@ namespace MissingValues
 					}
 
 					result <<= ((Size - source.Length) * 8);
-					result = BitHelper.ReverseEndianness(in result);
+					result = BinaryOperations.ReverseEndianness(in result);
 
 					if (!isUnsigned)
 					{
