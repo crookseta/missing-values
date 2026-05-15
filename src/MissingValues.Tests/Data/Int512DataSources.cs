@@ -1120,7 +1120,7 @@ public class Int512DataSources
 		yield return () => (new Int512(0, 0, 0, 0, 0, 1UL << 42, 0, 0), new Int512(0, 0, 0, 0, 0, 0, 0, 170));
 		yield return () => (new Int512(0, 0, 0, 0, 1UL << 13, 0, 0, 0), new Int512(0, 0, 0, 0, 0, 0, 0, 205));
 		yield return () => (new Int512(0, 0, 0, 0, 1UL << 63, 0, 0, 0), new Int512(0, 0, 0, 0, 0, 0, 0, 255));
-		yield return () => (new Int512(1UL << 62, 0, 0, 0, 0, 0, 0, 0), new Int512(0, 0, 0, 0, 0, 0, 0, 511));
+		yield return () => (new Int512(1UL << 62, 0, 0, 0, 0, 0, 0, 0), new Int512(0, 0, 0, 0, 0, 0, 0, 510));
 		yield return () => (new Int512(0, 0, 0, 0, 0, 0, 0, 0), new Int512(0, 0, 0, 0, 0, 0, 0, 0));
 	}
 
@@ -1163,21 +1163,21 @@ public class Int512DataSources
 		{
 			byte[] array = new byte[64];
 			Array.Fill(array, byte.MaxValue);
-			return (array, true, new Int512(0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF));
+			return (array, false, new Int512(0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF));
 		};
 		yield return () =>
 		{
 			byte[] array = new byte[67];
-			for (int i = 3; i < 67; i++)
+			for (int i = 0; i < 67; i++)
 				array[i] = byte.MaxValue;
-			return (array, true, new Int512(0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF));
+			return (array, false, new Int512(0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF));
 		};
 		yield return () => ([0x12, 0x34], true, new Int512(0, 0, 0, 0, 0, 0, 0, 0x1234));
 		yield return () =>
 		{
 			byte[] array = new byte[64];
 			array[0] = 0x80;
-			return (array, true, new Int512(1UL << 63, 0, 0, 0, 0, 0, 0, 0));
+			return (array, false, new Int512(1UL << 63, 0, 0, 0, 0, 0, 0, 0));
 		};
 	}
 
@@ -1189,21 +1189,21 @@ public class Int512DataSources
 		{
 			byte[] array = new byte[64];
 			Array.Fill(array, byte.MaxValue);
-			return (array, true, new Int512(0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF));
+			return (array, false, new Int512(0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF));
 		};
 		yield return () =>
 		{
 			byte[] array = new byte[67];
-			for (int i = 0; i < 64; i++)
+			for (int i = 0; i < 67; i++)
 				array[i] = byte.MaxValue;
-			return (array, true, new Int512(0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF));
+			return (array, false, new Int512(0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF));
 		};
 		yield return () => ([0x34, 0x12], true, new Int512(0, 0, 0, 0, 0, 0, 0, 0x1234));
 		yield return () =>
 		{
 			byte[] array = new byte[64];
 			array[63] = 0x80;
-			return (array, true, new Int512(1UL << 63, 0, 0, 0, 0, 0, 0, 0));
+			return (array, false, new Int512(1UL << 63, 0, 0, 0, 0, 0, 0, 0));
 		};
 	}
 

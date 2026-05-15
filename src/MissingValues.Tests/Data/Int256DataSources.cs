@@ -169,9 +169,9 @@ public class Int256DataSources
 		yield return () => (Int256.One, Int256.Zero, Int256.One);
 		yield return () => (Int256.One, Int256.One, Int256.Zero);
 		yield return () => (Int256.Zero, Int256.One, Int256.NegativeOne);
-		yield return () => (Int256.MaxValue,Int256.One, new Int256(ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue - 1));
+		yield return () => (Int256.MaxValue,Int256.One, new Int256(0x7FFF_FFFF_FFFF_FFFF, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue - 1));
 		yield return () => (Int256.MinValue,Int256.One,Int256.MaxValue);
-		yield return () => (Int256.MinValue,Int256.NegativeOne, new Int256(unchecked((ulong)-1), ulong.MaxValue, ulong.MaxValue, ulong.MaxValue));
+		yield return () => (Int256.MinValue,Int256.NegativeOne, new Int256(0x8000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0001));
 		yield return () => (new Int256(1, 2, 3, 4),new Int256(0, 1, 2, 3),new Int256(1, 1, 1, 1));
 		yield return () => (new Int256(0, 0, 0, 0),new Int256(0, 0, 0, 1),new Int256(unchecked((ulong)-1), ulong.MaxValue, ulong.MaxValue, ulong.MaxValue));
 	}
@@ -504,7 +504,6 @@ public class Int256DataSources
 		yield return () => (Int256.One, Int256.Zero, Int256.One, Int256.One);
 		yield return () => (Int256.MaxValue, Int256.NegativeOne, Int256.NegativeOne, Int256.MinValue);
 		yield return () => (200, 100, 500, 20500);
-		yield return () => (new Int256(0, 0, ulong.MaxValue, ulong.MaxValue), new Int256(0, 0, ulong.MaxValue, ulong.MaxValue), new Int256(0, 0, ulong.MaxValue, ulong.MaxValue), Int256.Parse("115792089237316195423570985008687907852929702298719625575994209400481361428480"));
 	}
 
 	public static IEnumerable<Func<(string, NumberStyles, IFormatProvider?, Int256)>> ParseTestData()
