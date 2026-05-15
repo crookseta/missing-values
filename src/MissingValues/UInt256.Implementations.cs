@@ -1079,6 +1079,9 @@ namespace MissingValues
 		}
 
 		/// <inheritdoc/>
+		public static UInt256 operator checked /(in UInt256 left, in UInt256 right) => left / right;
+
+		/// <inheritdoc/>
 		public static UInt256 operator %(in UInt256 left, in UInt256 right)
 		{
 			const int UIntCount = Size / sizeof(ulong);

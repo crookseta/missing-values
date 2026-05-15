@@ -1225,6 +1225,9 @@ namespace MissingValues
 		}
 
 		/// <inheritdoc/>
+		public static UInt512 operator checked /(in UInt512 left, in UInt512 right) => left / right;
+
+		/// <inheritdoc/>
 		public static UInt512 operator %(in UInt512 left, in UInt512 right)
 		{
 			const int UIntCount = Size / sizeof(ulong);

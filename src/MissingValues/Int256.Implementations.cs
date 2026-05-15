@@ -1075,8 +1075,6 @@ namespace MissingValues
 
 			Int256 result = left + right;
 
-			uint sign = (uint)(left._p3 >> 63);
-
 			if ((long)((result._p3 ^ left._p3) & ~(left._p3 ^ right._p3)) < 0)
 			{
 				Thrower.ArithmeticOverflow(Thrower.ArithmeticOperation.Addition);
@@ -1185,6 +1183,9 @@ namespace MissingValues
 			DivRem(in left, in right, out Int256 quotient, out _);
 			return quotient;
 		}
+
+		/// <inheritdoc/>
+		public static Int256 operator checked /(in Int256 left, in Int256 right) => left / right;
 
 		/// <inheritdoc/>
 		public static Int256 operator %(in Int256 left, in Int256 right)

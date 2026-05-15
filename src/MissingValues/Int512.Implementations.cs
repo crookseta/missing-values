@@ -1072,8 +1072,6 @@ namespace MissingValues
 		{
 			Int512 result = left + right;
 
-			uint sign = (uint)(left._p7 >> 63);
-
 			if ((long)((result._p7 ^ left._p7) & ~(left._p7 ^ right._p7)) < 0)
 			{
 				Thrower.ArithmeticOverflow(Thrower.ArithmeticOperation.Addition);
@@ -1194,6 +1192,9 @@ namespace MissingValues
 			DivRem(in left, in right, out Int512 quotient, out _);
 			return quotient;
 		}
+
+		/// <inheritdoc/>
+		public static Int512 operator checked /(in Int512 left, in Int512 right) => left / right;
 
 		/// <inheritdoc/>
 		public static Int512 operator %(in Int512 left, in Int512 right)
