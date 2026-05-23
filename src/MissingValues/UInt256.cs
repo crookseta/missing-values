@@ -146,6 +146,7 @@ namespace MissingValues
 				{
 					ulong up = Calculator.BigMul(left._p0, right._p0, out ulong low);
 					lower = new UInt256(0, 0, up, low);
+					return Zero;
 				}
 
 				lower = Calculator.Multiply(in left, right._p0, out ulong carry);
@@ -160,6 +161,7 @@ namespace MissingValues
 			const int UIntCount = Size / sizeof(ulong);
 
 			Span<ulong> rawBits = stackalloc ulong[UIntCount * 2];
+			rawBits.Clear();
 
 			Multiply(in left, right._p0, rawBits);
 			Multiply(in left, right._p1, rawBits[1..]);

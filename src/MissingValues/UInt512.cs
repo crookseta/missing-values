@@ -237,6 +237,7 @@ namespace MissingValues
 			const int UIntCount = Size / sizeof(ulong);
 
 			Span<ulong> rawBits = stackalloc ulong[UIntCount * 2];
+			rawBits.Clear();
 
 			Multiply(in left, right._p0, rawBits);
 			Multiply(in left, right._p1, rawBits[1..]);
@@ -251,43 +252,43 @@ namespace MissingValues
 
 			return BitHelper.Read<UInt512>(rawBits[8..]);
 
-			static void Multiply(in UInt512 left, ulong right, Span<ulong> resultPtr)
+			static void Multiply(in UInt512 left, ulong right, Span<ulong> result)
 			{
-				Debug.Assert(resultPtr.Length >= 9);
+				Debug.Assert(result.Length >= 9);
 				
 				ulong up, low, carry;
 				(up, low) = Calculator.BigMulAdd(left._p0, right, 0);
-				resultPtr[0] = Calculator.AddWithCarry(resultPtr[0], low, out carry);
+				result[0] = Calculator.AddWithCarry(result[0], low, out carry);
 
 				up += carry;
 				(up, low) = Calculator.BigMulAdd(left._p1, right, up);
-				resultPtr[1] = Calculator.AddWithCarry(resultPtr[1], low, out carry);
+				result[1] = Calculator.AddWithCarry(result[1], low, out carry);
 
 				up += carry;
 				(up, low) = Calculator.BigMulAdd(left._p2, right, up);
-				resultPtr[2] = Calculator.AddWithCarry(resultPtr[2], low, out carry);
+				result[2] = Calculator.AddWithCarry(result[2], low, out carry);
 
 				up += carry;
 				(up, low) = Calculator.BigMulAdd(left._p3, right, up);
-				resultPtr[3] = Calculator.AddWithCarry(resultPtr[3], low, out carry);
+				result[3] = Calculator.AddWithCarry(result[3], low, out carry);
 
 				up += carry;
 				(up, low) = Calculator.BigMulAdd(left._p4, right, up);
-				resultPtr[4] = Calculator.AddWithCarry(resultPtr[4], low, out carry);
+				result[4] = Calculator.AddWithCarry(result[4], low, out carry);
 
 				up += carry;
 				(up, low) = Calculator.BigMulAdd(left._p5, right, up);
-				resultPtr[5] = Calculator.AddWithCarry(resultPtr[5], low, out carry);
+				result[5] = Calculator.AddWithCarry(result[5], low, out carry);
 
 				up += carry;
 				(up, low) = Calculator.BigMulAdd(left._p6, right, up);
-				resultPtr[6] = Calculator.AddWithCarry(resultPtr[6], low, out carry);
+				result[6] = Calculator.AddWithCarry(result[6], low, out carry);
 
 				up += carry;
 				(up, low) = Calculator.BigMulAdd(left._p7, right, up);
-				resultPtr[7] = Calculator.AddWithCarry(resultPtr[7], low, out carry);
+				result[7] = Calculator.AddWithCarry(result[7], low, out carry);
 
-				resultPtr[8] = up;
+				result[8] = up;
 			}
 		}
 		
