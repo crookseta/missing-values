@@ -187,7 +187,7 @@ namespace MissingValues
 		}
 
 		/// <inheritdoc/>
-		public override string? ToString()
+		public override string ToString()
 		{
 			return ToString("D", CultureInfo.CurrentCulture);
 		}
@@ -237,57 +237,58 @@ namespace MissingValues
 			const int UIntCount = Size / sizeof(ulong);
 
 			Span<ulong> rawBits = stackalloc ulong[UIntCount * 2];
-			ref ulong resultPtr = ref MemoryMarshal.GetReference(rawBits);
+			rawBits.Clear();
 
-			Multiply(in left, right._p0, ref Unsafe.Add(ref resultPtr, 0));
-			Multiply(in left, right._p1, ref Unsafe.Add(ref resultPtr, 1));
-			Multiply(in left, right._p2, ref Unsafe.Add(ref resultPtr, 2));
-			Multiply(in left, right._p3, ref Unsafe.Add(ref resultPtr, 3));
-			Multiply(in left, right._p4, ref Unsafe.Add(ref resultPtr, 4));
-			Multiply(in left, right._p5, ref Unsafe.Add(ref resultPtr, 5));
-			Multiply(in left, right._p6, ref Unsafe.Add(ref resultPtr, 6));
-			Multiply(in left, right._p7, ref Unsafe.Add(ref resultPtr, 7));
+			Multiply(in left, right._p0, rawBits);
+			Multiply(in left, right._p1, rawBits[1..]);
+			Multiply(in left, right._p2, rawBits[2..]);
+			Multiply(in left, right._p3, rawBits[3..]);
+			Multiply(in left, right._p4, rawBits[4..]);
+			Multiply(in left, right._p5, rawBits[5..]);
+			Multiply(in left, right._p6, rawBits[6..]);
+			Multiply(in left, right._p7, rawBits[7..]);
 
 			lower = BitHelper.Read<UInt512>(rawBits);
 
 			return BitHelper.Read<UInt512>(rawBits[8..]);
 
-			static void Multiply(in UInt512 left, ulong right, ref ulong resultPtr)
+			static void Multiply(in UInt512 left, ulong right, Span<ulong> result)
 			{
+				Debug.Assert(result.Length >= 9);
+				
 				ulong up, low, carry;
 				(up, low) = Calculator.BigMulAdd(left._p0, right, 0);
-				Unsafe.Add(ref resultPtr, 0) = Calculator.AddWithCarry(Unsafe.Add(ref resultPtr, 0), low, out carry);
+				result[0] = Calculator.AddWithCarry(result[0], low, out carry);
 
 				up += carry;
 				(up, low) = Calculator.BigMulAdd(left._p1, right, up);
-				Unsafe.Add(ref resultPtr, 1) = Calculator.AddWithCarry(Unsafe.Add(ref resultPtr, 1), low, out carry);
+				result[1] = Calculator.AddWithCarry(result[1], low, out carry);
 
 				up += carry;
 				(up, low) = Calculator.BigMulAdd(left._p2, right, up);
-				Unsafe.Add(ref resultPtr, 2) = Calculator.AddWithCarry(Unsafe.Add(ref resultPtr, 2), low, out carry);
+				result[2] = Calculator.AddWithCarry(result[2], low, out carry);
 
 				up += carry;
 				(up, low) = Calculator.BigMulAdd(left._p3, right, up);
-				Unsafe.Add(ref resultPtr, 3) = Calculator.AddWithCarry(Unsafe.Add(ref resultPtr, 3), low, out carry);
+				result[3] = Calculator.AddWithCarry(result[3], low, out carry);
 
 				up += carry;
 				(up, low) = Calculator.BigMulAdd(left._p4, right, up);
-				Unsafe.Add(ref resultPtr, 4) = Calculator.AddWithCarry(Unsafe.Add(ref resultPtr, 4), low, out carry);
+				result[4] = Calculator.AddWithCarry(result[4], low, out carry);
 
 				up += carry;
 				(up, low) = Calculator.BigMulAdd(left._p5, right, up);
-				Unsafe.Add(ref resultPtr, 5) = Calculator.AddWithCarry(Unsafe.Add(ref resultPtr, 5), low, out carry);
+				result[5] = Calculator.AddWithCarry(result[5], low, out carry);
 
 				up += carry;
 				(up, low) = Calculator.BigMulAdd(left._p6, right, up);
-				Unsafe.Add(ref resultPtr, 6) = Calculator.AddWithCarry(Unsafe.Add(ref resultPtr, 6), low, out carry);
+				result[6] = Calculator.AddWithCarry(result[6], low, out carry);
 
 				up += carry;
 				(up, low) = Calculator.BigMulAdd(left._p7, right, up);
-				Unsafe.Add(ref resultPtr, 7) = Calculator.AddWithCarry(Unsafe.Add(ref resultPtr, 7), low, out carry);
+				result[7] = Calculator.AddWithCarry(result[7], low, out carry);
 
-				Unsafe.Add(ref resultPtr, 8) = up;
-
+				result[8] = up;
 			}
 		}
 		
@@ -745,7 +746,7 @@ namespace MissingValues
 		{
 			if (value.Upper == 0)
 			{
-				return (value._p3 | value._p2 | value._p1) != 0 ? (Octo)value.Lower : (Octo)value._p0;
+				return (value._p3 | value._p2 | value._p1) != 0 ? (Octo)value.Lower : value._p0;
 			}
 			else if ((value.Upper >> 32) == UInt128.Zero) // value < (2^472)
 			{
@@ -755,11 +756,11 @@ namespace MissingValues
 				Octo twoPow236 = new Octo(0x400E_B000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
 				Octo twoPow472 = new Octo(0x401D_7000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
 
-				UInt256 twoPow236bits = BinaryOperations.OctoToUInt256Bits(twoPow236);
-				UInt256 twoPow472bits = BinaryOperations.OctoToUInt256Bits(twoPow472);
+				UInt256 twoPow236Bits = BinaryOperations.OctoToUInt256Bits(twoPow236);
+				UInt256 twoPow472Bits = BinaryOperations.OctoToUInt256Bits(twoPow472);
 
-				Octo lower = BinaryOperations.UInt256BitsToOcto(twoPow236bits | ((value.Lower << 20) >> 20)) - twoPow236;
-				Octo upper = BinaryOperations.UInt256BitsToOcto(twoPow472bits | (UInt256)(value >> 236)) - twoPow472;
+				Octo lower = BinaryOperations.UInt256BitsToOcto(twoPow236Bits | ((value.Lower << 20) >> 20)) - twoPow236;
+				Octo upper = BinaryOperations.UInt256BitsToOcto(twoPow472Bits | (UInt256)(value >> 236)) - twoPow472;
 
 				return lower + upper;
 			}
@@ -772,11 +773,11 @@ namespace MissingValues
 				Octo twoPow276 = new Octo(0x4011_3000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
 				Octo twoPow512 = new Octo(0x401F_F000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
 
-				UInt256 twoPow276bits = BinaryOperations.OctoToUInt256Bits(twoPow276);
-				UInt256 twoPow512bits = BinaryOperations.OctoToUInt256Bits(twoPow512);
+				UInt256 twoPow276Bits = BinaryOperations.OctoToUInt256Bits(twoPow276);
+				UInt256 twoPow512Bits = BinaryOperations.OctoToUInt256Bits(twoPow512);
 
-				Octo lower = BinaryOperations.UInt256BitsToOcto(twoPow276bits | ((UInt256)(value >> 20) >> 20) | (value._p0 & 0xFF_FFFF_FFFF)) - twoPow276;
-				Octo upper = BinaryOperations.UInt256BitsToOcto(twoPow512bits | (UInt256)(value >> 276)) - twoPow512;
+				Octo lower = BinaryOperations.UInt256BitsToOcto(twoPow276Bits | ((UInt256)(value >> 20) >> 20) | (value._p0 & 0xFF_FFFF_FFFF)) - twoPow276;
+				Octo upper = BinaryOperations.UInt256BitsToOcto(twoPow512Bits | (UInt256)(value >> 276)) - twoPow512;
 
 				return lower + upper;
 			}
@@ -789,7 +790,7 @@ namespace MissingValues
 		{
 			if (value.Upper == UInt256.Zero)
 			{
-				return (value._p3 | value._p2 | value._p1) != 0 ? (Quad)value.Lower : (Quad)value._p0;
+				return (value._p3 | value._p2 | value._p1) != 0 ? (Quad)value.Lower : value._p0;
 			}
 			else
 			{
@@ -799,11 +800,11 @@ namespace MissingValues
 				Quad twoPow400 = new Quad(0x418F_0000_0000_0000, 0x0000_0000_0000_0000);
 				Quad twoPow512 = new Quad(0x41FF_0000_0000_0000, 0x0000_0000_0000_0000);
 
-				UInt128 twoPow400bits = BinaryOperations.QuadToUInt128Bits(twoPow400);
-				UInt128 twoPow512bits = BinaryOperations.QuadToUInt128Bits(twoPow512);
+				UInt128 twoPow400Bits = BinaryOperations.QuadToUInt128Bits(twoPow400);
+				UInt128 twoPow512Bits = BinaryOperations.QuadToUInt128Bits(twoPow512);
 
-				Quad lower = BinaryOperations.UInt128BitsToQuad(twoPow400bits | (UInt128)((UInt256)(value >> 144) >> 144) | (value.Upper.Lower & 0xFFFF_FFFF)) - twoPow400;
-				Quad upper = BinaryOperations.UInt128BitsToQuad(twoPow512bits | (UInt128)(value >> 400)) - twoPow512;
+				Quad lower = BinaryOperations.UInt128BitsToQuad(twoPow400Bits | (UInt128)((UInt256)(value >> 144) >> 144) | (value.Upper.Lower & 0xFFFF_FFFF)) - twoPow400;
+				Quad upper = BinaryOperations.UInt128BitsToQuad(twoPow512Bits | (UInt128)(value >> 400)) - twoPow512;
 
 				return lower + upper;
 			}
@@ -1216,7 +1217,7 @@ namespace MissingValues
 
 				if (exponent <= 52)
 				{
-					return (UInt512)(matissa >> (int)(52 - exponent));
+					return (matissa >> (int)(52 - exponent));
 				}
 				else if (exponent >= 512)
 				{
