@@ -411,7 +411,7 @@ namespace MissingValues
 			var status = NumberParser.TryParseToSigned<Int512, UInt512, Utf16Char>(Utf16Char.CastFromCharSpan(s), style, provider, out Int512 output);
 			if (!status)
 			{
-				status.Throw<Int256>(s.ToString());
+				status.Throw<Int512>(s.ToString());
 			}
 			return output;
 		}
@@ -423,7 +423,7 @@ namespace MissingValues
 			var status = NumberParser.TryParseToSigned<Int512, UInt512, Utf16Char>(Utf16Char.CastFromCharSpan(s), style, provider, out Int512 output);
 			if (!status)
 			{
-				status.Throw<Int256>(s.ToString());
+				status.Throw<Int512>(s.ToString());
 			}
 			return output;
 		}
@@ -434,7 +434,7 @@ namespace MissingValues
 			var status = NumberParser.TryParseToSigned<Int512, UInt512, Utf16Char>(Utf16Char.CastFromCharSpan(s), NumberStyles.Integer, provider, out Int512 output);
 			if (!status)
 			{
-				status.Throw<Int256>(s.ToString());
+				status.Throw<Int512>(s.ToString());
 			}
 			return output;
 		}
@@ -446,7 +446,7 @@ namespace MissingValues
 			var status = NumberParser.TryParseToSigned<Int512, UInt512, Utf16Char>(Utf16Char.CastFromCharSpan(s), NumberStyles.Integer, provider, out Int512 output);
 			if (!status)
 			{
-				status.Throw<Int256>(s.ToString());
+				status.Throw<Int512>(s.ToString());
 			}
 			return output;
 		}
@@ -457,7 +457,7 @@ namespace MissingValues
 			var status = NumberParser.TryParseToSigned<Int512, UInt512, Utf8Char>(Utf8Char.CastFromByteSpan(utf8Text), style, provider, out Int512 output);
 			if (!status)
 			{
-				status.Throw<Int256>(utf8Text);
+				status.Throw<Int512>(utf8Text);
 			}
 			return output;
 		}
@@ -468,7 +468,7 @@ namespace MissingValues
 			var status = NumberParser.TryParseToSigned<Int512, UInt512, Utf8Char>(Utf8Char.CastFromByteSpan(utf8Text), NumberStyles.Integer, provider, out Int512 output);
 			if (!status)
 			{
-				status.Throw<Int256>(utf8Text);
+				status.Throw<Int512>(utf8Text);
 			}
 			return output;
 		}
