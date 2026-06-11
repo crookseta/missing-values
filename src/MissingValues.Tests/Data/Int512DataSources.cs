@@ -289,6 +289,16 @@ public class Int512DataSources
 			new Int512(unchecked((ulong)-1), ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue));
 	}
 
+	public static IEnumerable<Func<(Int512, Int512)>> op_UnaryNegationTestData()
+	{
+		yield return () => (Int512.Zero, Int512.Zero);
+	}
+
+	public static IEnumerable<Func<(Int512, Int512, bool)>> op_CheckedUnaryNegationTestData()
+	{
+		yield return () => (Int512.Zero, Int512.Zero, false);
+	}
+
 	public static IEnumerable<Func<(Int512, int, Int512)>> op_ShiftLeftTestData()
 	{
 		yield return () => (new Int512(1, 2, 3, 4, 5, 6, 7, 8), 0, new Int512(1, 2, 3, 4, 5, 6, 7, 8));

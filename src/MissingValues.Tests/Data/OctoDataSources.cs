@@ -74,6 +74,16 @@ public class OctoDataSources
         throw new NotImplementedException();
     }
 
+    public static IEnumerable<Func<(Octo, Octo)>> op_UnaryNegationTestData()
+    {
+	    throw new NotImplementedException();
+    }
+
+    public static IEnumerable<Func<(Octo, Octo, bool)>> op_CheckedUnaryNegationTestData()
+    {
+	    throw new NotImplementedException();
+    }
+
     public static IEnumerable<Func<(Octo, Octo, Octo)>> op_BitwiseAndTestData()
     {
         throw new NotImplementedException();

@@ -58,6 +58,16 @@ public class UInt256DataSources
 		yield return () => (new UInt256(1, 0, 0, 0), UInt256.One, new UInt256(0, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue));
 		yield return () => (UInt256.Zero, UInt256.One, UInt256.MaxValue);
 	}
+
+	public static IEnumerable<Func<(UInt256, UInt256)>> op_UnaryNegationTestData()
+	{
+		yield return () => (UInt256.Zero, UInt256.Zero);
+	}
+	public static IEnumerable<Func<(UInt256, UInt256, bool)>> op_CheckedUnaryNegationTestData()
+	{
+		yield return () => (UInt256.Zero, UInt256.Zero, false);
+	}
+
 	public static IEnumerable<Func<(UInt256, UInt256, UInt256, bool)>> op_CheckedSubtractionTestData()
 	{
 		yield return () => (UInt256.Zero, UInt256.Zero, UInt256.Zero, false);

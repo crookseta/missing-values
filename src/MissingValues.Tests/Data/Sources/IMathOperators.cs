@@ -25,4 +25,6 @@ public interface IMathOperatorsDataSource<T>
 	static abstract IEnumerable<Func<(T, T, T)>> op_ModulusTestData();
 	static abstract IEnumerable<Func<(T, T, T)>> op_MultiplyTestData();
 	static abstract IEnumerable<Func<(T, T, T)>> op_SubtractionTestData();
+	static abstract IEnumerable<Func<(T, T)>> op_UnaryNegationTestData();
+	static abstract IEnumerable<Func<(T, T, bool)>> op_CheckedUnaryNegationTestData();
 }

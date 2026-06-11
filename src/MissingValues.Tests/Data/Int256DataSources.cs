@@ -176,6 +176,16 @@ public class Int256DataSources
 		yield return () => (new Int256(0, 0, 0, 0),new Int256(0, 0, 0, 1),new Int256(unchecked((ulong)-1), ulong.MaxValue, ulong.MaxValue, ulong.MaxValue));
 	}
 
+	public static IEnumerable<Func<(Int256, Int256)>> op_UnaryNegationTestData()
+	{
+		yield return () => (Int256.Zero, Int256.Zero);
+	}
+
+	public static IEnumerable<Func<(Int256, Int256, bool)>> op_CheckedUnaryNegationTestData()
+	{
+		yield return () => (Int256.Zero, Int256.Zero, false);
+	}
+
 	public static IEnumerable<Func<(Int256, int, Int256)>> op_ShiftLeftTestData()
 	{
 		yield return () => (Int256.Zero, 100, Int256.Zero);

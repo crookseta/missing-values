@@ -206,6 +206,16 @@ public class UInt512DataSources
 		);
 	}
 
+	public static IEnumerable<Func<(UInt512, UInt512)>> op_UnaryNegationTestData()
+	{
+		yield return () => (UInt512.Zero, UInt512.Zero);
+	}
+
+	public static IEnumerable<Func<(UInt512, UInt512, bool)>> op_CheckedUnaryNegationTestData()
+	{
+		yield return () => (UInt512.Zero, UInt512.Zero, false);
+	}
+
 	public static IEnumerable<Func<(UInt512, int, UInt512)>> op_ShiftLeftTestData()
 	{
 		yield return () => (new UInt512(1, 2, 3, 4, 5, 6, 7, 8), 0, new UInt512(1, 2, 3, 4, 5, 6, 7, 8));

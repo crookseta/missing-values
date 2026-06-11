@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Text;
 using MissingValues.Tests.Data.Sources;
+using MissingValues.Tests.Extensions;
 
 namespace MissingValues.Tests.Data;
 
@@ -73,6 +74,16 @@ public class QuadDataSources
     public static IEnumerable<Func<(Quad, Quad, Quad)>> op_SubtractionTestData()
     {
         throw new NotImplementedException();
+    }
+
+    public static IEnumerable<Func<(Quad, Quad)>> op_UnaryNegationTestData()
+    {
+	    throw new NotImplementedException();
+    }
+
+    public static IEnumerable<Func<(Quad, Quad, bool)>> op_CheckedUnaryNegationTestData()
+    {
+	    throw new NotImplementedException();
     }
 
     public static IEnumerable<Func<(Quad, Quad, Quad)>> op_BitwiseAndTestData()
