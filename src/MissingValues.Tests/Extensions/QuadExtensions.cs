@@ -1,6 +1,6 @@
 namespace MissingValues.Tests.Extensions;
 
-public static class NumberExtensions
+public static class QuadExtensions
 {
 	extension(Quad)
 	{
