@@ -635,7 +635,7 @@ namespace MissingValues
 					}
 
 					result <<= ((Size - source.Length) * 8);
-					result = BitHelper.ReverseEndianness(in result);
+					result = BinaryOperations.ReverseEndianness(in result);
 
 					if (!isUnsigned)
 					{

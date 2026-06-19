@@ -1207,7 +1207,7 @@ namespace MissingValues
 		/// <inheritdoc/>
 		public static Quad Log10P1(Quad x) => MathQ.Log10(x + One);
 
-		/// <inheritdoc/>
+		/// <inheritdoc cref="ILogarithmicFunctions{TSelf}.Log2" />
 		public static Quad Log2(Quad value) => MathQ.Log2(value);
 		/// <inheritdoc/>
 		public static Quad Log2P1(Quad value) => MathQ.Log2(value + One);

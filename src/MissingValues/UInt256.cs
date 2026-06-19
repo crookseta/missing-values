@@ -991,18 +991,16 @@ namespace MissingValues
 			Span<byte> span = stackalloc byte[value.GetByteCount()];
 			value.TryWriteBytes(span, out int bytesWritten, true);
 
-			ref byte sourceRef = ref MemoryMarshal.GetReference(span);
-
 			if (bytesWritten >= Size)
 			{
-				return Unsafe.ReadUnaligned<UInt256>(ref sourceRef);
+				return BinaryOperations.ReadUInt256LittleEndian(span);
 			}
 
 			UInt256 result = Zero;
 
 			for (int i = 0; i < bytesWritten; i++)
 			{
-				UInt256 part = Unsafe.Add(ref sourceRef, i);
+				UInt256 part = span[i];
 				part <<= (i * 8);
 				result |= part;
 			}
@@ -1028,11 +1026,9 @@ namespace MissingValues
 				Thrower.IntegerOverflow();
 			}
 
-			ref byte sourceRef = ref MemoryMarshal.GetReference(span);
-
 			if (bytesWritten == Size)
 			{
-				return Unsafe.ReadUnaligned<UInt256>(ref sourceRef);
+				return BinaryOperations.ReadUInt256LittleEndian(span);
 			}
 			else if (bytesWritten > Size)
 			{
@@ -1043,7 +1039,7 @@ namespace MissingValues
 
 			for (int i = 0; i < bytesWritten; i++)
 			{
-				UInt256 part = Unsafe.Add(ref sourceRef, i);
+				UInt256 part = span[i];
 				part <<= (i * 8);
 				result |= part;
 			}

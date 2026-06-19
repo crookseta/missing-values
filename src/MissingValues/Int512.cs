@@ -180,7 +180,7 @@ namespace MissingValues
 		}
 
 		/// <inheritdoc/>
-		public override string? ToString()
+		public override string ToString()
 		{
 			return ToString("D", CultureInfo.CurrentCulture);
 		}
@@ -278,7 +278,6 @@ namespace MissingValues
 				Span<ulong> valueSpan = stackalloc ulong[UIntCount];
 				valueSpan.Clear();
 				BitHelper.Write(valueSpan, in value);
-				//Unsafe.WriteUnaligned(ref Unsafe.As<ulong, byte>(ref MemoryMarshal.GetReference(valueSpan)), value);
 
 				bits = (size <= Calculator.StackAllocThreshold
 					? stackalloc ulong[Calculator.StackAllocThreshold]
@@ -302,7 +301,6 @@ namespace MissingValues
 			}
 
 			Int512 result = BitHelper.Read<Int512>(bits[..UIntCount]);
-			//Int512 result = Unsafe.ReadUnaligned<Int512>(ref Unsafe.As<ulong, byte>(ref MemoryMarshal.GetReference(bits[..UIntCount])));
 
 			if (bitsArray is not null)
 			{
@@ -877,18 +875,16 @@ namespace MissingValues
 			Span<byte> span = stackalloc byte[value.GetByteCount()];
 			value.TryWriteBytes(span, out int bytesWritten, isUnsigned);
 
-			ref byte sourceRef = ref MemoryMarshal.GetReference(span);
-
 			if (bytesWritten >= Size)
 			{
-				return Unsafe.ReadUnaligned<Int512>(ref sourceRef);
+				return BinaryOperations.ReadInt512LittleEndian(span);
 			}
 
 			Int512 result = Zero;
 
 			for (int i = 0; i < bytesWritten; i++)
 			{
-				Int512 part = Unsafe.Add(ref sourceRef, i);
+				Int512 part = span[i];
 				part <<= (i * 8);
 				result |= part;
 			}
@@ -951,11 +947,9 @@ namespace MissingValues
 				}
 			}
 
-			ref byte sourceRef = ref MemoryMarshal.GetReference(span);
-
 			if (bytesWritten >= Size)
 			{
-				return Unsafe.ReadUnaligned<Int512>(ref sourceRef);
+				return BinaryOperations.ReadInt512LittleEndian(span);
 			}
 
 			Int512 result = Zero;
@@ -968,13 +962,13 @@ namespace MissingValues
 
 			for (int i = 0; i < bytesWritten; i++)
 			{
-				Int512 part = Unsafe.Add(ref sourceRef, i);
+				Int512 part = span[i];
 				part <<= (i * 8);
 				result |= part;
 			}
 
 			result <<= ((Size - bytesWritten) * 8);
-			result = BitHelper.ReverseEndianness(in result);
+			result = BinaryOperations.ReverseEndianness(in result);
 
 			if (!isUnsigned)
 			{

@@ -806,18 +806,16 @@ namespace MissingValues
 			Span<byte> span = stackalloc byte[value.GetByteCount()];
 			value.TryWriteBytes(span, out int bytesWritten, isUnsigned);
 
-			ref byte sourceRef = ref MemoryMarshal.GetReference(span);
-
 			if (bytesWritten >= Size)
 			{
-				return Unsafe.ReadUnaligned<Int256>(ref sourceRef);
+				return BinaryOperations.ReadInt256LittleEndian(span);
 			}
 
 			Int256 result = Zero;
 
 			for (int i = 0; i < bytesWritten; i++)
 			{
-				Int256 part = Unsafe.Add(ref sourceRef, i);
+				Int256 part = span[i];
 				part <<= (i * 8);
 				result |= part;
 			}
@@ -880,11 +878,9 @@ namespace MissingValues
 				}
 			}
 
-			ref byte sourceRef = ref MemoryMarshal.GetReference(span);
-
 			if (bytesWritten >= Size)
 			{
-				return Unsafe.ReadUnaligned<Int256>(ref sourceRef);
+				return BinaryOperations.ReadInt256LittleEndian(span);
 			}
 
 			Int256 result = Zero;
@@ -897,13 +893,13 @@ namespace MissingValues
 
 			for (int i = 0; i < bytesWritten; i++)
 			{
-				Int256 part = Unsafe.Add(ref sourceRef, i);
+				Int256 part = span[i];
 				part <<= (i * 8);
 				result |= part;
 			}
 
 			result <<= ((Size - bytesWritten) * 8);
-			result = BitHelper.ReverseEndianness(in result);
+			result = BinaryOperations.ReverseEndianness(in result);
 
 			if (!isUnsigned)
 			{
