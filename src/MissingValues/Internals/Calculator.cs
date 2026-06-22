@@ -130,15 +130,15 @@ internal static class Calculator
 		if (X86Base.X64.IsSupported)
 		{
 			(ulong q, ulong r) = X86Base.X64.DivRem(lo, hi, divisor);
-			remainder = (nuint)r;
-			return (nuint)q;
+			remainder = (ulong)r;
+			return (ulong)q;
 		}
 #pragma warning restore SYSLIB5004
 #endif
 		UInt128 value = new UInt128(hi, lo);
-		UInt128 quotient = value / divisor;
-		remainder = lo - quotient.Lower * divisor;
-		return quotient.Lower;
+		ulong quotient = (value / divisor).Lower;
+		remainder = lo - quotient * divisor;
+		return quotient;
 	}
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	internal static UInt128 DivideByUInt64(UInt128 left, ulong right)
