@@ -901,7 +901,7 @@ namespace MissingValues
 		{
 			return new UInt512(
 				0, 0, 0, 0,
-				0, 0, Unsafe.Add(ref Unsafe.As<UInt128, ulong>(ref value), 1), (ulong)value
+				0, 0, value.Upper, value.Lower
 				);
 		}
 
@@ -917,8 +917,9 @@ namespace MissingValues
 		/// <param name="value">The value to convert.</param>
 		public static explicit operator UInt512(sbyte value)
 		{
-			Int256 lower = value;
-			return new UInt512((UInt256)(lower >> 255), (UInt256)lower);
+			ulong lowerShifted = (ulong)((long)value >> 63);
+			return new UInt512(lowerShifted, lowerShifted, lowerShifted, lowerShifted, 
+				lowerShifted, lowerShifted, lowerShifted, (ulong)value);
 		}
 		/// <summary>
 		/// Explicitly converts a <see cref="sbyte" /> value to a <see cref="UInt512"/>.
@@ -939,8 +940,9 @@ namespace MissingValues
 		/// <param name="value">The value to convert.</param>
 		public static explicit operator UInt512(short value)
 		{
-			Int256 lower = value;
-			return new UInt512((UInt256)(lower >> 255), (UInt256)lower);
+			ulong lowerShifted = (ulong)((long)value >> 63);
+			return new UInt512(lowerShifted, lowerShifted, lowerShifted, lowerShifted, 
+				lowerShifted, lowerShifted, lowerShifted, (ulong)value);
 		}
 		/// <summary>
 		/// Explicitly converts a <see cref="short" /> value to a <see cref="UInt512"/>.
@@ -961,8 +963,9 @@ namespace MissingValues
 		/// <param name="value">The value to convert.</param>
 		public static explicit operator UInt512(int value)
 		{
-			Int256 lower = value;
-			return new UInt512((UInt256)(lower >> 255), (UInt256)lower);
+			ulong lowerShifted = (ulong)((long)value >> 63);
+			return new UInt512(lowerShifted, lowerShifted, lowerShifted, lowerShifted, 
+				lowerShifted, lowerShifted, lowerShifted, (ulong)value);
 		}
 		/// <summary>
 		/// Explicitly converts a <see cref="int" /> value to a <see cref="UInt512"/>.
@@ -983,8 +986,9 @@ namespace MissingValues
 		/// <param name="value">The value to convert.</param>
 		public static explicit operator UInt512(long value)
 		{
-			Int256 lower = value;
-			return new UInt512((UInt256)(lower >> 255), (UInt256)lower);
+			ulong lowerShifted = (ulong)(value >> 63);
+			return new UInt512(lowerShifted, lowerShifted, lowerShifted, lowerShifted, 
+				lowerShifted, lowerShifted, lowerShifted, (ulong)value);
 		}
 		/// <summary>
 		/// Explicitly converts a <see cref="long" /> value to a <see cref="UInt512"/>.
@@ -1005,11 +1009,10 @@ namespace MissingValues
 		/// <param name="value">The value to convert.</param>
 		public static explicit operator UInt512(Int128 value)
 		{
-			ref long v = ref Unsafe.As<Int128, long>(ref value);
-			ulong lowerShifted = (ulong)(Unsafe.Add(ref v, 1) >> 63);
+			ulong lowerShifted = (ulong)((long)value.Upper >> 63);
 			return new(
 				lowerShifted, lowerShifted, lowerShifted, lowerShifted,
-				lowerShifted, lowerShifted, (ulong)Unsafe.Add(ref v, 1), (ulong)v
+				lowerShifted, lowerShifted, value.Upper, value.Lower
 				);
 		}
 		/// <summary>
@@ -1025,7 +1028,7 @@ namespace MissingValues
 			}
 			return new UInt512(
 				0, 0, 0, 0,
-				0, 0, Unsafe.Add(ref Unsafe.As<Int128, ulong>(ref value), 1), (ulong)value);
+				0, 0, value.Upper, value.Lower);
 		}
 		/// <summary>
 		/// Explicitly converts a <see cref="nint" /> value to a <see cref="UInt512"/>.
@@ -1033,8 +1036,9 @@ namespace MissingValues
 		/// <param name="value">The value to convert.</param>
 		public static explicit operator UInt512(nint value)
 		{
-			Int256 lower = value;
-			return new UInt512((UInt256)(lower >> 255), (UInt256)lower);
+			ulong lowerShifted = (ulong)((long)value >> 63);
+			return new UInt512(lowerShifted, lowerShifted, lowerShifted, lowerShifted, 
+				lowerShifted, lowerShifted, lowerShifted, (ulong)value);
 		}
 		/// <summary>
 		/// Explicitly converts a <see cref="nint" /> value to a <see cref="UInt512"/>.

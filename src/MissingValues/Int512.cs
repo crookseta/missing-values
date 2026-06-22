@@ -795,7 +795,7 @@ namespace MissingValues
 		{
 			return new Int512(
 				0, 0, 0, 0,
-				0, 0, Unsafe.Add(ref Unsafe.As<UInt128, ulong>(ref value), 1), (ulong)value
+				0, 0, value.Upper, value.Lower
 				);
 		}
 
