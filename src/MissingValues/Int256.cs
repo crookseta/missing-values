@@ -756,9 +756,8 @@ namespace MissingValues
 		/// <param name="value">The value to convert.</param>
 		public static implicit operator Int256(Int128 value)
 		{
-			ref long v = ref Unsafe.As<Int128, long>(ref value);
-			ulong lowerShifted = (ulong)(Unsafe.Add(ref v, 1) >> 63);
-			return new(lowerShifted, lowerShifted, (ulong)Unsafe.Add(ref v, 1), (ulong)v);
+			ulong lowerShifted = (ulong)((long)value.Upper >> 63);
+			return new(lowerShifted, lowerShifted, value.Upper, value.Lower);
 		}
 		//Unsigned
 		/// <summary>
@@ -792,7 +791,7 @@ namespace MissingValues
 		/// <param name="value">The value to convert.</param>
 		public static explicit operator Int256(UInt128 value)
 		{
-			return new Int256(0, 0, Unsafe.Add(ref Unsafe.As<UInt128, ulong>(ref value), 1), (ulong)value);
+			return new Int256(0, 0, value.Upper, value.Lower);
 		}
 
 		/// <summary>
