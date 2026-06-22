@@ -839,7 +839,7 @@ namespace MissingValues
 		/// <param name="value">The value to convert.</param>
 		public static implicit operator UInt256(UInt128 value)
 		{
-			return new UInt256(0, 0, Unsafe.Add(ref Unsafe.As<UInt128, ulong>(ref value), 1), (ulong)value);
+			return new UInt256(0, 0, value.Upper, value.Lower);
 		}
 
 		/// <summary>
@@ -854,8 +854,8 @@ namespace MissingValues
 		/// <param name="value">The value to convert.</param>
 		public static explicit operator UInt256(sbyte value)
 		{
-			Int128 lower = value;
-			return new((UInt128)(lower >> 127), (UInt128)lower);
+			ulong lowerShifted = (ulong)((long)value >> 63);
+			return new(lowerShifted, lowerShifted, lowerShifted, (ulong)(long)value);
 		}
 		/// <summary>
 		/// Explicitly converts a <see cref="sbyte" /> value to a <see cref="UInt256"/>.
@@ -868,7 +868,7 @@ namespace MissingValues
 			{
 				Thrower.IntegerOverflow();
 			}
-			return new(0, (byte)value);
+			return new(0, 0, 0, (ulong)value);
 		}
 		/// <summary>
 		/// Explicitly converts a <see cref="short" /> value to a <see cref="UInt256"/>.
@@ -876,8 +876,8 @@ namespace MissingValues
 		/// <param name="value">The value to convert.</param>
 		public static explicit operator UInt256(short value)
 		{
-			Int128 lower = value;
-			return new((UInt128)(lower >> 127), (UInt128)lower);
+			ulong lowerShifted = (ulong)((long)value >> 63);
+			return new(lowerShifted, lowerShifted, lowerShifted, (ulong)(long)value);
 		}
 		/// <summary>
 		/// Explicitly converts a <see cref="short" /> value to a <see cref="UInt256"/>.
@@ -890,7 +890,7 @@ namespace MissingValues
 			{
 				Thrower.IntegerOverflow();
 			}
-			return new(0, (UInt128)value);
+			return new(0, 0, 0, (ulong)value);
 		}
 		/// <summary>
 		/// Explicitly converts a <see cref="int" /> value to a <see cref="UInt256"/>.
@@ -898,8 +898,8 @@ namespace MissingValues
 		/// <param name="value">The value to convert.</param>
 		public static explicit operator UInt256(int value)
 		{
-			Int128 lower = value;
-			return new((UInt128)(lower >> 127), (UInt128)lower);
+			ulong lowerShifted = (ulong)((long)value >> 63);
+			return new(lowerShifted, lowerShifted, lowerShifted, (ulong)(long)value);
 		}
 		/// <summary>
 		/// Explicitly converts a <see cref="int" /> value to a <see cref="UInt256"/>.
@@ -912,7 +912,7 @@ namespace MissingValues
 			{
 				Thrower.IntegerOverflow();
 			}
-			return new(0, (UInt128)value);
+			return new(0, 0, 0, (ulong)value);
 		}
 		/// <summary>
 		/// Explicitly converts a <see cref="long" /> value to a <see cref="UInt256"/>.
@@ -920,8 +920,8 @@ namespace MissingValues
 		/// <param name="value">The value to convert.</param>
 		public static explicit operator UInt256(long value)
 		{
-			Int128 lower = value;
-			return new((UInt128)(lower >> 127), (UInt128)lower);
+			ulong lowerShifted = (ulong)((long)value >> 63);
+			return new(lowerShifted, lowerShifted, lowerShifted, (ulong)value);
 		}
 		/// <summary>
 		/// Explicitly converts a <see cref="long" /> value to a <see cref="UInt256"/>.
@@ -934,7 +934,7 @@ namespace MissingValues
 			{
 				Thrower.IntegerOverflow();
 			}
-			return new(0, (UInt128)value);
+			return new(0, 0, 0, (ulong)value);
 		}
 		/// <summary>
 		/// Explicitly converts a <see cref="Int128" /> value to a <see cref="UInt256"/>.
@@ -942,9 +942,8 @@ namespace MissingValues
 		/// <param name="value">The value to convert.</param>
 		public static explicit operator UInt256(Int128 value)
 		{
-			ref long v = ref Unsafe.As<Int128, long>(ref value);
-			ulong lowerShifted = (ulong)(Unsafe.Add(ref v, 1) >> 63);
-			return new(lowerShifted, lowerShifted, (ulong)Unsafe.Add(ref v, 1), (ulong)v);
+			ulong lowerShifted = (ulong)((long)value.Upper >> 63);
+			return new(lowerShifted, lowerShifted, value.Upper, value.Lower);
 		}
 		/// <summary>
 		/// Explicitly converts a <see cref="Int128" /> value to a <see cref="UInt256"/>.
@@ -957,7 +956,7 @@ namespace MissingValues
 			{
 				Thrower.IntegerOverflow();
 			}
-			return new(0, 0, Unsafe.Add(ref Unsafe.As<Int128, ulong>(ref value), 1), (ulong)value);
+			return new(0, 0, value.Upper, value.Lower);
 		}
 		/// <summary>
 		/// Explicitly converts a <see cref="nint" /> value to a <see cref="UInt256"/>.
@@ -965,8 +964,8 @@ namespace MissingValues
 		/// <param name="value">The value to convert.</param>
 		public static explicit operator UInt256(nint value)
 		{
-			Int128 lower = value;
-			return new((UInt128)(lower >> 127), (UInt128)lower);
+			ulong lowerShifted = (ulong)((long)value >> 63);
+			return new(lowerShifted, lowerShifted, lowerShifted, (ulong)value);
 		}
 		/// <summary>
 		/// Explicitly converts a <see cref="nint" /> value to a <see cref="UInt256"/>.
@@ -979,7 +978,7 @@ namespace MissingValues
 			{
 				Thrower.IntegerOverflow();
 			}
-			return new(0, (UInt128)value);
+			return new(0, 0, 0, (ulong)value);
 		}
 
 		/// <summary>
