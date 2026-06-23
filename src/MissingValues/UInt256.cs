@@ -105,11 +105,19 @@ namespace MissingValues
 		/// <exception cref="ArgumentOutOfRangeException">Span is too small for the value</exception>
 		public UInt256(ReadOnlySpan<ulong> parts)
 		{
-			ArgumentOutOfRangeException.ThrowIfLessThan(parts.Length, Size / 8);
-			_p0 = parts[0];
-			_p1 = parts[1];
-			_p2 = parts[2];
-			_p3 = parts[3];
+			if (Vector256.IsHardwareAccelerated && BitConverter.IsLittleEndian)
+			{
+				Unsafe.SkipInit(out this);
+				Unsafe.As<ulong, Vector256<ulong>>(ref _p0) = Vector256.Create(parts);
+			}
+			else
+			{
+				ArgumentOutOfRangeException.ThrowIfLessThan(parts.Length, Size / 8);
+				_p0 = parts[0];
+				_p1 = parts[1];
+				_p2 = parts[2];
+				_p3 = parts[3];
+			}
 		}
 
 
@@ -168,9 +176,9 @@ namespace MissingValues
 			Multiply(in left, right._p2, rawBits[2..]);
 			Multiply(in left, right._p3, rawBits[3..]);
 
-			lower = BitHelper.Read<UInt256>(rawBits);
+			lower = new UInt256(rawBits);
 
-			return BitHelper.Read<UInt256>(rawBits[4..]);
+			return new UInt256(rawBits[4..]);
 
 			static void Multiply(in UInt256 left, ulong right, Span<ulong> result)
 			{
@@ -292,7 +300,7 @@ namespace MissingValues
 				}
 			}
 
-			UInt256 result = BitHelper.Read<UInt256>(bits[..UIntCount]);
+			UInt256 result = new UInt256(bits);
 
 			if (bitsArray is not null)
 			{

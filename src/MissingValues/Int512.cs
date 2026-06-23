@@ -7,6 +7,7 @@ using System.Globalization;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Runtime.Intrinsics;
 using System.Text.Json.Serialization;
 using MissingValues.Primitives;
 
@@ -156,15 +157,29 @@ namespace MissingValues
 		/// <exception cref="ArgumentOutOfRangeException">Span is too small for the value</exception>
 		public Int512(ReadOnlySpan<ulong> parts)
 		{
-			ArgumentOutOfRangeException.ThrowIfLessThan(parts.Length, Size / 8);
-			_p0 = parts[0];
-			_p1 = parts[1];
-			_p2 = parts[2];
-			_p3 = parts[3];
-			_p4 = parts[4];
-			_p5 = parts[5];
-			_p6 = parts[6];
-			_p7 = parts[7];
+			if (Vector512.IsHardwareAccelerated && BitConverter.IsLittleEndian)
+			{
+				Unsafe.SkipInit(out this);
+				Unsafe.As<ulong, Vector512<ulong>>(ref _p0) = Vector512.Create(parts);
+			}
+			if (Vector256.IsHardwareAccelerated && BitConverter.IsLittleEndian)
+			{
+				Unsafe.SkipInit(out this);
+				Unsafe.As<ulong, Vector256<ulong>>(ref _p0) = Vector256.Create(parts);
+				Unsafe.As<ulong, Vector256<ulong>>(ref _p4) = Vector256.Create(parts[4..]);
+			}
+			else
+			{
+				ArgumentOutOfRangeException.ThrowIfLessThan(parts.Length, Size / 8);
+				_p0 = parts[0];
+				_p1 = parts[1];
+				_p2 = parts[2];
+				_p3 = parts[3];
+				_p4 = parts[4];
+				_p5 = parts[5];
+				_p6 = parts[6];
+				_p7 = parts[7];
+			}
 		}
 
 		/// <inheritdoc/>
@@ -300,7 +315,7 @@ namespace MissingValues
 				}
 			}
 
-			Int512 result = BitHelper.Read<Int512>(bits[..UIntCount]);
+			Int512 result = new Int512(bits);
 
 			if (bitsArray is not null)
 			{

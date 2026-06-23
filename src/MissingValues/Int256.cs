@@ -7,6 +7,7 @@ using System.Globalization;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Runtime.Intrinsics;
 using System.Text.Json.Serialization;
 using MissingValues.Primitives;
 
@@ -107,11 +108,19 @@ namespace MissingValues
 		/// <exception cref="ArgumentOutOfRangeException">Span is too small for the value</exception>
 		public Int256(ReadOnlySpan<ulong> parts)
 		{
-			ArgumentOutOfRangeException.ThrowIfLessThan(parts.Length, Size / 8);
-			_p0 = parts[0];
-			_p1 = parts[1];
-			_p2 = parts[2];
-			_p3 = parts[3];
+			if (Vector256.IsHardwareAccelerated && BitConverter.IsLittleEndian)
+			{
+				Unsafe.SkipInit(out this);
+				Unsafe.As<ulong, Vector256<ulong>>(ref _p0) = Vector256.Create(parts);
+			}
+			else
+			{
+				ArgumentOutOfRangeException.ThrowIfLessThan(parts.Length, Size / 8);
+				_p0 = parts[0];
+				_p1 = parts[1];
+				_p2 = parts[2];
+				_p3 = parts[3];
+			}
 		}
 
 		/// <inheritdoc/>
@@ -225,7 +234,6 @@ namespace MissingValues
 				Span<ulong> valueSpan = stackalloc ulong[UIntCount];
 				valueSpan.Clear();
 				BitHelper.Write(valueSpan, in value);
-				//Unsafe.WriteUnaligned(ref Unsafe.As<ulong, byte>(ref MemoryMarshal.GetReference(valueSpan)), value);
 
 				bits = (size <= Calculator.StackAllocThreshold
 					? stackalloc ulong[Calculator.StackAllocThreshold]
@@ -248,8 +256,7 @@ namespace MissingValues
 				}
 			}
 
-			Int256 result = BitHelper.Read<Int256>(bits[..UIntCount]);
-			//Int256 result = Unsafe.ReadUnaligned<Int256>(ref Unsafe.As<ulong, byte>(ref MemoryMarshal.GetReference(bits[..UIntCount])));
+			Int256 result = new Int256(bits);
 
 			if (bitsArray is not null)
 			{

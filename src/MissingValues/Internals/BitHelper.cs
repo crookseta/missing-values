@@ -220,28 +220,28 @@ namespace MissingValues.Internals
 			UInt256 x = value | UInt256.One;
 			int num1 = Log2(in x) + 1;
 			int num2 = (num1 * 1233) >> 12;
-			return x < Read<UInt256>(Tables.Pow10Table[(num2 << 3)..]) ? num2 - 1 : num2;
+			return x < new UInt256(Tables.Pow10Table[(num2 << 3)..]) ? num2 - 1 : num2;
 		}
 		internal static int Log10(in Int256 value)
 		{
 			Int256 x = value | Int256.One;
 			int num1 = Log2(in x) + 1;
 			int num2 = (num1 * 1233) >> 12;
-			return x < Read<Int256>(Tables.Pow10Table[(num2 << 3)..]) ? num2 - 1 : num2;
+			return x < new Int256(Tables.Pow10Table[(num2 << 3)..]) ? num2 - 1 : num2;
 		}
 		internal static int Log10(in UInt512 value)
 		{
 			UInt512 x = value | UInt512.One;
 			int num1 = Log2(in x) + 1;
 			int num2 = (num1 * 1233) >> 12;
-			return x < Read<UInt512>(Tables.Pow10Table[(num2 << 3)..]) ? num2 - 1 : num2;
+			return x < new UInt512(Tables.Pow10Table[(num2 << 3)..]) ? num2 - 1 : num2;
 		}
 		internal static int Log10(in Int512 value)
 		{
 			Int512 x = value | Int512.One;
 			int num1 = Log2(in x) + 1;
 			int num2 = (num1 * 1233) >> 12;
-			return x < Read<Int512>(Tables.Pow10Table[(num2 << 3)..]) ? num2 - 1 : num2;
+			return x < new Int512(Tables.Pow10Table[(num2 << 3)..]) ? num2 - 1 : num2;
 		}
 
 		internal static int PopCount(in UInt256 value)

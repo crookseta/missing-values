@@ -221,8 +221,8 @@ namespace MissingValues
 				quoBits,
 				remBits);
 
-			quotient = BitHelper.Read<UInt512>(quoBits);
-			remainder = BitHelper.Read<UInt512>(remBits);
+			quotient = new UInt512(quoBits);
+			remainder = new UInt512(remBits);
 		}
 
 		/// <inheritdoc/>
@@ -1221,7 +1221,7 @@ namespace MissingValues
 				divisorSpan[..BitHelper.GetTrimLength(in right)],
 				rawBits);
 
-			return BitHelper.Read<UInt512>(rawBits);
+			return new UInt512(rawBits);
 		}
 
 		/// <inheritdoc/>
@@ -1268,7 +1268,7 @@ namespace MissingValues
 				divisorSpan[..BitHelper.GetTrimLength(in right)],
 				rawBits);
 
-			return BitHelper.Read<UInt512>(rawBits);
+			return new UInt512(rawBits);
 		}
 
 		/// <inheritdoc/>

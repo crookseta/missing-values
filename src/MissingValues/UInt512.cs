@@ -163,15 +163,29 @@ namespace MissingValues
 		/// <exception cref="ArgumentOutOfRangeException">Span is too small for the value</exception>
 		public UInt512(ReadOnlySpan<ulong> parts)
 		{
-			ArgumentOutOfRangeException.ThrowIfLessThan(parts.Length, Size / 8);
-			_p0 = parts[0];
-			_p1 = parts[1];
-			_p2 = parts[2];
-			_p3 = parts[3];
-			_p4 = parts[4];
-			_p5 = parts[5];
-			_p6 = parts[6];
-			_p7 = parts[7];
+			if (Vector512.IsHardwareAccelerated && BitConverter.IsLittleEndian)
+			{
+				Unsafe.SkipInit(out this);
+				Unsafe.As<ulong, Vector512<ulong>>(ref _p0) = Vector512.Create(parts);
+			}
+			if (Vector256.IsHardwareAccelerated && BitConverter.IsLittleEndian)
+			{
+				Unsafe.SkipInit(out this);
+				Unsafe.As<ulong, Vector256<ulong>>(ref _p0) = Vector256.Create(parts);
+				Unsafe.As<ulong, Vector256<ulong>>(ref _p4) = Vector256.Create(parts[4..]);
+			}
+			else
+			{
+				ArgumentOutOfRangeException.ThrowIfLessThan(parts.Length, Size / 8);
+				_p0 = parts[0];
+				_p1 = parts[1];
+				_p2 = parts[2];
+				_p3 = parts[3];
+				_p4 = parts[4];
+				_p5 = parts[5];
+				_p6 = parts[6];
+				_p7 = parts[7];
+			}
 		}
 
 		/// <inheritdoc/>
@@ -248,9 +262,9 @@ namespace MissingValues
 			Multiply(in left, right._p6, rawBits[6..]);
 			Multiply(in left, right._p7, rawBits[7..]);
 
-			lower = BitHelper.Read<UInt512>(rawBits);
+			lower = new UInt512(rawBits);
 
-			return BitHelper.Read<UInt512>(rawBits[8..]);
+			return new UInt512(rawBits[8..]);
 
 			static void Multiply(in UInt512 left, ulong right, Span<ulong> result)
 			{
@@ -388,7 +402,7 @@ namespace MissingValues
 				}
 			}
 
-			UInt512 result = BitHelper.Read<UInt512>(bits[..UIntCount]);
+			UInt512 result = new UInt512(bits);
 
 			if (bitsArray is not null)
 			{
