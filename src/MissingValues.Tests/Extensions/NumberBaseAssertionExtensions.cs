@@ -11,11 +11,18 @@ public static class NumberBaseAssertionExtensions
 {
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	[GenerateAssertion(ExpectationMessage = "to be bitwise equivalent to {other}")]
-	public static bool IsBitwiseEquivalentTo<T1, T2>(this T1 value, T2 other)
+	public static bool IsBitwiseEquivalentTo<T1>(this T1 value, T1 other)
 		where T1 : struct, IFloatingPointIeee754<T1>
-		where T2 : struct, IBinaryInteger<T2>
 	{
-		return Unsafe.SizeOf<T1>() == Unsafe.SizeOf<T2>() && Unsafe.BitCast<T1, T2>(value) == other;
+		switch (Unsafe.SizeOf<T1>())
+		{
+			case 16:
+				return Unsafe.BitCast<T1, UInt128>(value) == Unsafe.BitCast<T1, UInt128>(other);
+			case UInt256.Size:
+				return Unsafe.BitCast<T1, UInt256>(value) == Unsafe.BitCast<T1, UInt256>(other);
+			default:
+				return false;
+		}
 	}
 	[EditorBrowsable(EditorBrowsableState.Never)]
 	[GenerateAssertion(ExpectationMessage = "to be approximately equal to {precision}")]

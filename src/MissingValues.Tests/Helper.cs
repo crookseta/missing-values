@@ -255,4 +255,24 @@ public static class Helper
     {
         return value.WriteLittleEndian(destination);
     }
+    public static TSelf OnesComplement<TSelf>(TSelf value)
+        where TSelf : IBitwiseOperators<TSelf, TSelf, TSelf>
+    {
+        return ~value;
+    }
+    public static TSelf And<TSelf>(TSelf left, TSelf right)
+        where TSelf : IBitwiseOperators<TSelf, TSelf, TSelf>
+    {
+        return left & right;
+    }
+    public static TSelf Or<TSelf>(TSelf left, TSelf right)
+        where TSelf : IBitwiseOperators<TSelf, TSelf, TSelf>
+    {
+        return left | right;
+    }
+    public static TSelf Xor<TSelf>(TSelf left, TSelf right)
+        where TSelf : IBitwiseOperators<TSelf, TSelf, TSelf>
+    {
+        return left ^ right;
+    }
 }
