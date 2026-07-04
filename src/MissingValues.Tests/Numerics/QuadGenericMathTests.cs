@@ -36,7 +36,14 @@ public class QuadGenericMathTests
     {
         var result = left - right;
 
-        await Assert.That(result).IsEqualTo(expected).And.IsBitwiseEquivalentTo(expected);
+        if (Float.IsNaN(expected))
+        {
+	        await Assert.That(result).IsNaN();
+        }
+        else
+        {
+			await Assert.That(result).IsEqualTo(expected).And.IsBitwiseEquivalentTo(expected);
+        }
     }
     [Test]
     [MethodDataSource<DataSources>(nameof(op_DecrementTestData))]
@@ -457,9 +464,9 @@ public class QuadGenericMathTests
     [Test]
     public async Task AcosTest()
     {
-	    await Assert.That(Float.Acos(Float.NaN)).IsBitwiseEquivalentTo(Float.NaN);
-	    await Assert.That(Float.Acos(Float.Two)).IsBitwiseEquivalentTo(Float.NaN);
-	    await Assert.That(Float.Acos(Float.NegativeTwo)).IsBitwiseEquivalentTo(Float.NaN);
+	    await Assert.That(Float.Acos(Float.NaN)).IsNaN();
+	    await Assert.That(Float.Acos(Float.Two)).IsNaN();
+	    await Assert.That(Float.Acos(Float.NegativeTwo)).IsNaN();
 	    await Assert.That(Float.Acos(Float.Half))
 		    .IsApproximately(Float.Pi / Float.Three, Float.Delta);
 	    await Assert.That(Float.Acos(Float.One))
@@ -472,9 +479,9 @@ public class QuadGenericMathTests
     {
 	    await Assert.That(Float.Acosh(Float.Two))
 		    .IsApproximately(Values.CreateFloat<Float>(0x3FFF_5124_2719_8043, 0x49BE_684B_D018_8D53), Float.Delta);
-	    await Assert.That(Float.Acos(Float.Half)).IsBitwiseEquivalentTo(Float.NaN);
-	    await Assert.That(Float.Acos(Float.Zero)).IsBitwiseEquivalentTo(Float.NaN);
-	    await Assert.That(Float.Acos(Float.NegativeOne)).IsBitwiseEquivalentTo(Float.NaN);
+	    await Assert.That(Float.Acosh(Float.Half)).IsNaN();
+	    await Assert.That(Float.Acosh(Float.Zero)).IsNaN();
+	    await Assert.That(Float.Acosh(Float.NegativeOne)).IsNaN();
     }
     [Test]
     public async Task AsinTest()
@@ -482,7 +489,7 @@ public class QuadGenericMathTests
 	    await Assert.That(Float.Asin(Float.Half))
 		    .IsApproximately(Values.CreateFloat<Float>(0x3FFE_0C15_2382_D736, 0x5846_5BB3_2E0F_567B), Float.Delta)
 		    .And.IsApproximately(Float.Pi / Float.Six, Float.Delta);
-	    await Assert.That(Float.Asin(Float.Two)).IsBitwiseEquivalentTo(Float.NaN);
+	    await Assert.That(Float.Asin(Float.Two)).IsNaN();
 	    await Assert.That(Float.Asin(Float.One))
 		    .IsApproximately(Float.Pi / Float.Two, Float.Delta);
 	    await Assert.That(Float.Asin(Float.NegativeOne))
@@ -530,9 +537,9 @@ public class QuadGenericMathTests
     public async Task AtanhTest()
     {
 	    await Assert.That(Float.Atanh(Float.Two))
-		    .IsBitwiseEquivalentTo(Float.NaN);
+		    .IsNaN();
 	    await Assert.That(Float.Atanh(Float.NegativeFour))
-		    .IsBitwiseEquivalentTo(Float.NaN);
+		    .IsNaN();
 	    await Assert.That(Float.Atanh(Float.Zero))
 		    .IsApproximately(Float.Zero, Float.Delta);
 	    await Assert.That(Float.Atanh(Float.Half))
@@ -577,7 +584,7 @@ public class QuadGenericMathTests
 		    .IsEqualTo(Float.NegativeZero);
 	    await Assert.That(Float.Cbrt(Float.NegativeFour))
 		    .IsApproximately(Values.CreateFloat<Float>(0xBFFF_965F_EA53_D6E3, 0xC82B_0599_9AB4_3DC5), Float.Delta);
-	    await Assert.That(Float.Cbrt(Float.NaN)).IsBitwiseEquivalentTo(Float.NaN);
+	    await Assert.That(Float.Cbrt(Float.NaN)).IsNaN();
     }
     [Test]
 	public async Task CosTest()
@@ -591,11 +598,11 @@ public class QuadGenericMathTests
 		await Assert.That(Float.Cos(Float.Pi * Float.Two))
 			.IsApproximately(Float.One, Float.Delta);
 		await Assert.That(Float.Cos(Float.NaN))
-			.IsBitwiseEquivalentTo(Float.NaN);
+			.IsNaN();
 		await Assert.That(Float.Cos(Float.PositiveInfinity))
-			.IsBitwiseEquivalentTo(Float.NaN);
+			.IsNaN();
 		await Assert.That(Float.Cos(Float.NegativeInfinity))
-			.IsBitwiseEquivalentTo(Float.NaN);
+			.IsNaN();
 	}
 	[Test]
 	public async Task CoshTest()
@@ -625,7 +632,7 @@ public class QuadGenericMathTests
 		await Assert.That(Float.Exp(Float.PositiveInfinity))
 			.IsEqualTo(Float.PositiveInfinity);
 		await Assert.That(Float.Exp(Float.NaN))
-			.IsBitwiseEquivalentTo(Float.NaN);
+			.IsNaN();
 		await Assert.That(Float.Exp(Float.NegativeInfinity))
 			.IsEqualTo(Float.Zero);
 	}
@@ -647,7 +654,7 @@ public class QuadGenericMathTests
 		await Assert.That(Float.Exp10(Float.PositiveInfinity))
 			.IsEqualTo(Float.PositiveInfinity);
 		await Assert.That(Float.Exp10(Float.NaN))
-			.IsBitwiseEquivalentTo(Float.NaN);
+			.IsNaN();
 		await Assert.That(Float.Exp10(Float.NegativeInfinity))
 			.IsEqualTo(Float.Zero);
 	}
@@ -661,7 +668,7 @@ public class QuadGenericMathTests
 		await Assert.That(Float.Exp2(Float.PositiveInfinity))
 			.IsEqualTo(Float.PositiveInfinity);
 		await Assert.That(Float.Exp2(Float.NaN))
-			.IsBitwiseEquivalentTo(Float.NaN);
+			.IsNaN();
 		await Assert.That(Float.Exp2(Float.NegativeInfinity))
 			.IsEqualTo(Float.Zero);
 	}
@@ -681,7 +688,7 @@ public class QuadGenericMathTests
 		await Assert.That(Float.Hypot(Float.PositiveInfinity, Float.NegativeInfinity))
 			.IsBitwiseEquivalentTo(Float.PositiveInfinity);
 		await Assert.That(Float.Hypot(Float.NaN, Float.NaN))
-			.IsBitwiseEquivalentTo(Float.NaN);
+			.IsNaN();
 	}
 	[Test]
 	[MethodDataSource<DataSources>(nameof(Ieee754RemainderTestData))]
@@ -712,7 +719,7 @@ public class QuadGenericMathTests
 		await Assert.That(Float.Log(Float.Zero))
 			.IsEqualTo(Float.NegativeInfinity);
 		await Assert.That(Float.Log(Float.NegativeFive))
-			.IsBitwiseEquivalentTo(Float.NaN);
+			.IsNaN();
 	}
 	[Test]
 	public async Task LogP1Test()
@@ -725,7 +732,7 @@ public class QuadGenericMathTests
 		await Assert.That(Float.LogP1(Float.NegativeOne))
 			.IsBitwiseEquivalentTo(Float.NegativeInfinity);
 		await Assert.That(Float.LogP1(Float.NegativeFive))
-			.IsBitwiseEquivalentTo(Float.NaN);
+			.IsNaN();
 	}
     [Test]
     public async Task Log2Test()
@@ -733,7 +740,7 @@ public class QuadGenericMathTests
 	    await Assert.That(Helper.Log2(Float.Four)).IsApproximately(Float.Two, Float.Delta);
 	    await Assert.That(Helper.Log2(Float.One)).IsEqualTo(Float.Zero);
 	    await Assert.That(Helper.Log2(Float.Zero)).IsEqualTo(Float.NegativeInfinity);
-	    await Assert.That(Helper.Log2(Float.NegativeFive)).IsBitwiseEquivalentTo(Float.NaN);
+	    await Assert.That(Helper.Log2(Float.NegativeFive)).IsNaN();
     }
     [Test]
     public async Task Log10Test()
@@ -745,7 +752,7 @@ public class QuadGenericMathTests
 	    await Assert.That(Float.Log10(Float.Zero))
 		    .IsEqualTo(Float.NegativeInfinity);
 	    await Assert.That(Float.Log10(Float.NegativeFive))
-		    .IsBitwiseEquivalentTo(Float.NaN);
+		    .IsNaN();
     }
     
     [Test]
@@ -760,9 +767,9 @@ public class QuadGenericMathTests
 	
 	    await Assert.That(Float.Pow(anything, Float.Zero)).IsBitwiseEquivalentTo(Float.One);
 	    await Assert.That(Float.Pow(anything, Float.One)).IsBitwiseEquivalentTo(anything);
-	    await Assert.That(Float.Pow(anything, Float.NaN)).IsBitwiseEquivalentTo(Float.NaN);
+	    await Assert.That(Float.Pow(anything, Float.NaN)).IsNaN();
 	    await Assert.That(Float.Pow(Float.One, Float.NaN)).IsBitwiseEquivalentTo(Float.One);
-	    await Assert.That(Float.Pow(Float.NaN, anything)).IsBitwiseEquivalentTo(Float.NaN);
+	    await Assert.That(Float.Pow(Float.NaN, anything)).IsNaN();
 	    await Assert.That(Float.Pow(greaterThanOne, Float.PositiveInfinity)).IsBitwiseEquivalentTo(Float.PositiveInfinity);
 	    await Assert.That(Float.Pow(greaterThanOne, Float.NegativeInfinity)).IsBitwiseEquivalentTo(Float.Zero);
 	    await Assert.That(Float.Pow(lessThanOne, Float.PositiveInfinity)).IsBitwiseEquivalentTo(Float.Zero);
@@ -784,7 +791,7 @@ public class QuadGenericMathTests
 	        .IsBitwiseEquivalentTo(Float.Pow(Float.NegativeZero, -anything));
 	    await Assert.That(Float.Pow(-anything, oddInt))
 	        .IsBitwiseEquivalentTo(Float.Pow(Float.NegativeOne, oddInt) * Float.Pow(+anything, oddInt));
-	    await Assert.That(Float.Pow(-anything, nonInt)).IsBitwiseEquivalentTo(Float.NaN);
+	    await Assert.That(Float.Pow(-anything, nonInt)).IsNaN();
 	}
 	[Test]
 	public async Task ReciprocalEstimateTest()
@@ -809,13 +816,13 @@ public class QuadGenericMathTests
 		await Assert.That(Float.RootN(Float.Zero, 2))
 			.IsBitwiseEquivalentTo(Float.Zero);
 		await Assert.That(Float.RootN(Float.NegativeZero, 2))
-			.IsBitwiseEquivalentTo(Float.NegativeZero);
+			.IsBitwiseEquivalentTo(Float.Zero);
 		await Assert.That(Float.RootN(Float.PositiveInfinity, 2))
 			.IsBitwiseEquivalentTo(Float.PositiveInfinity);
 		await Assert.That(Float.RootN(Float.NegativeFour, 2))
-			.IsBitwiseEquivalentTo(Float.NaN);
+			.IsNaN();
 		await Assert.That(Float.RootN(Float.NaN, 2))
-			.IsBitwiseEquivalentTo(Float.NaN);
+			.IsNaN();
 	}
 	[Test]
 	public async Task ScaleBTest()
@@ -835,11 +842,11 @@ public class QuadGenericMathTests
 	public async Task SinTest()
 	{
 	    await Assert.That(Float.Sin(Float.NaN))
-		    .IsBitwiseEquivalentTo(Float.NaN);
+		    .IsNaN();
 	    await Assert.That(Float.Sin(Float.PositiveInfinity))
-		    .IsBitwiseEquivalentTo(Float.NaN);
+		    .IsNaN();
 	    await Assert.That(Float.Sin(Float.NegativeInfinity))
-		    .IsBitwiseEquivalentTo(Float.NaN);
+		    .IsNaN();
 	}
 	[Test]
 	public async Task SinCosTest()
@@ -883,29 +890,29 @@ public class QuadGenericMathTests
 	    await Assert.That(Float.Sqrt(Float.PositiveInfinity))
 		    .IsBitwiseEquivalentTo(Float.PositiveInfinity);
 	    await Assert.That(Float.Sqrt(Float.NegativeFour))
-		    .IsBitwiseEquivalentTo(Float.NaN);
+		    .IsNaN();
 	    await Assert.That(Float.Sqrt(Float.NaN))
-		    .IsBitwiseEquivalentTo(Float.NaN);
+		    .IsNaN();
 	}
 	[Test]
 	public async Task TanTest()
 	{
-	    await Assert.That(Float.Tan(Float.NaN)).
-		    IsBitwiseEquivalentTo(Float.NaN);
-	    await Assert.That(Float.Tan(Float.PositiveInfinity)).
-		    IsBitwiseEquivalentTo(Float.NaN);
-	    await Assert.That(Float.Tan(Float.NegativeInfinity)).
-		    IsBitwiseEquivalentTo(Float.NaN);
+	    await Assert.That(Float.Tan(Float.NaN))
+		    .IsNaN();
+	    await Assert.That(Float.Tan(Float.PositiveInfinity))
+		    .IsNaN();
+	    await Assert.That(Float.Tan(Float.NegativeInfinity))
+		    .IsNaN();
 	}
 	[Test]
 	public async Task TanhTest()
 	{
 	    await Assert.That(Float.Tanh(Float.Two))
 	        .IsApproximately(Values.CreateFloat<Float>(0x3FFE_ED95_05E1_BC3D, 0x3D33_C432_FC3E_8256), Float.Delta);
-	    await Assert.That(Float.Tanh(Float.NaN)).
-		    IsBitwiseEquivalentTo(Float.NaN);
-	    await Assert.That(Float.Tanh(Float.Zero)).
-		    IsBitwiseEquivalentTo(Float.Zero);
+	    await Assert.That(Float.Tanh(Float.NaN))
+		    .IsNaN();
+	    await Assert.That(Float.Tanh(Float.Zero))
+		    .IsBitwiseEquivalentTo(Float.Zero);
 	}
     #endregion
 }

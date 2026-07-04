@@ -14,11 +14,27 @@ public interface IMathOperatorsDataSource<T>
 	IModulusOperators<T, T, T>
 {
 	static abstract IEnumerable<Func<(T, T, T)>> op_AdditionTestData();
-	static abstract IEnumerable<Func<(T, T, T, bool)>> op_CheckedAdditionTestData();
-	static abstract IEnumerable<Func<(T, T, bool)>> op_CheckedDecrementTestData();
-	static abstract IEnumerable<Func<(T, T, bool)>> op_CheckedIncrementTestData();
-	static abstract IEnumerable<Func<(T, T, T, bool)>> op_CheckedMultiplyTestData();
-	static abstract IEnumerable<Func<(T, T, T, bool)>> op_CheckedSubtractionTestData();
+
+	static virtual IEnumerable<Func<(T, T, T, bool)>> op_CheckedAdditionTestData()
+	{
+		throw new NotSupportedException();
+	}
+	static virtual IEnumerable<Func<(T, T, bool)>> op_CheckedDecrementTestData()
+	{
+		throw new NotSupportedException();
+	}
+	static virtual IEnumerable<Func<(T, T, bool)>> op_CheckedIncrementTestData()
+	{
+		throw new NotSupportedException();
+	}
+	static virtual IEnumerable<Func<(T, T, T, bool)>> op_CheckedMultiplyTestData()
+	{
+		throw new NotSupportedException();
+	}
+	static virtual IEnumerable<Func<(T, T, T, bool)>> op_CheckedSubtractionTestData()
+	{
+		throw new NotSupportedException();
+	}
 	static abstract IEnumerable<Func<(T, T)>> op_DecrementTestData();
 	static abstract IEnumerable<Func<(T, T, T)>> op_DivisionTestData();
 	static abstract IEnumerable<Func<(T, T)>> op_IncrementTestData();
@@ -26,5 +42,8 @@ public interface IMathOperatorsDataSource<T>
 	static abstract IEnumerable<Func<(T, T, T)>> op_MultiplyTestData();
 	static abstract IEnumerable<Func<(T, T, T)>> op_SubtractionTestData();
 	static abstract IEnumerable<Func<(T, T)>> op_UnaryNegationTestData();
-	static abstract IEnumerable<Func<(T, T, bool)>> op_CheckedUnaryNegationTestData();
+	static virtual IEnumerable<Func<(T, T, bool)>> op_CheckedUnaryNegationTestData()
+	{
+		throw new NotSupportedException();
+	}
 }

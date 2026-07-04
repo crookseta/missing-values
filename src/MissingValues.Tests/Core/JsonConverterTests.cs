@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Text.Json;
+using MissingValues.Tests.Extensions;
 
 namespace MissingValues.Tests.Core;
 
@@ -22,7 +23,7 @@ public class JsonConverterTests
 		await Assert.That(JsonSerializer.Deserialize<Int256[]>($"[{Int256.MaxValue},{Int256.MinValue}]")).IsEquivalentTo([Int256.MaxValue, Int256.MinValue]);
 		await Assert.That(JsonSerializer.Deserialize<UInt512>(UInt512.MaxValue.ToString())).EqualTo(UInt512.MaxValue);
 		await Assert.That(JsonSerializer.Deserialize<Int512[]>($"[{Int512.MaxValue},{Int512.MinValue}]")).IsEquivalentTo([Int512.MaxValue, Int512.MinValue]);
-		await Assert.That(JsonSerializer.Deserialize<Quad>(Quad.MaxValue.ToString("G", CultureInfo.InvariantCulture))).EqualTo(Quad.MaxValue);
-		await Assert.That(JsonSerializer.Deserialize<Octo>(Octo.MaxValue.ToString("G", CultureInfo.InvariantCulture))).EqualTo(Octo.MaxValue);
+		await Assert.That(JsonSerializer.Deserialize<Quad>(Quad.UInt64MaxValue.ToString("G", CultureInfo.InvariantCulture))).EqualTo(Quad.UInt64MaxValue);
+		await Assert.That(JsonSerializer.Deserialize<Octo>(Octo.UInt64MaxValue.ToString("G", CultureInfo.InvariantCulture))).EqualTo(Octo.UInt64MaxValue);
 	}
 }

@@ -46,9 +46,48 @@ public static class NumberBaseAssertionExtensions
 
 		if (actualDifference <= precision)
 		{
-			return AssertionResult.Failed($"Expected {value} to approximate {expected} +/- {precision}, but {value} differed by {actualDifference}.");
+			return AssertionResult.Passed;
 		}
 		
-		return AssertionResult.Passed;
+		return AssertionResult.Failed($"Expected {value} to approximate {expected} +/- {precision}, but {value} differed by {actualDifference}.");
+	}
+	
+	[EditorBrowsable(EditorBrowsableState.Never)]
+	[GenerateAssertion(ExpectationMessage = "to be Not a Number")]
+	public static bool IsNaN(this Quad value)
+	{
+		return Quad.IsNaN(value);
+	}
+	[EditorBrowsable(EditorBrowsableState.Never)]
+	[GenerateAssertion(ExpectationMessage = "to be Not a Number")]
+	public static bool IsNaN(this Octo value)
+	{
+		return Octo.IsNaN(value);
+	}
+	
+	[EditorBrowsable(EditorBrowsableState.Never)]
+	[GenerateAssertion(ExpectationMessage = "to be Negative Infinity")]
+	public static bool IsNegativeInfinity(this Quad value)
+	{
+		return Quad.IsNegativeInfinity(value);
+	}
+	[EditorBrowsable(EditorBrowsableState.Never)]
+	[GenerateAssertion(ExpectationMessage = "to be Negative Infinity")]
+	public static bool IsNegativeInfinity(this Octo value)
+	{
+		return Octo.IsNegativeInfinity(value);
+	}
+	
+	[EditorBrowsable(EditorBrowsableState.Never)]
+	[GenerateAssertion(ExpectationMessage = "to be Negative Infinity")]
+	public static bool IsPositiveInfinity(this Quad value)
+	{
+		return Quad.IsPositiveInfinity(value);
+	}
+	[EditorBrowsable(EditorBrowsableState.Never)]
+	[GenerateAssertion(ExpectationMessage = "to be Negative Infinity")]
+	public static bool IsPositiveInfinity(this Octo value)
+	{
+		return Octo.IsPositiveInfinity(value);
 	}
 }

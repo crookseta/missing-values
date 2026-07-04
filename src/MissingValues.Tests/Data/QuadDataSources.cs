@@ -30,31 +30,6 @@ public class QuadDataSources
 		yield return () => (Quad.NegativeInfinity, Quad.NegativeInfinity, Quad.NegativeInfinity);
     }
 
-    public static IEnumerable<Func<(Quad, Quad, Quad, bool)>> op_CheckedAdditionTestData()
-    {
-        throw new NotImplementedException();
-    }
-
-    public static IEnumerable<Func<(Quad, Quad, bool)>> op_CheckedDecrementTestData()
-    {
-        throw new NotImplementedException();
-    }
-
-    public static IEnumerable<Func<(Quad, Quad, bool)>> op_CheckedIncrementTestData()
-    {
-        throw new NotImplementedException();
-    }
-
-    public static IEnumerable<Func<(Quad, Quad, Quad, bool)>> op_CheckedMultiplyTestData()
-    {
-        throw new NotImplementedException();
-    }
-
-    public static IEnumerable<Func<(Quad, Quad, Quad, bool)>> op_CheckedSubtractionTestData()
-    {
-        throw new NotImplementedException();
-    }
-
     public static IEnumerable<Func<(Quad, Quad)>> op_DecrementTestData()
     {
 		yield return () => (Quad.NegativeOne, Quad.NegativeTwo);
@@ -85,7 +60,11 @@ public class QuadDataSources
 
     public static IEnumerable<Func<(Quad, Quad, Quad)>> op_ModulusTestData()
     {
-        throw new NotImplementedException();
+	    yield return () => (Quad.Two, Quad.Four, Quad.Two);
+	    yield return () => (Quad.Half, Quad.Four, Quad.Half);
+	    yield return () => (Quad.Four, Quad.Half, Quad.Zero);
+	    yield return () => (Quad.NegativeFour, Quad.Half, Quad.NegativeZero);
+	    yield return () => (Quad.NegativeFour, Quad.Thousand, Quad.NegativeFour);
     }
 
     public static IEnumerable<Func<(Quad, Quad, Quad)>> op_MultiplyTestData()
@@ -122,29 +101,32 @@ public class QuadDataSources
 	    yield return () => (Quad.Thousand, Quad.NegativeThousand);
     }
 
-    public static IEnumerable<Func<(Quad, Quad, bool)>> op_CheckedUnaryNegationTestData()
-    {
-	    throw new NotImplementedException();
-    }
-
     public static IEnumerable<Func<(Quad, Quad, Quad)>> op_BitwiseAndTestData()
     {
-        throw new NotImplementedException();
+	    yield return () => (Quad.Zero, Quad.One, Quad.Zero);
+	    yield return () => (Quad.One, Quad.One, Quad.One);
+	    yield return () => (Values.CreateFloat<Quad>(0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF), Values.CreateFloat<Quad>(0x0000_0000_0000_0000, 0x0000_0000_0000_0001), Values.CreateFloat<Quad>(0x0000_0000_0000_0000, 0x0000_0000_0000_0001));
     }
 
     public static IEnumerable<Func<(Quad, Quad, Quad)>> op_BitwiseOrTestData()
     {
-        throw new NotImplementedException();
+	    yield return () => (Quad.Zero, Quad.One, Quad.One);
+	    yield return () => (Quad.One, Quad.One, Quad.One);
+	    yield return () => (Values.CreateFloat<Quad>(0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF), Values.CreateFloat<Quad>(0x0000_0000_0000_0000, 0x0000_0000_0000_0001), Values.CreateFloat<Quad>(0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF));
     }
 
     public static IEnumerable<Func<(Quad, Quad, Quad)>> op_BitwiseXorTestData()
     {
-        throw new NotImplementedException();
+	    yield return () => (Quad.Zero, Quad.One, Quad.One);
+	    yield return () => (Quad.One, Quad.One, Quad.Zero);
+	    yield return () => (Values.CreateFloat<Quad>(0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF), Values.CreateFloat<Quad>(0x0000_0000_0000_0000, 0x0000_0000_0000_0001), Values.CreateFloat<Quad>(0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFE));
     }
 
     public static IEnumerable<Func<(Quad, Quad)>> op_OnesComplementTestData()
     {
-        throw new NotImplementedException();
+	    yield return () => (Quad.Zero, Values.CreateFloat<Quad>(0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF));
+	    yield return () => (Values.CreateFloat<Quad>(0x0000_0000_0000_0000, 0x0000_0000_0000_0001), Values.CreateFloat<Quad>(0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFE));
+	    yield return () => (Values.CreateFloat<Quad>(0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF), Quad.Zero);
     }
 
     public static IEnumerable<Func<(Quad, Quad, bool)>> op_EqualityTestData()
@@ -159,13 +141,22 @@ public class QuadDataSources
     {
 		yield return () => (Quad.One, Quad.One, false);
 		yield return () => (Quad.NaN, Quad.NaN, true);
-			yield return () => (Quad.NegativeTwo, Quad.Two, true);
+	    yield return () => (Quad.NegativeTwo, Quad.Two, true);
 		yield return () => (Quad.SmallestSubnormal, Quad.GreatestSubnormal, true);
     }
 
     public static IEnumerable<Func<(Quad, Quad, bool)>> op_GreaterThanOrEqualTestData()
     {
-        throw new NotImplementedException();
+	    yield return () => (Quad.One, Quad.One, true); 
+	    yield return () => (Quad.Two, Quad.Two, true);
+	    yield return () => (Quad.NaN, Quad.NaN, false);
+	    yield return () => (Quad.GreatestSubnormal, Quad.GreatestSubnormal, true);
+	    yield return () => (Quad.Two, Quad.One, true);
+	    yield return () => (Quad.Thousand, Quad.NegativeThousand, true);
+	    yield return () => (Quad.NegativeQuarter, Quad.NegativeHalf, true);
+	    yield return () => (Quad.Quarter, Quad.Half, false);
+	    yield return () => (Quad.Ten, Quad.Hundred, false);
+	    yield return () => (Quad.GreaterThanOneSmallest, Quad.One, true);
     }
 
     public static IEnumerable<Func<(Quad, Quad, bool)>> op_GreaterThanTestData()
@@ -180,7 +171,16 @@ public class QuadDataSources
 
     public static IEnumerable<Func<(Quad, Quad, bool)>> op_LessThanOrEqualTestData()
     {
-        throw new NotImplementedException();
+	    yield return () => (Quad.One, Quad.One, true); 
+	    yield return () => (Quad.Two, Quad.Two, true);
+	    yield return () => (Quad.NaN, Quad.NaN, false);
+	    yield return () => (Quad.GreatestSubnormal, Quad.GreatestSubnormal, true);
+	    yield return () => (Quad.Zero, Quad.One, true);
+	    yield return () => (Quad.Zero, Quad.Quarter, true);
+	    yield return () => (Quad.NegativeThousand, Quad.Thousand, true);
+	    yield return () => (Quad.NegativeOne, Quad.NegativeThree, false);
+	    yield return () => (Quad.Hundred, Quad.Two, false);
+	    yield return () => (Quad.LessThanOneLargest, Quad.One, true);
     }
 
     public static IEnumerable<Func<(Quad, Quad, bool)>> op_LessThanTestData()
@@ -242,11 +242,11 @@ public class QuadDataSources
 
     public static IEnumerable<Func<(Quad, bool)>> IsInfinityTestData()
     {
-	    yield return () => (Quad.One, true);
-	    yield return () => (Quad.NegativeOne, true);
+	    yield return () => (Quad.One, false);
+	    yield return () => (Quad.NegativeOne, false);
 	    yield return () => (Quad.NaN, false);
-	    yield return () => (Quad.PositiveInfinity, false);
-	    yield return () => (Quad.NegativeInfinity, false);
+	    yield return () => (Quad.PositiveInfinity, true);
+	    yield return () => (Quad.NegativeInfinity, true);
     }
 
     public static IEnumerable<Func<(Quad, bool)>> IsIntegerTestData()
@@ -567,37 +567,89 @@ public class QuadDataSources
 
     public static IEnumerable<Func<(Quad, Quad, Quad)>> CopySignTestData()
     {
-        throw new NotImplementedException();
+	    yield return () => (Quad.NegativeOne, Quad.One, Quad.One);
+	    yield return () => (Quad.One, Quad.NegativeOne, Quad.NegativeOne);
+	    yield return () => (Quad.Thousand, Quad.NegativeOne, Quad.NegativeThousand);
+	    yield return () => (Quad.NegativeHundred, Quad.NegativeOne, Quad.NegativeHundred);
     }
 
     public static IEnumerable<Func<(Quad, Quad, Quad)>> MaxTestData()
     {
-        throw new NotImplementedException();
+	    yield return () => (Quad.NegativeInfinity, Quad.One, Quad.One);
+	    yield return () => (Quad.MinValue, Quad.One, Quad.One);
+	    yield return () => (Quad.NegativeOne, Quad.One, Quad.One);
+	    yield return () => (-Quad.GreatestSubnormal, Quad.One, Quad.One);
+	    yield return () => (-Quad.Epsilon, Quad.One, Quad.One);
+	    yield return () => (Quad.NegativeZero, Quad.One, Quad.One);
+	    yield return () => (Quad.NaN, Quad.One, Quad.NaN);
+	    yield return () => (Quad.Zero, Quad.One, Quad.One);
+	    yield return () => (Quad.One, Quad.One, Quad.One);
+	    yield return () => (Quad.MaxValue, Quad.One, Quad.MaxValue);
+	    yield return () => (Quad.PositiveInfinity, Quad.One, Quad.PositiveInfinity);
     }
 
     public static IEnumerable<Func<(Quad, Quad, Quad)>> MaxNumberTestData()
     {
-        throw new NotImplementedException();
+	    yield return () => (Quad.NegativeInfinity, Quad.One, Quad.One);
+	    yield return () => (Quad.MinValue, Quad.One, Quad.One);
+	    yield return () => (Quad.NegativeOne, Quad.One, Quad.One);
+	    yield return () => (-Quad.GreatestSubnormal, Quad.One, Quad.One);
+	    yield return () => (-Quad.Epsilon, Quad.One, Quad.One);
+	    yield return () => (Quad.NegativeZero, Quad.One, Quad.One);
+	    yield return () => (Quad.NaN, Quad.One, Quad.One);
+	    yield return () => (Quad.Zero, Quad.One, Quad.One);
+	    yield return () => (Quad.One, Quad.One, Quad.One);
+	    yield return () => (Quad.MaxValue, Quad.One, Quad.MaxValue);
+	    yield return () => (Quad.PositiveInfinity, Quad.One, Quad.PositiveInfinity);
     }
 
     public static IEnumerable<Func<(Quad, Quad, Quad)>> MinTestData()
     {
-        throw new NotImplementedException();
+	    yield return () => (Quad.NegativeInfinity, Quad.One, Quad.NegativeInfinity);
+	    yield return () => (Quad.MinValue, Quad.One, Quad.MinValue);
+	    yield return () => (Quad.NegativeOne, Quad.One, Quad.NegativeOne);
+	    yield return () => (-Quad.GreatestSubnormal, Quad.One, -Quad.GreatestSubnormal);
+	    yield return () => (-Quad.Epsilon, Quad.One, -Quad.Epsilon);
+	    yield return () => (Quad.NegativeZero, Quad.One, Quad.NegativeZero);
+	    yield return () => (Quad.NaN, Quad.One, Quad.NaN);
+	    yield return () => (Quad.Zero, Quad.One, Quad.Zero);
+	    yield return () => (Quad.One, Quad.One, Quad.One);
+	    yield return () => (Quad.MaxValue, Quad.One, Quad.One);
+	    yield return () => (Quad.PositiveInfinity, Quad.One, Quad.One);
     }
 
     public static IEnumerable<Func<(Quad, Quad, Quad)>> MinNumberTestData()
     {
-        throw new NotImplementedException();
+	    yield return () => (Quad.NegativeInfinity, Quad.One, Quad.NegativeInfinity);
+	    yield return () => (Quad.MinValue, Quad.One, Quad.MinValue);
+	    yield return () => (Quad.NegativeOne, Quad.One, Quad.NegativeOne);
+	    yield return () => (-Quad.GreatestSubnormal, Quad.One, -Quad.GreatestSubnormal);
+	    yield return () => (-Quad.Epsilon, Quad.One, -Quad.Epsilon);
+	    yield return () => (Quad.NegativeZero, Quad.One, Quad.NegativeZero);
+	    yield return () => (Quad.NaN, Quad.One, Quad.One);
+	    yield return () => (Quad.Zero, Quad.One, Quad.Zero);
+	    yield return () => (Quad.One, Quad.One, Quad.One);
+	    yield return () => (Quad.MaxValue, Quad.One, Quad.One);
+	    yield return () => (Quad.PositiveInfinity, Quad.One, Quad.One);
     }
 
     public static IEnumerable<Func<(Quad, int)>> SignTestData()
     {
-        throw new NotImplementedException();
+	    yield return () => (Quad.One, 1);
+	    yield return () => (Quad.NegativeOne, -1);
+	    yield return () => (Quad.Ten, 1);
+	    yield return () => (Quad.NegativeTen, -1);
+	    yield return () => (Quad.Zero, 0);
+	    yield return () => (Quad.NegativeZero, 0);
     }
 
     public static IEnumerable<Func<(Quad, bool)>> IsPow2TestData()
     {
-        throw new NotImplementedException();
+	    yield return () => (Quad.Half, true);
+	    yield return () => (Quad.One, true);
+	    yield return () => (Quad.Two, true);
+	    yield return () => (Quad.Three, false);
+	    yield return () => (Quad.NegativeTwo, false);
     }
 
     public static IEnumerable<Func<(Quad, Quad)>> Log2TestData()
@@ -741,7 +793,7 @@ public class QuadDataSources
 	    yield return () => (Quad.Ten, Quad.Three, Quad.One);
 	    yield return () => (Quad.Ten, Quad.Two, Quad.Zero);
 	    yield return () => (Quad.NegativeTen, Quad.Three, Quad.NegativeOne);
-	    yield return () => (Quad.NegativeTen, Quad.Two, Quad.Zero);
+	    yield return () => (Quad.NegativeTen, Quad.Two, Quad.NegativeZero);
 	    yield return () => (Quad.NegativeTen, Quad.Zero, Quad.NaN);
     }
 
