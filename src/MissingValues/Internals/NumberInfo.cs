@@ -163,7 +163,7 @@ namespace MissingValues.Internals
 			{
 				result = TFloat.Zero;
 			}
-			else if (number.Scale > TFloat.MaximumDecimalExponent)
+			else if (number.Scale > TFloat.OverflowDecimalExponent)
 			{
 				result = TFloat.PositiveInfinity;
 			}
@@ -724,7 +724,7 @@ namespace MissingValues.Internals
 				ulong bottomBits = bottomBlock >> bottomBlockShift;
 
 				TBits middleBits = TBits.CreateChecked(value.GetBlock(secondTopBlockIndex)) << middleBlockShift;
-				TBits topBits = TBits.CreateChecked(value.GetBlock(topBlockIndex)) << topBlockShift;
+				TBits topBits = TBits.CreateChecked(value.GetBlockOrZero(topBlockIndex)) << topBlockShift;
 
 				mantissa = topBits + middleBits + TBits.CreateChecked(bottomBits);
 
@@ -748,11 +748,11 @@ namespace MissingValues.Internals
 
 				TBits middleBits = TBits.CreateChecked(value.GetBlock(middleBlockIndex)) << middleBlockShift;
 				TBits secondTopBits = TBits.CreateChecked(value.GetBlock(secondTopBlockIndex)) << secondTopBlockShift;
-				TBits topBits = TBits.CreateChecked(value.GetBlock(topBlockIndex)) << topBlockShift;
+				TBits topBits = TBits.CreateChecked(value.GetBlockOrZero(topBlockIndex)) << topBlockShift;
 
 				mantissa = topBits + secondTopBits + middleBits + TBits.CreateChecked(bottomBits);
 
-				ulong unusedBottomBlockBitsMask = (1u << (int)(topBlockBits)) - 1;
+				ulong unusedBottomBlockBitsMask = (1UL << (int)(topBlockBits)) - 1;
 				hasZeroTail &= (bottomBlock & unusedBottomBlockBitsMask) == 0;
 			}
 		END:
