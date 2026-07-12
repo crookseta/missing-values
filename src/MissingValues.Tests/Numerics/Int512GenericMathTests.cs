@@ -475,6 +475,12 @@ public class Int512GenericMathTests
 			await Assert.That(result).IsEqualTo(expectedValue);
 		}
 	}
+	[Test]
+	[MethodDataSource<DataSources>(nameof(ToStringTestData))]
+	public async Task ToStringTest(Int512 value, string fmt, IFormatProvider? provider, string expected)
+	{
+		await Assert.That(value.ToString(fmt, provider)).EqualTo(expected);
+	}
 	#endregion
 	
 	#region INumber

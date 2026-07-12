@@ -563,6 +563,14 @@ public class Int256DataSources
 			NumberStyles.BinaryNumber, CultureInfo.InvariantCulture, new Int256(0b1111111111111111111111111111111111111111111111111111111111111111, 0, 0b1111111111111111111111111111111111111111111111111111111111111111, 0b1111111111111111111111111111111111111111111111111111111111111111));
 		yield return () => ("1111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111", 
 			NumberStyles.BinaryNumber, CultureInfo.InvariantCulture, new Int256(0b1111111111111111111111111111111111111111111111111111111111111111, 0b1111111111111111111111111111111111111111111111111111111111111111, 0b1111111111111111111111111111111111111111111111111111111111111111, 0b1111111111111111111111111111111111111111111111111111111111111111));
+		
+		yield return () => ("2.5E10", NumberStyles.Number | NumberStyles.AllowExponent, CultureInfo.InvariantCulture, 25_000_000_000);
+		yield return () => ("1E10", NumberStyles.Number | NumberStyles.AllowExponent, CultureInfo.InvariantCulture, 10_000_000_000);
+		yield return () => ("1.000", NumberStyles.Number, CultureInfo.InvariantCulture, Int256.One);
+		yield return () => ("1,000.0", NumberStyles.Number, CultureInfo.InvariantCulture, 1_000);
+		yield return () => ("1,000,000", NumberStyles.Number, CultureInfo.InvariantCulture, 1_000_000);
+		yield return () => ("1,000,000,000.00", NumberStyles.Number, CultureInfo.InvariantCulture, 1_000_000_000);
+		yield return () => ("-57896044618658097711785492504343953926634992332820282019728792003956564819968.000", NumberStyles.Number, NumberFormatInfo.InvariantInfo, Int256.MinValue);
 	}
 
 	public static IEnumerable<Func<(char[], NumberStyles, IFormatProvider?, Int256)>> ParseSpanTestData()
@@ -612,6 +620,14 @@ public class Int256DataSources
 			NumberStyles.BinaryNumber, CultureInfo.InvariantCulture, new Int256(0b1111111111111111111111111111111111111111111111111111111111111111, 0, 0b1111111111111111111111111111111111111111111111111111111111111111, 0b1111111111111111111111111111111111111111111111111111111111111111));
 		yield return () => ("1111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111".ToCharArray(), 
 			NumberStyles.BinaryNumber, CultureInfo.InvariantCulture, new Int256(0b1111111111111111111111111111111111111111111111111111111111111111, 0b1111111111111111111111111111111111111111111111111111111111111111, 0b1111111111111111111111111111111111111111111111111111111111111111, 0b1111111111111111111111111111111111111111111111111111111111111111));
+		
+		yield return () => ("2.5E10".ToCharArray(), NumberStyles.Number | NumberStyles.AllowExponent, CultureInfo.InvariantCulture, 25_000_000_000);
+		yield return () => ("1E10".ToCharArray(), NumberStyles.Number | NumberStyles.AllowExponent, CultureInfo.InvariantCulture, 10_000_000_000);
+		yield return () => ("1.000".ToCharArray(), NumberStyles.Number, CultureInfo.InvariantCulture, Int256.One);
+		yield return () => ("1,000.0".ToCharArray(), NumberStyles.Number, CultureInfo.InvariantCulture, 1_000);
+		yield return () => ("1,000,000".ToCharArray(), NumberStyles.Number, CultureInfo.InvariantCulture, 1_000_000);
+		yield return () => ("1,000,000,000.00".ToCharArray(), NumberStyles.Number, CultureInfo.InvariantCulture, 1_000_000_000);
+		yield return () => ("-57896044618658097711785492504343953926634992332820282019728792003956564819968.000".ToCharArray(), NumberStyles.Number, NumberFormatInfo.InvariantInfo, Int256.MinValue);
 	}
 
 	public static IEnumerable<Func<(byte[], NumberStyles, IFormatProvider?, Int256)>> ParseUtf8TestData()
@@ -661,6 +677,14 @@ public class Int256DataSources
 			NumberStyles.BinaryNumber, CultureInfo.InvariantCulture, new Int256(0b1111111111111111111111111111111111111111111111111111111111111111, 0, 0b1111111111111111111111111111111111111111111111111111111111111111, 0b1111111111111111111111111111111111111111111111111111111111111111));
 		yield return () => ("1111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111"u8.ToArray(), 
 			NumberStyles.BinaryNumber, CultureInfo.InvariantCulture, new Int256(0b1111111111111111111111111111111111111111111111111111111111111111, 0b1111111111111111111111111111111111111111111111111111111111111111, 0b1111111111111111111111111111111111111111111111111111111111111111, 0b1111111111111111111111111111111111111111111111111111111111111111));
+		
+		yield return () => ("2.5E10"u8.ToArray(), NumberStyles.Number | NumberStyles.AllowExponent, CultureInfo.InvariantCulture, 25_000_000_000);
+		yield return () => ("1E10"u8.ToArray(), NumberStyles.Number | NumberStyles.AllowExponent, CultureInfo.InvariantCulture, 10_000_000_000);
+		yield return () => ("1.000"u8.ToArray(), NumberStyles.Number, CultureInfo.InvariantCulture, Int256.One);
+		yield return () => ("1,000.0"u8.ToArray(), NumberStyles.Number, CultureInfo.InvariantCulture, 1_000);
+		yield return () => ("1,000,000"u8.ToArray(), NumberStyles.Number, CultureInfo.InvariantCulture, 1_000_000);
+		yield return () => ("1,000,000,000.00"u8.ToArray(), NumberStyles.Number, CultureInfo.InvariantCulture, 1_000_000_000);
+		yield return () => ("-57896044618658097711785492504343953926634992332820282019728792003956564819968.000"u8.ToArray(), NumberStyles.Number, CultureInfo.InvariantCulture, Int256.MinValue);
 	}
 
 	public static IEnumerable<Func<(string, NumberStyles, IFormatProvider?, bool, Int256)>> TryParseTestData()
@@ -716,6 +740,15 @@ public class Int256DataSources
 			NumberStyles.BinaryNumber, CultureInfo.InvariantCulture, true, new Int256(0b1111111111111111111111111111111111111111111111111111111111111111, 0b1111111111111111111111111111111111111111111111111111111111111111, 0b1111111111111111111111111111111111111111111111111111111111111111, 0b1111111111111111111111111111111111111111111111111111111111111111));
 		yield return () => ("111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111", 
 			NumberStyles.BinaryNumber, CultureInfo.InvariantCulture, false, default);
+		
+		yield return () => ("1E200", NumberStyles.Number | NumberStyles.AllowExponent, CultureInfo.InvariantCulture, false, default);
+		yield return () => ("2.5E10", NumberStyles.Number | NumberStyles.AllowExponent, CultureInfo.InvariantCulture, true, 25_000_000_000);
+		yield return () => ("1E10", NumberStyles.Number | NumberStyles.AllowExponent, CultureInfo.InvariantCulture, true, 10_000_000_000);
+		yield return () => ("1.000", NumberStyles.Number, CultureInfo.InvariantCulture, true, Int256.One);
+		yield return () => ("1,000.0", NumberStyles.Number, CultureInfo.InvariantCulture, true, 1_000);
+		yield return () => ("1,000,000", NumberStyles.Number, CultureInfo.InvariantCulture, true, 1_000_000);
+		yield return () => ("1,000,000,000.00", NumberStyles.Number, CultureInfo.InvariantCulture, true, 1_000_000_000);
+		yield return () => ("-57896044618658097711785492504343953926634992332820282019728792003956564819968.000", NumberStyles.Number, CultureInfo.InvariantCulture, true, Int256.MinValue);
 	}
 
 	public static IEnumerable<Func<(char[], NumberStyles, IFormatProvider?, bool, Int256)>> TryParseSpanTestData()
@@ -771,6 +804,15 @@ public class Int256DataSources
 			NumberStyles.BinaryNumber, CultureInfo.InvariantCulture, true, new Int256(0b1111111111111111111111111111111111111111111111111111111111111111, 0b1111111111111111111111111111111111111111111111111111111111111111, 0b1111111111111111111111111111111111111111111111111111111111111111, 0b1111111111111111111111111111111111111111111111111111111111111111));
 		yield return () => ("111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111".ToCharArray(), 
 			NumberStyles.BinaryNumber, CultureInfo.InvariantCulture, false, default);
+		
+		yield return () => ("1E200".ToCharArray(), NumberStyles.Number | NumberStyles.AllowExponent, CultureInfo.InvariantCulture, false, default);
+		yield return () => ("2.5E10".ToCharArray(), NumberStyles.Number | NumberStyles.AllowExponent, CultureInfo.InvariantCulture, true, 25_000_000_000);
+		yield return () => ("1E10".ToCharArray(), NumberStyles.Number | NumberStyles.AllowExponent, CultureInfo.InvariantCulture, true, 10_000_000_000);
+		yield return () => ("1.000".ToCharArray(), NumberStyles.Number, CultureInfo.InvariantCulture, true, Int256.One);
+		yield return () => ("1,000.0".ToCharArray(), NumberStyles.Number, CultureInfo.InvariantCulture, true, 1_000);
+		yield return () => ("1,000,000".ToCharArray(), NumberStyles.Number, CultureInfo.InvariantCulture, true, 1_000_000);
+		yield return () => ("1,000,000,000.00".ToCharArray(), NumberStyles.Number, CultureInfo.InvariantCulture, true, 1_000_000_000);
+		yield return () => ("-57896044618658097711785492504343953926634992332820282019728792003956564819968.000".ToCharArray(), NumberStyles.Number, CultureInfo.InvariantCulture, true, Int256.MinValue);
 	}
 
 	public static IEnumerable<Func<(byte[], NumberStyles, IFormatProvider?, bool, Int256)>> TryParseUtf8TestData()
@@ -826,6 +868,21 @@ public class Int256DataSources
 			NumberStyles.BinaryNumber, CultureInfo.InvariantCulture, true, new Int256(0b1111111111111111111111111111111111111111111111111111111111111111, 0b1111111111111111111111111111111111111111111111111111111111111111, 0b1111111111111111111111111111111111111111111111111111111111111111, 0b1111111111111111111111111111111111111111111111111111111111111111));
 		yield return () => ("111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111"u8.ToArray(), 
 			NumberStyles.BinaryNumber, CultureInfo.InvariantCulture, false, default);
+		
+		yield return () => ("1E200"u8.ToArray(), NumberStyles.Number | NumberStyles.AllowExponent, CultureInfo.InvariantCulture, false, default);
+		yield return () => ("2.5E10"u8.ToArray(), NumberStyles.Number | NumberStyles.AllowExponent, CultureInfo.InvariantCulture, true, 25_000_000_000);
+		yield return () => ("1E10"u8.ToArray(), NumberStyles.Number | NumberStyles.AllowExponent, CultureInfo.InvariantCulture, true, 10_000_000_000);
+		yield return () => ("1.000"u8.ToArray(), NumberStyles.Number, CultureInfo.InvariantCulture, true, Int256.One);
+		yield return () => ("1,000.0"u8.ToArray(), NumberStyles.Number, CultureInfo.InvariantCulture, true, 1_000);
+		yield return () => ("1,000,000"u8.ToArray(), NumberStyles.Number, CultureInfo.InvariantCulture, true, 1_000_000);
+		yield return () => ("1,000,000,000.00"u8.ToArray(), NumberStyles.Number, CultureInfo.InvariantCulture, true, 1_000_000_000);
+		yield return () => ("-57896044618658097711785492504343953926634992332820282019728792003956564819968.000"u8.ToArray(), NumberStyles.Number, CultureInfo.InvariantCulture, true, Int256.MinValue);
+	}
+
+	public static IEnumerable<Func<(Int256, string, IFormatProvider?, string)>> ToStringTestData()
+	{
+		yield return () => (Int256.MaxValue, "e25", CultureInfo.InvariantCulture, "5.7896044618658097711785493e+76");
+		yield return () => (Int256.MinValue, "e25", CultureInfo.InvariantCulture, "-5.7896044618658097711785493e+76");
 	}
 
 	public static IEnumerable<Func<(Int256, Int256, Int256, Int256)>> ClampTestData()

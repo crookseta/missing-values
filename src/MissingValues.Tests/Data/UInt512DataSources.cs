@@ -766,6 +766,12 @@ public class UInt512DataSources
 		yield return () => ("20000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"u8.ToArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, false, default);
 	}
 
+	public static IEnumerable<Func<(UInt512, string, IFormatProvider?, string)>> ToStringTestData()
+	{
+		yield return () => ((UInt512)Int256.MaxValue, "e25", CultureInfo.InvariantCulture, "5.7896044618658097711785493e+76");
+		yield return () => ((UInt512)Int512.MaxValue, "e25", CultureInfo.InvariantCulture, "6.7039039649712985497870125e+153");
+	}
+
 	public static IEnumerable<Func<(UInt512, UInt512, UInt512, UInt512)>> ClampTestData()
 	{
 		yield return () => (new UInt512(0, 0, 0, 0, 0, 0, 0, 15), new UInt512(0, 0, 0, 0, 0, 0, 0, 10), new UInt512(0, 0, 0, 0, 0, 0, 0, 20), new UInt512(0, 0, 0, 0, 0, 0, 0, 15));

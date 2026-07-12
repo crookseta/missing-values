@@ -595,6 +595,11 @@ public class UInt256DataSources
 		yield return () => ("1000000000000000000000000000000000000000000000000000000000000000000000000000000"u8.ToArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, false, default);
 	}
 
+	public static IEnumerable<Func<(UInt256, string, IFormatProvider?, string)>> ToStringTestData()
+	{
+		yield return () => ((UInt256)Int256.MaxValue, "e25", CultureInfo.InvariantCulture, "5.7896044618658097711785493e+76");
+	}
+
 	public static IEnumerable<Func<(UInt256, UInt256, UInt256, UInt256)>> ClampTestData()
 	{
 		yield return () => (new UInt256(0, 0, 0, 15), new UInt256(0, 0, 0, 10), new UInt256(0, 0, 0, 20), new UInt256(0, 0, 0, 15));

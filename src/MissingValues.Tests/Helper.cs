@@ -5,6 +5,27 @@ namespace MissingValues.Tests;
 
 public static class Helper
 {
+    public static NumberFormatInfo CustomInfo => new()
+    {
+        PositiveSign = "+",
+        NegativeSign = "-",
+        CurrencyPositivePattern = 0,
+        CurrencyNegativePattern = 2,
+        CurrencySymbol = "$",
+        CurrencyDecimalDigits = 2,
+        CurrencyDecimalSeparator = ".",
+        CurrencyGroupSeparator = ",",
+        CurrencyGroupSizes = [3],
+        NumberGroupSeparator = "_",
+        NumberGroupSizes = [2],
+        NumberDecimalDigits = 5,
+        NumberDecimalSeparator = ".",
+        NumberNegativePattern = 1,
+        PositiveInfinitySymbol = "+Inf",
+        NegativeInfinitySymbol = "-Inf",
+        NaNSymbol = "NaN",
+    };
+    
     public static TSelf Abs<TSelf>(TSelf value)
         where TSelf : INumberBase<TSelf>
     {

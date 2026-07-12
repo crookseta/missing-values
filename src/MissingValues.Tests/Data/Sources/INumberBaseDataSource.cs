@@ -35,4 +35,5 @@ public interface INumberBaseDataSource<T>
     static abstract IEnumerable<Func<(string, NumberStyles, IFormatProvider?, bool, T)>> TryParseTestData();
     static abstract IEnumerable<Func<(char[], NumberStyles, IFormatProvider?, bool, T)>> TryParseSpanTestData();
     static abstract IEnumerable<Func<(byte[], NumberStyles, IFormatProvider?, bool, T)>> TryParseUtf8TestData();
+    static abstract IEnumerable<Func<(T, string, IFormatProvider?, string)>> ToStringTestData();
 }
