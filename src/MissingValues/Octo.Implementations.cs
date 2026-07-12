@@ -1627,7 +1627,7 @@ namespace MissingValues
 
 				if (BitConverter.IsLittleEndian)
 				{
-					significand = BitHelper.ReverseEndianness(in significand);
+					significand = BinaryOperations.ReverseEndianness(in significand);
 				}
 
 				Unsafe.WriteUnaligned(ref MemoryMarshal.GetReference(destination), significand);
@@ -1650,7 +1650,7 @@ namespace MissingValues
 
 				if (!BitConverter.IsLittleEndian)
 				{
-					significand = BitHelper.ReverseEndianness(in significand);
+					significand = BinaryOperations.ReverseEndianness(in significand);
 				}
 
 				Unsafe.WriteUnaligned(ref MemoryMarshal.GetReference(destination), significand);

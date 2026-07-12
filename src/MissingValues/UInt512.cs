@@ -163,15 +163,29 @@ namespace MissingValues
 		/// <exception cref="ArgumentOutOfRangeException">Span is too small for the value</exception>
 		public UInt512(ReadOnlySpan<ulong> parts)
 		{
-			ArgumentOutOfRangeException.ThrowIfLessThan(parts.Length, Size / 8);
-			_p0 = parts[0];
-			_p1 = parts[1];
-			_p2 = parts[2];
-			_p3 = parts[3];
-			_p4 = parts[4];
-			_p5 = parts[5];
-			_p6 = parts[6];
-			_p7 = parts[7];
+			if (Vector512.IsHardwareAccelerated && BitConverter.IsLittleEndian)
+			{
+				Unsafe.SkipInit(out this);
+				Unsafe.As<ulong, Vector512<ulong>>(ref _p0) = Vector512.Create(parts);
+			}
+			if (Vector256.IsHardwareAccelerated && BitConverter.IsLittleEndian)
+			{
+				Unsafe.SkipInit(out this);
+				Unsafe.As<ulong, Vector256<ulong>>(ref _p0) = Vector256.Create(parts);
+				Unsafe.As<ulong, Vector256<ulong>>(ref _p4) = Vector256.Create(parts[4..]);
+			}
+			else
+			{
+				ArgumentOutOfRangeException.ThrowIfLessThan(parts.Length, Size / 8);
+				_p0 = parts[0];
+				_p1 = parts[1];
+				_p2 = parts[2];
+				_p3 = parts[3];
+				_p4 = parts[4];
+				_p5 = parts[5];
+				_p6 = parts[6];
+				_p7 = parts[7];
+			}
 		}
 
 		/// <inheritdoc/>
@@ -248,9 +262,9 @@ namespace MissingValues
 			Multiply(in left, right._p6, rawBits[6..]);
 			Multiply(in left, right._p7, rawBits[7..]);
 
-			lower = BitHelper.Read<UInt512>(rawBits);
+			lower = new UInt512(rawBits);
 
-			return BitHelper.Read<UInt512>(rawBits[8..]);
+			return new UInt512(rawBits[8..]);
 
 			static void Multiply(in UInt512 left, ulong right, Span<ulong> result)
 			{
@@ -388,7 +402,7 @@ namespace MissingValues
 				}
 			}
 
-			UInt512 result = BitHelper.Read<UInt512>(bits[..UIntCount]);
+			UInt512 result = new UInt512(bits);
 
 			if (bitsArray is not null)
 			{
@@ -901,7 +915,7 @@ namespace MissingValues
 		{
 			return new UInt512(
 				0, 0, 0, 0,
-				0, 0, Unsafe.Add(ref Unsafe.As<UInt128, ulong>(ref value), 1), (ulong)value
+				0, 0, value.Upper, value.Lower
 				);
 		}
 
@@ -917,8 +931,9 @@ namespace MissingValues
 		/// <param name="value">The value to convert.</param>
 		public static explicit operator UInt512(sbyte value)
 		{
-			Int256 lower = value;
-			return new UInt512((UInt256)(lower >> 255), (UInt256)lower);
+			ulong lowerShifted = (ulong)((long)value >> 63);
+			return new UInt512(lowerShifted, lowerShifted, lowerShifted, lowerShifted, 
+				lowerShifted, lowerShifted, lowerShifted, (ulong)value);
 		}
 		/// <summary>
 		/// Explicitly converts a <see cref="sbyte" /> value to a <see cref="UInt512"/>.
@@ -939,8 +954,9 @@ namespace MissingValues
 		/// <param name="value">The value to convert.</param>
 		public static explicit operator UInt512(short value)
 		{
-			Int256 lower = value;
-			return new UInt512((UInt256)(lower >> 255), (UInt256)lower);
+			ulong lowerShifted = (ulong)((long)value >> 63);
+			return new UInt512(lowerShifted, lowerShifted, lowerShifted, lowerShifted, 
+				lowerShifted, lowerShifted, lowerShifted, (ulong)value);
 		}
 		/// <summary>
 		/// Explicitly converts a <see cref="short" /> value to a <see cref="UInt512"/>.
@@ -961,8 +977,9 @@ namespace MissingValues
 		/// <param name="value">The value to convert.</param>
 		public static explicit operator UInt512(int value)
 		{
-			Int256 lower = value;
-			return new UInt512((UInt256)(lower >> 255), (UInt256)lower);
+			ulong lowerShifted = (ulong)((long)value >> 63);
+			return new UInt512(lowerShifted, lowerShifted, lowerShifted, lowerShifted, 
+				lowerShifted, lowerShifted, lowerShifted, (ulong)value);
 		}
 		/// <summary>
 		/// Explicitly converts a <see cref="int" /> value to a <see cref="UInt512"/>.
@@ -983,8 +1000,9 @@ namespace MissingValues
 		/// <param name="value">The value to convert.</param>
 		public static explicit operator UInt512(long value)
 		{
-			Int256 lower = value;
-			return new UInt512((UInt256)(lower >> 255), (UInt256)lower);
+			ulong lowerShifted = (ulong)(value >> 63);
+			return new UInt512(lowerShifted, lowerShifted, lowerShifted, lowerShifted, 
+				lowerShifted, lowerShifted, lowerShifted, (ulong)value);
 		}
 		/// <summary>
 		/// Explicitly converts a <see cref="long" /> value to a <see cref="UInt512"/>.
@@ -1005,11 +1023,10 @@ namespace MissingValues
 		/// <param name="value">The value to convert.</param>
 		public static explicit operator UInt512(Int128 value)
 		{
-			ref long v = ref Unsafe.As<Int128, long>(ref value);
-			ulong lowerShifted = (ulong)(Unsafe.Add(ref v, 1) >> 63);
+			ulong lowerShifted = (ulong)((long)value.Upper >> 63);
 			return new(
 				lowerShifted, lowerShifted, lowerShifted, lowerShifted,
-				lowerShifted, lowerShifted, (ulong)Unsafe.Add(ref v, 1), (ulong)v
+				lowerShifted, lowerShifted, value.Upper, value.Lower
 				);
 		}
 		/// <summary>
@@ -1025,7 +1042,7 @@ namespace MissingValues
 			}
 			return new UInt512(
 				0, 0, 0, 0,
-				0, 0, Unsafe.Add(ref Unsafe.As<Int128, ulong>(ref value), 1), (ulong)value);
+				0, 0, value.Upper, value.Lower);
 		}
 		/// <summary>
 		/// Explicitly converts a <see cref="nint" /> value to a <see cref="UInt512"/>.
@@ -1033,8 +1050,9 @@ namespace MissingValues
 		/// <param name="value">The value to convert.</param>
 		public static explicit operator UInt512(nint value)
 		{
-			Int256 lower = value;
-			return new UInt512((UInt256)(lower >> 255), (UInt256)lower);
+			ulong lowerShifted = (ulong)((long)value >> 63);
+			return new UInt512(lowerShifted, lowerShifted, lowerShifted, lowerShifted, 
+				lowerShifted, lowerShifted, lowerShifted, (ulong)value);
 		}
 		/// <summary>
 		/// Explicitly converts a <see cref="nint" /> value to a <see cref="UInt512"/>.
@@ -1059,18 +1077,16 @@ namespace MissingValues
 			Span<byte> span = stackalloc byte[value.GetByteCount()];
 			value.TryWriteBytes(span, out int bytesWritten, true);
 
-			ref byte sourceRef = ref MemoryMarshal.GetReference(span);
-
 			if (bytesWritten >= Size)
 			{
-				return Unsafe.ReadUnaligned<UInt512>(ref sourceRef);
+				return BinaryOperations.ReadUInt512LittleEndian(span);
 			}
 
 			UInt512 result = Zero;
 
 			for (int i = 0; i < bytesWritten; i++)
 			{
-				UInt512 part = Unsafe.Add(ref sourceRef, i);
+				UInt512 part = span[i];
 				part <<= (i * 8);
 				result |= part;
 			}
@@ -1096,11 +1112,9 @@ namespace MissingValues
 				Thrower.IntegerOverflow();
 			}
 
-			ref byte sourceRef = ref MemoryMarshal.GetReference(span);
-
 			if (bytesWritten == Size)
 			{
-				return Unsafe.ReadUnaligned<UInt512>(ref sourceRef);
+				return BinaryOperations.ReadUInt512LittleEndian(span);
 			}
 			else if (bytesWritten > Size)
 			{
@@ -1111,7 +1125,7 @@ namespace MissingValues
 
 			for (int i = 0; i < bytesWritten; i++)
 			{
-				UInt512 part = Unsafe.Add(ref sourceRef, i);
+				UInt512 part = span[i];
 				part <<= (i * 8);
 				result |= part;
 			}

@@ -221,8 +221,8 @@ namespace MissingValues
 				quoBits,
 				remBits);
 
-			quotient = BitHelper.Read<UInt256>(quoBits);
-			remainder = BitHelper.Read<UInt256>(remBits);
+			quotient = new UInt256(quoBits);
+			remainder = new UInt256(remBits);
 		}
 
 		/// <inheritdoc/>
@@ -1075,7 +1075,7 @@ namespace MissingValues
 				divisorSpan[..BitHelper.GetTrimLength(in right)],
 				rawBits);
 
-			return BitHelper.Read<UInt256>(rawBits);
+			return new UInt256(rawBits);
 		}
 
 		/// <inheritdoc/>
@@ -1122,7 +1122,7 @@ namespace MissingValues
 				divisorSpan[..BitHelper.GetTrimLength(in right)],
 				rawBits);
 
-			return BitHelper.Read<UInt256>(rawBits);
+			return new UInt256(rawBits);
 		}
 
 		/// <inheritdoc/>
@@ -1268,14 +1268,14 @@ namespace MissingValues
 		{
 			if (Vector256.IsHardwareAccelerated)
 			{
-				var v1 = Unsafe.BitCast<UInt256, Vector256<ulong>>(left);
-				var v2 = Unsafe.BitCast<UInt256, Vector256<ulong>>(right);
+				var v1 = Vector256.Create(left._p0, left._p1, left._p2, left._p3);
+				var v2 = Vector256.Create(right._p0, right._p1, right._p2, right._p3);
 				return v1 == v2;
 			}
 			else if (Avx2.IsSupported)
 			{
-				var v1 = Unsafe.BitCast<UInt256, Vector256<byte>>(left);
-				var v2 = Unsafe.BitCast<UInt256, Vector256<byte>>(right);
+				var v1 = Vector256.Create(left._p0, left._p1, left._p2, left._p3).AsByte();
+				var v2 = Vector256.Create(right._p0, right._p1, right._p2, right._p3).AsByte();
 				var equals = Avx2.CompareEqual(v1, v2);
 				var result = Avx2.MoveMask(equals);
 				return (result & 0xFFFF_FFFF) == 0xFFFF_FFFF;
@@ -1291,14 +1291,14 @@ namespace MissingValues
 		{
 			if (Vector256.IsHardwareAccelerated)
 			{
-				var v1 = Unsafe.BitCast<UInt256, Vector256<ulong>>(left);
-				var v2 = Unsafe.BitCast<UInt256, Vector256<ulong>>(right);
+				var v1 = Vector256.Create(left._p0, left._p1, left._p2, left._p3);
+				var v2 = Vector256.Create(right._p0, right._p1, right._p2, right._p3);
 				return v1 != v2;
 			}
 			else if (Avx2.IsSupported)
 			{
-				var v1 = Unsafe.BitCast<UInt256, Vector256<byte>>(left);
-				var v2 = Unsafe.BitCast<UInt256, Vector256<byte>>(right);
+				var v1 = Vector256.Create(left._p0, left._p1, left._p2, left._p3).AsByte();
+				var v2 = Vector256.Create(right._p0, right._p1, right._p2, right._p3).AsByte();
 				var equals = Avx2.CompareEqual(v1, v2);
 				var result = Avx2.MoveMask(equals);
 				return (result & 0xFFFF_FFFF) != 0xFFFF_FFFF;

@@ -7,6 +7,7 @@ using System.Globalization;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Runtime.Intrinsics;
 using System.Text.Json.Serialization;
 using MissingValues.Primitives;
 
@@ -107,11 +108,19 @@ namespace MissingValues
 		/// <exception cref="ArgumentOutOfRangeException">Span is too small for the value</exception>
 		public Int256(ReadOnlySpan<ulong> parts)
 		{
-			ArgumentOutOfRangeException.ThrowIfLessThan(parts.Length, Size / 8);
-			_p0 = parts[0];
-			_p1 = parts[1];
-			_p2 = parts[2];
-			_p3 = parts[3];
+			if (Vector256.IsHardwareAccelerated && BitConverter.IsLittleEndian)
+			{
+				Unsafe.SkipInit(out this);
+				Unsafe.As<ulong, Vector256<ulong>>(ref _p0) = Vector256.Create(parts);
+			}
+			else
+			{
+				ArgumentOutOfRangeException.ThrowIfLessThan(parts.Length, Size / 8);
+				_p0 = parts[0];
+				_p1 = parts[1];
+				_p2 = parts[2];
+				_p3 = parts[3];
+			}
 		}
 
 		/// <inheritdoc/>
@@ -225,7 +234,6 @@ namespace MissingValues
 				Span<ulong> valueSpan = stackalloc ulong[UIntCount];
 				valueSpan.Clear();
 				BitHelper.Write(valueSpan, in value);
-				//Unsafe.WriteUnaligned(ref Unsafe.As<ulong, byte>(ref MemoryMarshal.GetReference(valueSpan)), value);
 
 				bits = (size <= Calculator.StackAllocThreshold
 					? stackalloc ulong[Calculator.StackAllocThreshold]
@@ -248,8 +256,7 @@ namespace MissingValues
 				}
 			}
 
-			Int256 result = BitHelper.Read<Int256>(bits[..UIntCount]);
-			//Int256 result = Unsafe.ReadUnaligned<Int256>(ref Unsafe.As<ulong, byte>(ref MemoryMarshal.GetReference(bits[..UIntCount])));
+			Int256 result = new Int256(bits);
 
 			if (bitsArray is not null)
 			{
@@ -756,9 +763,8 @@ namespace MissingValues
 		/// <param name="value">The value to convert.</param>
 		public static implicit operator Int256(Int128 value)
 		{
-			ref long v = ref Unsafe.As<Int128, long>(ref value);
-			ulong lowerShifted = (ulong)(Unsafe.Add(ref v, 1) >> 63);
-			return new(lowerShifted, lowerShifted, (ulong)Unsafe.Add(ref v, 1), (ulong)v);
+			ulong lowerShifted = (ulong)((long)value.Upper >> 63);
+			return new(lowerShifted, lowerShifted, value.Upper, value.Lower);
 		}
 		//Unsigned
 		/// <summary>
@@ -792,7 +798,7 @@ namespace MissingValues
 		/// <param name="value">The value to convert.</param>
 		public static explicit operator Int256(UInt128 value)
 		{
-			return new Int256(0, 0, Unsafe.Add(ref Unsafe.As<UInt128, ulong>(ref value), 1), (ulong)value);
+			return new Int256(0, 0, value.Upper, value.Lower);
 		}
 
 		/// <summary>
@@ -806,18 +812,16 @@ namespace MissingValues
 			Span<byte> span = stackalloc byte[value.GetByteCount()];
 			value.TryWriteBytes(span, out int bytesWritten, isUnsigned);
 
-			ref byte sourceRef = ref MemoryMarshal.GetReference(span);
-
 			if (bytesWritten >= Size)
 			{
-				return Unsafe.ReadUnaligned<Int256>(ref sourceRef);
+				return BinaryOperations.ReadInt256LittleEndian(span);
 			}
 
 			Int256 result = Zero;
 
 			for (int i = 0; i < bytesWritten; i++)
 			{
-				Int256 part = Unsafe.Add(ref sourceRef, i);
+				Int256 part = span[i];
 				part <<= (i * 8);
 				result |= part;
 			}
@@ -880,11 +884,9 @@ namespace MissingValues
 				}
 			}
 
-			ref byte sourceRef = ref MemoryMarshal.GetReference(span);
-
 			if (bytesWritten >= Size)
 			{
-				return Unsafe.ReadUnaligned<Int256>(ref sourceRef);
+				return BinaryOperations.ReadInt256LittleEndian(span);
 			}
 
 			Int256 result = Zero;
@@ -897,13 +899,13 @@ namespace MissingValues
 
 			for (int i = 0; i < bytesWritten; i++)
 			{
-				Int256 part = Unsafe.Add(ref sourceRef, i);
+				Int256 part = span[i];
 				part <<= (i * 8);
 				result |= part;
 			}
 
 			result <<= ((Size - bytesWritten) * 8);
-			result = BitHelper.ReverseEndianness(in result);
+			result = BinaryOperations.ReverseEndianness(in result);
 
 			if (!isUnsigned)
 			{

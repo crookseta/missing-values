@@ -471,7 +471,7 @@ internal unsafe ref partial struct BigNumber
 	{
 		if (lhs._length <= 1)
 		{
-			SetUInt128(out result, (UInt128)lhs.ToUInt64() * value);
+			SetUInt128(out result, lhs.ToUInt128() * value);
 			return;
 		}
 
@@ -758,6 +758,11 @@ internal unsafe ref partial struct BigNumber
 	{
 		Debug.Assert(index < _length);
 		return _blocks[index];
+	}
+	public ulong GetBlockOrZero(uint index)
+	{
+		Debug.Assert(index < MaxBlockCount);
+		return index >= _length ? 0 : _blocks[index];
 	}
 
 	public readonly int GetLength()

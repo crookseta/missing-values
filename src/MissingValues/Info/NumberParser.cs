@@ -302,7 +302,10 @@ namespace MissingValues.Info
 				output = default;
 				return ParsingStatus.Failed;
 			}
-			if (s[0] == (TChar)'-')
+			NumberFormatInfo formatInfo = NumberFormatInfo.GetInstance(formatProvider);
+			Span<TChar> negativeSign = stackalloc TChar[TChar.GetLength(formatInfo.NegativeSign)];
+			TChar.Copy(formatInfo.NegativeSign, negativeSign);
+			if (TChar.StartsWith(s, negativeSign, StringComparison.OrdinalIgnoreCase))
 			{
 				output = default;
 				return ParsingStatus.Underflow;
@@ -384,8 +387,8 @@ namespace MissingValues.Info
 			}
 			else
 			{
-				isNegative = style.HasFlag(NumberStyles.AllowLeadingSign) && s.IndexOf(negativeSign) == 0;
-				raw = isNegative ? s[1..] : s;
+				isNegative = style.HasFlag(NumberStyles.AllowLeadingSign) && TChar.StartsWith(s, negativeSign, StringComparison.OrdinalIgnoreCase);
+				raw = isNegative ? s[(negativeSign.Length)..] : s;
 			}
 
 			if ((style & SPECIAL) != 0)
@@ -622,7 +625,7 @@ namespace MissingValues.Info
 			{
 				Span<TChar> negativeSign = stackalloc TChar[TChar.GetLength(info.NegativeSign)];
 				TChar.Copy(info.NegativeSign, negativeSign);
-				if (!negativeSign.IsEmpty && value.Slice(index).StartsWith(negativeSign))
+				if (!negativeSign.IsEmpty && TChar.StartsWith(value.Slice(index), negativeSign, StringComparison.OrdinalIgnoreCase))
 				{
 					isNegative = true;
 					index += negativeSign.Length;
@@ -631,7 +634,7 @@ namespace MissingValues.Info
 				{
 					Span<TChar> positiveSign = stackalloc TChar[TChar.GetLength(info.PositiveSign)];
 					TChar.Copy(info.PositiveSign, positiveSign);
-					if (!positiveSign.IsEmpty && value.Slice(index).StartsWith(positiveSign))
+					if (!positiveSign.IsEmpty && TChar.StartsWith(value.Slice(index), positiveSign, StringComparison.OrdinalIgnoreCase))
 					{
 						index += positiveSign.Length;
 					}
@@ -708,7 +711,7 @@ namespace MissingValues.Info
 			{
 				Span<TChar> decimalSeparator = stackalloc TChar[TChar.GetLength(info.NumberDecimalSeparator)];
 				TChar.Copy(info.NumberDecimalSeparator, decimalSeparator);
-				if (value.Slice(index).StartsWith(decimalSeparator))
+				if (TChar.StartsWith(value.Slice(index), decimalSeparator, StringComparison.OrdinalIgnoreCase))
 				{
 					index += decimalSeparator.Length;
 
@@ -771,12 +774,12 @@ namespace MissingValues.Info
                 TChar.Copy(info.NegativeSign, negSign);
                 Span<TChar> posSign = stackalloc TChar[TChar.GetLength(info.PositiveSign)];
                 TChar.Copy(info.PositiveSign, posSign);
-                if (!negSign.IsEmpty && value.Slice(index).StartsWith(negSign))
+                if (!negSign.IsEmpty && TChar.StartsWith(value.Slice(index), negSign, StringComparison.OrdinalIgnoreCase))
                 {
                     exponentIsNegative = true;
                     index += negSign.Length;
                 }
-                else if (!posSign.IsEmpty && value.Slice(index).StartsWith(posSign))
+                else if (!posSign.IsEmpty && TChar.StartsWith(value.Slice(index), posSign, StringComparison.OrdinalIgnoreCase))
                 {
                     index += posSign.Length;
                 }

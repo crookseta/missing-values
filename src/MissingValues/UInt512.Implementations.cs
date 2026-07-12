@@ -221,8 +221,8 @@ namespace MissingValues
 				quoBits,
 				remBits);
 
-			quotient = BitHelper.Read<UInt512>(quoBits);
-			remainder = BitHelper.Read<UInt512>(remBits);
+			quotient = new UInt512(quoBits);
+			remainder = new UInt512(remBits);
 		}
 
 		/// <inheritdoc/>
@@ -1221,7 +1221,7 @@ namespace MissingValues
 				divisorSpan[..BitHelper.GetTrimLength(in right)],
 				rawBits);
 
-			return BitHelper.Read<UInt512>(rawBits);
+			return new UInt512(rawBits);
 		}
 
 		/// <inheritdoc/>
@@ -1268,7 +1268,7 @@ namespace MissingValues
 				divisorSpan[..BitHelper.GetTrimLength(in right)],
 				rawBits);
 
-			return BitHelper.Read<UInt512>(rawBits);
+			return new UInt512(rawBits);
 		}
 
 		/// <inheritdoc/>
@@ -1467,8 +1467,8 @@ namespace MissingValues
 		{
 			if (Vector512.IsHardwareAccelerated)
 			{
-				var v1 = Unsafe.BitCast<UInt512, Vector512<ulong>>(left);
-				var v2 = Unsafe.BitCast<UInt512, Vector512<ulong>>(right);
+				var v1 = Vector512.Create(left._p0, left._p1, left._p2, left._p3, left._p4, left._p5, left._p6, left._p7);
+				var v2 = Vector512.Create(right._p0, right._p1, right._p2, right._p3, right._p4, right._p5, right._p6, right._p7);
 				return v1 == v2;
 			}
 			if (Vector256.IsHardwareAccelerated)
@@ -1491,8 +1491,8 @@ namespace MissingValues
 		{
 			if (Vector512.IsHardwareAccelerated)
 			{
-				var v1 = Unsafe.BitCast<UInt512, Vector512<ulong>>(left);
-				var v2 = Unsafe.BitCast<UInt512, Vector512<ulong>>(right);
+				var v1 = Vector512.Create(left._p0, left._p1, left._p2, left._p3, left._p4, left._p5, left._p6, left._p7);
+				var v2 = Vector512.Create(right._p0, right._p1, right._p2, right._p3, right._p4, right._p5, right._p6, right._p7);
 				return v1 != v2;
 			}
 			if (Vector256.IsHardwareAccelerated)
