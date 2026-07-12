@@ -442,6 +442,7 @@ public class QuadDataSources
     {
         yield return () => ("2.0", NumberStyles.Float, CultureInfo.InvariantCulture, Quad.Two);
 		yield return () => ("-2", NumberStyles.Float, CultureInfo.InvariantCulture, -Quad.Two);
+		yield return () => ("1.189731495357231765085759326628007E+4932", NumberStyles.Float, CultureInfo.InvariantCulture, Quad.MaxValue);
 		yield return () => ("0", NumberStyles.Float, CultureInfo.InvariantCulture, Quad.Zero);
 		yield return () => (NumberFormatInfo.InvariantInfo.PositiveInfinitySymbol, NumberStyles.Float, CultureInfo.InvariantCulture, Quad.PositiveInfinity);
 		yield return () => (NumberFormatInfo.InvariantInfo.NegativeInfinitySymbol, NumberStyles.Float, CultureInfo.InvariantCulture, Quad.NegativeInfinity);
@@ -460,6 +461,7 @@ public class QuadDataSources
     {
 	    yield return () => ("2.0".ToCharArray(), NumberStyles.Float, CultureInfo.InvariantCulture, Quad.Two);
 	    yield return () => ("-2".ToCharArray(), NumberStyles.Float, CultureInfo.InvariantCulture, -Quad.Two);
+	    yield return () => ("1.189731495357231765085759326628007E+4932".ToCharArray(), NumberStyles.Float, CultureInfo.InvariantCulture, Quad.MaxValue);
 	    yield return () => ("0".ToCharArray(), NumberStyles.Float, CultureInfo.InvariantCulture, Quad.Zero);
 	    yield return () => (NumberFormatInfo.InvariantInfo.PositiveInfinitySymbol.ToCharArray(), NumberStyles.Float, CultureInfo.InvariantCulture, Quad.PositiveInfinity);
 	    yield return () => (NumberFormatInfo.InvariantInfo.NegativeInfinitySymbol.ToCharArray(), NumberStyles.Float, CultureInfo.InvariantCulture, Quad.NegativeInfinity);
@@ -478,6 +480,7 @@ public class QuadDataSources
     {
         yield return () => ("2.0"u8.ToArray(), NumberStyles.Float, CultureInfo.InvariantCulture, Quad.Two);
 	    yield return () => ("-2"u8.ToArray(), NumberStyles.Float, CultureInfo.InvariantCulture, -Quad.Two);
+	    yield return () => ("1.189731495357231765085759326628007E+4932"u8.ToArray(), NumberStyles.Float, CultureInfo.InvariantCulture, Quad.MaxValue);
 	    yield return () => ("0"u8.ToArray(), NumberStyles.Float, CultureInfo.InvariantCulture, Quad.Zero);
 	    yield return () => (Encoding.UTF8.GetBytes(NumberFormatInfo.InvariantInfo.PositiveInfinitySymbol), NumberStyles.Float, CultureInfo.InvariantCulture, Quad.PositiveInfinity);
 	    yield return () => (Encoding.UTF8.GetBytes(NumberFormatInfo.InvariantInfo.NegativeInfinitySymbol), NumberStyles.Float, CultureInfo.InvariantCulture, Quad.NegativeInfinity);
@@ -496,6 +499,7 @@ public class QuadDataSources
     {
 		yield return () => ("2.0", NumberStyles.Float, CultureInfo.InvariantCulture, true, Quad.Two);
 		yield return () => ("-2", NumberStyles.Float, CultureInfo.InvariantCulture, true, -Quad.Two);
+		yield return () => ("1.189731495357231765085759326628007E+4932", NumberStyles.Float, CultureInfo.InvariantCulture, true, Quad.MaxValue);
 		yield return () => ("0", NumberStyles.Float, CultureInfo.InvariantCulture, true, Quad.Zero);
 		yield return () => (NumberFormatInfo.InvariantInfo.PositiveInfinitySymbol, NumberStyles.Float, CultureInfo.InvariantCulture, true, Quad.PositiveInfinity);
 		yield return () => (NumberFormatInfo.InvariantInfo.NegativeInfinitySymbol, NumberStyles.Float, CultureInfo.InvariantCulture, true, Quad.NegativeInfinity);
@@ -515,6 +519,7 @@ public class QuadDataSources
     {
         yield return () => ("2.0".ToCharArray(), NumberStyles.Float, CultureInfo.InvariantCulture, true, Quad.Two);
 		yield return () => ("-2".ToCharArray(), NumberStyles.Float, CultureInfo.InvariantCulture, true, -Quad.Two);
+		yield return () => ("1.189731495357231765085759326628007E+4932".ToCharArray(), NumberStyles.Float, CultureInfo.InvariantCulture, true, Quad.MaxValue);
 		yield return () => ("0".ToCharArray(), NumberStyles.Float, CultureInfo.InvariantCulture, true, Quad.Zero);
 		yield return () => (NumberFormatInfo.InvariantInfo.PositiveInfinitySymbol.ToCharArray(), NumberStyles.Float, CultureInfo.InvariantCulture, true, Quad.PositiveInfinity);
 		yield return () => (NumberFormatInfo.InvariantInfo.NegativeInfinitySymbol.ToCharArray(), NumberStyles.Float, CultureInfo.InvariantCulture, true, Quad.NegativeInfinity);
@@ -534,6 +539,7 @@ public class QuadDataSources
     {
         yield return () => ("2.0"u8.ToArray(), NumberStyles.Float, CultureInfo.InvariantCulture, true, Quad.Two);
 		yield return () => ("-2"u8.ToArray(), NumberStyles.Float, CultureInfo.InvariantCulture, true, -Quad.Two);
+		yield return () => ("1.189731495357231765085759326628007E+4932"u8.ToArray(), NumberStyles.Float, CultureInfo.InvariantCulture, true, Quad.MaxValue);
 		yield return () => ("0"u8.ToArray(), NumberStyles.Float, CultureInfo.InvariantCulture, true, Quad.Zero);
 		yield return () => (Encoding.UTF8.GetBytes(NumberFormatInfo.InvariantInfo.PositiveInfinitySymbol), NumberStyles.Float, CultureInfo.InvariantCulture, true, Quad.PositiveInfinity);
 		yield return () => (Encoding.UTF8.GetBytes(NumberFormatInfo.InvariantInfo.NegativeInfinitySymbol), NumberStyles.Float, CultureInfo.InvariantCulture, true, Quad.NegativeInfinity);
