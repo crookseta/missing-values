@@ -11,7 +11,7 @@ public interface IFloatingPointIeee754DataSource<T>
     static abstract IEnumerable<Func<(T, T)>> BitIncrementTestData();
     static abstract IEnumerable<Func<(T, T, T, T)>> FusedMultiplyAddTestData();
     static abstract IEnumerable<Func<(T, T, T)>> Ieee754RemainderTestData();
-    static abstract IEnumerable<Func<(T, T, T)>> ILogBTestData();
+    static abstract IEnumerable<Func<(T, int)>> ILogBTestData();
     static abstract IEnumerable<Func<(T, T, T, T)>> LerpTestData();
     static abstract IEnumerable<Func<(T, T)>> ReciprocalEstimateTestData();
     static abstract IEnumerable<Func<(T, T)>> ReciprocalSqrtEstimateTestData();

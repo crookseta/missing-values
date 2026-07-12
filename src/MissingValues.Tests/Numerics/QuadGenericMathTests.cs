@@ -546,32 +546,16 @@ public class QuadGenericMathTests
 		    .IsApproximately(Values.CreateFloat<Float>(0x3FFE_193E_A7AA_D030, 0xA976_BA8D_B53A_D6E3), Float.Delta);
     }
     [Test]
-    public async Task BitDecrementTest()
+    [MethodDataSource<DataSources>(nameof(BitDecrementTestData))]
+    public async Task BitDecrementTest(Float value, Float expected)
     {
-	    await Assert.That(Float.BitDecrement(Float.One))
-		    .IsEqualTo(Values.CreateFloat<Float>(0x3FFEFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF));
-	    await Assert.That(Float.BitDecrement(Float.NegativeOne))
-		    .IsEqualTo(Values.CreateFloat<Float>(0xBFFF000000000000, 0x0000000000000001));
-	    await Assert.That(Float.BitDecrement(Float.Zero))
-		    .IsEqualTo(-Float.Epsilon);
-	    await Assert.That(Float.BitDecrement(Float.NegativeInfinity))
-		    .IsEqualTo(Float.NegativeInfinity);
-	    await Assert.That(Float.BitDecrement(Float.PositiveInfinity))
-		    .IsEqualTo(Float.MaxValue);
+	    await Assert.That(Float.BitDecrement(value)).IsEqualTo(expected);
     }
     [Test]
-    public async Task BitIncrementTest()
+    [MethodDataSource<DataSources>(nameof(BitIncrementTestData))]
+    public async Task BitIncrementTest(Float value, Float expected)
     {
-	    await Assert.That(Float.BitIncrement(Float.One))
-		    .IsEqualTo(Values.CreateFloat<Float>(0x3FFF000000000000, 0x0000000000000001));
-	    await Assert.That(Float.BitIncrement(Float.NegativeOne))
-		    .IsEqualTo(Values.CreateFloat<Float>(0xBFFEFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF));
-	    await Assert.That(Float.BitIncrement(Float.NegativeZero))
-		    .IsEqualTo(Float.Epsilon);
-	    await Assert.That(Float.BitIncrement(Float.NegativeInfinity))
-		    .IsEqualTo(Float.MinValue);
-	    await Assert.That(Float.BitIncrement(Float.PositiveInfinity))
-		    .IsEqualTo(Float.PositiveInfinity);
+	    await Assert.That(Float.BitIncrement(value)).IsEqualTo(expected);
     }
     [Test]
     public async Task CbrtTest()
@@ -694,20 +678,23 @@ public class QuadGenericMathTests
 	[MethodDataSource<DataSources>(nameof(Ieee754RemainderTestData))]
 	public async Task IeeeRemainderTest(Float left, Float right, Float result)
 	{
-		await Assert.That(Float.Ieee754Remainder(left, right))
-			.IsBitwiseEquivalentTo(result);
+		if (Float.IsNaN(result))
+		{
+			await Assert.That(Float.Ieee754Remainder(left, right))
+				.IsNaN();
+		}
+		else
+		{
+			await Assert.That(Float.Ieee754Remainder(left, right))
+				.IsBitwiseEquivalentTo(result);
+		}
 	}
+
 	[Test]
-	public async Task ILogBTest()
+	[MethodDataSource<DataSources>(nameof(ILogBTestData))]
+	public async Task ILogBTest(Float x, int result)
 	{
-		await Assert.That(Float.ILogB(Values.CreateFloat<Float>(0x4009_0000_0000_0000, 0x0000_0000_0000_0000)))
-			.IsEqualTo(10);
-		await Assert.That(Float.ILogB(Values.CreateFloat<Float>(0x403F_0000_0000_0000, 0x0000_0000_0000_0000)))
-			.IsEqualTo(64);
-		await Assert.That(Float.ILogB(Values.CreateFloat<Float>(0xC03F_0000_0000_0000, 0x0000_0000_0000_0000)))
-			.IsEqualTo(64);
-		await Assert.That(Float.ILogB(Float.Zero))
-			.IsEqualTo(int.MinValue);
+		await Assert.That(Float.ILogB(x)).IsEqualTo(result);
 	}
 	[Test]
 	public async Task LogTest()
@@ -825,18 +812,11 @@ public class QuadGenericMathTests
 			.IsNaN();
 	}
 	[Test]
-	public async Task ScaleBTest()
+	[MethodDataSource<DataSources>(nameof(ScaleBTestData))]
+	public async Task ScaleBTest(Float x, int n, Float result)
 	{
-	    await Assert.That(Float.ScaleB(Float.Two, 3))
-		    .IsBitwiseEquivalentTo(Values.CreateFloat<Float>(0x4003_0000_0000_0000, 0x0000_0000_0000_0000));
-	    await Assert.That(Float.ScaleB(Float.NegativeTwo, 3))
-		    .IsBitwiseEquivalentTo(Values.CreateFloat<Float>(0xC003_0000_0000_0000, 0x0000_0000_0000_0000));
-	    await Assert.That(Float.ScaleB(Float.Zero, 6))
-		    .IsBitwiseEquivalentTo(Float.Zero);
-	    await Assert.That(Float.ScaleB(Float.Two, 30000))
-		    .IsBitwiseEquivalentTo(Float.PositiveInfinity);
-	    await Assert.That(Float.ScaleB(Float.Two, -30000))
-		    .IsBitwiseEquivalentTo(Float.Zero);
+	    await Assert.That(Float.ScaleB(x, n))
+		    .IsBitwiseEquivalentTo(result);
 	}
 	[Test]
 	public async Task SinTest()

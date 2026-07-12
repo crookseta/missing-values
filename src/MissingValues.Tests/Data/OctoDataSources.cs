@@ -18,237 +18,427 @@ public class OctoDataSources
 {
     public static IEnumerable<Func<(Octo, Octo, Octo)>> op_AdditionTestData()
     {
-        throw new NotImplementedException();
-    }
-
-    public static IEnumerable<Func<(Octo, Octo, Octo, bool)>> op_CheckedAdditionTestData()
-    {
-        throw new NotImplementedException();
-    }
-
-    public static IEnumerable<Func<(Octo, Octo, bool)>> op_CheckedDecrementTestData()
-    {
-        throw new NotImplementedException();
-    }
-
-    public static IEnumerable<Func<(Octo, Octo, bool)>> op_CheckedIncrementTestData()
-    {
-        throw new NotImplementedException();
-    }
-
-    public static IEnumerable<Func<(Octo, Octo, Octo, bool)>> op_CheckedMultiplyTestData()
-    {
-        throw new NotImplementedException();
-    }
-
-    public static IEnumerable<Func<(Octo, Octo, Octo, bool)>> op_CheckedSubtractionTestData()
-    {
-        throw new NotImplementedException();
+	    yield return () => (Octo.One, Octo.One, Octo.Two);
+	    yield return () => (Octo.One, Octo.NegativeOne, Octo.Zero);
+	    yield return () => (Octo.One, Octo.NegativeTwo, Octo.NegativeOne);
+	    yield return () => (Octo.One, Octo.Four, Octo.Five);
+	    yield return () => (Octo.Three, Octo.Two, Octo.Five);
+	    yield return () => (Octo.SmallestSubnormal, Octo.GreatestSubnormal, Values.CreateFloat<Octo>(0x0000_1000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000));
+	    yield return () => (Octo.PositiveInfinity, Octo.One, Octo.PositiveInfinity);
+	    yield return () => (Octo.NegativeInfinity, Octo.One, Octo.NegativeInfinity);
+	    yield return () => (Octo.PositiveInfinity, Octo.PositiveInfinity, Octo.PositiveInfinity);
+	    yield return () => (Octo.NegativeInfinity, Octo.NegativeInfinity, Octo.NegativeInfinity);
     }
 
     public static IEnumerable<Func<(Octo, Octo)>> op_DecrementTestData()
     {
-        throw new NotImplementedException();
+	    yield return () => (Octo.NegativeOne, Octo.NegativeTwo);
+	    yield return () => (Octo.Zero, Octo.NegativeOne);
+	    yield return () => (Octo.One, Octo.Zero);
+	    yield return () => (Octo.Two, Octo.One);
     }
 
     public static IEnumerable<Func<(Octo, Octo, Octo)>> op_DivisionTestData()
     {
-        throw new NotImplementedException();
+	    yield return () => (Octo.Ten, Octo.Ten, Octo.One);
+	    yield return () => (Octo.Hundred, Octo.Ten, Octo.Ten);
+	    yield return () => (Octo.NegativeThousand, Octo.Ten, Octo.NegativeHundred);
+	    yield return () => (Octo.Zero, Octo.Zero, Octo.NaN);
+	    yield return () => (Octo.One, Octo.Zero, Octo.PositiveInfinity);
+	    yield return () => (Octo.NegativeOne, Octo.Zero, Octo.NegativeInfinity);
+	    yield return () => (Octo.PositiveInfinity, Octo.PositiveInfinity, Octo.NaN);
+	    yield return () => (Octo.NegativeInfinity, Octo.NegativeInfinity, Octo.NaN);
     }
 
     public static IEnumerable<Func<(Octo, Octo)>> op_IncrementTestData()
     {
-        throw new NotImplementedException();
+	    yield return () => (Octo.NegativeTwo, Octo.NegativeOne);
+	    yield return () => (Octo.NegativeOne, Octo.Zero);
+	    yield return () => (Octo.Zero, Octo.One);
+	    yield return () => (Octo.One, Octo.Two);
     }
 
     public static IEnumerable<Func<(Octo, Octo, Octo)>> op_ModulusTestData()
     {
-        throw new NotImplementedException();
+	    yield return () => (Octo.Two, Octo.Four, Octo.Two);
+	    yield return () => (Octo.Half, Octo.Four, Octo.Half);
+	    yield return () => (Octo.Four, Octo.Half, Octo.Zero);
+	    yield return () => (Octo.NegativeFour, Octo.Half, Octo.NegativeZero);
+	    yield return () => (Octo.NegativeFour, Octo.Thousand, Octo.NegativeFour);
     }
 
     public static IEnumerable<Func<(Octo, Octo, Octo)>> op_MultiplyTestData()
     {
-        throw new NotImplementedException();
+	    yield return () => (Octo.One, Octo.One, Octo.One);
+	    yield return () => (Octo.One, Octo.NegativeOne, Octo.NegativeOne);
+	    yield return () => (Octo.Ten, Octo.Ten, Octo.Hundred);
+	    yield return () => (Octo.NegativeHundred, Octo.Ten, Octo.NegativeThousand);
+	    yield return () => (Octo.NegativeTen, Octo.Hundred, Octo.NegativeThousand);
+	    yield return () => (Octo.Zero, Octo.NegativeThousand, Octo.NegativeZero);
+	    yield return () => (Octo.Zero, Octo.PositiveInfinity, Octo.NaN);
+	    yield return () => (Octo.NegativeZero, Octo.NegativeInfinity, Octo.NaN);
+	    yield return () => (Octo.PositiveInfinity, Octo.Zero, Octo.NaN);
+	    yield return () => (Octo.NegativeInfinity, Octo.NegativeZero, Octo.NaN);
     }
 
     public static IEnumerable<Func<(Octo, Octo, Octo)>> op_SubtractionTestData()
     {
-        throw new NotImplementedException();
+	    yield return () => (Octo.One, Octo.One, Octo.Zero);
+	    yield return () => (Octo.One, Octo.NegativeOne, Octo.Two);
+	    yield return () => (Octo.One, Octo.Two, Octo.NegativeOne);
+	    yield return () => (Octo.SmallestSubnormal, Octo.GreatestSubnormal, Values.CreateFloat<Octo>(0x8000_0FFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFE));
+	    yield return () => (Octo.PositiveInfinity, Octo.PositiveInfinity, Octo.NaN);
+	    yield return () => (Octo.NegativeInfinity, Octo.NegativeInfinity, Octo.NaN);
     }
 
     public static IEnumerable<Func<(Octo, Octo)>> op_UnaryNegationTestData()
     {
-	    throw new NotImplementedException();
-    }
-
-    public static IEnumerable<Func<(Octo, Octo, bool)>> op_CheckedUnaryNegationTestData()
-    {
-	    throw new NotImplementedException();
+	    yield return () => (Octo.Zero, Octo.NegativeZero);
+	    yield return () => (Octo.One, Octo.NegativeOne);
+	    yield return () => (Octo.Two, Octo.NegativeTwo);
+	    yield return () => (Octo.Ten, Octo.NegativeTen);
+	    yield return () => (Octo.Hundred, Octo.NegativeHundred);
+	    yield return () => (Octo.Thousand, Octo.NegativeThousand);
     }
 
     public static IEnumerable<Func<(Octo, Octo, Octo)>> op_BitwiseAndTestData()
     {
-        throw new NotImplementedException();
+	    yield return () => (Octo.Zero, Octo.One, Octo.Zero);
+	    yield return () => (Octo.One, Octo.One, Octo.One);
+	    yield return () => (Values.CreateFloat<Octo>(0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF), Values.CreateFloat<Octo>(0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0001), Values.CreateFloat<Octo>(0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0001));
     }
 
     public static IEnumerable<Func<(Octo, Octo, Octo)>> op_BitwiseOrTestData()
     {
-        throw new NotImplementedException();
+	    yield return () => (Octo.Zero, Octo.One, Octo.One);
+	    yield return () => (Octo.One, Octo.One, Octo.One);
+	    yield return () => (Values.CreateFloat<Octo>(0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF), Values.CreateFloat<Octo>(0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0001), Values.CreateFloat<Octo>(0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF));
     }
 
     public static IEnumerable<Func<(Octo, Octo, Octo)>> op_BitwiseXorTestData()
     {
-        throw new NotImplementedException();
+	    yield return () => (Octo.Zero, Octo.One, Octo.One);
+	    yield return () => (Octo.One, Octo.One, Octo.Zero);
+	    yield return () => (Values.CreateFloat<Octo>(0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF), Values.CreateFloat<Octo>(0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0001), Values.CreateFloat<Octo>(0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFE));
     }
 
     public static IEnumerable<Func<(Octo, Octo)>> op_OnesComplementTestData()
     {
-        throw new NotImplementedException();
+	    yield return () => (Octo.Zero, Values.CreateFloat<Octo>(0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF));
+	    yield return () => (Values.CreateFloat<Octo>(0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0001), Values.CreateFloat<Octo>(0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFE));
+	    yield return () => (Values.CreateFloat<Octo>(0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF), Octo.Zero);
     }
 
     public static IEnumerable<Func<(Octo, Octo, bool)>> op_EqualityTestData()
     {
-        throw new NotImplementedException();
+	    yield return () => (Octo.One, Octo.One, true); 
+	    yield return () => (Octo.Two, Octo.Two, true);
+	    yield return () => (Octo.NaN, Octo.NaN, false);
+	    yield return () => (Octo.GreatestSubnormal, Octo.GreatestSubnormal, true);
     }
 
     public static IEnumerable<Func<(Octo, Octo, bool)>> op_InequalityTestData()
     {
-        throw new NotImplementedException();
+	    yield return () => (Octo.One, Octo.One, false);
+	    yield return () => (Octo.NaN, Octo.NaN, true);
+	    yield return () => (Octo.NegativeTwo, Octo.Two, true);
+	    yield return () => (Octo.SmallestSubnormal, Octo.GreatestSubnormal, true);
     }
 
     public static IEnumerable<Func<(Octo, Octo, bool)>> op_GreaterThanOrEqualTestData()
     {
-        throw new NotImplementedException();
+	    yield return () => (Octo.One, Octo.One, true); 
+	    yield return () => (Octo.Two, Octo.Two, true);
+	    yield return () => (Octo.NaN, Octo.NaN, false);
+	    yield return () => (Octo.GreatestSubnormal, Octo.GreatestSubnormal, true);
+	    yield return () => (Octo.Two, Octo.One, true);
+	    yield return () => (Octo.Thousand, Octo.NegativeThousand, true);
+	    yield return () => (Octo.NegativeQuarter, Octo.NegativeHalf, true);
+	    yield return () => (Octo.Quarter, Octo.Half, false);
+	    yield return () => (Octo.Ten, Octo.Hundred, false);
+	    yield return () => (Octo.GreaterThanOneSmallest, Octo.One, true);
     }
 
     public static IEnumerable<Func<(Octo, Octo, bool)>> op_GreaterThanTestData()
     {
-        throw new NotImplementedException();
+	    yield return () => (Octo.Two, Octo.One, true);
+	    yield return () => (Octo.Thousand, Octo.NegativeThousand, true);
+	    yield return () => (Octo.NegativeQuarter, Octo.NegativeHalf, true);
+	    yield return () => (Octo.Quarter, Octo.Half, false);
+	    yield return () => (Octo.Ten, Octo.Hundred, false);
+	    yield return () => (Octo.GreaterThanOneSmallest, Octo.One, true);
     }
 
     public static IEnumerable<Func<(Octo, Octo, bool)>> op_LessThanOrEqualTestData()
     {
-        throw new NotImplementedException();
+	    yield return () => (Octo.One, Octo.One, true); 
+	    yield return () => (Octo.Two, Octo.Two, true);
+	    yield return () => (Octo.NaN, Octo.NaN, false);
+	    yield return () => (Octo.GreatestSubnormal, Octo.GreatestSubnormal, true);
+	    yield return () => (Octo.Zero, Octo.One, true);
+	    yield return () => (Octo.Zero, Octo.Quarter, true);
+	    yield return () => (Octo.NegativeThousand, Octo.Thousand, true);
+	    yield return () => (Octo.NegativeOne, Octo.NegativeThree, false);
+	    yield return () => (Octo.Hundred, Octo.Two, false);
+	    yield return () => (Octo.LessThanOneLargest, Octo.One, true);
     }
 
     public static IEnumerable<Func<(Octo, Octo, bool)>> op_LessThanTestData()
     {
-        throw new NotImplementedException();
+	    yield return () => (Octo.Zero, Octo.One, true);
+	    yield return () => (Octo.Zero, Octo.Quarter, true);
+	    yield return () => (Octo.NegativeThousand, Octo.Thousand, true);
+	    yield return () => (Octo.NegativeOne, Octo.NegativeThree, false);
+	    yield return () => (Octo.Hundred, Octo.Two, false);
+	    yield return () => (Octo.LessThanOneLargest, Octo.One, true);
     }
 
     public static IEnumerable<Func<(Octo, Octo)>> AbsTestData()
     {
-        throw new NotImplementedException();
+	    yield return () => (Octo.One, Octo.One);
+	    yield return () => (Octo.NegativeOne, Octo.One);
+	    yield return () => (Octo.NegativeHalf, Octo.Half);
+	    yield return () => (Octo.NegativeQuarter, Octo.Quarter);
+	    yield return () => (Octo.NegativeZero, Octo.Zero);
+	    yield return () => (Octo.NegativeInfinity, Octo.PositiveInfinity);
     }
 
     public static IEnumerable<Func<(Octo, bool)>> IsCanonicalTestData()
     {
-        throw new NotImplementedException();
+	    yield return () => (Octo.One, true);
     }
 
     public static IEnumerable<Func<(Octo, bool)>> IsComplexNumberTestData()
     {
-        throw new NotImplementedException();
+	    yield return () => (Octo.One, false);
     }
 
     public static IEnumerable<Func<(Octo, bool)>> IsEvenIntegerTestData()
     {
-        throw new NotImplementedException();
+	    yield return () => (Octo.Half, false);
+	    yield return () => (Octo.One, false);
+	    yield return () => (Octo.Two, true);
+	    yield return () => (Octo.Three, false);
+	    yield return () => (Octo.Four, true);
+	    yield return () => (Octo.NegativeOne, false);
+	    yield return () => (Octo.NegativeTwo, true);
+	    yield return () => (Octo.NegativeThree, false);
+	    yield return () => (Octo.NegativeFour, true);
     }
 
     public static IEnumerable<Func<(Octo, bool)>> IsFiniteTestData()
     {
-        throw new NotImplementedException();
+	    yield return () => (Octo.One, true);
+	    yield return () => (Octo.NegativeOne, true);
+	    yield return () => (Octo.NaN, false);
+	    yield return () => (Octo.PositiveInfinity, false);
+	    yield return () => (Octo.NegativeInfinity, false);
     }
 
     public static IEnumerable<Func<(Octo, bool)>> IsImaginaryNumberTestData()
     {
-        throw new NotImplementedException();
+	    yield return () => (Octo.One, false);
     }
 
     public static IEnumerable<Func<(Octo, bool)>> IsInfinityTestData()
     {
-        throw new NotImplementedException();
+	    yield return () => (Octo.One, false);
+	    yield return () => (Octo.NegativeOne, false);
+	    yield return () => (Octo.NaN, false);
+	    yield return () => (Octo.PositiveInfinity, true);
+	    yield return () => (Octo.NegativeInfinity, true);
     }
 
     public static IEnumerable<Func<(Octo, bool)>> IsIntegerTestData()
     {
-        throw new NotImplementedException();
+	    yield return () => (Octo.Quarter, false);
+	    yield return () => (Octo.Half, false);
+	    yield return () => (Octo.Thousand, true);
+	    yield return () => (Octo.One, true);
+	    yield return () => (Octo.GreaterThanOneSmallest, false);
+	    yield return () => (Octo.SmallestSubnormal, false);
+	    yield return () => (Octo.NegativeOne, true);
+	    yield return () => (Octo.NegativeThousand, true);
+	    yield return () => (Octo.NegativeHalf, false);
+	    yield return () => (Octo.NegativeQuarter, false);
+	    yield return () => (Octo.NaN, false);
+	    yield return () => (Octo.PositiveInfinity, false);
+	    yield return () => (Octo.NegativeInfinity, false);
     }
 
     public static IEnumerable<Func<(Octo, bool)>> IsNaNTestData()
     {
-        throw new NotImplementedException();
+	    yield return () => (Octo.One, false);
+	    yield return () => (Octo.NegativeOne, false);
+	    yield return () => (Octo.NaN, true);
+	    yield return () => (Octo.PositiveInfinity, false);
+	    yield return () => (Octo.NegativeInfinity, false);
     }
 
     public static IEnumerable<Func<(Octo, bool)>> IsNegativeTestData()
     {
-        throw new NotImplementedException();
+	    yield return () => (Octo.One, false);
+	    yield return () => (Octo.GreatestSubnormal, false);
+	    yield return () => (Octo.PositiveInfinity, false);
+	    yield return () => (Octo.NaN, true);
+	    yield return () => (Octo.NegativeOne, true);
+	    yield return () => (Octo.NegativeInfinity, true);
     }
 
     public static IEnumerable<Func<(Octo, bool)>> IsNegativeInfinityTestData()
     {
-        throw new NotImplementedException();
+	    yield return () => (Octo.One, false);
+	    yield return () => (Octo.NegativeOne, false);
+	    yield return () => (Octo.NaN, false);
+	    yield return () => (Octo.PositiveInfinity, false);
+	    yield return () => (Octo.NegativeInfinity, true);
     }
 
     public static IEnumerable<Func<(Octo, bool)>> IsNormalTestData()
     {
-        throw new NotImplementedException();
+	    yield return () => (Octo.GreatestSubnormal, false);
+	    yield return () => (Octo.SmallestSubnormal, false);
+	    yield return () => (Octo.MaxValue, true);
+	    yield return () => (Octo.MinValue, true);
+	    yield return () => (Octo.One, true);
     }
 
     public static IEnumerable<Func<(Octo, bool)>> IsOddIntegerTestData()
     {
-        throw new NotImplementedException();
+	    yield return () => (Octo.Half, false);
+	    yield return () => (Octo.One, true);
+	    yield return () => (Octo.Two, false);
+	    yield return () => (Octo.Three, true);
+	    yield return () => (Octo.Four, false);
+	    yield return () => (Octo.NegativeOne, true);
+	    yield return () => (Octo.NegativeTwo, false);
+	    yield return () => (Octo.NegativeThree, true);
+	    yield return () => (Octo.NegativeFour, false);
     }
 
     public static IEnumerable<Func<(Octo, bool)>> IsPositiveTestData()
     {
-        throw new NotImplementedException();
+	    yield return () => (Octo.One, true);
+	    yield return () => (Octo.GreatestSubnormal, true);
+	    yield return () => (Octo.PositiveInfinity, true);
+	    yield return () => (Octo.NaN, false);
+	    yield return () => (Octo.NegativeOne, false);
+	    yield return () => (Octo.NegativeInfinity, false);
     }
 
     public static IEnumerable<Func<(Octo, bool)>> IsPositiveInfinityTestData()
     {
-        throw new NotImplementedException();
+	    yield return () => (Octo.One, false);
+	    yield return () => (Octo.NegativeOne, false);
+	    yield return () => (Octo.NaN, false);
+	    yield return () => (Octo.PositiveInfinity, true);
+	    yield return () => (Octo.NegativeInfinity, false);
     }
 
     public static IEnumerable<Func<(Octo, bool)>> IsRealNumberTestData()
     {
-        throw new NotImplementedException();
+	    yield return () => (Octo.GreatestSubnormal, true);
+	    yield return () => (Octo.MaxValue, true);
+	    yield return () => (Octo.NegativeThousand, true);
+	    yield return () => (Octo.PositiveInfinity, true);
+	    yield return () => (Octo.NegativeInfinity, true);
+	    yield return () => (Octo.NaN, false);
     }
 
     public static IEnumerable<Func<(Octo, bool)>> IsSubnormalTestData()
     {
-        throw new NotImplementedException();
+	    yield return () => (Octo.GreatestSubnormal, true);
+	    yield return () => (Octo.SmallestSubnormal, true);
+	    yield return () => (Octo.MaxValue, false);
+	    yield return () => (Octo.MinValue, false);
+	    yield return () => (Octo.One, false);
     }
 
     public static IEnumerable<Func<(Octo, bool)>> IsZeroTestData()
     {
-        throw new NotImplementedException();
+	    yield return () => (Octo.One, false);
+	    yield return () => (Octo.Epsilon, false);
+	    yield return () => (Octo.Zero, true);
+	    yield return () => (Octo.NegativeZero, true);
     }
 
     public static IEnumerable<Func<(Octo, Octo, Octo)>> MaxMagnitudeTestData()
     {
-        throw new NotImplementedException();
+	    yield return () => (Octo.NegativeInfinity, Octo.One, Octo.NegativeInfinity);
+	    yield return () => (Octo.MinValue, Octo.One, Octo.MinValue);
+	    yield return () => (Octo.NegativeOne, Octo.One, Octo.One);
+	    yield return () => (-Octo.GreatestSubnormal, Octo.One, Octo.One);
+	    yield return () => (-Octo.Epsilon, Octo.One, Octo.One);
+	    yield return () => (Octo.NegativeZero, Octo.One, Octo.One);
+	    yield return () => (Octo.NaN, Octo.One, Octo.NaN);
+	    yield return () => (Octo.Zero, Octo.One, Octo.One);
+	    yield return () => (Octo.Epsilon, Octo.One, Octo.One);
+	    yield return () => (Octo.GreatestSubnormal, Octo.One, Octo.One);
+	    yield return () => (Octo.One, Octo.One, Octo.One);
+	    yield return () => (Octo.MaxValue, Octo.One, Octo.MaxValue);
+	    yield return () => (Octo.PositiveInfinity, Octo.One, Octo.PositiveInfinity);
     }
 
     public static IEnumerable<Func<(Octo, Octo, Octo)>> MaxMagnitudeNumberTestData()
     {
-        throw new NotImplementedException();
+	    yield return () => (Octo.NegativeInfinity, Octo.One, Octo.NegativeInfinity);
+	    yield return () => (Octo.MinValue, Octo.One, Octo.MinValue);
+	    yield return () => (Octo.NegativeOne, Octo.One, Octo.One);
+	    yield return () => (-Octo.GreatestSubnormal, Octo.One, Octo.One);
+	    yield return () => (-Octo.Epsilon, Octo.One, Octo.One);
+	    yield return () => (Octo.NegativeZero, Octo.One, Octo.One);
+	    yield return () => (Octo.NaN, Octo.One, Octo.One);
+	    yield return () => (Octo.Zero, Octo.One, Octo.One);
+	    yield return () => (Octo.Epsilon, Octo.One, Octo.One);
+	    yield return () => (Octo.GreatestSubnormal, Octo.One, Octo.One);
+	    yield return () => (Octo.One, Octo.One, Octo.One);
+	    yield return () => (Octo.MaxValue, Octo.One, Octo.MaxValue);
+	    yield return () => (Octo.PositiveInfinity, Octo.One, Octo.PositiveInfinity);
     }
 
     public static IEnumerable<Func<(Octo, Octo, Octo)>> MinMagnitudeTestData()
     {
-        throw new NotImplementedException();
+	    yield return () => (Octo.NegativeInfinity, Octo.One, Octo.One);
+	    yield return () => (Octo.MinValue, Octo.One, Octo.One);
+	    yield return () => (Octo.NegativeOne, Octo.One, Octo.NegativeOne);
+	    yield return () => (-Octo.GreatestSubnormal, Octo.One, -Octo.GreatestSubnormal);
+	    yield return () => (-Octo.Epsilon, Octo.One, -Octo.Epsilon);
+	    yield return () => (Octo.NegativeZero, Octo.One, Octo.NegativeZero);
+	    yield return () => (Octo.NaN, Octo.One, Octo.NaN);
+	    yield return () => (Octo.Zero, Octo.One, Octo.Zero);
+	    yield return () => (Octo.Epsilon, Octo.One, Octo.Epsilon);
+	    yield return () => (Octo.GreatestSubnormal, Octo.One, Octo.GreatestSubnormal);
+	    yield return () => (Octo.One, Octo.One, Octo.One);
+	    yield return () => (Octo.MaxValue, Octo.One, Octo.One);
+	    yield return () => (Octo.PositiveInfinity, Octo.One, Octo.One);
     }
 
     public static IEnumerable<Func<(Octo, Octo, Octo)>> MinMagnitudeNumberTestData()
     {
-        throw new NotImplementedException();
+	    yield return () => (Octo.NegativeInfinity, Octo.One, Octo.One);
+	    yield return () => (Octo.MinValue, Octo.One, Octo.One);
+	    yield return () => (Octo.NegativeOne, Octo.One, Octo.NegativeOne);
+	    yield return () => (-Octo.GreatestSubnormal, Octo.One, -Octo.GreatestSubnormal);
+	    yield return () => (-Octo.Epsilon, Octo.One, -Octo.Epsilon);
+	    yield return () => (Octo.NegativeZero, Octo.One, Octo.NegativeZero);
+	    yield return () => (Octo.NaN, Octo.One, Octo.One);
+	    yield return () => (Octo.Zero, Octo.One, Octo.Zero);
+	    yield return () => (Octo.Epsilon, Octo.One, Octo.Epsilon);
+	    yield return () => (Octo.GreatestSubnormal, Octo.One, Octo.GreatestSubnormal);
+	    yield return () => (Octo.One, Octo.One, Octo.One);
+	    yield return () => (Octo.MaxValue, Octo.One, Octo.One);
+	    yield return () => (Octo.PositiveInfinity, Octo.One, Octo.One);
     }
 
     public static IEnumerable<Func<(Octo, Octo, Octo, Octo)>> MultiplyAddEstimateTestData()
     {
-        throw new NotImplementedException();
+		yield return () => (Octo.One, Octo.One, Octo.One, Octo.Two);
+		yield return () => (Octo.Ten, Octo.Ten, Octo.Zero, Octo.Hundred);
+		yield return () => (Octo.Five, Octo.Zero, Octo.Five, Octo.Five);
+		yield return () => (Octo.Half, Octo.Two, Octo.Two, Octo.Three);
+		yield return () => (Octo.Two, Octo.Four, Octo.Two, Octo.Ten);
+		yield return () => (Octo.Ten, Octo.Half, Octo.Five, Octo.Ten);
+		yield return () => (Values.CreateFloat<Octo>(0xBFFF_F400_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000), Octo.One, Octo.Two, Values.CreateFloat<Octo>(0x3FFF_E800_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000));
     }
 
     public static IEnumerable<Func<(string, NumberStyles, IFormatProvider?, Octo)>> ParseTestData()
@@ -343,42 +533,105 @@ public class OctoDataSources
 
     public static IEnumerable<Func<(Octo, Octo, Octo, Octo)>> ClampTestData()
     {
-        throw new NotImplementedException();
+	    yield return () => (Octo.NegativeInfinity, Octo.One, Octo.Thousand, Octo.One);
+	    yield return () => (Octo.MinValue, Octo.One, Octo.Thousand, Octo.One);
+	    yield return () => (Octo.NegativeOne, Octo.One, Octo.Thousand, Octo.One);
+	    yield return () => (-Octo.GreatestSubnormal, Octo.One, Octo.Thousand, Octo.One);
+	    yield return () => (-Octo.Epsilon, Octo.One, Octo.Thousand, Octo.One);
+	    yield return () => (Octo.NaN, Octo.One, Octo.Thousand, Octo.NaN);
+	    yield return () => (Octo.Zero, Octo.One, Octo.Thousand, Octo.One);
+	    yield return () => (Octo.Epsilon, Octo.One, Octo.Thousand, Octo.One);
+	    yield return () => (Octo.GreatestSubnormal, Octo.One, Octo.Thousand, Octo.One);
+	    yield return () => (Octo.One, Octo.One, Octo.Thousand, Octo.One);
+	    yield return () => (Octo.MaxValue, Octo.One, Octo.Thousand, Octo.Thousand);
+	    yield return () => (Octo.PositiveInfinity, Octo.One, Octo.Thousand, Octo.Thousand);
     }
 
     public static IEnumerable<Func<(Octo, Octo, Octo)>> CopySignTestData()
     {
-        throw new NotImplementedException();
+	    yield return () => (Octo.NegativeOne, Octo.One, Octo.One);
+	    yield return () => (Octo.One, Octo.NegativeOne, Octo.NegativeOne);
+	    yield return () => (Octo.Thousand, Octo.NegativeOne, Octo.NegativeThousand);
+	    yield return () => (Octo.NegativeHundred, Octo.NegativeOne, Octo.NegativeHundred);
     }
 
     public static IEnumerable<Func<(Octo, Octo, Octo)>> MaxTestData()
     {
-        throw new NotImplementedException();
+	    yield return () => (Octo.NegativeInfinity, Octo.One, Octo.One);
+	    yield return () => (Octo.MinValue, Octo.One, Octo.One);
+	    yield return () => (Octo.NegativeOne, Octo.One, Octo.One);
+	    yield return () => (-Octo.GreatestSubnormal, Octo.One, Octo.One);
+	    yield return () => (-Octo.Epsilon, Octo.One, Octo.One);
+	    yield return () => (Octo.NegativeZero, Octo.One, Octo.One);
+	    yield return () => (Octo.NaN, Octo.One, Octo.NaN);
+	    yield return () => (Octo.Zero, Octo.One, Octo.One);
+	    yield return () => (Octo.One, Octo.One, Octo.One);
+	    yield return () => (Octo.MaxValue, Octo.One, Octo.MaxValue);
+	    yield return () => (Octo.PositiveInfinity, Octo.One, Octo.PositiveInfinity);
     }
 
     public static IEnumerable<Func<(Octo, Octo, Octo)>> MaxNumberTestData()
     {
-        throw new NotImplementedException();
+	    yield return () => (Octo.NegativeInfinity, Octo.One, Octo.One);
+	    yield return () => (Octo.MinValue, Octo.One, Octo.One);
+	    yield return () => (Octo.NegativeOne, Octo.One, Octo.One);
+	    yield return () => (-Octo.GreatestSubnormal, Octo.One, Octo.One);
+	    yield return () => (-Octo.Epsilon, Octo.One, Octo.One);
+	    yield return () => (Octo.NegativeZero, Octo.One, Octo.One);
+	    yield return () => (Octo.NaN, Octo.One, Octo.One);
+	    yield return () => (Octo.Zero, Octo.One, Octo.One);
+	    yield return () => (Octo.One, Octo.One, Octo.One);
+	    yield return () => (Octo.MaxValue, Octo.One, Octo.MaxValue);
+	    yield return () => (Octo.PositiveInfinity, Octo.One, Octo.PositiveInfinity);
     }
 
     public static IEnumerable<Func<(Octo, Octo, Octo)>> MinTestData()
     {
-        throw new NotImplementedException();
+	    yield return () => (Octo.NegativeInfinity, Octo.One, Octo.NegativeInfinity);
+	    yield return () => (Octo.MinValue, Octo.One, Octo.MinValue);
+	    yield return () => (Octo.NegativeOne, Octo.One, Octo.NegativeOne);
+	    yield return () => (-Octo.GreatestSubnormal, Octo.One, -Octo.GreatestSubnormal);
+	    yield return () => (-Octo.Epsilon, Octo.One, -Octo.Epsilon);
+	    yield return () => (Octo.NegativeZero, Octo.One, Octo.NegativeZero);
+	    yield return () => (Octo.NaN, Octo.One, Octo.NaN);
+	    yield return () => (Octo.Zero, Octo.One, Octo.Zero);
+	    yield return () => (Octo.One, Octo.One, Octo.One);
+	    yield return () => (Octo.MaxValue, Octo.One, Octo.One);
+	    yield return () => (Octo.PositiveInfinity, Octo.One, Octo.One);
     }
 
     public static IEnumerable<Func<(Octo, Octo, Octo)>> MinNumberTestData()
     {
-        throw new NotImplementedException();
+	    yield return () => (Octo.NegativeInfinity, Octo.One, Octo.NegativeInfinity);
+	    yield return () => (Octo.MinValue, Octo.One, Octo.MinValue);
+	    yield return () => (Octo.NegativeOne, Octo.One, Octo.NegativeOne);
+	    yield return () => (-Octo.GreatestSubnormal, Octo.One, -Octo.GreatestSubnormal);
+	    yield return () => (-Octo.Epsilon, Octo.One, -Octo.Epsilon);
+	    yield return () => (Octo.NegativeZero, Octo.One, Octo.NegativeZero);
+	    yield return () => (Octo.NaN, Octo.One, Octo.One);
+	    yield return () => (Octo.Zero, Octo.One, Octo.Zero);
+	    yield return () => (Octo.One, Octo.One, Octo.One);
+	    yield return () => (Octo.MaxValue, Octo.One, Octo.One);
+	    yield return () => (Octo.PositiveInfinity, Octo.One, Octo.One);
     }
 
     public static IEnumerable<Func<(Octo, int)>> SignTestData()
     {
-        throw new NotImplementedException();
+	    yield return () => (Octo.One, 1);
+	    yield return () => (Octo.NegativeOne, -1);
+	    yield return () => (Octo.Ten, 1);
+	    yield return () => (Octo.NegativeTen, -1);
+	    yield return () => (Octo.Zero, 0);
+	    yield return () => (Octo.NegativeZero, 0);
     }
 
     public static IEnumerable<Func<(Octo, bool)>> IsPow2TestData()
     {
-        throw new NotImplementedException();
+	    yield return () => (Octo.Half, true);
+	    yield return () => (Octo.One, true);
+	    yield return () => (Octo.Two, true);
+	    yield return () => (Octo.Three, false);
+	    yield return () => (Octo.NegativeTwo, false);
     }
 
     public static IEnumerable<Func<(Octo, Octo)>> Log2TestData()
@@ -398,7 +651,50 @@ public class OctoDataSources
 
     public static IEnumerable<Func<(Octo, int, MidpointRounding, Octo)>> RoundTestData()
     {
-        throw new NotImplementedException();
+		yield return () => (Values.CreateFloat<Octo>(0x4000_0C00_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000), 0, MidpointRounding.AwayFromZero, Octo.Four);
+		yield return () => (Values.CreateFloat<Octo>(0x4000_0666_6666_6666, 0x6666_6666_6666_6666, 0x6666_6666_6666_6666, 0x6666_6666_6666_6666), 0, MidpointRounding.AwayFromZero, Octo.Three);
+		yield return () => (Values.CreateFloat<Octo>(0x4000_0400_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000), 0, MidpointRounding.AwayFromZero, Octo.Three);
+		yield return () => (Values.CreateFloat<Octo>(0x4000_00CC_CCCC_CCCC, 0xCCCC_CCCC_CCCC_CCCC, 0xCCCC_CCCC_CCCC_CCCC, 0xCCCC_CCCC_CCCC_CCCD), 0, MidpointRounding.AwayFromZero, Octo.Two);
+		yield return () => (Values.CreateFloat<Octo>(0xC000_00CC_CCCC_CCCC, 0xCCCC_CCCC_CCCC_CCCC, 0xCCCC_CCCC_CCCC_CCCC, 0xCCCC_CCCC_CCCC_CCCD), 0, MidpointRounding.AwayFromZero, Octo.NegativeTwo);
+		yield return () => (Values.CreateFloat<Octo>(0xC000_0400_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000), 0, MidpointRounding.AwayFromZero, Octo.NegativeThree);
+		yield return () => (Values.CreateFloat<Octo>(0xC000_0666_6666_6666, 0x6666_6666_6666_6666, 0x6666_6666_6666_6666, 0x6666_6666_6666_6666), 0, MidpointRounding.AwayFromZero, Octo.NegativeThree);
+		yield return () => (Values.CreateFloat<Octo>(0xC000_0C00_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000), 0, MidpointRounding.AwayFromZero, Octo.NegativeFour);
+		
+		yield return () => (Values.CreateFloat<Octo>(0x4000_0C00_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000), 0, MidpointRounding.ToEven, Octo.Four);
+		yield return () => (Values.CreateFloat<Octo>(0x4000_0666_6666_6666, 0x6666_6666_6666_6666, 0x6666_6666_6666_6666, 0x6666_6666_6666_6666), 0, MidpointRounding.ToEven, Octo.Three);
+		yield return () => (Values.CreateFloat<Octo>(0x4000_0400_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000), 0, MidpointRounding.ToEven, Octo.Two);
+		yield return () => (Values.CreateFloat<Octo>(0x4000_00CC_CCCC_CCCC, 0xCCCC_CCCC_CCCC_CCCC, 0xCCCC_CCCC_CCCC_CCCC, 0xCCCC_CCCC_CCCC_CCCD), 0, MidpointRounding.ToEven, Octo.Two);
+		yield return () => (Values.CreateFloat<Octo>(0xC000_00CC_CCCC_CCCC, 0xCCCC_CCCC_CCCC_CCCC, 0xCCCC_CCCC_CCCC_CCCC, 0xCCCC_CCCC_CCCC_CCCD), 0, MidpointRounding.ToEven, Octo.NegativeTwo);
+		yield return () => (Values.CreateFloat<Octo>(0xC000_0400_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000), 0, MidpointRounding.ToEven, Octo.NegativeTwo);
+		yield return () => (Values.CreateFloat<Octo>(0xC000_0666_6666_6666, 0x6666_6666_6666_6666, 0x6666_6666_6666_6666, 0x6666_6666_6666_6666), 0, MidpointRounding.ToEven, Octo.NegativeThree);
+		yield return () => (Values.CreateFloat<Octo>(0xC000_0C00_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000), 0, MidpointRounding.ToEven, Octo.NegativeFour);
+		
+		yield return () => (Values.CreateFloat<Octo>(0x4000_0C00_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000), 0, MidpointRounding.ToNegativeInfinity, Octo.Three);
+		yield return () => (Values.CreateFloat<Octo>(0x4000_0666_6666_6666, 0x6666_6666_6666_6666, 0x6666_6666_6666_6666, 0x6666_6666_6666_6666), 0, MidpointRounding.ToNegativeInfinity, Octo.Two);
+		yield return () => (Values.CreateFloat<Octo>(0x4000_0400_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000), 0, MidpointRounding.ToNegativeInfinity, Octo.Two);
+		yield return () => (Values.CreateFloat<Octo>(0x4000_00CC_CCCC_CCCC, 0xCCCC_CCCC_CCCC_CCCC, 0xCCCC_CCCC_CCCC_CCCC, 0xCCCC_CCCC_CCCC_CCCD), 0, MidpointRounding.ToNegativeInfinity, Octo.Two);
+		yield return () => (Values.CreateFloat<Octo>(0xC000_00CC_CCCC_CCCC, 0xCCCC_CCCC_CCCC_CCCC, 0xCCCC_CCCC_CCCC_CCCC, 0xCCCC_CCCC_CCCC_CCCD), 0, MidpointRounding.ToNegativeInfinity, Octo.NegativeThree);
+		yield return () => (Values.CreateFloat<Octo>(0xC000_0400_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000), 0, MidpointRounding.ToNegativeInfinity, Octo.NegativeThree);
+		yield return () => (Values.CreateFloat<Octo>(0xC000_0666_6666_6666, 0x6666_6666_6666_6666, 0x6666_6666_6666_6666, 0x6666_6666_6666_6666), 0, MidpointRounding.ToNegativeInfinity, Octo.NegativeThree);
+		yield return () => (Values.CreateFloat<Octo>(0xC000_0C00_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000), 0, MidpointRounding.ToNegativeInfinity, Octo.NegativeFour);
+		
+		yield return () => (Values.CreateFloat<Octo>(0x4000_0C00_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000), 0, MidpointRounding.ToPositiveInfinity, Octo.Four);
+		yield return () => (Values.CreateFloat<Octo>(0x4000_0666_6666_6666, 0x6666_6666_6666_6666, 0x6666_6666_6666_6666, 0x6666_6666_6666_6666), 0, MidpointRounding.ToPositiveInfinity, Octo.Three);
+		yield return () => (Values.CreateFloat<Octo>(0x4000_0400_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000), 0, MidpointRounding.ToPositiveInfinity, Octo.Three);
+		yield return () => (Values.CreateFloat<Octo>(0x4000_00CC_CCCC_CCCC, 0xCCCC_CCCC_CCCC_CCCC, 0xCCCC_CCCC_CCCC_CCCC, 0xCCCC_CCCC_CCCC_CCCD), 0, MidpointRounding.ToPositiveInfinity, Octo.Three);
+		yield return () => (Values.CreateFloat<Octo>(0xC000_00CC_CCCC_CCCC, 0xCCCC_CCCC_CCCC_CCCC, 0xCCCC_CCCC_CCCC_CCCC, 0xCCCC_CCCC_CCCC_CCCD), 0, MidpointRounding.ToPositiveInfinity, Octo.NegativeTwo);
+		yield return () => (Values.CreateFloat<Octo>(0xC000_0400_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000), 0, MidpointRounding.ToPositiveInfinity, Octo.NegativeTwo);
+		yield return () => (Values.CreateFloat<Octo>(0xC000_0666_6666_6666, 0x6666_6666_6666_6666, 0x6666_6666_6666_6666, 0x6666_6666_6666_6666), 0, MidpointRounding.ToPositiveInfinity, Octo.NegativeTwo);
+		yield return () => (Values.CreateFloat<Octo>(0xC000_0C00_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000), 0, MidpointRounding.ToPositiveInfinity, Octo.NegativeThree);
+		
+		yield return () => (Values.CreateFloat<Octo>(0x4000_0C00_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000), 0, MidpointRounding.ToZero, Octo.Three);
+		yield return () => (Values.CreateFloat<Octo>(0x4000_0666_6666_6666, 0x6666_6666_6666_6666, 0x6666_6666_6666_6666, 0x6666_6666_6666_6666), 0, MidpointRounding.ToZero, Octo.Two);
+		yield return () => (Values.CreateFloat<Octo>(0x4000_0400_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000), 0, MidpointRounding.ToZero, Octo.Two);
+		yield return () => (Values.CreateFloat<Octo>(0x4000_00CC_CCCC_CCCC, 0xCCCC_CCCC_CCCC_CCCC, 0xCCCC_CCCC_CCCC_CCCC, 0xCCCC_CCCC_CCCC_CCCD), 0, MidpointRounding.ToZero, Octo.Two);
+		yield return () => (Values.CreateFloat<Octo>(0xC000_00CC_CCCC_CCCC, 0xCCCC_CCCC_CCCC_CCCC, 0xCCCC_CCCC_CCCC_CCCC, 0xCCCC_CCCC_CCCC_CCCD), 0, MidpointRounding.ToZero, Octo.NegativeTwo);
+		yield return () => (Values.CreateFloat<Octo>(0xC000_0400_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000), 0, MidpointRounding.ToZero, Octo.NegativeTwo);
+		yield return () => (Values.CreateFloat<Octo>(0xC000_0666_6666_6666, 0x6666_6666_6666_6666, 0x6666_6666_6666_6666, 0x6666_6666_6666_6666), 0, MidpointRounding.ToZero, Octo.NegativeTwo);
+		yield return () => (Values.CreateFloat<Octo>(0xC000_0C00_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000), 0, MidpointRounding.ToZero, Octo.NegativeThree);
     }
 
     public static IEnumerable<Func<(Octo, Octo)>> TruncateTestData()
@@ -458,27 +754,49 @@ public class OctoDataSources
 
     public static IEnumerable<Func<(Octo, Octo)>> BitDecrementTestData()
     {
-        throw new NotImplementedException();
+	    yield return () => (Octo.One, Values.CreateFloat<Octo>(0x3FFFEFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF));
+	    yield return () => (Octo.NegativeOne, Values.CreateFloat<Octo>(0xBFFFF00000000000, 0x0000000000000000, 0x0000000000000000, 0x0000000000000001));
+	    yield return () => (Octo.Zero, -Octo.Epsilon);
+	    yield return () => (Octo.NegativeInfinity, Octo.NegativeInfinity);
+	    yield return () => (Octo.PositiveInfinity, Octo.MaxValue);
     }
 
     public static IEnumerable<Func<(Octo, Octo)>> BitIncrementTestData()
     {
-        throw new NotImplementedException();
+	    yield return () => (Octo.One, Values.CreateFloat<Octo>(0x3FFFF00000000000, 0x0000000000000000, 0x0000000000000000, 0x0000000000000001));
+	    yield return () => (Octo.NegativeOne, Values.CreateFloat<Octo>(0xBFFFEFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF));
+	    yield return () => (Octo.NegativeZero, Octo.Epsilon);
+	    yield return () => (Octo.NegativeInfinity, Octo.MinValue);
+	    yield return () => (Octo.PositiveInfinity, Octo.PositiveInfinity);
     }
 
     public static IEnumerable<Func<(Octo, Octo, Octo, Octo)>> FusedMultiplyAddTestData()
     {
-        throw new NotImplementedException();
+	    yield return () => (Octo.One, Octo.One, Octo.One, Octo.Two);
+	    yield return () => (Octo.Ten, Octo.Ten, Octo.Zero, Octo.Hundred);
+	    yield return () => (Octo.Five, Octo.Zero, Octo.Five, Octo.Five);
+	    yield return () => (Octo.Half, Octo.Two, Octo.Two, Octo.Three);
+	    yield return () => (Octo.Two, Octo.Four, Octo.Two, Octo.Ten);
+	    yield return () => (Octo.Ten, Octo.Half, Octo.Five, Octo.Ten);
+	    yield return () => (Values.CreateFloat<Octo>(0xBFFF_F400_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000), Octo.One, Octo.Two, Values.CreateFloat<Octo>(0x3FFF_E800_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000));
     }
 
     public static IEnumerable<Func<(Octo, Octo, Octo)>> Ieee754RemainderTestData()
     {
-        throw new NotImplementedException();
+	    yield return () => (Octo.Ten, Octo.Three, Octo.One);
+	    yield return () => (Octo.Ten, Octo.Two, Octo.Zero);
+	    yield return () => (Octo.NegativeTen, Octo.Three, Octo.NegativeOne);
+	    yield return () => (Octo.NegativeTen, Octo.Two, Octo.Zero);
+	    yield return () => (Octo.NegativeTen, Octo.Zero, Octo.NaN);
     }
 
-    public static IEnumerable<Func<(Octo, Octo, Octo)>> ILogBTestData()
+    public static IEnumerable<Func<(Octo, int)>> ILogBTestData()
     {
-        throw new NotImplementedException();
+	    yield return () => (Values.CreateFloat<Octo>(0x4000_9000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000), 10);
+	    yield return () => (Values.CreateFloat<Octo>(0x4003_F000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000), 64);
+	    yield return () => (Values.CreateFloat<Octo>(0x4007_F000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000), 128);
+	    yield return () => (Values.CreateFloat<Octo>(0xC003_F000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000), 64);
+	    yield return () => (Octo.Zero, int.MinValue);
     }
 
     public static IEnumerable<Func<(Octo, Octo, Octo, Octo)>> LerpTestData()
@@ -498,7 +816,11 @@ public class OctoDataSources
 
     public static IEnumerable<Func<(Octo, int, Octo)>> ScaleBTestData()
     {
-        throw new NotImplementedException();
+	    yield return () => (Octo.Two, 3, Values.CreateFloat<Octo>(0x4000_3000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000));
+	    yield return () => (Octo.NegativeTwo, 3, Values.CreateFloat<Octo>(0xC000_3000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000));
+	    yield return () => (Octo.Zero, 6, Octo.Zero);
+	    yield return () => (Octo.Two, 300000, Octo.PositiveInfinity);
+	    yield return () => (Octo.Two, -300000, Octo.Zero);
     }
     public static IEnumerable<Func<(Octo, byte)>> ConvertToCheckedByteTestData()
 	{

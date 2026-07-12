@@ -778,12 +778,20 @@ public class QuadDataSources
 
     public static IEnumerable<Func<(Quad, Quad)>> BitDecrementTestData()
     {
-        throw new NotImplementedException();
+	    yield return () => (Quad.One, Values.CreateFloat<Quad>(0x3FFEFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF));
+	    yield return () => (Quad.NegativeOne, Values.CreateFloat<Quad>(0xBFFF000000000000, 0x0000000000000001));
+	    yield return () => (Quad.Zero, -Quad.Epsilon);
+	    yield return () => (Quad.NegativeInfinity, Quad.NegativeInfinity);
+	    yield return () => (Quad.PositiveInfinity, Quad.MaxValue);
     }
 
     public static IEnumerable<Func<(Quad, Quad)>> BitIncrementTestData()
     {
-        throw new NotImplementedException();
+	    yield return () => (Quad.One, Values.CreateFloat<Quad>(0x3FFF000000000000, 0x0000000000000001));
+	    yield return () => (Quad.NegativeOne, Values.CreateFloat<Quad>(0xBFFEFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF));
+	    yield return () => (Quad.NegativeZero, Quad.Epsilon);
+	    yield return () => (Quad.NegativeInfinity, Quad.MinValue);
+	    yield return () => (Quad.PositiveInfinity, Quad.PositiveInfinity);
     }
 
     public static IEnumerable<Func<(Quad, Quad, Quad, Quad)>> FusedMultiplyAddTestData()
@@ -803,9 +811,12 @@ public class QuadDataSources
 	    yield return () => (Quad.NegativeTen, Quad.Zero, Quad.NaN);
     }
 
-    public static IEnumerable<Func<(Quad, Quad, Quad)>> ILogBTestData()
+    public static IEnumerable<Func<(Quad, int)>> ILogBTestData()
     {
-        throw new NotImplementedException();
+	    yield return () => (Values.CreateFloat<Quad>(0x4009_0000_0000_0000, 0x0000_0000_0000_0000), 10);
+	    yield return () => (Values.CreateFloat<Quad>(0x403F_0000_0000_0000, 0x0000_0000_0000_0000), 64);
+	    yield return () => (Values.CreateFloat<Quad>(0xC03F_0000_0000_0000, 0x0000_0000_0000_0000), 64);
+	    yield return () => (Quad.Zero, int.MinValue);
     }
 
     public static IEnumerable<Func<(Quad, Quad, Quad, Quad)>> LerpTestData()
@@ -825,7 +836,11 @@ public class QuadDataSources
 
     public static IEnumerable<Func<(Quad, int, Quad)>> ScaleBTestData()
     {
-        throw new NotImplementedException();
+	    yield return () => (Quad.Two, 3, Values.CreateFloat<Quad>(0x4003_0000_0000_0000, 0x0000_0000_0000_0000));
+	    yield return () => (Quad.NegativeTwo, 3, Values.CreateFloat<Quad>(0xC003_0000_0000_0000, 0x0000_0000_0000_0000));
+	    yield return () => (Quad.Zero, 6, Quad.Zero);
+	    yield return () => (Quad.Two, 300000, Quad.PositiveInfinity);
+	    yield return () => (Quad.Two, -300000, Quad.Zero);
     }
     
 	public static IEnumerable<Func<(Quad, byte)>> ConvertToCheckedByteTestData()
