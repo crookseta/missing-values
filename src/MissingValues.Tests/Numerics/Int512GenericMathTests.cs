@@ -667,4 +667,150 @@ public class Int512GenericMathTests
 		}
 	}
 	#endregion
+
+	#region Conversion
+	[Test, MethodDataSource<DataSources>(nameof(ConvertToCheckedByteTestData))] public async Task ConvertToCheckedByteTest(Int512 input, byte expected) => await Assert.That(byte.CreateChecked(input)).IsEqualTo(expected);
+	[Test, MethodDataSource<DataSources>(nameof(ConvertToSaturatingByteTestData))] public async Task ConvertToSaturatingByteTest(Int512 input, byte expected) => await Assert.That(byte.CreateSaturating(input)).IsEqualTo(expected);
+	[Test, MethodDataSource<DataSources>(nameof(ConvertToTruncatingByteTestData))] public async Task ConvertToTruncatingByteTest(Int512 input, byte expected) => await Assert.That(byte.CreateTruncating(input)).IsEqualTo(expected);
+
+	[Test, MethodDataSource<DataSources>(nameof(ConvertToCheckedUInt16TestData))] public async Task ConvertToCheckedUInt16Test(Int512 input, ushort expected) => await Assert.That(ushort.CreateChecked(input)).IsEqualTo(expected);
+	[Test, MethodDataSource<DataSources>(nameof(ConvertToSaturatingUInt16TestData))] public async Task ConvertToSaturatingUInt16Test(Int512 input, ushort expected) => await Assert.That(ushort.CreateSaturating(input)).IsEqualTo(expected);
+	[Test, MethodDataSource<DataSources>(nameof(ConvertToTruncatingUInt16TestData))] public async Task ConvertToTruncatingUInt16Test(Int512 input, ushort expected) => await Assert.That(ushort.CreateTruncating(input)).IsEqualTo(expected);
+
+	[Test, MethodDataSource<DataSources>(nameof(ConvertToCheckedUInt32TestData))] public async Task ConvertToCheckedUInt32Test(Int512 input, uint expected) => await Assert.That(uint.CreateChecked(input)).IsEqualTo(expected);
+	[Test, MethodDataSource<DataSources>(nameof(ConvertToSaturatingUInt32TestData))] public async Task ConvertToSaturatingUInt32Test(Int512 input, uint expected) => await Assert.That(uint.CreateSaturating(input)).IsEqualTo(expected);
+	[Test, MethodDataSource<DataSources>(nameof(ConvertToTruncatingUInt32TestData))] public async Task ConvertToTruncatingUInt32Test(Int512 input, uint expected) => await Assert.That(uint.CreateTruncating(input)).IsEqualTo(expected);
+
+	[Test, MethodDataSource<DataSources>(nameof(ConvertToCheckedUInt64TestData))] public async Task ConvertToCheckedUInt64Test(Int512 input, ulong expected) => await Assert.That(ulong.CreateChecked(input)).IsEqualTo(expected);
+	[Test, MethodDataSource<DataSources>(nameof(ConvertToSaturatingUInt64TestData))] public async Task ConvertToSaturatingUInt64Test(Int512 input, ulong expected) => await Assert.That(ulong.CreateSaturating(input)).IsEqualTo(expected);
+	[Test, MethodDataSource<DataSources>(nameof(ConvertToTruncatingUInt64TestData))] public async Task ConvertToTruncatingUInt64Test(Int512 input, ulong expected) => await Assert.That(ulong.CreateTruncating(input)).IsEqualTo(expected);
+
+	[Test, MethodDataSource<DataSources>(nameof(ConvertToCheckedUInt128TestData))] public async Task ConvertToCheckedUInt128Test(Int512 input, UInt128 expected) => await Assert.That(UInt128.CreateChecked(input)).IsEqualTo(expected);
+	[Test, MethodDataSource<DataSources>(nameof(ConvertToSaturatingUInt128TestData))] public async Task ConvertToSaturatingUInt128Test(Int512 input, UInt128 expected) => await Assert.That(UInt128.CreateSaturating(input)).IsEqualTo(expected);
+	[Test, MethodDataSource<DataSources>(nameof(ConvertToTruncatingUInt128TestData))] public async Task ConvertToTruncatingUInt128Test(Int512 input, UInt128 expected) => await Assert.That(UInt128.CreateTruncating(input)).IsEqualTo(expected);
+
+	[Test, MethodDataSource<DataSources>(nameof(ConvertToCheckedUInt256TestData))] public async Task ConvertToCheckedUInt256Test(Int512 input, UInt256 expected) => await Assert.That(UInt256.CreateChecked(input)).IsEqualTo(expected);
+	[Test, MethodDataSource<DataSources>(nameof(ConvertToSaturatingUInt256TestData))] public async Task ConvertToSaturatingUInt256Test(Int512 input, UInt256 expected) => await Assert.That(UInt256.CreateSaturating(input)).IsEqualTo(expected);
+	[Test, MethodDataSource<DataSources>(nameof(ConvertToTruncatingUInt256TestData))] public async Task ConvertToTruncatingUInt256Test(Int512 input, UInt256 expected) => await Assert.That(UInt256.CreateTruncating(input)).IsEqualTo(expected);
+
+	[Test, MethodDataSource<DataSources>(nameof(ConvertToCheckedUInt512TestData))] public async Task ConvertToCheckedUInt512Test(Int512 input, UInt512 expected) => await Assert.That(UInt512.CreateChecked(input)).IsEqualTo(expected);
+	[Test, MethodDataSource<DataSources>(nameof(ConvertToSaturatingUInt512TestData))] public async Task ConvertToSaturatingUInt512Test(Int512 input, UInt512 expected) => await Assert.That(UInt512.CreateSaturating(input)).IsEqualTo(expected);
+	[Test, MethodDataSource<DataSources>(nameof(ConvertToTruncatingUInt512TestData))] public async Task ConvertToTruncatingUInt512Test(Int512 input, UInt512 expected) => await Assert.That(UInt512.CreateTruncating(input)).IsEqualTo(expected);
+
+	[Test, MethodDataSource<DataSources>(nameof(ConvertToCheckedSByteTestData))] public async Task ConvertToCheckedSByteTest(Int512 input, sbyte expected) => await Assert.That(sbyte.CreateChecked(input)).IsEqualTo(expected);
+	[Test, MethodDataSource<DataSources>(nameof(ConvertToSaturatingSByteTestData))] public async Task ConvertToSaturatingSByteTest(Int512 input, sbyte expected) => await Assert.That(sbyte.CreateSaturating(input)).IsEqualTo(expected);
+	[Test, MethodDataSource<DataSources>(nameof(ConvertToTruncatingSByteTestData))] public async Task ConvertToTruncatingByteTest(Int512 input, sbyte expected) => await Assert.That(sbyte.CreateTruncating(input)).IsEqualTo(expected);
+	
+	[Test, MethodDataSource<DataSources>(nameof(ConvertToCheckedInt16TestData))] public async Task ConvertToCheckedInt16Test(Int512 input, short expected) => await Assert.That(ushort.CreateChecked(input)).IsEqualTo(expected);
+	[Test, MethodDataSource<DataSources>(nameof(ConvertToSaturatingInt16TestData))] public async Task ConvertToSaturatingInt16Test(Int512 input, short expected) => await Assert.That(ushort.CreateSaturating(input)).IsEqualTo(expected);
+	[Test, MethodDataSource<DataSources>(nameof(ConvertToTruncatingInt16TestData))] public async Task ConvertToTruncatingInt16Test(Int512 input, short expected) => await Assert.That(ushort.CreateTruncating(input)).IsEqualTo(expected);
+
+	[Test, MethodDataSource<DataSources>(nameof(ConvertToCheckedInt32TestData))] public async Task ConvertToCheckedInt32Test(Int512 input, int expected) => await Assert.That(uint.CreateChecked(input)).IsEqualTo(expected);
+	[Test, MethodDataSource<DataSources>(nameof(ConvertToSaturatingInt32TestData))] public async Task ConvertToSaturatingInt32Test(Int512 input, int expected) => await Assert.That(uint.CreateSaturating(input)).IsEqualTo(expected);
+	[Test, MethodDataSource<DataSources>(nameof(ConvertToTruncatingInt32TestData))] public async Task ConvertToTruncatingInt32Test(Int512 input, int expected) => await Assert.That(uint.CreateTruncating(input)).IsEqualTo(expected);
+
+	[Test, MethodDataSource<DataSources>(nameof(ConvertToCheckedInt64TestData))] public async Task ConvertToCheckedInt64Test(Int512 input, long expected) => await Assert.That(ulong.CreateChecked(input)).IsEqualTo(expected);
+	[Test, MethodDataSource<DataSources>(nameof(ConvertToSaturatingInt64TestData))] public async Task ConvertToSaturatingInt64Test(Int512 input, long expected) => await Assert.That(ulong.CreateSaturating(input)).IsEqualTo(expected);
+	[Test, MethodDataSource<DataSources>(nameof(ConvertToTruncatingInt64TestData))] public async Task ConvertToTruncatingInt64Test(Int512 input, long expected) => await Assert.That(ulong.CreateTruncating(input)).IsEqualTo(expected);
+
+	[Test, MethodDataSource<DataSources>(nameof(ConvertToCheckedInt128TestData))] public async Task ConvertToCheckedInt128Test(Int512 input, Int128 expected) => await Assert.That(Int128.CreateChecked(input)).IsEqualTo(expected);
+	[Test, MethodDataSource<DataSources>(nameof(ConvertToSaturatingInt128TestData))] public async Task ConvertToSaturatingInt128Test(Int512 input, Int128 expected) => await Assert.That(Int128.CreateSaturating(input)).IsEqualTo(expected);
+	[Test, MethodDataSource<DataSources>(nameof(ConvertToTruncatingInt128TestData))] public async Task ConvertToTruncatingInt128Test(Int512 input, Int128 expected) => await Assert.That(Int128.CreateTruncating(input)).IsEqualTo(expected);
+
+	[Test, MethodDataSource<DataSources>(nameof(ConvertToCheckedInt256TestData))] public async Task ConvertToCheckedInt256Test(Int512 input, Int256 expected) => await Assert.That(Int256.CreateChecked(input)).IsEqualTo(expected);
+	[Test, MethodDataSource<DataSources>(nameof(ConvertToSaturatingInt256TestData))] public async Task ConvertToSaturatingInt256Test(Int512 input, Int256 expected) => await Assert.That(Int256.CreateSaturating(input)).IsEqualTo(expected);
+	[Test, MethodDataSource<DataSources>(nameof(ConvertToTruncatingInt256TestData))] public async Task ConvertToTruncatingInt256Test(Int512 input, Int256 expected) => await Assert.That(Int256.CreateTruncating(input)).IsEqualTo(expected);
+	
+	[Test, MethodDataSource<DataSources>(nameof(ConvertToCheckedHalfTestData))] public async Task ConvertToCheckedHalfTest(Int512 input, Half expected) => await Assert.That(Half.CreateChecked(input)).IsEqualTo(expected);
+	[Test, MethodDataSource<DataSources>(nameof(ConvertToSaturatingHalfTestData))] public async Task ConvertToSaturatingHalfTest(Int512 input, Half expected) => await Assert.That(Half.CreateSaturating(input)).IsEqualTo(expected);
+	[Test, MethodDataSource<DataSources>(nameof(ConvertToTruncatingHalfTestData))] public async Task ConvertToTruncatingHalfTest(Int512 input, Half expected) => await Assert.That(Half.CreateTruncating(input)).IsEqualTo(expected);
+	
+	[Test, MethodDataSource<DataSources>(nameof(ConvertToCheckedSingleTestData))] public async Task ConvertToCheckedSingleTest(Int512 input, float expected) => await Assert.That(float.CreateChecked(input)).IsEqualTo(expected);
+	[Test, MethodDataSource<DataSources>(nameof(ConvertToSaturatingSingleTestData))] public async Task ConvertToSaturatingSingleTest(Int512 input, float expected) => await Assert.That(float.CreateSaturating(input)).IsEqualTo(expected);
+	[Test, MethodDataSource<DataSources>(nameof(ConvertToTruncatingSingleTestData))] public async Task ConvertToTruncatingSingleTest(Int512 input, float expected) => await Assert.That(float.CreateTruncating(input)).IsEqualTo(expected);
+	
+	[Test, MethodDataSource<DataSources>(nameof(ConvertToCheckedDoubleTestData))] public async Task ConvertToCheckedDoubleTest(Int512 input, double expected) => await Assert.That(double.CreateChecked(input)).IsEqualTo(expected);
+	[Test, MethodDataSource<DataSources>(nameof(ConvertToSaturatingDoubleTestData))] public async Task ConvertToSaturatingDoubleTest(Int512 input, double expected) => await Assert.That(double.CreateSaturating(input)).IsEqualTo(expected);
+	[Test, MethodDataSource<DataSources>(nameof(ConvertToTruncatingDoubleTestData))] public async Task ConvertToTruncatingDoubleTest(Int512 input, double expected) => await Assert.That(double.CreateTruncating(input)).IsEqualTo(expected);
+	
+	[Test, MethodDataSource<DataSources>(nameof(ConvertToCheckedQuadTestData))] public async Task ConvertToCheckedQuadTest(Int512 input, Quad expected) => await Assert.That(Quad.CreateChecked(input)).IsEqualTo(expected);
+	[Test, MethodDataSource<DataSources>(nameof(ConvertToSaturatingQuadTestData))] public async Task ConvertToSaturatingQuadTest(Int512 input, Quad expected) => await Assert.That(Quad.CreateSaturating(input)).IsEqualTo(expected);
+	[Test, MethodDataSource<DataSources>(nameof(ConvertToTruncatingQuadTestData))] public async Task ConvertToTruncatingQuadTest(Int512 input, Quad expected) => await Assert.That(Quad.CreateTruncating(input)).IsEqualTo(expected);
+	
+	[Test, MethodDataSource<DataSources>(nameof(ConvertToCheckedOctoTestData))] public async Task ConvertToCheckedOctoTest(Int512 input, Octo expected) => await Assert.That(Octo.CreateChecked(input)).IsEqualTo(expected);
+	[Test, MethodDataSource<DataSources>(nameof(ConvertToSaturatingOctoTestData))] public async Task ConvertToSaturatingOctoTest(Int512 input, Octo expected) => await Assert.That(Octo.CreateSaturating(input)).IsEqualTo(expected);
+	[Test, MethodDataSource<DataSources>(nameof(ConvertToTruncatingOctoTestData))] public async Task ConvertToTruncatingOctoTest(Int512 input, Octo expected) => await Assert.That(Octo.CreateTruncating(input)).IsEqualTo(expected);
+	
+	[Test, MethodDataSource<DataSources>(nameof(ConvertFromCheckedByteTestData))] public async Task ConvertFromCheckedByteTest(byte input, Int512 expected) => await Assert.That(Int512.CreateChecked(input)).IsEqualTo(expected);
+	[Test, MethodDataSource<DataSources>(nameof(ConvertFromSaturatingByteTestData))] public async Task ConvertFromSaturatingByteTest(byte input, Int512 expected) => await Assert.That(Int512.CreateSaturating(input)).IsEqualTo(expected);
+	[Test, MethodDataSource<DataSources>(nameof(ConvertFromTruncatingByteTestData))] public async Task ConvertFromTruncatingByteTest(byte input, Int512 expected) => await Assert.That(Int512.CreateTruncating(input)).IsEqualTo(expected);
+	
+	[Test, MethodDataSource<DataSources>(nameof(ConvertFromCheckedUInt16TestData))] public async Task ConvertFromCheckedUInt16Test(ushort input, Int512 expected) => await Assert.That(Int512.CreateChecked(input)).IsEqualTo(expected);
+	[Test, MethodDataSource<DataSources>(nameof(ConvertFromSaturatingUInt16TestData))] public async Task ConvertFromSaturatingUInt16Test(ushort input, Int512 expected) => await Assert.That(Int512.CreateSaturating(input)).IsEqualTo(expected);
+	[Test, MethodDataSource<DataSources>(nameof(ConvertFromTruncatingUInt16TestData))] public async Task ConvertFromTruncatingUInt16Test(ushort input, Int512 expected) => await Assert.That(Int512.CreateTruncating(input)).IsEqualTo(expected);
+	
+	[Test, MethodDataSource<DataSources>(nameof(ConvertFromCheckedUInt32TestData))] public async Task ConvertFromCheckedUInt32Test(uint input, Int512 expected) => await Assert.That(Int512.CreateChecked(input)).IsEqualTo(expected);
+	[Test, MethodDataSource<DataSources>(nameof(ConvertFromSaturatingUInt32TestData))] public async Task ConvertFromSaturatingUInt32Test(uint input, Int512 expected) => await Assert.That(Int512.CreateSaturating(input)).IsEqualTo(expected);
+	[Test, MethodDataSource<DataSources>(nameof(ConvertFromTruncatingUInt32TestData))] public async Task ConvertFromTruncatingUInt32Test(uint input, Int512 expected) => await Assert.That(Int512.CreateTruncating(input)).IsEqualTo(expected);
+	
+	[Test, MethodDataSource<DataSources>(nameof(ConvertFromCheckedUInt64TestData))] public async Task ConvertFromCheckedUInt64Test(ulong input, Int512 expected) => await Assert.That(Int512.CreateChecked(input)).IsEqualTo(expected);
+	[Test, MethodDataSource<DataSources>(nameof(ConvertFromSaturatingUInt64TestData))] public async Task ConvertFromSaturatingUInt64Test(ulong input, Int512 expected) => await Assert.That(Int512.CreateSaturating(input)).IsEqualTo(expected);
+	[Test, MethodDataSource<DataSources>(nameof(ConvertFromTruncatingUInt64TestData))] public async Task ConvertFromTruncatingUInt64Test(ulong input, Int512 expected) => await Assert.That(Int512.CreateTruncating(input)).IsEqualTo(expected);
+	
+	[Test, MethodDataSource<DataSources>(nameof(ConvertFromCheckedUInt128TestData))] public async Task ConvertFromCheckedUInt128Test(UInt128 input, Int512 expected) => await Assert.That(Int512.CreateChecked(input)).IsEqualTo(expected);
+	[Test, MethodDataSource<DataSources>(nameof(ConvertFromSaturatingUInt128TestData))] public async Task ConvertFromSaturatingUInt128Test(UInt128 input, Int512 expected) => await Assert.That(Int512.CreateSaturating(input)).IsEqualTo(expected);
+	[Test, MethodDataSource<DataSources>(nameof(ConvertFromTruncatingUInt128TestData))] public async Task ConvertFromTruncatingUInt128Test(UInt128 input, Int512 expected) => await Assert.That(Int512.CreateTruncating(input)).IsEqualTo(expected);
+	
+	[Test, MethodDataSource<DataSources>(nameof(ConvertFromCheckedUInt256TestData))] public async Task ConvertFromCheckedUInt256Test(UInt256 input, Int512 expected) => await Assert.That(Int512.CreateChecked(input)).IsEqualTo(expected);
+	[Test, MethodDataSource<DataSources>(nameof(ConvertFromSaturatingUInt256TestData))] public async Task ConvertFromSaturatingUInt256Test(UInt256 input, Int512 expected) => await Assert.That(Int512.CreateSaturating(input)).IsEqualTo(expected);
+	[Test, MethodDataSource<DataSources>(nameof(ConvertFromTruncatingUInt256TestData))] public async Task ConvertFromTruncatingUInt256Test(UInt256 input, Int512 expected) => await Assert.That(Int512.CreateTruncating(input)).IsEqualTo(expected);
+	
+	[Test, MethodDataSource<DataSources>(nameof(ConvertFromCheckedUInt512TestData))] public async Task ConvertFromCheckedUInt512Test(UInt512 input, Int512 expected) => await Assert.That(Int512.CreateChecked(input)).IsEqualTo(expected);
+	[Test, MethodDataSource<DataSources>(nameof(ConvertFromSaturatingUInt512TestData))] public async Task ConvertFromSaturatingUInt512Test(UInt512 input, Int512 expected) => await Assert.That(Int512.CreateSaturating(input)).IsEqualTo(expected);
+	[Test, MethodDataSource<DataSources>(nameof(ConvertFromTruncatingUInt512TestData))] public async Task ConvertFromTruncatingUInt512Test(UInt512 input, Int512 expected) => await Assert.That(Int512.CreateTruncating(input)).IsEqualTo(expected);
+	
+	[Test, MethodDataSource<DataSources>(nameof(ConvertFromCheckedSByteTestData))] public async Task ConvertFromCheckedSByteTest(sbyte input, Int512 expected) => await Assert.That(Int512.CreateChecked(input)).IsEqualTo(expected);
+	[Test, MethodDataSource<DataSources>(nameof(ConvertFromSaturatingSByteTestData))] public async Task ConvertFromSaturatingSByteTest(sbyte input, Int512 expected) => await Assert.That(Int512.CreateSaturating(input)).IsEqualTo(expected);
+	[Test, MethodDataSource<DataSources>(nameof(ConvertFromTruncatingSByteTestData))] public async Task ConvertFromTruncatingSByteTest(sbyte input, Int512 expected) => await Assert.That(Int512.CreateTruncating(input)).IsEqualTo(expected);
+	
+	[Test, MethodDataSource<DataSources>(nameof(ConvertFromCheckedInt16TestData))] public async Task ConvertFromCheckedInt16Test(short input, Int512 expected) => await Assert.That(Int512.CreateChecked(input)).IsEqualTo(expected);
+	[Test, MethodDataSource<DataSources>(nameof(ConvertFromSaturatingInt16TestData))] public async Task ConvertFromSaturatingInt16Test(short input, Int512 expected) => await Assert.That(Int512.CreateSaturating(input)).IsEqualTo(expected);
+	[Test, MethodDataSource<DataSources>(nameof(ConvertFromTruncatingInt16TestData))] public async Task ConvertFromTruncatingInt16Test(short input, Int512 expected) => await Assert.That(Int512.CreateTruncating(input)).IsEqualTo(expected);
+	
+	[Test, MethodDataSource<DataSources>(nameof(ConvertFromCheckedInt32TestData))] public async Task ConvertFromCheckedInt32Test(int input, Int512 expected) => await Assert.That(Int512.CreateChecked(input)).IsEqualTo(expected);
+	[Test, MethodDataSource<DataSources>(nameof(ConvertFromSaturatingInt32TestData))] public async Task ConvertFromSaturatingInt32Test(int input, Int512 expected) => await Assert.That(Int512.CreateSaturating(input)).IsEqualTo(expected);
+	[Test, MethodDataSource<DataSources>(nameof(ConvertFromTruncatingInt32TestData))] public async Task ConvertFromTruncatingInt32Test(int input, Int512 expected) => await Assert.That(Int512.CreateTruncating(input)).IsEqualTo(expected);
+	
+	[Test, MethodDataSource<DataSources>(nameof(ConvertFromCheckedInt64TestData))] public async Task ConvertFromCheckedInt64Test(long input, Int512 expected) => await Assert.That(Int512.CreateChecked(input)).IsEqualTo(expected);
+	[Test, MethodDataSource<DataSources>(nameof(ConvertFromSaturatingInt64TestData))] public async Task ConvertFromSaturatingInt64Test(long input, Int512 expected) => await Assert.That(Int512.CreateSaturating(input)).IsEqualTo(expected);
+	[Test, MethodDataSource<DataSources>(nameof(ConvertFromTruncatingInt64TestData))] public async Task ConvertFromTruncatingInt64Test(long input, Int512 expected) => await Assert.That(Int512.CreateTruncating(input)).IsEqualTo(expected);
+	
+	[Test, MethodDataSource<DataSources>(nameof(ConvertFromCheckedInt128TestData))] public async Task ConvertFromCheckedInt128Test(Int128 input, Int512 expected) => await Assert.That(Int512.CreateChecked(input)).IsEqualTo(expected);
+	[Test, MethodDataSource<DataSources>(nameof(ConvertFromSaturatingInt128TestData))] public async Task ConvertFromSaturatingInt128Test(Int128 input, Int512 expected) => await Assert.That(Int512.CreateSaturating(input)).IsEqualTo(expected);
+	[Test, MethodDataSource<DataSources>(nameof(ConvertFromTruncatingInt128TestData))] public async Task ConvertFromTruncatingInt128Test(Int128 input, Int512 expected) => await Assert.That(Int512.CreateTruncating(input)).IsEqualTo(expected);
+	
+	[Test, MethodDataSource<DataSources>(nameof(ConvertFromCheckedInt256TestData))] public async Task ConvertFromCheckedInt256Test(Int256 input, Int512 expected) => await Assert.That(Int512.CreateChecked(input)).IsEqualTo(expected);
+	[Test, MethodDataSource<DataSources>(nameof(ConvertFromSaturatingInt256TestData))] public async Task ConvertFromSaturatingInt256Test(Int256 input, Int512 expected) => await Assert.That(Int512.CreateSaturating(input)).IsEqualTo(expected);
+	[Test, MethodDataSource<DataSources>(nameof(ConvertFromTruncatingInt256TestData))] public async Task ConvertFromTruncatingInt256Test(Int256 input, Int512 expected) => await Assert.That(Int512.CreateTruncating(input)).IsEqualTo(expected);
+	
+	[Test, MethodDataSource<DataSources>(nameof(ConvertFromCheckedHalfTestData))] public async Task ConvertFromCheckedHalfTest(Half input, Int512 expected) => await Assert.That(Int512.CreateChecked(input)).IsEqualTo(expected);
+	[Test, MethodDataSource<DataSources>(nameof(ConvertFromSaturatingHalfTestData))] public async Task ConvertFromSaturatingHalfTest(Half input, Int512 expected) => await Assert.That(Int512.CreateSaturating(input)).IsEqualTo(expected);
+	[Test, MethodDataSource<DataSources>(nameof(ConvertFromTruncatingHalfTestData))] public async Task ConvertFromTruncatingHalfTest(Half input, Int512 expected) => await Assert.That(Int512.CreateTruncating(input)).IsEqualTo(expected);
+	
+	[Test, MethodDataSource<DataSources>(nameof(ConvertFromCheckedSingleTestData))] public async Task ConvertFromCheckedSingleTest(float input, Int512 expected) => await Assert.That(Int512.CreateChecked(input)).IsEqualTo(expected);
+	[Test, MethodDataSource<DataSources>(nameof(ConvertFromSaturatingSingleTestData))] public async Task ConvertFromSaturatingSingleTest(float input, Int512 expected) => await Assert.That(Int512.CreateSaturating(input)).IsEqualTo(expected);
+	[Test, MethodDataSource<DataSources>(nameof(ConvertFromTruncatingSingleTestData))] public async Task ConvertFromTruncatingSingleTest(float input, Int512 expected) => await Assert.That(Int512.CreateTruncating(input)).IsEqualTo(expected);
+	
+	[Test, MethodDataSource<DataSources>(nameof(ConvertFromCheckedDoubleTestData))] public async Task ConvertFromCheckedDoubleTest(double input, Int512 expected) => await Assert.That(Int512.CreateChecked(input)).IsEqualTo(expected);
+	[Test, MethodDataSource<DataSources>(nameof(ConvertFromSaturatingDoubleTestData))] public async Task ConvertFromSaturatingDoubleTest(double input, Int512 expected) => await Assert.That(Int512.CreateSaturating(input)).IsEqualTo(expected);
+	[Test, MethodDataSource<DataSources>(nameof(ConvertFromTruncatingDoubleTestData))] public async Task ConvertFromTruncatingDoubleTest(double input, Int512 expected) => await Assert.That(Int512.CreateTruncating(input)).IsEqualTo(expected);
+	
+	[Test, MethodDataSource<DataSources>(nameof(ConvertFromCheckedQuadTestData))] public async Task ConvertFromCheckedQuadTest(Quad input, Int512 expected) => await Assert.That(Int512.CreateChecked(input)).IsEqualTo(expected);
+	[Test, MethodDataSource<DataSources>(nameof(ConvertFromSaturatingQuadTestData))] public async Task ConvertFromSaturatingQuadTest(Quad input, Int512 expected) => await Assert.That(Int512.CreateSaturating(input)).IsEqualTo(expected);
+	[Test, MethodDataSource<DataSources>(nameof(ConvertFromTruncatingQuadTestData))] public async Task ConvertFromTruncatingQuadTest(Quad input, Int512 expected) => await Assert.That(Int512.CreateTruncating(input)).IsEqualTo(expected);
+	
+	[Test, MethodDataSource<DataSources>(nameof(ConvertFromCheckedOctoTestData))] public async Task ConvertFromCheckedOctoTest(Octo input, Int512 expected) => await Assert.That(Int512.CreateChecked(input)).IsEqualTo(expected);
+	[Test, MethodDataSource<DataSources>(nameof(ConvertFromSaturatingOctoTestData))] public async Task ConvertFromSaturatingOctoTest(Octo input, Int512 expected) => await Assert.That(Int512.CreateSaturating(input)).IsEqualTo(expected);
+	[Test, MethodDataSource<DataSources>(nameof(ConvertFromTruncatingOctoTestData))] public async Task ConvertFromTruncatingOctoTest(Octo input, Int512 expected) => await Assert.That(Int512.CreateTruncating(input)).IsEqualTo(expected);
+	#endregion
 }

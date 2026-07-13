@@ -1104,17 +1104,17 @@ public class UInt512DataSources
 		throw new NotImplementedException();
 	}
 
-	public static IEnumerable<Func<(UInt512, UInt512)>> ConvertToCheckedUInt512TestData()
+	public static IEnumerable<Func<(UInt512, UInt256)>> ConvertToCheckedUInt256TestData()
 	{
 		throw new NotImplementedException();
 	}
 	
-	public static IEnumerable<Func<(UInt512, UInt512)>> ConvertToSaturatingUInt512TestData()
+	public static IEnumerable<Func<(UInt512, UInt256)>> ConvertToSaturatingUInt256TestData()
 	{
 		throw new NotImplementedException();
 	}
 	
-	public static IEnumerable<Func<(UInt512, UInt512)>> ConvertToTruncatingUInt512TestData()
+	public static IEnumerable<Func<(UInt512, UInt256)>> ConvertToTruncatingUInt256TestData()
 	{
 		throw new NotImplementedException();
 	}
@@ -1383,17 +1383,17 @@ public class UInt512DataSources
 		throw new NotImplementedException();
 	}
 
-	public static IEnumerable<Func<(UInt256, UInt512)>> ConvertFromCheckedUInt512TestData()
+	public static IEnumerable<Func<(UInt256, UInt512)>> ConvertFromCheckedUInt256TestData()
 	{
 		throw new NotImplementedException();
 	}
 	
-	public static IEnumerable<Func<(UInt256, UInt512)>> ConvertFromSaturatingUInt512TestData()
+	public static IEnumerable<Func<(UInt256, UInt512)>> ConvertFromSaturatingUInt256TestData()
 	{
 		throw new NotImplementedException();
 	}
 	
-	public static IEnumerable<Func<(UInt256, UInt512)>> ConvertFromTruncatingUInt512TestData()
+	public static IEnumerable<Func<(UInt256, UInt512)>> ConvertFromTruncatingUInt256TestData()
 	{
 		throw new NotImplementedException();
 	}
