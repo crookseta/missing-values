@@ -14,6 +14,7 @@ public static class UInt256Extensions
 		public static UInt256 Int64MaxValue => new(0, 0, 0x0000_0000_0000_0000, 0x7FFF_FFFF_FFFF_FFFF);
 		public static UInt256 Int128MaxValue => new(0, 0, 0x7FFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF);
 		public static UInt256 UInt128MaxValue => new(0, 0, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF);
+		public static UInt256 Int256MaxValue => new(0x7FFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF);
 
 		public static UInt256 Two => new(0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0002);
 		public static UInt256 MaxValueMinusOne => new(0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFE);
