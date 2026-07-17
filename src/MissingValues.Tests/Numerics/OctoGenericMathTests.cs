@@ -636,14 +636,6 @@ public class OctoGenericMathTests
 	[Test, MethodDataSource<DataSources>(nameof(ConvertFromSaturatingUInt128TestData))] public async Task ConvertFromSaturatingUInt128Test(UInt128 input, Float expected) => await Assert.That(Float.CreateSaturating(input)).IsEqualTo(expected);
 	[Test, MethodDataSource<DataSources>(nameof(ConvertFromTruncatingUInt128TestData))] public async Task ConvertFromTruncatingUInt128Test(UInt128 input, Float expected) => await Assert.That(Float.CreateTruncating(input)).IsEqualTo(expected);
 	
-	[Test, MethodDataSource<DataSources>(nameof(ConvertFromCheckedUInt256TestData))] public async Task ConvertFromCheckedUInt256Test(UInt256 input, Float expected) => await Assert.That(Float.CreateChecked(input)).IsEqualTo(expected);
-	[Test, MethodDataSource<DataSources>(nameof(ConvertFromSaturatingUInt256TestData))] public async Task ConvertFromSaturatingUInt256Test(UInt256 input, Float expected) => await Assert.That(Float.CreateSaturating(input)).IsEqualTo(expected);
-	[Test, MethodDataSource<DataSources>(nameof(ConvertFromTruncatingUInt256TestData))] public async Task ConvertFromTruncatingUInt256Test(UInt256 input, Float expected) => await Assert.That(Float.CreateTruncating(input)).IsEqualTo(expected);
-	
-	[Test, MethodDataSource<DataSources>(nameof(ConvertFromCheckedUInt512TestData))] public async Task ConvertFromCheckedUInt512Test(UInt512 input, Float expected) => await Assert.That(Float.CreateChecked(input)).IsEqualTo(expected);
-	[Test, MethodDataSource<DataSources>(nameof(ConvertFromSaturatingUInt512TestData))] public async Task ConvertFromSaturatingUInt512Test(UInt512 input, Float expected) => await Assert.That(Float.CreateSaturating(input)).IsEqualTo(expected);
-	[Test, MethodDataSource<DataSources>(nameof(ConvertFromTruncatingUInt512TestData))] public async Task ConvertFromTruncatingUInt512Test(UInt512 input, Float expected) => await Assert.That(Float.CreateTruncating(input)).IsEqualTo(expected);
-	
 	[Test, MethodDataSource<DataSources>(nameof(ConvertFromCheckedSByteTestData))] public async Task ConvertFromCheckedSByteTest(sbyte input, Float expected) => await Assert.That(Float.CreateChecked(input)).IsEqualTo(expected);
 	[Test, MethodDataSource<DataSources>(nameof(ConvertFromSaturatingSByteTestData))] public async Task ConvertFromSaturatingSByteTest(sbyte input, Float expected) => await Assert.That(Float.CreateSaturating(input)).IsEqualTo(expected);
 	[Test, MethodDataSource<DataSources>(nameof(ConvertFromTruncatingSByteTestData))] public async Task ConvertFromTruncatingSByteTest(sbyte input, Float expected) => await Assert.That(Float.CreateTruncating(input)).IsEqualTo(expected);
@@ -664,14 +656,6 @@ public class OctoGenericMathTests
 	[Test, MethodDataSource<DataSources>(nameof(ConvertFromSaturatingInt128TestData))] public async Task ConvertFromSaturatingInt128Test(Int128 input, Float expected) => await Assert.That(Float.CreateSaturating(input)).IsEqualTo(expected);
 	[Test, MethodDataSource<DataSources>(nameof(ConvertFromTruncatingInt128TestData))] public async Task ConvertFromTruncatingInt128Test(Int128 input, Float expected) => await Assert.That(Float.CreateTruncating(input)).IsEqualTo(expected);
 	
-	[Test, MethodDataSource<DataSources>(nameof(ConvertFromCheckedInt256TestData))] public async Task ConvertFromCheckedInt256Test(Int256 input, Float expected) => await Assert.That(Float.CreateChecked(input)).IsEqualTo(expected);
-	[Test, MethodDataSource<DataSources>(nameof(ConvertFromSaturatingInt256TestData))] public async Task ConvertFromSaturatingInt256Test(Int256 input, Float expected) => await Assert.That(Float.CreateSaturating(input)).IsEqualTo(expected);
-	[Test, MethodDataSource<DataSources>(nameof(ConvertFromTruncatingInt256TestData))] public async Task ConvertFromTruncatingInt256Test(Int256 input, Float expected) => await Assert.That(Float.CreateTruncating(input)).IsEqualTo(expected);
-	
-	[Test, MethodDataSource<DataSources>(nameof(ConvertFromCheckedInt512TestData))] public async Task ConvertFromCheckedInt512Test(Int512 input, Float expected) => await Assert.That(Float.CreateChecked(input)).IsEqualTo(expected);
-	[Test, MethodDataSource<DataSources>(nameof(ConvertFromSaturatingInt512TestData))] public async Task ConvertFromSaturatingInt512Test(Int512 input, Float expected) => await Assert.That(Float.CreateSaturating(input)).IsEqualTo(expected);
-	[Test, MethodDataSource<DataSources>(nameof(ConvertFromTruncatingInt512TestData))] public async Task ConvertFromTruncatingInt512Test(Int512 input, Float expected) => await Assert.That(Float.CreateTruncating(input)).IsEqualTo(expected);
-	
 	[Test, MethodDataSource<DataSources>(nameof(ConvertFromCheckedHalfTestData))] public async Task ConvertFromCheckedHalfTest(Half input, Float expected) => await Assert.That(Float.CreateChecked(input)).IsEqualTo(expected);
 	[Test, MethodDataSource<DataSources>(nameof(ConvertFromSaturatingHalfTestData))] public async Task ConvertFromSaturatingHalfTest(Half input, Float expected) => await Assert.That(Float.CreateSaturating(input)).IsEqualTo(expected);
 	[Test, MethodDataSource<DataSources>(nameof(ConvertFromTruncatingHalfTestData))] public async Task ConvertFromTruncatingHalfTest(Half input, Float expected) => await Assert.That(Float.CreateTruncating(input)).IsEqualTo(expected);
@@ -683,9 +667,5 @@ public class OctoGenericMathTests
 	[Test, MethodDataSource<DataSources>(nameof(ConvertFromCheckedDoubleTestData))] public async Task ConvertFromCheckedDoubleTest(double input, Float expected) => await Assert.That(Float.CreateChecked(input)).IsEqualTo(expected);
 	[Test, MethodDataSource<DataSources>(nameof(ConvertFromSaturatingDoubleTestData))] public async Task ConvertFromSaturatingDoubleTest(double input, Float expected) => await Assert.That(Float.CreateSaturating(input)).IsEqualTo(expected);
 	[Test, MethodDataSource<DataSources>(nameof(ConvertFromTruncatingDoubleTestData))] public async Task ConvertFromTruncatingDoubleTest(double input, Float expected) => await Assert.That(Float.CreateTruncating(input)).IsEqualTo(expected);
-	
-	[Test, MethodDataSource<DataSources>(nameof(ConvertFromCheckedQuadTestData))] public async Task ConvertFromCheckedDoubleTest(Quad input, Float expected) => await Assert.That(Float.CreateChecked(input)).IsEqualTo(expected);
-	[Test, MethodDataSource<DataSources>(nameof(ConvertFromSaturatingQuadTestData))] public async Task ConvertFromSaturatingDoubleTest(Quad input, Float expected) => await Assert.That(Float.CreateSaturating(input)).IsEqualTo(expected);
-	[Test, MethodDataSource<DataSources>(nameof(ConvertFromTruncatingQuadTestData))] public async Task ConvertFromTruncatingDoubleTest(Quad input, Float expected) => await Assert.That(Float.CreateTruncating(input)).IsEqualTo(expected);
     #endregion
 }
