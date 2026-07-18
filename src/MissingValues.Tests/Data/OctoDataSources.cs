@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Numerics;
 using System.Text;
 using MissingValues.Tests.Data.Sources;
 using MissingValues.Tests.Extensions;
@@ -1084,6 +1085,21 @@ public class OctoDataSources
 	{
 		throw new NotImplementedException();
 	}
+	
+	public static IEnumerable<Func<(Octo, BigInteger)>> ConvertToCheckedBigIntegerTestData()
+	{
+		throw new NotImplementedException();
+	}
+
+	public static IEnumerable<Func<(Octo, BigInteger)>> ConvertToSaturatingBigIntegerTestData()
+	{
+		throw new NotImplementedException();
+	}
+
+	public static IEnumerable<Func<(Octo, BigInteger)>> ConvertToTruncatingBigIntegerTestData()
+	{
+		throw new NotImplementedException();
+	}
 
 	public static IEnumerable<Func<(Octo, Half)>> ConvertToCheckedHalfTestData()
 	{
@@ -1291,6 +1307,21 @@ public class OctoDataSources
 	}
 	
 	public static IEnumerable<Func<(Int128, Octo)>> ConvertFromTruncatingInt128TestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(BigInteger, Octo)>> ConvertFromCheckedBigIntegerTestData()
+	{
+		throw new NotImplementedException();
+	}
+
+	public static IEnumerable<Func<(BigInteger, Octo)>> ConvertFromSaturatingBigIntegerTestData()
+	{
+		throw new NotImplementedException();
+	}
+
+	public static IEnumerable<Func<(BigInteger, Octo)>> ConvertFromTruncatingBigIntegerTestData()
 	{
 		throw new NotImplementedException();
 	}

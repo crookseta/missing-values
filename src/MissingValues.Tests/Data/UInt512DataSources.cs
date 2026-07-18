@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading.Tasks;
@@ -1223,6 +1224,21 @@ public class UInt512DataSources
 	{
 		throw new NotImplementedException();
 	}
+	
+	public static IEnumerable<Func<(UInt512, BigInteger)>> ConvertToCheckedBigIntegerTestData()
+	{
+		throw new NotImplementedException();
+	}
+
+	public static IEnumerable<Func<(UInt512, BigInteger)>> ConvertToSaturatingBigIntegerTestData()
+	{
+		throw new NotImplementedException();
+	}
+
+	public static IEnumerable<Func<(UInt512, BigInteger)>> ConvertToTruncatingBigIntegerTestData()
+	{
+		throw new NotImplementedException();
+	}
 
 	public static IEnumerable<Func<(UInt512, Half)>> ConvertToCheckedHalfTestData()
 	{
@@ -1454,6 +1470,21 @@ public class UInt512DataSources
 	}
 	
 	public static IEnumerable<Func<(Int128, UInt512)>> ConvertFromTruncatingInt128TestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(BigInteger, UInt512)>> ConvertFromCheckedBigIntegerTestData()
+	{
+		throw new NotImplementedException();
+	}
+
+	public static IEnumerable<Func<(BigInteger, UInt512)>> ConvertFromSaturatingBigIntegerTestData()
+	{
+		throw new NotImplementedException();
+	}
+
+	public static IEnumerable<Func<(BigInteger, UInt512)>> ConvertFromTruncatingBigIntegerTestData()
 	{
 		throw new NotImplementedException();
 	}

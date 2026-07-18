@@ -1244,6 +1244,21 @@ public class UInt256DataSources
 		yield return () => (UInt256.MaxValue, Int512.UInt256MaxValue);
 	}
 
+	public static IEnumerable<Func<(UInt256, BigInteger)>> ConvertToCheckedBigIntegerTestData()
+	{
+		throw new NotImplementedException();
+	}
+
+	public static IEnumerable<Func<(UInt256, BigInteger)>> ConvertToSaturatingBigIntegerTestData()
+	{
+		throw new NotImplementedException();
+	}
+
+	public static IEnumerable<Func<(UInt256, BigInteger)>> ConvertToTruncatingBigIntegerTestData()
+	{
+		throw new NotImplementedException();
+	}
+
 	public static IEnumerable<Func<(UInt256, Half)>> ConvertToCheckedHalfTestData()
 	{
 		yield return () => (UInt256.One, Half.One);
@@ -1724,9 +1739,61 @@ public class UInt256DataSources
 		yield return () => (Int128.MaxValue, UInt256.Int128MaxValue);
 	}
 
+	public static IEnumerable<Func<(BigInteger, UInt256)>> ConvertFromCheckedBigIntegerTestData()
+	{
+		yield return () => (BigInteger.One, UInt256.One);
+		yield return () => ((BigInteger)byte.MaxValue, UInt256.ByteMaxValue);
+		yield return () => ((BigInteger)sbyte.MaxValue, UInt256.SByteMaxValue);
+		yield return () => ((BigInteger)short.MaxValue, UInt256.Int16MaxValue);
+		yield return () => ((BigInteger)ushort.MaxValue, UInt256.UInt16MaxValue);
+		yield return () => ((BigInteger)int.MaxValue, UInt256.Int32MaxValue);
+		yield return () => ((BigInteger)uint.MaxValue, UInt256.UInt32MaxValue);
+		yield return () => ((BigInteger)long.MaxValue, UInt256.Int64MaxValue);
+		yield return () => ((BigInteger)ulong.MaxValue, UInt256.UInt64MaxValue);
+		yield return () => ((BigInteger)Int128.MaxValue, UInt256.Int128MaxValue);
+		yield return () => ((BigInteger)UInt128.MaxValue, UInt256.UInt128MaxValue);
+		yield return () => (BigInteger.Parse("115792089237316195423570985008687907853269984665640564039457584007913129639935"), UInt256.MaxValue);
+	}
+
+	public static IEnumerable<Func<(BigInteger, UInt256)>> ConvertFromSaturatingBigIntegerTestData()
+	{
+		yield return () => (BigInteger.One, UInt256.One);
+		yield return () => ((BigInteger)byte.MaxValue, UInt256.ByteMaxValue);
+		yield return () => ((BigInteger)sbyte.MaxValue, UInt256.SByteMaxValue);
+		yield return () => ((BigInteger)short.MaxValue, UInt256.Int16MaxValue);
+		yield return () => ((BigInteger)ushort.MaxValue, UInt256.UInt16MaxValue);
+		yield return () => ((BigInteger)int.MaxValue, UInt256.Int32MaxValue);
+		yield return () => ((BigInteger)uint.MaxValue, UInt256.UInt32MaxValue);
+		yield return () => ((BigInteger)long.MaxValue, UInt256.Int64MaxValue);
+		yield return () => ((BigInteger)ulong.MaxValue, UInt256.UInt64MaxValue);
+		yield return () => ((BigInteger)Int128.MaxValue, UInt256.Int128MaxValue);
+		yield return () => ((BigInteger)UInt128.MaxValue, UInt256.UInt128MaxValue);
+		yield return () => (BigInteger.Parse("115792089237316195423570985008687907853269984665640564039457584007913129639935"), UInt256.MaxValue);
+		yield return () => (BigInteger.Parse("115792089237316195423570985008687907853269984665640564039457584007913129639936"), UInt256.MaxValue);
+		yield return () => (BigInteger.Parse("13407807929942597099574024998205846127479365820592393377723561443721764030073546976801874298166903427690031858186486050853753882811946569946433649006084095"), UInt256.MaxValue);
+	}
+
+	public static IEnumerable<Func<(BigInteger, UInt256)>> ConvertFromTruncatingBigIntegerTestData()
+	{
+		yield return () => (BigInteger.One, UInt256.One);
+		yield return () => ((BigInteger)byte.MaxValue, UInt256.ByteMaxValue);
+		yield return () => ((BigInteger)sbyte.MaxValue, UInt256.SByteMaxValue);
+		yield return () => ((BigInteger)short.MaxValue, UInt256.Int16MaxValue);
+		yield return () => ((BigInteger)ushort.MaxValue, UInt256.UInt16MaxValue);
+		yield return () => ((BigInteger)int.MaxValue, UInt256.Int32MaxValue);
+		yield return () => ((BigInteger)uint.MaxValue, UInt256.UInt32MaxValue);
+		yield return () => ((BigInteger)long.MaxValue, UInt256.Int64MaxValue);
+		yield return () => ((BigInteger)ulong.MaxValue, UInt256.UInt64MaxValue);
+		yield return () => ((BigInteger)Int128.MaxValue, UInt256.Int128MaxValue);
+		yield return () => ((BigInteger)UInt128.MaxValue, UInt256.UInt128MaxValue);
+		yield return () => (BigInteger.Parse("115792089237316195423570985008687907853269984665640564039457584007913129639935"), UInt256.MaxValue);
+		yield return () => (BigInteger.Parse("115792089237316195423570985008687907853269984665640564039457584007913129639936"), UInt256.Zero);
+		yield return () => (BigInteger.Parse("13407807929942597099574024998205846127479365820592393377723561443721764030073546976801874298166903427690031858186486050853753882811946569946433649006084095"), UInt256.MaxValue);
+	}
+
 	public static IEnumerable<Func<(Half, UInt256)>> ConvertFromCheckedHalfTestData()
 	{
-		yield return () => ((Half)1f, UInt256.One);
+		yield return () => (Half.One, UInt256.One);
 		yield return () => (byte.MaxValue, UInt256.ByteMaxValue);
 		yield return () => (sbyte.MaxValue, UInt256.SByteMaxValue);
 	}
@@ -1734,7 +1801,7 @@ public class UInt256DataSources
 	public static IEnumerable<Func<(Half, UInt256)>> ConvertFromSaturatingHalfTestData()
 	{
 		yield return () => (Half.MinValue, UInt256.Zero);
-		yield return () => ((Half)1f, UInt256.One);
+		yield return () => (Half.One, UInt256.One);
 		yield return () => (byte.MaxValue, UInt256.ByteMaxValue);
 		yield return () => (sbyte.MaxValue, UInt256.SByteMaxValue);
 	}
@@ -1742,7 +1809,7 @@ public class UInt256DataSources
 	public static IEnumerable<Func<(Half, UInt256)>> ConvertFromTruncatingHalfTestData()
 	{
 		yield return () => (Half.MinValue, UInt256.Zero);
-		yield return () => ((Half)1f, UInt256.One);
+		yield return () => (Half.One, UInt256.One);
 		yield return () => (byte.MaxValue, UInt256.ByteMaxValue);
 		yield return () => (sbyte.MaxValue, UInt256.SByteMaxValue);
 	}

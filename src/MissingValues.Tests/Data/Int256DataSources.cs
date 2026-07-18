@@ -1,4 +1,5 @@
 ﻿using System.Globalization;
+using System.Numerics;
 using System.Runtime.CompilerServices;
 using MissingValues.Tests.Data.Sources;
 
@@ -1354,6 +1355,21 @@ public class Int256DataSources
 	{
 		throw new NotImplementedException();
 	}
+	
+	public static IEnumerable<Func<(Int256, BigInteger)>> ConvertToCheckedBigIntegerTestData()
+	{
+		throw new NotImplementedException();
+	}
+
+	public static IEnumerable<Func<(Int256, BigInteger)>> ConvertToSaturatingBigIntegerTestData()
+	{
+		throw new NotImplementedException();
+	}
+
+	public static IEnumerable<Func<(Int256, BigInteger)>> ConvertToTruncatingBigIntegerTestData()
+	{
+		throw new NotImplementedException();
+	}
 
 	public static IEnumerable<Func<(Int256, Half)>> ConvertToCheckedHalfTestData()
 	{
@@ -1585,6 +1601,21 @@ public class Int256DataSources
 	}
 	
 	public static IEnumerable<Func<(Int128, Int256)>> ConvertFromTruncatingInt128TestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(BigInteger, Int256)>> ConvertFromCheckedBigIntegerTestData()
+	{
+		throw new NotImplementedException();
+	}
+
+	public static IEnumerable<Func<(BigInteger, Int256)>> ConvertFromSaturatingBigIntegerTestData()
+	{
+		throw new NotImplementedException();
+	}
+
+	public static IEnumerable<Func<(BigInteger, Int256)>> ConvertFromTruncatingBigIntegerTestData()
 	{
 		throw new NotImplementedException();
 	}

@@ -1,4 +1,5 @@
 ﻿using System.Globalization;
+using System.Numerics;
 using System.Runtime.CompilerServices;
 using MissingValues.Tests.Data.Sources;
 
@@ -1577,6 +1578,21 @@ public class Int512DataSources
 	{
 		throw new NotImplementedException();
 	}
+	
+	public static IEnumerable<Func<(Int512, BigInteger)>> ConvertToCheckedBigIntegerTestData()
+	{
+		throw new NotImplementedException();
+	}
+
+	public static IEnumerable<Func<(Int512, BigInteger)>> ConvertToSaturatingBigIntegerTestData()
+	{
+		throw new NotImplementedException();
+	}
+
+	public static IEnumerable<Func<(Int512, BigInteger)>> ConvertToTruncatingBigIntegerTestData()
+	{
+		throw new NotImplementedException();
+	}
 
 	public static IEnumerable<Func<(Int512, Half)>> ConvertToCheckedHalfTestData()
 	{
@@ -1818,6 +1834,21 @@ public class Int512DataSources
 	}
 	
 	public static IEnumerable<Func<(Int128, Int512)>> ConvertFromTruncatingInt128TestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(BigInteger, Int512)>> ConvertFromCheckedBigIntegerTestData()
+	{
+		throw new NotImplementedException();
+	}
+
+	public static IEnumerable<Func<(BigInteger, Int512)>> ConvertFromSaturatingBigIntegerTestData()
+	{
+		throw new NotImplementedException();
+	}
+
+	public static IEnumerable<Func<(BigInteger, Int512)>> ConvertFromTruncatingBigIntegerTestData()
 	{
 		throw new NotImplementedException();
 	}

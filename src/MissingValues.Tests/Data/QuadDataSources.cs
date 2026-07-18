@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Numerics;
 using System.Text;
 using MissingValues.Tests.Data.Sources;
 using MissingValues.Tests.Extensions;
@@ -1105,6 +1106,21 @@ public class QuadDataSources
 	{
 		throw new NotImplementedException();
 	}
+	
+	public static IEnumerable<Func<(Quad, BigInteger)>> ConvertToCheckedBigIntegerTestData()
+	{
+		throw new NotImplementedException();
+	}
+
+	public static IEnumerable<Func<(Quad, BigInteger)>> ConvertToSaturatingBigIntegerTestData()
+	{
+		throw new NotImplementedException();
+	}
+
+	public static IEnumerable<Func<(Quad, BigInteger)>> ConvertToTruncatingBigIntegerTestData()
+	{
+		throw new NotImplementedException();
+	}
 
 	public static IEnumerable<Func<(Quad, Half)>> ConvertToCheckedHalfTestData()
 	{
@@ -1312,6 +1328,21 @@ public class QuadDataSources
 	}
 	
 	public static IEnumerable<Func<(Int128, Quad)>> ConvertFromTruncatingInt128TestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(BigInteger, Quad)>> ConvertFromCheckedBigIntegerTestData()
+	{
+		throw new NotImplementedException();
+	}
+
+	public static IEnumerable<Func<(BigInteger, Quad)>> ConvertFromSaturatingBigIntegerTestData()
+	{
+		throw new NotImplementedException();
+	}
+
+	public static IEnumerable<Func<(BigInteger, Quad)>> ConvertFromTruncatingBigIntegerTestData()
 	{
 		throw new NotImplementedException();
 	}
