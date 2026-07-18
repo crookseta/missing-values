@@ -1686,17 +1686,33 @@ public class Int256DataSources
 
 	public static IEnumerable<Func<(Int256, Half)>> ConvertToCheckedHalfTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int256.Int16MinValue, (Half)short.MinValue);
+		yield return () => (Int256.SByteMinValue, (Half)sbyte.MinValue);
+		yield return () => (Int256.One, Half.One);
+		yield return () => (Int256.SByteMaxValue, (Half)sbyte.MaxValue);
+		yield return () => (Int256.Int16MaxValue, (Half)short.MaxValue);
 	}
 	
 	public static IEnumerable<Func<(Int256, Half)>> ConvertToSaturatingHalfTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int256.MinValue, Half.MinValue);
+		yield return () => (Int256.Int16MinValue, (Half)short.MinValue);
+		yield return () => (Int256.SByteMinValue, (Half)sbyte.MinValue);
+		yield return () => (Int256.One, Half.One);
+		yield return () => (Int256.SByteMaxValue, (Half)sbyte.MaxValue);
+		yield return () => (Int256.Int16MaxValue, (Half)short.MaxValue);
+		yield return () => (Int256.MaxValue, Half.MaxValue);
 	}
 	
 	public static IEnumerable<Func<(Int256, Half)>> ConvertToTruncatingHalfTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int256.MinValue, Half.MinValue);
+		yield return () => (Int256.Int16MinValue, (Half)short.MinValue);
+		yield return () => (Int256.SByteMinValue, (Half)sbyte.MinValue);
+		yield return () => (Int256.One, Half.One);
+		yield return () => (Int256.SByteMaxValue, (Half)sbyte.MaxValue);
+		yield return () => (Int256.Int16MaxValue, (Half)short.MaxValue);
+		yield return () => (Int256.MaxValue, Half.MaxValue);
 	}
 
 	public static IEnumerable<Func<(Int256, float)>> ConvertToCheckedSingleTestData()
