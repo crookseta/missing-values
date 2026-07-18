@@ -1246,17 +1246,35 @@ public class UInt256DataSources
 
 	public static IEnumerable<Func<(UInt256, BigInteger)>> ConvertToCheckedBigIntegerTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (UInt256.One, UInt128.One);
+		yield return () => (UInt256.ByteMaxValue, byte.MaxValue);
+		yield return () => (UInt256.UInt16MaxValue, ushort.MaxValue);
+		yield return () => (UInt256.UInt32MaxValue, uint.MaxValue);
+		yield return () => (UInt256.UInt64MaxValue, ulong.MaxValue);
+		yield return () => (UInt256.UInt128MaxValue, UInt128.MaxValue);
+		yield return () => (UInt256.MaxValue, BigInteger.Parse("115792089237316195423570985008687907853269984665640564039457584007913129639935"));
 	}
 
 	public static IEnumerable<Func<(UInt256, BigInteger)>> ConvertToSaturatingBigIntegerTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (UInt256.One, UInt128.One);
+		yield return () => (UInt256.ByteMaxValue, byte.MaxValue);
+		yield return () => (UInt256.UInt16MaxValue, ushort.MaxValue);
+		yield return () => (UInt256.UInt32MaxValue, uint.MaxValue);
+		yield return () => (UInt256.UInt64MaxValue, ulong.MaxValue);
+		yield return () => (UInt256.UInt128MaxValue, UInt128.MaxValue);
+		yield return () => (UInt256.MaxValue, BigInteger.Parse("115792089237316195423570985008687907853269984665640564039457584007913129639935"));
 	}
 
 	public static IEnumerable<Func<(UInt256, BigInteger)>> ConvertToTruncatingBigIntegerTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (UInt256.One, UInt128.One);
+		yield return () => (UInt256.ByteMaxValue, byte.MaxValue);
+		yield return () => (UInt256.UInt16MaxValue, ushort.MaxValue);
+		yield return () => (UInt256.UInt32MaxValue, uint.MaxValue);
+		yield return () => (UInt256.UInt64MaxValue, ulong.MaxValue);
+		yield return () => (UInt256.UInt128MaxValue, UInt128.MaxValue);
+		yield return () => (UInt256.MaxValue, BigInteger.Parse("115792089237316195423570985008687907853269984665640564039457584007913129639935"));
 	}
 
 	public static IEnumerable<Func<(UInt256, Half)>> ConvertToCheckedHalfTestData()
