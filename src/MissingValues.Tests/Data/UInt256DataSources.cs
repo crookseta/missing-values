@@ -1404,9 +1404,6 @@ public class UInt256DataSources
 			781377183594418599030564404241984000000000000000000.0d);
 	}
 
-	// TODO: Add test for BigInteger conversion
-	// public static IEnumerable<Func<(UInt256, BigInteger)>> ConvertToCheckedBigIntegerTestData();
-
 	public static IEnumerable<Func<(UInt256, Quad)>> ConvertToCheckedQuadTestData()
 	{
 		yield return () => (UInt256.One, Quad.One);
@@ -1418,7 +1415,6 @@ public class UInt256DataSources
 		yield return () => (UInt256.UInt32MaxValue, Quad.UInt32MaxValue);
 		yield return () => (UInt256.Int64MaxValue, Quad.Int64MaxValue);
 		yield return () => (UInt256.UInt64MaxValue, Quad.UInt64MaxValue);
-		// TODO: Also test for higher numeric values.
 	}
 	
 	public static IEnumerable<Func<(UInt256, Quad)>> ConvertToSaturatingQuadTestData()
@@ -1458,7 +1454,8 @@ public class UInt256DataSources
 		yield return () => (UInt256.UInt32MaxValue, Octo.UInt32MaxValue);
 		yield return () => (UInt256.Int64MaxValue, Octo.Int64MaxValue);
 		yield return () => (UInt256.UInt64MaxValue, Octo.UInt64MaxValue);
-		// TODO: Also test for higher numeric values.
+		yield return () => (UInt256.Int128MaxValue, Octo.Int128MaxValue);
+		yield return () => (UInt256.UInt128MaxValue, Octo.UInt128MaxValue);
 	}
 	
 	public static IEnumerable<Func<(UInt256, Octo)>> ConvertToSaturatingOctoTestData()
@@ -1472,6 +1469,8 @@ public class UInt256DataSources
 		yield return () => (UInt256.UInt32MaxValue, Octo.UInt32MaxValue);
 		yield return () => (UInt256.Int64MaxValue, Octo.Int64MaxValue);
 		yield return () => (UInt256.UInt64MaxValue, Octo.UInt64MaxValue);
+		yield return () => (UInt256.Int128MaxValue, Octo.Int128MaxValue);
+		yield return () => (UInt256.UInt128MaxValue, Octo.UInt128MaxValue);
 	}
 	
 	public static IEnumerable<Func<(UInt256, Octo)>> ConvertToTruncatingOctoTestData()
@@ -1485,6 +1484,8 @@ public class UInt256DataSources
 		yield return () => (UInt256.UInt32MaxValue, Octo.UInt32MaxValue);
 		yield return () => (UInt256.Int64MaxValue, Octo.Int64MaxValue);
 		yield return () => (UInt256.UInt64MaxValue, Octo.UInt64MaxValue);
+		yield return () => (UInt256.Int128MaxValue, Octo.Int128MaxValue);
+		yield return () => (UInt256.UInt128MaxValue, Octo.UInt128MaxValue);
 	}
 
 	public static IEnumerable<Func<(byte, UInt256)>> ConvertFromCheckedByteTestData()
