@@ -2127,7 +2127,7 @@ public class Int256DataSources
 		yield return () => (int.MinValue, Int256.Int32MinValue);
 		yield return () => (short.MinValue, Int256.Int16MinValue);
 		yield return () => (sbyte.MinValue, Int256.SByteMinValue);
-		yield return () => (1, Int256.One);
+		yield return () => (Int128.One, Int256.One);
 		yield return () => (sbyte.MaxValue, Int256.SByteMaxValue);
 		yield return () => (short.MaxValue, Int256.Int16MaxValue);
 		yield return () => (int.MaxValue, Int256.Int32MaxValue);
@@ -2282,7 +2282,7 @@ public class Int256DataSources
 		yield return () => (int.MinValue, Int256.Int32MinValue);
 		yield return () => (short.MinValue, Int256.Int16MinValue);
 		yield return () => (sbyte.MinValue, Int256.SByteMinValue);
-		yield return () => (1f, Int256.One);
+		yield return () => (1d, Int256.One);
 		yield return () => (byte.MaxValue, Int256.ByteMaxValue);
 		yield return () => (sbyte.MaxValue, Int256.SByteMaxValue);
 		yield return () => (short.MaxValue, Int256.Int16MaxValue);
@@ -2296,7 +2296,7 @@ public class Int256DataSources
 		yield return () => (int.MinValue, Int256.Int32MinValue);
 		yield return () => (short.MinValue, Int256.Int16MinValue);
 		yield return () => (sbyte.MinValue, Int256.SByteMinValue);
-		yield return () => (1f, Int256.One);
+		yield return () => (1d, Int256.One);
 		yield return () => (byte.MaxValue, Int256.ByteMaxValue);
 		yield return () => (sbyte.MaxValue, Int256.SByteMaxValue);
 		yield return () => (short.MaxValue, Int256.Int16MaxValue);
@@ -2310,7 +2310,7 @@ public class Int256DataSources
 		yield return () => (int.MinValue, Int256.Int32MinValue);
 		yield return () => (short.MinValue, Int256.Int16MinValue);
 		yield return () => (sbyte.MinValue, Int256.SByteMinValue);
-		yield return () => (1f, Int256.One);
+		yield return () => (1d, Int256.One);
 		yield return () => (byte.MaxValue, Int256.ByteMaxValue);
 		yield return () => (sbyte.MaxValue, Int256.SByteMaxValue);
 		yield return () => (short.MaxValue, Int256.Int16MaxValue);

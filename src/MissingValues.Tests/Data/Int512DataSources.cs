@@ -2,6 +2,7 @@
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using MissingValues.Tests.Data.Sources;
+using MissingValues.Tests.Extensions;
 
 namespace MissingValues.Tests.Data;
 
@@ -121,7 +122,7 @@ public class Int512DataSources
 		yield return () => (Int512.One, Int512.NegativeOne, Int512.NegativeOne, false);
 		yield return () => (Int512.NegativeOne, Int512.NegativeOne, Int512.One, false);
 		yield return () => (new Int512(0, 0, 0, 0, 0, 0, 0, 2), new Int512(0, 0, 0, 0, 0, 0, 0, 3), new Int512(0, 0, 0, 0, 0, 0, 0, 6), false);
-		yield return () => (new Int512(0, 0, 0, 0, 0, 0, 0, ulong.MaxValue), new Int256(0, 0, 0, 2), new Int256(0, 0, 1, ulong.MaxValue - 1), false);
+		yield return () => (new Int512(0, 0, 0, 0, 0, 0, 0, ulong.MaxValue), new Int512(0, 0, 0, 0, 0, 0, 0, 2), new Int512(0, 0, 0, 0, 0, 0, 1, ulong.MaxValue - 1), false);
 		yield return () => (
 			new Int512(0, 0, 0, 0, 0, 0, 0, ulong.MaxValue), 
 			new Int512(0, 0, 0, 0, 0, 0, 0, ulong.MaxValue), 
@@ -199,7 +200,7 @@ public class Int512DataSources
 		yield return () => (new Int512(0, 0, 0, 0, 0, 0, 0, 4), new Int512(0, 0, 0, 0, 0, 0, 0, 2), new Int512(0, 0, 0, 0, 0, 0, 0, 2));
 		yield return () => (Int512.MaxValue, Int512.One, Int512.MaxValue);
 		yield return () => (Int512.MinValue, Int512.One, Int512.MinValue);
-		yield return () => (Int512.Zero, Int512.MaxValue, Int256.Zero);
+		yield return () => (Int512.Zero, Int512.MaxValue, Int512.Zero);
 		yield return () => (Int512.MaxValue, Int512.MaxValue, Int512.One);
 		yield return () => (Int512.MinValue, Int512.MinValue, Int512.One);
 		yield return () => (new Int512(0, 0, 0, 0, 0, 0, 1, 0), new Int512(0, 0, 0, 0, 0, 1, 0, 0), Int512.Zero);
@@ -247,7 +248,7 @@ public class Int512DataSources
 		yield return () => (Int512.One, Int512.NegativeOne, Int512.NegativeOne);
 		yield return () => (Int512.NegativeOne, Int512.NegativeOne, Int512.One);
 		yield return () => (new Int512(0, 0, 0, 0, 0, 0, 0, 2), new Int512(0, 0, 0, 0, 0, 0, 0, 3), new Int512(0, 0, 0, 0, 0, 0, 0, 6));
-		yield return () => (new Int512(0, 0, 0, 0, 0, 0, 0, ulong.MaxValue), new Int256(0, 0, 0, 2), new Int256(0, 0, 1, ulong.MaxValue - 1));
+		yield return () => (new Int512(0, 0, 0, 0, 0, 0, 0, ulong.MaxValue), new Int512(0, 0, 0, 0, 0, 0, 0, 2), new Int512(0, 0, 0, 0, 0, 0, 1, ulong.MaxValue - 1));
 		yield return () => (
 			new Int512(0, 0, 0, 0, 0, 0, 0, ulong.MaxValue), 
 			new Int512(0, 0, 0, 0, 0, 0, 0, ulong.MaxValue), 
@@ -645,7 +646,7 @@ public class Int512DataSources
 	public static IEnumerable<Func<(string, NumberStyles, IFormatProvider?, Int512)>> ParseTestData()
 	{
 		yield return () => ("-6703903964971298549787012499102923063739682910296196688861780721860882015036773488400937149083451713845015929093243025426876941405973284973216824503042048", NumberStyles.Integer, CultureInfo.InvariantCulture, Int512.MinValue);
-		yield return () => ("-57896044618658097711785492504343953926634992332820282019728792003956564819968", NumberStyles.Integer, CultureInfo.InvariantCulture, Int256.MinValue);
+		yield return () => ("-57896044618658097711785492504343953926634992332820282019728792003956564819968", NumberStyles.Integer, CultureInfo.InvariantCulture, Int512.Int256MinValue);
 		yield return () => ("-170141183460469231731687303715884105728", NumberStyles.Integer, CultureInfo.InvariantCulture, Int128.MinValue);
 		yield return () => ("-9223372036854775808", NumberStyles.Integer, CultureInfo.InvariantCulture, long.MinValue);
 		yield return () => ("-1", NumberStyles.Integer, CultureInfo.InvariantCulture, Int512.NegativeOne);
@@ -717,7 +718,7 @@ public class Int512DataSources
 	public static IEnumerable<Func<(char[], NumberStyles, IFormatProvider?, Int512)>> ParseSpanTestData()
 	{
 		yield return () => ("-6703903964971298549787012499102923063739682910296196688861780721860882015036773488400937149083451713845015929093243025426876941405973284973216824503042048".ToCharArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, Int512.MinValue);
-		yield return () => ("-57896044618658097711785492504343953926634992332820282019728792003956564819968".ToCharArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, Int256.MinValue);
+		yield return () => ("-57896044618658097711785492504343953926634992332820282019728792003956564819968".ToCharArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, Int512.Int256MinValue);
 		yield return () => ("-170141183460469231731687303715884105728".ToCharArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, Int128.MinValue);
 		yield return () => ("-9223372036854775808".ToCharArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, long.MinValue);
 		yield return () => ("-1".ToCharArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, Int512.NegativeOne);
@@ -789,7 +790,7 @@ public class Int512DataSources
 	public static IEnumerable<Func<(byte[], NumberStyles, IFormatProvider?, Int512)>> ParseUtf8TestData()
 	{
 		yield return () => ("-6703903964971298549787012499102923063739682910296196688861780721860882015036773488400937149083451713845015929093243025426876941405973284973216824503042048"u8.ToArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, Int512.MinValue);
-		yield return () => ("-57896044618658097711785492504343953926634992332820282019728792003956564819968"u8.ToArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, Int256.MinValue);
+		yield return () => ("-57896044618658097711785492504343953926634992332820282019728792003956564819968"u8.ToArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, Int512.Int256MinValue);
 		yield return () => ("-170141183460469231731687303715884105728"u8.ToArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, Int128.MinValue);
 		yield return () => ("-9223372036854775808"u8.ToArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, long.MinValue);
 		yield return () => ("-1"u8.ToArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, Int512.NegativeOne);
@@ -862,7 +863,7 @@ public class Int512DataSources
 	{
 		yield return () => ("-6703903964971298549787012499102923063739682910296196688861780721860882015036773488400937149083451713845015929093243025426876941405973284973216824503042049", NumberStyles.Integer, CultureInfo.InvariantCulture, false, default);
 		yield return () => ("-6703903964971298549787012499102923063739682910296196688861780721860882015036773488400937149083451713845015929093243025426876941405973284973216824503042048", NumberStyles.Integer, CultureInfo.InvariantCulture, true, Int512.MinValue);
-		yield return () => ("-57896044618658097711785492504343953926634992332820282019728792003956564819968", NumberStyles.Integer, CultureInfo.InvariantCulture, true, Int256.MinValue);
+		yield return () => ("-57896044618658097711785492504343953926634992332820282019728792003956564819968", NumberStyles.Integer, CultureInfo.InvariantCulture, true, Int512.Int256MinValue);
 		yield return () => ("-170141183460469231731687303715884105728", NumberStyles.Integer, CultureInfo.InvariantCulture, true, Int128.MinValue);
 		yield return () => ("-9223372036854775808", NumberStyles.Integer, CultureInfo.InvariantCulture, true, long.MinValue);
 		yield return () => ("-1", NumberStyles.Integer, CultureInfo.InvariantCulture, true, Int512.NegativeOne);
@@ -941,7 +942,7 @@ public class Int512DataSources
 	{
 		yield return () => ("-6703903964971298549787012499102923063739682910296196688861780721860882015036773488400937149083451713845015929093243025426876941405973284973216824503042049".ToCharArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, false, default);
 		yield return () => ("-6703903964971298549787012499102923063739682910296196688861780721860882015036773488400937149083451713845015929093243025426876941405973284973216824503042048".ToCharArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, true, Int512.MinValue);
-		yield return () => ("-57896044618658097711785492504343953926634992332820282019728792003956564819968".ToCharArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, true, Int256.MinValue);
+		yield return () => ("-57896044618658097711785492504343953926634992332820282019728792003956564819968".ToCharArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, true, Int512.Int256MinValue);
 		yield return () => ("-170141183460469231731687303715884105728".ToCharArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, true, Int128.MinValue);
 		yield return () => ("-9223372036854775808".ToCharArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, true, long.MinValue);
 		yield return () => ("-1".ToCharArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, true, Int512.NegativeOne);
@@ -1020,7 +1021,7 @@ public class Int512DataSources
 	{
 		yield return () => ("-6703903964971298549787012499102923063739682910296196688861780721860882015036773488400937149083451713845015929093243025426876941405973284973216824503042049"u8.ToArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, false, default);
 		yield return () => ("-6703903964971298549787012499102923063739682910296196688861780721860882015036773488400937149083451713845015929093243025426876941405973284973216824503042048"u8.ToArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, true, Int512.MinValue);
-		yield return () => ("-57896044618658097711785492504343953926634992332820282019728792003956564819968"u8.ToArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, true, Int256.MinValue);
+		yield return () => ("-57896044618658097711785492504343953926634992332820282019728792003956564819968"u8.ToArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, true, Int512.Int256MinValue);
 		yield return () => ("-170141183460469231731687303715884105728"u8.ToArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, true, Int128.MinValue);
 		yield return () => ("-9223372036854775808"u8.ToArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, true, long.MinValue);
 		yield return () => ("-1"u8.ToArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, true, Int512.NegativeOne);
@@ -1097,8 +1098,8 @@ public class Int512DataSources
 
 	public static IEnumerable<Func<(Int512, string, IFormatProvider?, string)>> ToStringTestData()
 	{
-		yield return () => (Int256.MaxValue, "e25", CultureInfo.InvariantCulture, "5.7896044618658097711785493e+76");
-		yield return () => (Int256.MinValue, "e25", CultureInfo.InvariantCulture, "-5.7896044618658097711785493e+76");
+		yield return () => (Int512.Int256MaxValue, "e25", CultureInfo.InvariantCulture, "5.7896044618658097711785493e+76");
+		yield return () => (Int512.Int256MinValue, "e25", CultureInfo.InvariantCulture, "-5.7896044618658097711785493e+76");
 		yield return () => (Int512.MaxValue, "e25", CultureInfo.InvariantCulture, "6.7039039649712985497870125e+153");
 		yield return () => (Int512.MinValue, "e25", CultureInfo.InvariantCulture, "-6.7039039649712985497870125e+153");
 		yield return () => (Int512.MinValue, "F3", CultureInfo.InvariantCulture, "-6703903964971298549787012499102923063739682910296196688861780721860882015036773488400937149083451713845015929093243025426876941405973284973216824503042048.000");
@@ -1386,246 +1387,606 @@ public class Int512DataSources
 	
 	public static IEnumerable<Func<(Int512, byte)>> ConvertToCheckedByteTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int512.One, 1);
+		yield return () => (Int512.ByteMaxValue, byte.MaxValue);
 	}
 	
 	public static IEnumerable<Func<(Int512, byte)>> ConvertToSaturatingByteTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int512.MinValue, 0);
+		yield return () => (Int512.One, 1);
+		yield return () => (Int512.ByteMaxValue, byte.MaxValue);
+		yield return () => (Int512.MaxValue, byte.MaxValue);
+		yield return () => (Int512.ByteMaxValue + Int512.One, byte.MaxValue);
 	}
 	
 	public static IEnumerable<Func<(Int512, byte)>> ConvertToTruncatingByteTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int512.MinValue, 0);
+		yield return () => (Int512.NegativeOne, 0xFF);
+		yield return () => (Int512.One, 1);
+		yield return () => (Int512.ByteMaxValue, byte.MaxValue);
+		yield return () => (Int512.MaxValue, byte.MaxValue);
+		yield return () => (Int512.ByteMaxValue + Int512.One, 0);
 	}
 
 	public static IEnumerable<Func<(Int512, ushort)>> ConvertToCheckedUInt16TestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int512.One, 1);
+		yield return () => (Int512.ByteMaxValue, byte.MaxValue);
+		yield return () => (Int512.UInt16MaxValue, ushort.MaxValue);
 	}
 	
 	public static IEnumerable<Func<(Int512, ushort)>> ConvertToSaturatingUInt16TestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int512.MinValue, 0);
+		yield return () => (Int512.One, 1);
+		yield return () => (Int512.ByteMaxValue, byte.MaxValue);
+		yield return () => (Int512.UInt16MaxValue, ushort.MaxValue);
+		yield return () => (Int512.MaxValue, ushort.MaxValue);
+		yield return () => (Int512.UInt16MaxValue + Int512.One, ushort.MaxValue);
 	}
 	
 	public static IEnumerable<Func<(Int512, ushort)>> ConvertToTruncatingUInt16TestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int512.MinValue, 0);
+		yield return () => (Int512.NegativeOne, 0xFFFF);
+		yield return () => (Int512.One, 1);
+		yield return () => (Int512.ByteMaxValue, byte.MaxValue);
+		yield return () => (Int512.UInt16MaxValue, ushort.MaxValue);
+		yield return () => (Int512.MaxValue, ushort.MaxValue);
+		yield return () => (Int512.UInt16MaxValue + Int512.One, 0);
 	}
 
 	public static IEnumerable<Func<(Int512, uint)>> ConvertToCheckedUInt32TestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int512.One, 1);
+		yield return () => (Int512.ByteMaxValue, byte.MaxValue);
+		yield return () => (Int512.UInt16MaxValue, ushort.MaxValue);
+		yield return () => (Int512.UInt32MaxValue, uint.MaxValue);
 	}
 	
 	public static IEnumerable<Func<(Int512, uint)>> ConvertToSaturatingUInt32TestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int512.MinValue, 0);
+		yield return () => (Int512.One, 1);
+		yield return () => (Int512.ByteMaxValue, byte.MaxValue);
+		yield return () => (Int512.UInt16MaxValue, ushort.MaxValue);
+		yield return () => (Int512.UInt32MaxValue, uint.MaxValue);
+		yield return () => (Int512.MaxValue, uint.MaxValue);
+		yield return () => (Int512.UInt32MaxValue + Int512.One, uint.MaxValue);
 	}
 	
 	public static IEnumerable<Func<(Int512, uint)>> ConvertToTruncatingUInt32TestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int512.MinValue, 0);
+		yield return () => (Int512.NegativeOne, 0xFFFF_FFFF);
+		yield return () => (Int512.One, 1);
+		yield return () => (Int512.ByteMaxValue, byte.MaxValue);
+		yield return () => (Int512.UInt16MaxValue, ushort.MaxValue);
+		yield return () => (Int512.UInt32MaxValue, uint.MaxValue);
+		yield return () => (Int512.MaxValue, uint.MaxValue);
+		yield return () => (Int512.UInt32MaxValue + Int512.One, 0);
 	}
 
 	public static IEnumerable<Func<(Int512, ulong)>> ConvertToCheckedUInt64TestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int512.One, 1);
+		yield return () => (Int512.ByteMaxValue, byte.MaxValue);
+		yield return () => (Int512.UInt16MaxValue, ushort.MaxValue);
+		yield return () => (Int512.UInt32MaxValue, uint.MaxValue);
+		yield return () => (Int512.UInt64MaxValue, ulong.MaxValue);
 	}
 	
 	public static IEnumerable<Func<(Int512, ulong)>> ConvertToSaturatingUInt64TestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int512.MinValue, 0);
+		yield return () => (Int512.One, 1);
+		yield return () => (Int512.ByteMaxValue, byte.MaxValue);
+		yield return () => (Int512.UInt16MaxValue, ushort.MaxValue);
+		yield return () => (Int512.UInt32MaxValue, uint.MaxValue);
+		yield return () => (Int512.UInt64MaxValue, ulong.MaxValue);
+		yield return () => (Int512.MaxValue, ulong.MaxValue);
+		yield return () => (Int512.UInt64MaxValue + Int512.One, ulong.MaxValue);
 	}
 	
 	public static IEnumerable<Func<(Int512, ulong)>> ConvertToTruncatingUInt64TestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int512.MinValue, 0);
+		yield return () => (Int512.NegativeOne, 0xFFFF_FFFF_FFFF_FFFF);
+		yield return () => (Int512.One, 1);
+		yield return () => (Int512.ByteMaxValue, byte.MaxValue);
+		yield return () => (Int512.UInt16MaxValue, ushort.MaxValue);
+		yield return () => (Int512.UInt32MaxValue, uint.MaxValue);
+		yield return () => (Int512.UInt64MaxValue, ulong.MaxValue);
+		yield return () => (Int512.MaxValue, ulong.MaxValue);
+		yield return () => (Int512.UInt64MaxValue + Int512.One, 0);
 	}
 
 	public static IEnumerable<Func<(Int512, UInt128)>> ConvertToCheckedUInt128TestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int512.One, UInt128.One);
+		yield return () => (Int512.ByteMaxValue, byte.MaxValue);
+		yield return () => (Int512.UInt16MaxValue, ushort.MaxValue);
+		yield return () => (Int512.UInt32MaxValue, uint.MaxValue);
+		yield return () => (Int512.UInt64MaxValue, ulong.MaxValue);
+		yield return () => (Int512.UInt128MaxValue, UInt128.MaxValue);
 	}
 	
 	public static IEnumerable<Func<(Int512, UInt128)>> ConvertToSaturatingUInt128TestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int512.MinValue, UInt128.Zero);
+		yield return () => (Int512.One, UInt128.One);
+		yield return () => (Int512.ByteMaxValue, byte.MaxValue);
+		yield return () => (Int512.UInt16MaxValue, ushort.MaxValue);
+		yield return () => (Int512.UInt32MaxValue, uint.MaxValue);
+		yield return () => (Int512.UInt64MaxValue, ulong.MaxValue);
+		yield return () => (Int512.UInt128MaxValue, UInt128.MaxValue);
+		yield return () => (Int512.MaxValue, UInt128.MaxValue);
+		yield return () => (Int512.UInt128MaxValue + Int512.One, UInt128.MaxValue);
 	}
 	
 	public static IEnumerable<Func<(Int512, UInt128)>> ConvertToTruncatingUInt128TestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int512.MinValue, UInt128.Zero);
+		yield return () => (Int512.NegativeOne, new UInt128(0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF));
+		yield return () => (Int512.One, UInt128.One);
+		yield return () => (Int512.ByteMaxValue, byte.MaxValue);
+		yield return () => (Int512.UInt16MaxValue, ushort.MaxValue);
+		yield return () => (Int512.UInt32MaxValue, uint.MaxValue);
+		yield return () => (Int512.UInt64MaxValue, ulong.MaxValue);
+		yield return () => (Int512.UInt128MaxValue, UInt128.MaxValue);
+		yield return () => (Int512.MaxValue, UInt128.MaxValue);
+		yield return () => (Int512.UInt128MaxValue + Int512.One, UInt128.Zero);
 	}
 
 	public static IEnumerable<Func<(Int512, UInt256)>> ConvertToCheckedUInt256TestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int512.One, UInt256.One);
+		yield return () => (Int512.ByteMaxValue, UInt256.ByteMaxValue);
+		yield return () => (Int512.UInt16MaxValue, UInt256.UInt16MaxValue);
+		yield return () => (Int512.UInt32MaxValue, UInt256.UInt32MaxValue);
+		yield return () => (Int512.UInt64MaxValue, UInt256.UInt64MaxValue);
+		yield return () => (Int512.UInt128MaxValue, UInt256.UInt128MaxValue);
+		yield return () => (Int512.UInt256MaxValue, UInt256.MaxValue);
 	}
 	
 	public static IEnumerable<Func<(Int512, UInt256)>> ConvertToSaturatingUInt256TestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int512.MinValue, UInt256.Zero);
+		yield return () => (Int512.One, UInt256.One);
+		yield return () => (Int512.ByteMaxValue, UInt256.ByteMaxValue);
+		yield return () => (Int512.UInt16MaxValue, UInt256.UInt16MaxValue);
+		yield return () => (Int512.UInt32MaxValue, UInt256.UInt32MaxValue);
+		yield return () => (Int512.UInt64MaxValue, UInt256.UInt64MaxValue);
+		yield return () => (Int512.UInt128MaxValue, UInt256.UInt128MaxValue);
+		yield return () => (Int512.UInt256MaxValue, UInt256.MaxValue);
 	}
 	
 	public static IEnumerable<Func<(Int512, UInt256)>> ConvertToTruncatingUInt256TestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int512.MinValue, UInt256.Zero);
+		yield return () => (Int512.NegativeOne, UInt256.MaxValue);
+		yield return () => (Int512.One, UInt256.One);
+		yield return () => (Int512.ByteMaxValue, UInt256.ByteMaxValue);
+		yield return () => (Int512.UInt16MaxValue, UInt256.UInt16MaxValue);
+		yield return () => (Int512.UInt32MaxValue, UInt256.UInt32MaxValue);
+		yield return () => (Int512.UInt64MaxValue, UInt256.UInt64MaxValue);
+		yield return () => (Int512.UInt128MaxValue, UInt256.UInt128MaxValue);
+		yield return () => (Int512.UInt256MaxValue, UInt256.MaxValue);
 	}
 
 	public static IEnumerable<Func<(Int512, UInt512)>> ConvertToCheckedUInt512TestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int512.One, UInt512.One);
+		yield return () => (Int512.ByteMaxValue, UInt512.ByteMaxValue);
+		yield return () => (Int512.UInt16MaxValue, UInt512.UInt16MaxValue);
+		yield return () => (Int512.UInt32MaxValue, UInt512.UInt32MaxValue);
+		yield return () => (Int512.UInt64MaxValue, UInt512.UInt64MaxValue);
+		yield return () => (Int512.UInt128MaxValue, UInt512.UInt128MaxValue);
+		yield return () => (Int512.UInt256MaxValue, UInt512.UInt256MaxValue);
+		yield return () => (Int512.MaxValue, UInt512.Int512MaxValue);
 	}
 	
 	public static IEnumerable<Func<(Int512, UInt512)>> ConvertToSaturatingUInt512TestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int512.MinValue, UInt512.Zero);
+		yield return () => (Int512.One, UInt512.One);
+		yield return () => (Int512.ByteMaxValue, UInt512.ByteMaxValue);
+		yield return () => (Int512.UInt16MaxValue, UInt512.UInt16MaxValue);
+		yield return () => (Int512.UInt32MaxValue, UInt512.UInt32MaxValue);
+		yield return () => (Int512.UInt64MaxValue, UInt512.UInt64MaxValue);
+		yield return () => (Int512.UInt128MaxValue, UInt512.UInt128MaxValue);
+		yield return () => (Int512.UInt256MaxValue, UInt512.UInt256MaxValue);
+		yield return () => (Int512.MaxValue, UInt512.Int512MaxValue);
 	}
 	
 	public static IEnumerable<Func<(Int512, UInt512)>> ConvertToTruncatingUInt512TestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int512.MinValue, new UInt512(0x8000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000));
+		yield return () => (Int512.NegativeOne, UInt512.MaxValue);
+		yield return () => (Int512.ByteMaxValue, UInt512.ByteMaxValue);
+		yield return () => (Int512.UInt16MaxValue, UInt512.UInt16MaxValue);
+		yield return () => (Int512.UInt32MaxValue, UInt512.UInt32MaxValue);
+		yield return () => (Int512.UInt64MaxValue, UInt512.UInt64MaxValue);
+		yield return () => (Int512.UInt128MaxValue, UInt512.UInt128MaxValue);
+		yield return () => (Int512.UInt256MaxValue, UInt512.UInt256MaxValue);
+		yield return () => (Int512.MaxValue, UInt512.Int512MaxValue);
 	}
 
 	public static IEnumerable<Func<(Int512, sbyte)>> ConvertToCheckedSByteTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int512.SByteMinValue, sbyte.MinValue);
+		yield return () => (Int512.One, 1);
+		yield return () => (Int512.SByteMaxValue, sbyte.MaxValue);
 	}
 	
 	public static IEnumerable<Func<(Int512, sbyte)>> ConvertToSaturatingSByteTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int512.MinValue, sbyte.MinValue);
+		yield return () => (Int512.SByteMinValue, sbyte.MinValue);
+		yield return () => (Int512.One, 1);
+		yield return () => (Int512.SByteMaxValue, sbyte.MaxValue);
+		yield return () => (Int512.MaxValue, sbyte.MaxValue);
 	}
 	
 	public static IEnumerable<Func<(Int512, sbyte)>> ConvertToTruncatingSByteTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int512.MinValue, 0);
+		yield return () => (Int512.SByteMinValue, sbyte.MinValue);
+		yield return () => (Int512.One, 1);
+		yield return () => (Int512.SByteMaxValue, sbyte.MaxValue);
+		yield return () => (Int512.MaxValue, -1);
 	}
 
 	public static IEnumerable<Func<(Int512, short)>> ConvertToCheckedInt16TestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int512.Int16MinValue, short.MinValue);
+		yield return () => (Int512.SByteMinValue, sbyte.MinValue);
+		yield return () => (Int512.One, 1);
+		yield return () => (Int512.SByteMaxValue, sbyte.MaxValue);
+		yield return () => (Int512.Int16MaxValue, short.MaxValue);
 	}
 	
 	public static IEnumerable<Func<(Int512, short)>> ConvertToSaturatingInt16TestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int512.MinValue, short.MinValue);
+		yield return () => (Int512.Int16MinValue, short.MinValue);
+		yield return () => (Int512.SByteMinValue, sbyte.MinValue);
+		yield return () => (Int512.One, 1);
+		yield return () => (Int512.SByteMaxValue, sbyte.MaxValue);
+		yield return () => (Int512.Int16MaxValue, short.MaxValue);
+		yield return () => (Int512.MaxValue, short.MaxValue);
 	}
 	
 	public static IEnumerable<Func<(Int512, short)>> ConvertToTruncatingInt16TestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int512.MinValue, 0);
+		yield return () => (Int512.Int16MinValue, short.MinValue);
+		yield return () => (Int512.SByteMinValue, sbyte.MinValue);
+		yield return () => (Int512.One, 1);
+		yield return () => (Int512.SByteMaxValue, sbyte.MaxValue);
+		yield return () => (Int512.Int16MaxValue, short.MaxValue);
+		yield return () => (Int512.MaxValue, -1);
 	}
 
 	public static IEnumerable<Func<(Int512, int)>> ConvertToCheckedInt32TestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int512.Int32MinValue, int.MinValue);
+		yield return () => (Int512.Int16MinValue, short.MinValue);
+		yield return () => (Int512.SByteMinValue, sbyte.MinValue);
+		yield return () => (Int512.One, 1);
+		yield return () => (Int512.SByteMaxValue, sbyte.MaxValue);
+		yield return () => (Int512.Int16MaxValue, short.MaxValue);
+		yield return () => (Int512.Int32MaxValue, int.MaxValue);
 	}
 	
 	public static IEnumerable<Func<(Int512, int)>> ConvertToSaturatingInt32TestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int512.MinValue, int.MinValue);
+		yield return () => (Int512.Int32MinValue, int.MinValue);
+		yield return () => (Int512.Int16MinValue, short.MinValue);
+		yield return () => (Int512.SByteMinValue, sbyte.MinValue);
+		yield return () => (Int512.One, 1);
+		yield return () => (Int512.SByteMaxValue, sbyte.MaxValue);
+		yield return () => (Int512.Int16MaxValue, short.MaxValue);
+		yield return () => (Int512.Int32MaxValue, int.MaxValue);
+		yield return () => (Int512.MaxValue, int.MaxValue);
 	}
 	
 	public static IEnumerable<Func<(Int512, int)>> ConvertToTruncatingInt32TestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int512.MinValue, 0);
+		yield return () => (Int512.Int32MinValue, int.MinValue);
+		yield return () => (Int512.Int16MinValue, short.MinValue);
+		yield return () => (Int512.SByteMinValue, sbyte.MinValue);
+		yield return () => (Int512.One, 1);
+		yield return () => (Int512.SByteMaxValue, sbyte.MaxValue);
+		yield return () => (Int512.Int16MaxValue, short.MaxValue);
+		yield return () => (Int512.Int32MaxValue, int.MaxValue);
+		yield return () => (Int512.MaxValue, -1);
 	}
 
 	public static IEnumerable<Func<(Int512, long)>> ConvertToCheckedInt64TestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int512.Int64MinValue, long.MinValue);
+		yield return () => (Int512.Int32MinValue, int.MinValue);
+		yield return () => (Int512.Int16MinValue, short.MinValue);
+		yield return () => (Int512.SByteMinValue, sbyte.MinValue);
+		yield return () => (Int512.One, 1);
+		yield return () => (Int512.SByteMaxValue, sbyte.MaxValue);
+		yield return () => (Int512.Int16MaxValue, short.MaxValue);
+		yield return () => (Int512.Int32MaxValue, int.MaxValue);
+		yield return () => (Int512.Int64MaxValue, long.MaxValue);
 	}
 	
 	public static IEnumerable<Func<(Int512, long)>> ConvertToSaturatingInt64TestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int512.MinValue, long.MinValue);
+		yield return () => (Int512.Int64MinValue, long.MinValue);
+		yield return () => (Int512.Int32MinValue, int.MinValue);
+		yield return () => (Int512.Int16MinValue, short.MinValue);
+		yield return () => (Int512.SByteMinValue, sbyte.MinValue);
+		yield return () => (Int512.One, 1);
+		yield return () => (Int512.SByteMaxValue, sbyte.MaxValue);
+		yield return () => (Int512.Int16MaxValue, short.MaxValue);
+		yield return () => (Int512.Int32MaxValue, int.MaxValue);
+		yield return () => (Int512.Int64MaxValue, long.MaxValue);
+		yield return () => (Int512.MaxValue, long.MaxValue);
 	}
 	
 	public static IEnumerable<Func<(Int512, long)>> ConvertToTruncatingInt64TestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int512.MinValue, 0);
+		yield return () => (Int512.Int64MinValue, long.MinValue);
+		yield return () => (Int512.Int32MinValue, int.MinValue);
+		yield return () => (Int512.Int16MinValue, short.MinValue);
+		yield return () => (Int512.SByteMinValue, sbyte.MinValue);
+		yield return () => (Int512.One, 1);
+		yield return () => (Int512.SByteMaxValue, sbyte.MaxValue);
+		yield return () => (Int512.Int16MaxValue, short.MaxValue);
+		yield return () => (Int512.Int32MaxValue, int.MaxValue);
+		yield return () => (Int512.Int64MaxValue, long.MaxValue);
+		yield return () => (Int512.MaxValue, -1);
 	}
 
 	public static IEnumerable<Func<(Int512, Int128)>> ConvertToCheckedInt128TestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int512.Int128MinValue, Int128.MinValue);
+		yield return () => (Int512.Int64MinValue, long.MinValue);
+		yield return () => (Int512.Int32MinValue, int.MinValue);
+		yield return () => (Int512.Int16MinValue, short.MinValue);
+		yield return () => (Int512.SByteMinValue, sbyte.MinValue);
+		yield return () => (Int512.One, Int128.One);
+		yield return () => (Int512.SByteMaxValue, sbyte.MaxValue);
+		yield return () => (Int512.Int16MaxValue, short.MaxValue);
+		yield return () => (Int512.Int32MaxValue, int.MaxValue);
+		yield return () => (Int512.Int64MaxValue, long.MaxValue);
+		yield return () => (Int512.Int128MaxValue, Int128.MaxValue);
 	}
 	
 	public static IEnumerable<Func<(Int512, Int128)>> ConvertToSaturatingInt128TestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int512.MinValue, Int128.MinValue);
+		yield return () => (Int512.Int128MinValue, Int128.MinValue);
+		yield return () => (Int512.Int64MinValue, long.MinValue);
+		yield return () => (Int512.Int32MinValue, int.MinValue);
+		yield return () => (Int512.Int16MinValue, short.MinValue);
+		yield return () => (Int512.SByteMinValue, sbyte.MinValue);
+		yield return () => (Int512.One, Int128.One);
+		yield return () => (Int512.SByteMaxValue, sbyte.MaxValue);
+		yield return () => (Int512.Int16MaxValue, short.MaxValue);
+		yield return () => (Int512.Int32MaxValue, int.MaxValue);
+		yield return () => (Int512.Int64MaxValue, long.MaxValue);
+		yield return () => (Int512.Int128MaxValue, Int128.MaxValue);
+		yield return () => (Int512.MaxValue, Int128.MaxValue);
 	}
 	
 	public static IEnumerable<Func<(Int512, Int128)>> ConvertToTruncatingInt128TestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int512.MinValue, Int128.Zero);
+		yield return () => (Int512.Int128MinValue, Int128.MinValue);
+		yield return () => (Int512.Int64MinValue, long.MinValue);
+		yield return () => (Int512.Int32MinValue, int.MinValue);
+		yield return () => (Int512.Int16MinValue, short.MinValue);
+		yield return () => (Int512.SByteMinValue, sbyte.MinValue);
+		yield return () => (Int512.One, Int128.One);
+		yield return () => (Int512.SByteMaxValue, sbyte.MaxValue);
+		yield return () => (Int512.Int16MaxValue, short.MaxValue);
+		yield return () => (Int512.Int32MaxValue, int.MaxValue);
+		yield return () => (Int512.Int64MaxValue, long.MaxValue);
+		yield return () => (Int512.Int128MaxValue, Int128.MaxValue);
+		yield return () => (Int512.MaxValue, Int128.NegativeOne);
 	}
 
 	public static IEnumerable<Func<(Int512, Int256)>> ConvertToCheckedInt256TestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int512.Int256MinValue, Int256.MinValue);
+		yield return () => (Int512.Int128MinValue, Int256.Int128MinValue);
+		yield return () => (Int512.Int64MinValue, Int256.Int64MinValue);
+		yield return () => (Int512.Int32MinValue, Int256.Int32MinValue);
+		yield return () => (Int512.Int16MinValue, Int256.Int16MinValue);
+		yield return () => (Int512.SByteMinValue, Int256.SByteMinValue);
+		yield return () => (Int512.One, Int256.One);
+		yield return () => (Int512.SByteMaxValue, Int256.SByteMaxValue);
+		yield return () => (Int512.Int16MaxValue, Int256.Int16MaxValue);
+		yield return () => (Int512.Int32MaxValue, Int256.Int32MaxValue);
+		yield return () => (Int512.Int64MaxValue, Int256.Int64MaxValue);
+		yield return () => (Int512.Int128MaxValue, Int256.Int128MaxValue);
+		yield return () => (Int512.Int256MaxValue, Int256.MaxValue);
 	}
 	
 	public static IEnumerable<Func<(Int512, Int256)>> ConvertToSaturatingInt256TestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int512.MinValue, Int256.MinValue);
+		yield return () => (Int512.Int256MinValue, Int256.MinValue);
+		yield return () => (Int512.Int128MinValue, Int256.Int128MinValue);
+		yield return () => (Int512.Int64MinValue, Int256.Int64MinValue);
+		yield return () => (Int512.Int32MinValue, Int256.Int32MinValue);
+		yield return () => (Int512.Int16MinValue, Int256.Int16MinValue);
+		yield return () => (Int512.SByteMinValue, Int256.SByteMinValue);
+		yield return () => (Int512.One, Int256.One);
+		yield return () => (Int512.SByteMaxValue, Int256.SByteMaxValue);
+		yield return () => (Int512.Int16MaxValue, Int256.Int16MaxValue);
+		yield return () => (Int512.Int32MaxValue, Int256.Int32MaxValue);
+		yield return () => (Int512.Int64MaxValue, Int256.Int64MaxValue);
+		yield return () => (Int512.Int128MaxValue, Int256.Int128MaxValue);
+		yield return () => (Int512.Int256MaxValue, Int256.MaxValue);
+		yield return () => (Int512.MaxValue, Int256.MaxValue);
 	}
 	
 	public static IEnumerable<Func<(Int512, Int256)>> ConvertToTruncatingInt256TestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int512.MinValue, Int256.Zero);
+		yield return () => (Int512.Int256MinValue, Int256.MinValue);
+		yield return () => (Int512.Int128MinValue, Int256.Int128MinValue);
+		yield return () => (Int512.Int64MinValue, Int256.Int64MinValue);
+		yield return () => (Int512.Int32MinValue, Int256.Int32MinValue);
+		yield return () => (Int512.Int16MinValue, Int256.Int16MinValue);
+		yield return () => (Int512.SByteMinValue, Int256.SByteMinValue);
+		yield return () => (Int512.One, Int256.One);
+		yield return () => (Int512.SByteMaxValue, Int256.SByteMaxValue);
+		yield return () => (Int512.Int16MaxValue, Int256.Int16MaxValue);
+		yield return () => (Int512.Int32MaxValue, Int256.Int32MaxValue);
+		yield return () => (Int512.Int64MaxValue, Int256.Int64MaxValue);
+		yield return () => (Int512.Int128MaxValue, Int256.Int128MaxValue);
+		yield return () => (Int512.Int256MaxValue, Int256.MaxValue);
+		yield return () => (Int512.MaxValue, Int256.NegativeOne);
 	}
 	
 	public static IEnumerable<Func<(Int512, BigInteger)>> ConvertToCheckedBigIntegerTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int512.MinValue, BigInteger.Parse("-6703903964971298549787012499102923063739682910296196688861780721860882015036773488400937149083451713845015929093243025426876941405973284973216824503042048"));
+		yield return () => (Int512.Int256MinValue, BigInteger.Parse("-57896044618658097711785492504343953926634992332820282019728792003956564819968"));
+		yield return () => (Int512.Int128MinValue, Int128.MinValue);
+		yield return () => (Int512.Int64MinValue, long.MinValue);
+		yield return () => (Int512.Int32MinValue, int.MinValue);
+		yield return () => (Int512.Int16MinValue, short.MinValue);
+		yield return () => (Int512.SByteMinValue, sbyte.MinValue);
+		yield return () => (Int512.One, BigInteger.One);
+		yield return () => (Int512.SByteMaxValue, sbyte.MaxValue);
+		yield return () => (Int512.Int16MaxValue, short.MaxValue);
+		yield return () => (Int512.Int32MaxValue, int.MaxValue);
+		yield return () => (Int512.Int64MaxValue, long.MaxValue);
+		yield return () => (Int512.Int128MaxValue, Int128.MaxValue);
+		yield return () => (Int512.Int256MaxValue, BigInteger.Parse("57896044618658097711785492504343953926634992332820282019728792003956564819967"));
+		yield return () => (Int512.MaxValue, BigInteger.Parse("6703903964971298549787012499102923063739682910296196688861780721860882015036773488400937149083451713845015929093243025426876941405973284973216824503042047"));
 	}
 
 	public static IEnumerable<Func<(Int512, BigInteger)>> ConvertToSaturatingBigIntegerTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int512.MinValue, BigInteger.Parse("-6703903964971298549787012499102923063739682910296196688861780721860882015036773488400937149083451713845015929093243025426876941405973284973216824503042048"));
+		yield return () => (Int512.Int256MinValue, BigInteger.Parse("-57896044618658097711785492504343953926634992332820282019728792003956564819968"));
+		yield return () => (Int512.Int128MinValue, Int128.MinValue);
+		yield return () => (Int512.Int64MinValue, long.MinValue);
+		yield return () => (Int512.Int32MinValue, int.MinValue);
+		yield return () => (Int512.Int16MinValue, short.MinValue);
+		yield return () => (Int512.SByteMinValue, sbyte.MinValue);
+		yield return () => (Int512.One, BigInteger.One);
+		yield return () => (Int512.SByteMaxValue, sbyte.MaxValue);
+		yield return () => (Int512.Int16MaxValue, short.MaxValue);
+		yield return () => (Int512.Int32MaxValue, int.MaxValue);
+		yield return () => (Int512.Int64MaxValue, long.MaxValue);
+		yield return () => (Int512.Int128MaxValue, Int128.MaxValue);
+		yield return () => (Int512.Int256MaxValue, BigInteger.Parse("57896044618658097711785492504343953926634992332820282019728792003956564819967"));
+		yield return () => (Int512.MaxValue, BigInteger.Parse("6703903964971298549787012499102923063739682910296196688861780721860882015036773488400937149083451713845015929093243025426876941405973284973216824503042047"));
 	}
 
 	public static IEnumerable<Func<(Int512, BigInteger)>> ConvertToTruncatingBigIntegerTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int512.MinValue, BigInteger.Parse("-6703903964971298549787012499102923063739682910296196688861780721860882015036773488400937149083451713845015929093243025426876941405973284973216824503042048"));
+		yield return () => (Int512.Int256MinValue, BigInteger.Parse("-57896044618658097711785492504343953926634992332820282019728792003956564819968"));
+		yield return () => (Int512.Int128MinValue, Int128.MinValue);
+		yield return () => (Int512.Int64MinValue, long.MinValue);
+		yield return () => (Int512.Int32MinValue, int.MinValue);
+		yield return () => (Int512.Int16MinValue, short.MinValue);
+		yield return () => (Int512.SByteMinValue, sbyte.MinValue);
+		yield return () => (Int512.One, BigInteger.One);
+		yield return () => (Int512.SByteMaxValue, sbyte.MaxValue);
+		yield return () => (Int512.Int16MaxValue, short.MaxValue);
+		yield return () => (Int512.Int32MaxValue, int.MaxValue);
+		yield return () => (Int512.Int64MaxValue, long.MaxValue);
+		yield return () => (Int512.Int128MaxValue, Int128.MaxValue);
+		yield return () => (Int512.Int256MaxValue, BigInteger.Parse("57896044618658097711785492504343953926634992332820282019728792003956564819967"));
+		yield return () => (Int512.MaxValue, BigInteger.Parse("6703903964971298549787012499102923063739682910296196688861780721860882015036773488400937149083451713845015929093243025426876941405973284973216824503042047"));
 	}
 
 	public static IEnumerable<Func<(Int512, Half)>> ConvertToCheckedHalfTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int512.Int16MinValue, (Half)short.MinValue);
+		yield return () => (Int512.SByteMinValue, (Half)sbyte.MinValue);
+		yield return () => (Int512.One, Half.One);
+		yield return () => (Int512.SByteMaxValue, (Half)sbyte.MaxValue);
+		yield return () => (Int512.Int16MaxValue, (Half)short.MaxValue);
 	}
 	
 	public static IEnumerable<Func<(Int512, Half)>> ConvertToSaturatingHalfTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int512.MinValue, Half.MinValue);
+		yield return () => (Int512.Int16MinValue, (Half)short.MinValue);
+		yield return () => (Int512.SByteMinValue, (Half)sbyte.MinValue);
+		yield return () => (Int512.One, Half.One);
+		yield return () => (Int512.SByteMaxValue, (Half)sbyte.MaxValue);
+		yield return () => (Int512.Int16MaxValue, (Half)short.MaxValue);
+		yield return () => (Int512.MaxValue, Half.MaxValue);
 	}
 	
 	public static IEnumerable<Func<(Int512, Half)>> ConvertToTruncatingHalfTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int512.MinValue, Half.MinValue);
+		yield return () => (Int512.Int16MinValue, (Half)short.MinValue);
+		yield return () => (Int512.SByteMinValue, (Half)sbyte.MinValue);
+		yield return () => (Int512.One, Half.One);
+		yield return () => (Int512.SByteMaxValue, (Half)sbyte.MaxValue);
+		yield return () => (Int512.Int16MaxValue, (Half)short.MaxValue);
+		yield return () => (Int512.MaxValue, Half.MaxValue);
 	}
 
 	public static IEnumerable<Func<(Int512, float)>> ConvertToCheckedSingleTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int512.Int32MinValue, int.MinValue);
+		yield return () => (Int512.Int16MinValue, short.MinValue);
+		yield return () => (Int512.SByteMinValue, sbyte.MinValue);
+		yield return () => (Int512.One, 1f);
+		yield return () => (Int512.SByteMaxValue, sbyte.MaxValue);
+		yield return () => (Int512.Int16MaxValue, short.MaxValue);
+		yield return () => (Int512.Int32MaxValue, int.MaxValue);
 	}
 	
 	public static IEnumerable<Func<(Int512, float)>> ConvertToSaturatingSingleTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int512.Int32MinValue, int.MinValue);
+		yield return () => (Int512.Int16MinValue, short.MinValue);
+		yield return () => (Int512.SByteMinValue, sbyte.MinValue);
+		yield return () => (Int512.One, 1f);
+		yield return () => (Int512.SByteMaxValue, sbyte.MaxValue);
+		yield return () => (Int512.Int16MaxValue, short.MaxValue);
+		yield return () => (Int512.Int32MaxValue, int.MaxValue);
 	}
 	
 	public static IEnumerable<Func<(Int512, float)>> ConvertToTruncatingSingleTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int512.Int32MinValue, int.MinValue);
+		yield return () => (Int512.Int16MinValue, short.MinValue);
+		yield return () => (Int512.SByteMinValue, sbyte.MinValue);
+		yield return () => (Int512.One, 1f);
+		yield return () => (Int512.SByteMaxValue, sbyte.MaxValue);
+		yield return () => (Int512.Int16MaxValue, short.MaxValue);
+		yield return () => (Int512.Int32MaxValue, int.MaxValue);
 	}
 
 	public static IEnumerable<Func<(Int512, double)>> ConvertToCheckedDoubleTestData()
 	{
+		yield return () => (Int512.Int64MinValue, long.MinValue);
+		yield return () => (Int512.Int32MinValue, int.MinValue);
+		yield return () => (Int512.Int16MinValue, short.MinValue);
+		yield return () => (Int512.SByteMinValue, sbyte.MinValue);
+		yield return () => (Int512.One, 1d);
+		yield return () => (Int512.SByteMaxValue, sbyte.MaxValue);
+		yield return () => (Int512.Int16MaxValue, short.MaxValue);
+		yield return () => (Int512.Int32MaxValue, int.MaxValue);
+		yield return () => (Int512.Int64MaxValue, long.MaxValue);
+		
 		yield return () => (Int512.Parse("781377183594418599030564404241984000000000000000000"),
 			781377183594418599030564404241984000000000000000000.0d);
 		yield return () => (Int512.Parse("-781377183594418599030564404241984000000000000000000"),
@@ -1636,6 +1997,16 @@ public class Int512DataSources
 	
 	public static IEnumerable<Func<(Int512, double)>> ConvertToSaturatingDoubleTestData()
 	{
+		yield return () => (Int512.Int64MinValue, long.MinValue);
+		yield return () => (Int512.Int32MinValue, int.MinValue);
+		yield return () => (Int512.Int16MinValue, short.MinValue);
+		yield return () => (Int512.SByteMinValue, sbyte.MinValue);
+		yield return () => (Int512.One, 1d);
+		yield return () => (Int512.SByteMaxValue, sbyte.MaxValue);
+		yield return () => (Int512.Int16MaxValue, short.MaxValue);
+		yield return () => (Int512.Int32MaxValue, int.MaxValue);
+		yield return () => (Int512.Int64MaxValue, long.MaxValue);
+		
 		yield return () => (Int512.Parse("781377183594418599030564404241984000000000000000000"),
 			781377183594418599030564404241984000000000000000000.0d);
 		yield return () => (Int512.Parse("-781377183594418599030564404241984000000000000000000"),
@@ -1648,6 +2019,16 @@ public class Int512DataSources
 	
 	public static IEnumerable<Func<(Int512, double)>> ConvertToTruncatingDoubleTestData()
 	{
+		yield return () => (Int512.Int64MinValue, long.MinValue);
+		yield return () => (Int512.Int32MinValue, int.MinValue);
+		yield return () => (Int512.Int16MinValue, short.MinValue);
+		yield return () => (Int512.SByteMinValue, sbyte.MinValue);
+		yield return () => (Int512.One, 1d);
+		yield return () => (Int512.SByteMaxValue, sbyte.MaxValue);
+		yield return () => (Int512.Int16MaxValue, short.MaxValue);
+		yield return () => (Int512.Int32MaxValue, int.MaxValue);
+		yield return () => (Int512.Int64MaxValue, long.MaxValue);
+		
 		yield return () => (Int512.Parse("781377183594418599030564404241984000000000000000000"),
 			781377183594418599030564404241984000000000000000000.0d);
 		yield return () => (Int512.Parse("-781377183594418599030564404241984000000000000000000"),
@@ -1660,241 +2041,524 @@ public class Int512DataSources
 
 	public static IEnumerable<Func<(Int512, Quad)>> ConvertToCheckedQuadTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int512.Int64MinValue, Quad.Int64MinValue);
+		yield return () => (Int512.Int32MinValue, Quad.Int32MinValue);
+		yield return () => (Int512.Int16MinValue, Quad.Int16MinValue);
+		yield return () => (Int512.SByteMinValue, Quad.SByteMinValue);
+		yield return () => (Int512.One, Quad.One);
+		yield return () => (Int512.SByteMaxValue, Quad.SByteMaxValue);
+		yield return () => (Int512.Int16MaxValue, Quad.Int16MaxValue);
+		yield return () => (Int512.Int32MaxValue, Quad.Int32MaxValue);
+		yield return () => (Int512.Int64MaxValue, Quad.Int64MaxValue);
 	}
 	
 	public static IEnumerable<Func<(Int512, Quad)>> ConvertToSaturatingQuadTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int512.Int64MinValue, Quad.Int64MinValue);
+		yield return () => (Int512.Int32MinValue, Quad.Int32MinValue);
+		yield return () => (Int512.Int16MinValue, Quad.Int16MinValue);
+		yield return () => (Int512.SByteMinValue, Quad.SByteMinValue);
+		yield return () => (Int512.One, Quad.One);
+		yield return () => (Int512.SByteMaxValue, Quad.SByteMaxValue);
+		yield return () => (Int512.Int16MaxValue, Quad.Int16MaxValue);
+		yield return () => (Int512.Int32MaxValue, Quad.Int32MaxValue);
+		yield return () => (Int512.Int64MaxValue, Quad.Int64MaxValue);
 	}
 	
 	public static IEnumerable<Func<(Int512, Quad)>> ConvertToTruncatingQuadTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int512.Int64MinValue, Quad.Int64MinValue);
+		yield return () => (Int512.Int32MinValue, Quad.Int32MinValue);
+		yield return () => (Int512.Int16MinValue, Quad.Int16MinValue);
+		yield return () => (Int512.SByteMinValue, Quad.SByteMinValue);
+		yield return () => (Int512.One, Quad.One);
+		yield return () => (Int512.SByteMaxValue, Quad.SByteMaxValue);
+		yield return () => (Int512.Int16MaxValue, Quad.Int16MaxValue);
+		yield return () => (Int512.Int32MaxValue, Quad.Int32MaxValue);
+		yield return () => (Int512.Int64MaxValue, Quad.Int64MaxValue);
 	}
 
 	public static IEnumerable<Func<(Int512, Octo)>> ConvertToCheckedOctoTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int512.Int64MinValue, Octo.Int64MinValue);
+		yield return () => (Int512.Int32MinValue, Octo.Int32MinValue);
+		yield return () => (Int512.Int16MinValue, Octo.Int16MinValue);
+		yield return () => (Int512.SByteMinValue, Octo.SByteMinValue);
+		yield return () => (Int512.One, Octo.One);
+		yield return () => (Int512.SByteMaxValue, Octo.SByteMaxValue);
+		yield return () => (Int512.Int16MaxValue, Octo.Int16MaxValue);
+		yield return () => (Int512.Int32MaxValue, Octo.Int32MaxValue);
+		yield return () => (Int512.Int64MaxValue, Octo.Int64MaxValue);
 	}
 	
 	public static IEnumerable<Func<(Int512, Octo)>> ConvertToSaturatingOctoTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int512.Int64MinValue, Octo.Int64MinValue);
+		yield return () => (Int512.Int32MinValue, Octo.Int32MinValue);
+		yield return () => (Int512.Int16MinValue, Octo.Int16MinValue);
+		yield return () => (Int512.SByteMinValue, Octo.SByteMinValue);
+		yield return () => (Int512.One, Octo.One);
+		yield return () => (Int512.SByteMaxValue, Octo.SByteMaxValue);
+		yield return () => (Int512.Int16MaxValue, Octo.Int16MaxValue);
+		yield return () => (Int512.Int32MaxValue, Octo.Int32MaxValue);
+		yield return () => (Int512.Int64MaxValue, Octo.Int64MaxValue);
 	}
 	
 	public static IEnumerable<Func<(Int512, Octo)>> ConvertToTruncatingOctoTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int512.Int64MinValue, Octo.Int64MinValue);
+		yield return () => (Int512.Int32MinValue, Octo.Int32MinValue);
+		yield return () => (Int512.Int16MinValue, Octo.Int16MinValue);
+		yield return () => (Int512.SByteMinValue, Octo.SByteMinValue);
+		yield return () => (Int512.One, Octo.One);
+		yield return () => (Int512.SByteMaxValue, Octo.SByteMaxValue);
+		yield return () => (Int512.Int16MaxValue, Octo.Int16MaxValue);
+		yield return () => (Int512.Int32MaxValue, Octo.Int32MaxValue);
+		yield return () => (Int512.Int64MaxValue, Octo.Int64MaxValue);
 	}
 
 	public static IEnumerable<Func<(byte, Int512)>> ConvertFromCheckedByteTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (1, Int512.One);
+		yield return () => (byte.MaxValue, Int512.ByteMaxValue);
 	}
 	
 	public static IEnumerable<Func<(byte, Int512)>> ConvertFromSaturatingByteTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (1, Int512.One);
+		yield return () => (byte.MaxValue, Int512.ByteMaxValue);
 	}
 	
 	public static IEnumerable<Func<(byte, Int512)>> ConvertFromTruncatingByteTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (1, Int512.One);
+		yield return () => (byte.MaxValue, Int512.ByteMaxValue);
 	}
 
 	public static IEnumerable<Func<(ushort, Int512)>> ConvertFromCheckedUInt16TestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (1, Int512.One);
+		yield return () => (byte.MaxValue, Int512.ByteMaxValue);
+		yield return () => (ushort.MaxValue, Int512.UInt16MaxValue);
 	}
 	
 	public static IEnumerable<Func<(ushort, Int512)>> ConvertFromSaturatingUInt16TestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (1, Int512.One);
+		yield return () => (byte.MaxValue, Int512.ByteMaxValue);
+		yield return () => (ushort.MaxValue, Int512.UInt16MaxValue);
 	}
 	
 	public static IEnumerable<Func<(ushort, Int512)>> ConvertFromTruncatingUInt16TestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (1, Int512.One);
+		yield return () => (byte.MaxValue, Int512.ByteMaxValue);
+		yield return () => (ushort.MaxValue, Int512.UInt16MaxValue);
 	}
 
 	public static IEnumerable<Func<(uint, Int512)>> ConvertFromCheckedUInt32TestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (1, Int512.One);
+		yield return () => (byte.MaxValue, Int512.ByteMaxValue);
+		yield return () => (ushort.MaxValue, Int512.UInt16MaxValue);
+		yield return () => (uint.MaxValue, Int512.UInt32MaxValue);
 	}
 	
 	public static IEnumerable<Func<(uint, Int512)>> ConvertFromSaturatingUInt32TestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (1, Int512.One);
+		yield return () => (byte.MaxValue, Int512.ByteMaxValue);
+		yield return () => (ushort.MaxValue, Int512.UInt16MaxValue);
+		yield return () => (uint.MaxValue, Int512.UInt32MaxValue);
 	}
 	
 	public static IEnumerable<Func<(uint, Int512)>> ConvertFromTruncatingUInt32TestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (1, Int512.One);
+		yield return () => (byte.MaxValue, Int512.ByteMaxValue);
+		yield return () => (ushort.MaxValue, Int512.UInt16MaxValue);
+		yield return () => (uint.MaxValue, Int512.UInt32MaxValue);
 	}
 
 	public static IEnumerable<Func<(ulong, Int512)>> ConvertFromCheckedUInt64TestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (1, Int512.One);
+		yield return () => (byte.MaxValue, Int512.ByteMaxValue);
+		yield return () => (ushort.MaxValue, Int512.UInt16MaxValue);
+		yield return () => (uint.MaxValue, Int512.UInt32MaxValue);
+		yield return () => (ulong.MaxValue, Int512.UInt64MaxValue);
 	}
 	
 	public static IEnumerable<Func<(ulong, Int512)>> ConvertFromSaturatingUInt64TestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (1, Int512.One);
+		yield return () => (byte.MaxValue, Int512.ByteMaxValue);
+		yield return () => (ushort.MaxValue, Int512.UInt16MaxValue);
+		yield return () => (uint.MaxValue, Int512.UInt32MaxValue);
+		yield return () => (ulong.MaxValue, Int512.UInt64MaxValue);
 	}
 	
 	public static IEnumerable<Func<(ulong, Int512)>> ConvertFromTruncatingUInt64TestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (1, Int512.One);
+		yield return () => (byte.MaxValue, Int512.ByteMaxValue);
+		yield return () => (ushort.MaxValue, Int512.UInt16MaxValue);
+		yield return () => (uint.MaxValue, Int512.UInt32MaxValue);
+		yield return () => (ulong.MaxValue, Int512.UInt64MaxValue);
 	}
 
 	public static IEnumerable<Func<(UInt128, Int512)>> ConvertFromCheckedUInt128TestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (1, Int512.One);
+		yield return () => (byte.MaxValue, Int512.ByteMaxValue);
+		yield return () => (ushort.MaxValue, Int512.UInt16MaxValue);
+		yield return () => (uint.MaxValue, Int512.UInt32MaxValue);
+		yield return () => (ulong.MaxValue, Int512.UInt64MaxValue);
+		yield return () => (UInt128.MaxValue, Int512.UInt128MaxValue);
 	}
 	
 	public static IEnumerable<Func<(UInt128, Int512)>> ConvertFromSaturatingUInt128TestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (1, Int512.One);
+		yield return () => (byte.MaxValue, Int512.ByteMaxValue);
+		yield return () => (ushort.MaxValue, Int512.UInt16MaxValue);
+		yield return () => (uint.MaxValue, Int512.UInt32MaxValue);
+		yield return () => (ulong.MaxValue, Int512.UInt64MaxValue);
+		yield return () => (UInt128.MaxValue, Int512.UInt128MaxValue);
 	}
 	
 	public static IEnumerable<Func<(UInt128, Int512)>> ConvertFromTruncatingUInt128TestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (1, Int512.One);
+		yield return () => (byte.MaxValue, Int512.ByteMaxValue);
+		yield return () => (ushort.MaxValue, Int512.UInt16MaxValue);
+		yield return () => (uint.MaxValue, Int512.UInt32MaxValue);
+		yield return () => (ulong.MaxValue, Int512.UInt64MaxValue);
+		yield return () => (UInt128.MaxValue, Int512.UInt128MaxValue);
 	}
 
 	public static IEnumerable<Func<(sbyte, Int512)>> ConvertFromCheckedSByteTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (sbyte.MinValue, Int512.SByteMinValue);
+		yield return () => (1, Int512.One);
+		yield return () => (sbyte.MaxValue, Int512.SByteMaxValue);
 	}
 	
 	public static IEnumerable<Func<(sbyte, Int512)>> ConvertFromSaturatingSByteTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (sbyte.MinValue, Int512.SByteMinValue);
+		yield return () => (1, Int512.One);
+		yield return () => (sbyte.MaxValue, Int512.SByteMaxValue);
 	}
 	
 	public static IEnumerable<Func<(sbyte, Int512)>> ConvertFromTruncatingSByteTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (sbyte.MinValue, Int512.SByteMinValue);
+		yield return () => (1, Int512.One);
+		yield return () => (sbyte.MaxValue, Int512.SByteMaxValue);
 	}
 
 	public static IEnumerable<Func<(short, Int512)>> ConvertFromCheckedInt16TestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (short.MinValue, Int512.Int16MinValue);
+		yield return () => (sbyte.MinValue, Int512.SByteMinValue);
+		yield return () => (1, Int512.One);
+		yield return () => (sbyte.MaxValue, Int512.SByteMaxValue);
+		yield return () => (short.MaxValue, Int512.Int16MaxValue);
 	}
 	
 	public static IEnumerable<Func<(short, Int512)>> ConvertFromSaturatingInt16TestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (short.MinValue, Int512.Int16MinValue);
+		yield return () => (sbyte.MinValue, Int512.SByteMinValue);
+		yield return () => (1, Int512.One);
+		yield return () => (sbyte.MaxValue, Int512.SByteMaxValue);
+		yield return () => (short.MaxValue, Int512.Int16MaxValue);
 	}
 	
 	public static IEnumerable<Func<(short, Int512)>> ConvertFromTruncatingInt16TestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (short.MinValue, Int512.Int16MinValue);
+		yield return () => (sbyte.MinValue, Int512.SByteMinValue);
+		yield return () => (1, Int512.One);
+		yield return () => (sbyte.MaxValue, Int512.SByteMaxValue);
+		yield return () => (short.MaxValue, Int512.Int16MaxValue);
 	}
 
 	public static IEnumerable<Func<(int, Int512)>> ConvertFromCheckedInt32TestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (int.MinValue, Int512.Int32MinValue);
+		yield return () => (short.MinValue, Int512.Int16MinValue);
+		yield return () => (sbyte.MinValue, Int512.SByteMinValue);
+		yield return () => (1, Int512.One);
+		yield return () => (sbyte.MaxValue, Int512.SByteMaxValue);
+		yield return () => (short.MaxValue, Int512.Int16MaxValue);
+		yield return () => (int.MaxValue, Int512.Int32MaxValue);
 	}
 	
 	public static IEnumerable<Func<(int, Int512)>> ConvertFromSaturatingInt32TestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (int.MinValue, Int512.Int32MinValue);
+		yield return () => (short.MinValue, Int512.Int16MinValue);
+		yield return () => (sbyte.MinValue, Int512.SByteMinValue);
+		yield return () => (1, Int512.One);
+		yield return () => (sbyte.MaxValue, Int512.SByteMaxValue);
+		yield return () => (short.MaxValue, Int512.Int16MaxValue);
+		yield return () => (int.MaxValue, Int512.Int32MaxValue);
 	}
 	
 	public static IEnumerable<Func<(int, Int512)>> ConvertFromTruncatingInt32TestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (int.MinValue, Int512.Int32MinValue);
+		yield return () => (short.MinValue, Int512.Int16MinValue);
+		yield return () => (sbyte.MinValue, Int512.SByteMinValue);
+		yield return () => (1, Int512.One);
+		yield return () => (sbyte.MaxValue, Int512.SByteMaxValue);
+		yield return () => (short.MaxValue, Int512.Int16MaxValue);
+		yield return () => (int.MaxValue, Int512.Int32MaxValue);
 	}
 
 	public static IEnumerable<Func<(long, Int512)>> ConvertFromCheckedInt64TestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (long.MinValue, Int512.Int64MinValue);
+		yield return () => (int.MinValue, Int512.Int32MinValue);
+		yield return () => (short.MinValue, Int512.Int16MinValue);
+		yield return () => (sbyte.MinValue, Int512.SByteMinValue);
+		yield return () => (1, Int512.One);
+		yield return () => (sbyte.MaxValue, Int512.SByteMaxValue);
+		yield return () => (short.MaxValue, Int512.Int16MaxValue);
+		yield return () => (int.MaxValue, Int512.Int32MaxValue);
+		yield return () => (long.MaxValue, Int512.Int64MaxValue);
 	}
 	
 	public static IEnumerable<Func<(long, Int512)>> ConvertFromSaturatingInt64TestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (long.MinValue, Int512.Int64MinValue);
+		yield return () => (int.MinValue, Int512.Int32MinValue);
+		yield return () => (short.MinValue, Int512.Int16MinValue);
+		yield return () => (sbyte.MinValue, Int512.SByteMinValue);
+		yield return () => (1, Int512.One);
+		yield return () => (sbyte.MaxValue, Int512.SByteMaxValue);
+		yield return () => (short.MaxValue, Int512.Int16MaxValue);
+		yield return () => (int.MaxValue, Int512.Int32MaxValue);
+		yield return () => (long.MaxValue, Int512.Int64MaxValue);
 	}
 	
 	public static IEnumerable<Func<(long, Int512)>> ConvertFromTruncatingInt64TestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (long.MinValue, Int512.Int64MinValue);
+		yield return () => (int.MinValue, Int512.Int32MinValue);
+		yield return () => (short.MinValue, Int512.Int16MinValue);
+		yield return () => (sbyte.MinValue, Int512.SByteMinValue);
+		yield return () => (1, Int512.One);
+		yield return () => (sbyte.MaxValue, Int512.SByteMaxValue);
+		yield return () => (short.MaxValue, Int512.Int16MaxValue);
+		yield return () => (int.MaxValue, Int512.Int32MaxValue);
+		yield return () => (long.MaxValue, Int512.Int64MaxValue);
 	}
 
 	public static IEnumerable<Func<(Int128, Int512)>> ConvertFromCheckedInt128TestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int128.MinValue, Int512.Int128MinValue);
+		yield return () => (long.MinValue, Int512.Int64MinValue);
+		yield return () => (int.MinValue, Int512.Int32MinValue);
+		yield return () => (short.MinValue, Int512.Int16MinValue);
+		yield return () => (sbyte.MinValue, Int512.SByteMinValue);
+		yield return () => (Int128.One, Int512.One);
+		yield return () => (sbyte.MaxValue, Int512.SByteMaxValue);
+		yield return () => (short.MaxValue, Int512.Int16MaxValue);
+		yield return () => (int.MaxValue, Int512.Int32MaxValue);
+		yield return () => (long.MaxValue, Int512.Int64MaxValue);
+		yield return () => (Int128.MaxValue, Int512.Int128MaxValue);
 	}
 	
 	public static IEnumerable<Func<(Int128, Int512)>> ConvertFromSaturatingInt128TestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int128.MinValue, Int512.Int128MinValue);
+		yield return () => (long.MinValue, Int512.Int64MinValue);
+		yield return () => (int.MinValue, Int512.Int32MinValue);
+		yield return () => (short.MinValue, Int512.Int16MinValue);
+		yield return () => (sbyte.MinValue, Int512.SByteMinValue);
+		yield return () => (Int128.One, Int512.One);
+		yield return () => (sbyte.MaxValue, Int512.SByteMaxValue);
+		yield return () => (short.MaxValue, Int512.Int16MaxValue);
+		yield return () => (int.MaxValue, Int512.Int32MaxValue);
+		yield return () => (long.MaxValue, Int512.Int64MaxValue);
+		yield return () => (Int128.MaxValue, Int512.Int128MaxValue);
 	}
 	
 	public static IEnumerable<Func<(Int128, Int512)>> ConvertFromTruncatingInt128TestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (Int128.MinValue, Int512.Int128MinValue);
+		yield return () => (long.MinValue, Int512.Int64MinValue);
+		yield return () => (int.MinValue, Int512.Int32MinValue);
+		yield return () => (short.MinValue, Int512.Int16MinValue);
+		yield return () => (sbyte.MinValue, Int512.SByteMinValue);
+		yield return () => (Int128.One, Int512.One);
+		yield return () => (sbyte.MaxValue, Int512.SByteMaxValue);
+		yield return () => (short.MaxValue, Int512.Int16MaxValue);
+		yield return () => (int.MaxValue, Int512.Int32MaxValue);
+		yield return () => (long.MaxValue, Int512.Int64MaxValue);
+		yield return () => (Int128.MaxValue, Int512.Int128MaxValue);
 	}
 	
 	public static IEnumerable<Func<(BigInteger, Int512)>> ConvertFromCheckedBigIntegerTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (BigInteger.Parse("-6703903964971298549787012499102923063739682910296196688861780721860882015036773488400937149083451713845015929093243025426876941405973284973216824503042048"), Int512.MinValue);
+		yield return () => (BigInteger.Parse("-57896044618658097711785492504343953926634992332820282019728792003956564819968"), Int512.Int256MinValue);
+		yield return () => (Int128.MinValue, Int512.Int128MinValue);
+		yield return () => (long.MinValue, Int512.Int64MinValue);
+		yield return () => (int.MinValue, Int512.Int32MinValue);
+		yield return () => (short.MinValue, Int512.Int16MinValue);
+		yield return () => (sbyte.MinValue, Int512.SByteMinValue);
+		yield return () => (BigInteger.One, Int512.One);
+		yield return () => (sbyte.MaxValue, Int512.SByteMaxValue);
+		yield return () => (short.MaxValue, Int512.Int16MaxValue);
+		yield return () => (int.MaxValue, Int512.Int32MaxValue);
+		yield return () => (long.MaxValue, Int512.Int64MaxValue);
+		yield return () => (Int128.MaxValue, Int512.Int128MaxValue);
+		yield return () => (BigInteger.Parse("57896044618658097711785492504343953926634992332820282019728792003956564819967"), Int512.Int256MaxValue);
+		yield return () => (BigInteger.Parse("6703903964971298549787012499102923063739682910296196688861780721860882015036773488400937149083451713845015929093243025426876941405973284973216824503042047"), Int512.MaxValue);
 	}
 
 	public static IEnumerable<Func<(BigInteger, Int512)>> ConvertFromSaturatingBigIntegerTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (BigInteger.Parse("-6703903964971298549787012499102923063739682910296196688861780721860882015036773488400937149083451713845015929093243025426876941405973284973216824503042049"), Int512.MinValue);
+		yield return () => (BigInteger.Parse("-6703903964971298549787012499102923063739682910296196688861780721860882015036773488400937149083451713845015929093243025426876941405973284973216824503042048"), Int512.MinValue);
+		yield return () => (BigInteger.Parse("-57896044618658097711785492504343953926634992332820282019728792003956564819968"), Int512.Int256MinValue);
+		yield return () => (Int128.MinValue, Int512.Int128MinValue);
+		yield return () => (long.MinValue, Int512.Int64MinValue);
+		yield return () => (int.MinValue, Int512.Int32MinValue);
+		yield return () => (short.MinValue, Int512.Int16MinValue);
+		yield return () => (sbyte.MinValue, Int512.SByteMinValue);
+		yield return () => (BigInteger.One, Int512.One);
+		yield return () => (sbyte.MaxValue, Int512.SByteMaxValue);
+		yield return () => (short.MaxValue, Int512.Int16MaxValue);
+		yield return () => (int.MaxValue, Int512.Int32MaxValue);
+		yield return () => (long.MaxValue, Int512.Int64MaxValue);
+		yield return () => (Int128.MaxValue, Int512.Int128MaxValue);
+		yield return () => (BigInteger.Parse("57896044618658097711785492504343953926634992332820282019728792003956564819967"), Int512.Int256MaxValue);
+		yield return () => (BigInteger.Parse("6703903964971298549787012499102923063739682910296196688861780721860882015036773488400937149083451713845015929093243025426876941405973284973216824503042047"), Int512.MaxValue);
+		yield return () => (BigInteger.Parse("6703903964971298549787012499102923063739682910296196688861780721860882015036773488400937149083451713845015929093243025426876941405973284973216824503042048"), Int512.MaxValue);
 	}
 
 	public static IEnumerable<Func<(BigInteger, Int512)>> ConvertFromTruncatingBigIntegerTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (BigInteger.Parse("-6703903964971298549787012499102923063739682910296196688861780721860882015036773488400937149083451713845015929093243025426876941405973284973216824503042049"), Int512.MaxValue);
+		yield return () => (BigInteger.Parse("-6703903964971298549787012499102923063739682910296196688861780721860882015036773488400937149083451713845015929093243025426876941405973284973216824503042048"), Int512.MinValue);
+		yield return () => (BigInteger.Parse("-57896044618658097711785492504343953926634992332820282019728792003956564819968"), Int512.Int256MinValue);
+		yield return () => (Int128.MinValue, Int512.Int128MinValue);
+		yield return () => (long.MinValue, Int512.Int64MinValue);
+		yield return () => (int.MinValue, Int512.Int32MinValue);
+		yield return () => (short.MinValue, Int512.Int16MinValue);
+		yield return () => (sbyte.MinValue, Int512.SByteMinValue);
+		yield return () => (BigInteger.One, Int512.One);
+		yield return () => (sbyte.MaxValue, Int512.SByteMaxValue);
+		yield return () => (short.MaxValue, Int512.Int16MaxValue);
+		yield return () => (int.MaxValue, Int512.Int32MaxValue);
+		yield return () => (long.MaxValue, Int512.Int64MaxValue);
+		yield return () => (Int128.MaxValue, Int512.Int128MaxValue);
+		yield return () => (BigInteger.Parse("57896044618658097711785492504343953926634992332820282019728792003956564819967"), Int512.Int256MaxValue);
+		yield return () => (BigInteger.Parse("6703903964971298549787012499102923063739682910296196688861780721860882015036773488400937149083451713845015929093243025426876941405973284973216824503042047"), Int512.MaxValue);
+		yield return () => (BigInteger.Parse("6703903964971298549787012499102923063739682910296196688861780721860882015036773488400937149083451713845015929093243025426876941405973284973216824503042048"), Int512.MinValue);
 	}
 
 	public static IEnumerable<Func<(Half, Int512)>> ConvertFromCheckedHalfTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (sbyte.MinValue, Int512.SByteMinValue);
+		yield return () => (Half.One, Int512.One);
+		yield return () => (byte.MaxValue, Int512.ByteMaxValue);
+		yield return () => (sbyte.MaxValue, Int512.SByteMaxValue);
 	}
 	
 	public static IEnumerable<Func<(Half, Int512)>> ConvertFromSaturatingHalfTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (sbyte.MinValue, Int512.SByteMinValue);
+		yield return () => (Half.One, Int512.One);
+		yield return () => (byte.MaxValue, Int512.ByteMaxValue);
+		yield return () => (sbyte.MaxValue, Int512.SByteMaxValue);
 	}
 	
 	public static IEnumerable<Func<(Half, Int512)>> ConvertFromTruncatingHalfTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (sbyte.MinValue, Int512.SByteMinValue);
+		yield return () => (Half.One, Int512.One);
+		yield return () => (byte.MaxValue, Int512.ByteMaxValue);
+		yield return () => (sbyte.MaxValue, Int512.SByteMaxValue);
 	}
 
 	public static IEnumerable<Func<(float, Int512)>> ConvertFromCheckedSingleTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (short.MinValue, Int512.Int16MinValue);
+		yield return () => (sbyte.MinValue, Int512.SByteMinValue);
+		yield return () => (1f, Int512.One);
+		yield return () => (byte.MaxValue, Int512.ByteMaxValue);
+		yield return () => (sbyte.MaxValue, Int512.SByteMaxValue);
+		yield return () => (short.MaxValue, Int512.Int16MaxValue);
+		yield return () => (ushort.MaxValue, Int512.UInt16MaxValue);
 	}
 	
 	public static IEnumerable<Func<(float, Int512)>> ConvertFromSaturatingSingleTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (short.MinValue, Int512.Int16MinValue);
+		yield return () => (sbyte.MinValue, Int512.SByteMinValue);
+		yield return () => (1f, Int512.One);
+		yield return () => (byte.MaxValue, Int512.ByteMaxValue);
+		yield return () => (sbyte.MaxValue, Int512.SByteMaxValue);
+		yield return () => (short.MaxValue, Int512.Int16MaxValue);
+		yield return () => (ushort.MaxValue, Int512.UInt16MaxValue);
 	}
 	
 	public static IEnumerable<Func<(float, Int512)>> ConvertFromTruncatingSingleTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (short.MinValue, Int512.Int16MinValue);
+		yield return () => (sbyte.MinValue, Int512.SByteMinValue);
+		yield return () => (1f, Int512.One);
+		yield return () => (byte.MaxValue, Int512.ByteMaxValue);
+		yield return () => (sbyte.MaxValue, Int512.SByteMaxValue);
+		yield return () => (short.MaxValue, Int512.Int16MaxValue);
+		yield return () => (ushort.MaxValue, Int512.UInt16MaxValue);
 	}
 
 	public static IEnumerable<Func<(double, Int512)>> ConvertFromCheckedDoubleTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (int.MinValue, Int512.Int32MinValue);
+		yield return () => (short.MinValue, Int512.Int16MinValue);
+		yield return () => (sbyte.MinValue, Int512.SByteMinValue);
+		yield return () => (1d, Int512.One);
+		yield return () => (byte.MaxValue, Int512.ByteMaxValue);
+		yield return () => (sbyte.MaxValue, Int512.SByteMaxValue);
+		yield return () => (short.MaxValue, Int512.Int16MaxValue);
+		yield return () => (ushort.MaxValue, Int512.UInt16MaxValue);
+		yield return () => (int.MaxValue, Int512.Int32MaxValue);
+		yield return () => (uint.MaxValue, Int512.UInt32MaxValue);
 	}
 	
 	public static IEnumerable<Func<(double, Int512)>> ConvertFromSaturatingDoubleTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (int.MinValue, Int512.Int32MinValue);
+		yield return () => (short.MinValue, Int512.Int16MinValue);
+		yield return () => (sbyte.MinValue, Int512.SByteMinValue);
+		yield return () => (1d, Int512.One);
+		yield return () => (byte.MaxValue, Int512.ByteMaxValue);
+		yield return () => (sbyte.MaxValue, Int512.SByteMaxValue);
+		yield return () => (short.MaxValue, Int512.Int16MaxValue);
+		yield return () => (ushort.MaxValue, Int512.UInt16MaxValue);
+		yield return () => (int.MaxValue, Int512.Int32MaxValue);
+		yield return () => (uint.MaxValue, Int512.UInt32MaxValue);
 	}
 	
 	public static IEnumerable<Func<(double, Int512)>> ConvertFromTruncatingDoubleTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (int.MinValue, Int512.Int32MinValue);
+		yield return () => (short.MinValue, Int512.Int16MinValue);
+		yield return () => (sbyte.MinValue, Int512.SByteMinValue);
+		yield return () => (1d, Int512.One);
+		yield return () => (byte.MaxValue, Int512.ByteMaxValue);
+		yield return () => (sbyte.MaxValue, Int512.SByteMaxValue);
+		yield return () => (short.MaxValue, Int512.Int16MaxValue);
+		yield return () => (ushort.MaxValue, Int512.UInt16MaxValue);
+		yield return () => (int.MaxValue, Int512.Int32MaxValue);
+		yield return () => (uint.MaxValue, Int512.UInt32MaxValue);
 	}
 }
