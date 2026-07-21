@@ -35,6 +35,9 @@ public static class QuadExtensions
 		public static Quad UInt16MaxValue => Values.CreateFloat<Quad>(0x400E_FFFE_0000_0000, 0x0000_0000_0000_0000);
 		public static Quad UInt32MaxValue => Values.CreateFloat<Quad>(0x401E_FFFF_FFFE_0000, 0x0000_0000_0000_0000);
 		public static Quad UInt64MaxValue => Values.CreateFloat<Quad>(0x403E_FFFF_FFFF_FFFF, 0xFFFE_0000_0000_0000);
+		public static Quad TwoOver128 => Values.CreateFloat<Quad>(0x407F_0000_0000_0000, 0x0000_0000_0000_0000);
+		public static Quad TwoOver256 => Values.CreateFloat<Quad>(0x40FF_0000_0000_0000, 0x0000_0000_0000_0000);
+		public static Quad TwoOver512 => Values.CreateFloat<Quad>(0x41FF_0000_0000_0000, 0x0000_0000_0000_0000);
 		public static Quad TwoOver127 => Values.CreateFloat<Quad>(0x407E_0000_0000_0000, 0x0000_0000_0000_0000);
 		public static Quad TwoOver255 => Values.CreateFloat<Quad>(0x40FE_0000_0000_0000, 0x0000_0000_0000_0000);
 		public static Quad TwoOver511 => Values.CreateFloat<Quad>(0x41FE_0000_0000_0000, 0x0000_0000_0000_0000);
