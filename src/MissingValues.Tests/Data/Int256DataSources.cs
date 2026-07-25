@@ -1693,24 +1693,24 @@ public class Int256DataSources
 	
 	public static IEnumerable<Func<(Int256, Half)>> ConvertToSaturatingHalfTestData()
 	{
-		yield return () => (Int256.MinValue, Half.MinValue);
+		yield return () => (Int256.MinValue, Half.NegativeInfinity);
 		yield return () => (Int256.Int16MinValue, (Half)short.MinValue);
 		yield return () => (Int256.SByteMinValue, (Half)sbyte.MinValue);
 		yield return () => (Int256.One, Half.One);
 		yield return () => (Int256.SByteMaxValue, (Half)sbyte.MaxValue);
 		yield return () => (Int256.Int16MaxValue, (Half)short.MaxValue);
-		yield return () => (Int256.MaxValue, Half.MaxValue);
+		yield return () => (Int256.MaxValue, Half.PositiveInfinity);
 	}
 	
 	public static IEnumerable<Func<(Int256, Half)>> ConvertToTruncatingHalfTestData()
 	{
-		yield return () => (Int256.MinValue, Half.MinValue);
+		yield return () => (Int256.MinValue, Half.NegativeInfinity);
 		yield return () => (Int256.Int16MinValue, (Half)short.MinValue);
 		yield return () => (Int256.SByteMinValue, (Half)sbyte.MinValue);
 		yield return () => (Int256.One, Half.One);
 		yield return () => (Int256.SByteMaxValue, (Half)sbyte.MaxValue);
 		yield return () => (Int256.Int16MaxValue, (Half)short.MaxValue);
-		yield return () => (Int256.MaxValue, Half.MaxValue);
+		yield return () => (Int256.MaxValue, Half.PositiveInfinity);
 	}
 
 	public static IEnumerable<Func<(Int256, float)>> ConvertToCheckedSingleTestData()

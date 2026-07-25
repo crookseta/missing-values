@@ -1922,24 +1922,24 @@ public class Int512DataSources
 	
 	public static IEnumerable<Func<(Int512, Half)>> ConvertToSaturatingHalfTestData()
 	{
-		yield return () => (Int512.MinValue, Half.MinValue);
+		yield return () => (Int512.MinValue, Half.NegativeInfinity);
 		yield return () => (Int512.Int16MinValue, (Half)short.MinValue);
 		yield return () => (Int512.SByteMinValue, (Half)sbyte.MinValue);
 		yield return () => (Int512.One, Half.One);
 		yield return () => (Int512.SByteMaxValue, (Half)sbyte.MaxValue);
 		yield return () => (Int512.Int16MaxValue, (Half)short.MaxValue);
-		yield return () => (Int512.MaxValue, Half.MaxValue);
+		yield return () => (Int512.MaxValue, Half.PositiveInfinity);
 	}
 	
 	public static IEnumerable<Func<(Int512, Half)>> ConvertToTruncatingHalfTestData()
 	{
-		yield return () => (Int512.MinValue, Half.MinValue);
+		yield return () => (Int512.MinValue, Half.NegativeInfinity);
 		yield return () => (Int512.Int16MinValue, (Half)short.MinValue);
 		yield return () => (Int512.SByteMinValue, (Half)sbyte.MinValue);
 		yield return () => (Int512.One, Half.One);
 		yield return () => (Int512.SByteMaxValue, (Half)sbyte.MaxValue);
 		yield return () => (Int512.Int16MaxValue, (Half)short.MaxValue);
-		yield return () => (Int512.MaxValue, Half.MaxValue);
+		yield return () => (Int512.MaxValue, Half.PositiveInfinity);
 	}
 
 	public static IEnumerable<Func<(Int512, float)>> ConvertToCheckedSingleTestData()

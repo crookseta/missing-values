@@ -1953,6 +1953,7 @@ public class QuadDataSources
 	
 	public static IEnumerable<Func<(BigInteger, Quad)>> ConvertFromCheckedBigIntegerTestData()
 	{
+		yield return () => (Values.QuadMinValue, Quad.MinValue);
 		yield return () => ((BigInteger)double.MinValue, Quad.DoubleMinValue);
 		yield return () => ((BigInteger)float.MinValue, Quad.SingleMinValue);
 		yield return () => ((BigInteger)Half.MinValue, Quad.HalfMinValue);
@@ -1970,10 +1971,12 @@ public class QuadDataSources
 		yield return () => ((BigInteger)Half.MaxValue, Quad.HalfMaxValue);
 		yield return () => ((BigInteger)float.MaxValue, Quad.SingleMaxValue);
 		yield return () => ((BigInteger)double.MaxValue, Quad.DoubleMaxValue);
+		yield return () => (Values.QuadMaxValue, Quad.MaxValue);
 	}
 
 	public static IEnumerable<Func<(BigInteger, Quad)>> ConvertFromSaturatingBigIntegerTestData()
 	{
+		yield return () => (Values.QuadMinValue, Quad.MinValue);
 		yield return () => ((BigInteger)double.MinValue, Quad.DoubleMinValue);
 		yield return () => ((BigInteger)float.MinValue, Quad.SingleMinValue);
 		yield return () => ((BigInteger)Half.MinValue, Quad.HalfMinValue);
@@ -1991,10 +1994,12 @@ public class QuadDataSources
 		yield return () => ((BigInteger)Half.MaxValue, Quad.HalfMaxValue);
 		yield return () => ((BigInteger)float.MaxValue, Quad.SingleMaxValue);
 		yield return () => ((BigInteger)double.MaxValue, Quad.DoubleMaxValue);
+		yield return () => (Values.QuadMaxValue, Quad.MaxValue);
 	}
 
 	public static IEnumerable<Func<(BigInteger, Quad)>> ConvertFromTruncatingBigIntegerTestData()
 	{
+		yield return () => (Values.QuadMinValue, Quad.MinValue);
 		yield return () => ((BigInteger)double.MinValue, Quad.DoubleMinValue);
 		yield return () => ((BigInteger)float.MinValue, Quad.SingleMinValue);
 		yield return () => ((BigInteger)Half.MinValue, Quad.HalfMinValue);
@@ -2012,6 +2017,7 @@ public class QuadDataSources
 		yield return () => ((BigInteger)Half.MaxValue, Quad.HalfMaxValue);
 		yield return () => ((BigInteger)float.MaxValue, Quad.SingleMaxValue);
 		yield return () => ((BigInteger)double.MaxValue, Quad.DoubleMaxValue);
+		yield return () => (Values.QuadMaxValue, Quad.MaxValue);
 	}
 
 	public static IEnumerable<Func<(Half, Quad)>> ConvertFromCheckedHalfTestData()

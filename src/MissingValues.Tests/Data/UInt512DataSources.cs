@@ -1475,8 +1475,7 @@ public class UInt512DataSources
 		yield return () => (UInt512.ByteMaxValue, (Half)byte.MaxValue);
 		yield return () => (UInt512.SByteMaxValue, (Half)sbyte.MaxValue);
 		yield return () => (UInt512.Int16MaxValue, (Half)short.MaxValue);
-		yield return () => (UInt512.UInt16MaxValue, Half.MaxValue);
-		yield return () => (UInt512.MaxValue, Half.MaxValue);
+		yield return () => (UInt512.MaxValue, Half.PositiveInfinity);
 	}
 	
 	public static IEnumerable<Func<(UInt512, Half)>> ConvertToTruncatingHalfTestData()
@@ -1485,8 +1484,7 @@ public class UInt512DataSources
 		yield return () => (UInt512.ByteMaxValue, (Half)byte.MaxValue);
 		yield return () => (UInt512.SByteMaxValue, (Half)sbyte.MaxValue);
 		yield return () => (UInt512.Int16MaxValue, (Half)short.MaxValue);
-		yield return () => (UInt512.UInt16MaxValue, Half.MaxValue);
-		yield return () => (UInt512.MaxValue, Half.MaxValue);
+		yield return () => (UInt512.MaxValue, Half.PositiveInfinity);
 	}
 
 	public static IEnumerable<Func<(UInt512, float)>> ConvertToCheckedSingleTestData()

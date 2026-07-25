@@ -1,9 +1,23 @@
+using System.Numerics;
 using System.Text;
+using MissingValues.Info;
 
 namespace MissingValues.Tests;
 
 public static class Values
 {
+	public static BigInteger QuadMinValue => -MaxValueFloat<Quad, UInt128>();
+	public static BigInteger QuadMaxValue => MaxValueFloat<Quad, UInt128>();
+	public static BigInteger OctoMinValue => -MaxValueFloat<Octo, UInt256>();
+	public static BigInteger OctoMaxValue => MaxValueFloat<Octo, UInt256>();
+	
+	private static BigInteger MaxValueFloat<TFloat, TSignificand>()
+		where TFloat : unmanaged, IBinaryFloatingPointInfo<TFloat, TSignificand>
+		where TSignificand : unmanaged, IBinaryInteger<TSignificand>, IUnsignedNumber<TSignificand>
+	{
+		return BigInteger.Pow(2, TFloat.ExponentBias - (TFloat.TrailingSignificandMask).GetShortestBitLength()) * BigInteger.Parse(TFloat.NormalMantissaMask.ToString() ?? "0");
+	}
+	
 	public static TFloat CreateFloat<TFloat>(params ReadOnlySpan<ulong> bits)
 	{
 		if (typeof(TFloat) == typeof(Quad) && bits.Length == 2)

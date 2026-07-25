@@ -1291,8 +1291,7 @@ public class UInt256DataSources
 		yield return () => (UInt256.ByteMaxValue, (Half)byte.MaxValue);
 		yield return () => (UInt256.SByteMaxValue, (Half)sbyte.MaxValue);
 		yield return () => (UInt256.Int16MaxValue, (Half)short.MaxValue);
-		yield return () => (UInt256.UInt16MaxValue, Half.MaxValue);
-		yield return () => (UInt256.MaxValue, Half.MaxValue);
+		yield return () => (UInt256.MaxValue, Half.PositiveInfinity);
 	}
 	
 	public static IEnumerable<Func<(UInt256, Half)>> ConvertToTruncatingHalfTestData()
@@ -1301,8 +1300,7 @@ public class UInt256DataSources
 		yield return () => (UInt256.ByteMaxValue, (Half)byte.MaxValue);
 		yield return () => (UInt256.SByteMaxValue, (Half)sbyte.MaxValue);
 		yield return () => (UInt256.Int16MaxValue, (Half)short.MaxValue);
-		yield return () => (UInt256.UInt16MaxValue, Half.MaxValue);
-		yield return () => (UInt256.MaxValue, Half.MaxValue);
+		yield return () => (UInt256.MaxValue, Half.PositiveInfinity);
 	}
 
 	public static IEnumerable<Func<(UInt256, float)>> ConvertToCheckedSingleTestData()
