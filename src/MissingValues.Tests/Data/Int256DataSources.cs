@@ -1560,7 +1560,6 @@ public class Int256DataSources
 	public static IEnumerable<Func<(Int256, Int128)>> ConvertToTruncatingInt128TestData()
 	{
 		yield return () => (Int256.MinValue, Int128.Zero);
-		yield return () => (Int256.MinValue, Int128.MinValue);
 		yield return () => (Int256.Int128MinValue, Int128.MinValue);
 		yield return () => (Int256.Int64MinValue, long.MinValue);
 		yield return () => (Int256.Int32MinValue, int.MinValue);
@@ -1572,7 +1571,6 @@ public class Int256DataSources
 		yield return () => (Int256.Int32MaxValue, int.MaxValue);
 		yield return () => (Int256.Int64MaxValue, long.MaxValue);
 		yield return () => (Int256.Int128MaxValue, Int128.MaxValue);
-		yield return () => (Int256.MaxValue, Int128.MaxValue);
 		yield return () => (Int256.MaxValue, Int128.NegativeOne);
 	}
 
