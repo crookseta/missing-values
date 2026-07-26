@@ -82,8 +82,9 @@ internal static partial class NumberFormatter
 
 		Span<Utf16Char> buffer = stackalloc Utf16Char[maxBufferAlloc];
 		int charsWritten;
-		if (fmt.StartsWith("X", StringComparison.OrdinalIgnoreCase) 
-		    && TryFormatFloatToHex<TFloat, TSignificand, Utf16Char>(in value, buffer, out charsWritten, fmt[0], precision, info))
+		// TODO: Expose Hex format for v3.0
+		if (false /*fmt.StartsWith("X", StringComparison.OrdinalIgnoreCase) 
+		    && TryFormatFloatToHex<TFloat, TSignificand, Utf16Char>(in value, buffer, out charsWritten, fmt[0], precision, info)*/)
 		{
 			return new string(Utf16Char.CastToCharSpan(buffer).Slice(0, charsWritten));
 		}
@@ -136,7 +137,8 @@ internal static partial class NumberFormatter
 			}
 		}
 
-		if (format.Contains("X", StringComparison.OrdinalIgnoreCase))
+		// TODO: Expose Hex format for v3.0
+		if (false /*format.Contains("X", StringComparison.OrdinalIgnoreCase)*/)
 		{
 			return TryFormatFloatToHex<TFloat, TSignificand, TChar>(in value, destination, out charsWritten, format.TrimStart()[0], precision, info);
 		}

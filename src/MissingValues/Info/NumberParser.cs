@@ -503,7 +503,8 @@ namespace MissingValues.Info
 			where TChar : unmanaged, IUtfCharacter<TChar>
 		{
 			NumberFormatInfo info = NumberFormatInfo.GetInstance(provider);
-			if ((styles & NumberStyles.AllowHexSpecifier) != 0)
+			// TODO: Expose Hex parsing for v3.0
+			if (false /*(styles & NumberStyles.AllowHexSpecifier) != 0*/)
 			{
 				return TryParseHexFloat<TFloat, TBits, TChar>(s, styles, info, out result);
 			}
