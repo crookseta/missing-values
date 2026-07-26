@@ -160,7 +160,7 @@ public partial struct Int512
 			ulong actual => (Int512)actual,
 			UInt128 actual => (Int512)actual,
 			UInt256 actual => (Int512)actual,
-			UInt512 actual => (actual > (UInt512)MaxValue) ? MaxValue : (Int512)actual,
+			UInt512 actual => (Int512)actual,
 			nuint actual => (Int512)actual,
 			sbyte actual => actual,
 			short actual => actual,

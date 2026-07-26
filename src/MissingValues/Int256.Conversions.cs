@@ -567,7 +567,12 @@ public partial struct Int256
 	/// Explicitly converts a <see cref="Int256" /> value to a <see cref="UInt512"/>.
 	/// </summary>
 	/// <param name="value">The value to convert.</param>
-	public static explicit operator UInt512(in Int256 value) => new(0, 0, 0, 0, value._p3, value._p2, value._p1, value._p0);
+	public static explicit operator UInt512(in Int256 value)
+	{
+		ulong shiftedPart = unchecked((ulong)((long)value._p3 >> 63));
+		return new UInt512(shiftedPart, shiftedPart, shiftedPart, shiftedPart, value._p3, value._p2, value._p1, value._p0);
+	}
+
 	/// <summary>
 	/// Explicitly converts a <see cref="Int256" /> value to a <see cref="UInt512"/>.
 	/// </summary>
