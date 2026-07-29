@@ -1,3 +1,4 @@
+using System.Buffers;
 using System.Diagnostics;
 using System.Numerics;
 using System.Runtime.CompilerServices;
@@ -602,17 +603,18 @@ public partial struct Octo
 	/// <param name="value">The value to convert.</param>
 	public static explicit operator sbyte(in Octo value)
 	{
-		Octo twoPow7 = new Octo(0x4000_6000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
-
-		if (value <= -twoPow7)
+		Octo minValue = new Octo(0xC000_6000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
+		Octo maxValue = new Octo(0x4000_5FC0_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
+		
+		if (value <= minValue)
 		{
 			return sbyte.MinValue;
 		}
-		else if (Octo.IsNaN(value))
+		if (Octo.IsNaN(value))
 		{
 			return 0;
 		}
-		else if (value >= +twoPow7)
+		if (value >= maxValue)
 		{
 			return sbyte.MaxValue;
 		}
@@ -645,9 +647,10 @@ public partial struct Octo
 	/// <exception cref="OverflowException"><paramref name="value"/> is outside the range of <see cref="sbyte"/>.</exception>
 	public static explicit operator checked sbyte(in Octo value)
 	{
-		Octo twoPow7 = new Octo(0x4000_6000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
+		Octo minValue = new Octo(0xC000_6000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
+		Octo maxValue = new Octo(0x4000_5FC0_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
 
-		if (value <= -twoPow7 || Octo.IsNaN(value) || value >= +twoPow7)
+		if (value < minValue || Octo.IsNaN(value) || value > maxValue)
 		{
 			Thrower.IntegerOverflow();
 		}
@@ -679,9 +682,10 @@ public partial struct Octo
 	/// <param name="value">The value to convert.</param>
 	public static explicit operator short(in Octo value)
 	{
-		Octo twoPow15 = new Octo(0x4000_E000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
+		Octo minValue = new Octo(0xC000_E000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
+		Octo maxValue = new Octo(0x4000_DFFF_C000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
 
-		if (value <= -twoPow15)
+		if (value <= minValue)
 		{
 			return short.MinValue;
 		}
@@ -689,7 +693,7 @@ public partial struct Octo
 		{
 			return 0;
 		}
-		else if (value >= +twoPow15)
+		else if (value >= maxValue)
 		{
 			return short.MaxValue;
 		}
@@ -722,9 +726,10 @@ public partial struct Octo
 	/// <exception cref="OverflowException"><paramref name="value"/> is outside the range of <see cref="short"/>.</exception>
 	public static explicit operator checked short(in Octo value)
 	{
-		Octo twoPow15 = new Octo(0x4000_E000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
+		Octo minValue = new Octo(0xC000_E000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
+		Octo maxValue = new Octo(0x4000_DFFF_C000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
 
-		if (value <= -twoPow15 || Octo.IsNaN(value) || value >= +twoPow15)
+		if (value < minValue || Octo.IsNaN(value) || value > maxValue)
 		{
 			Thrower.IntegerOverflow();
 		}
@@ -756,9 +761,10 @@ public partial struct Octo
 	/// <param name="value">The value to convert.</param>
 	public static explicit operator int(in Octo value)
 	{
-		Octo twoPow31 = new Octo(0x4001_E000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
+		Octo minValue = new Octo(0xC001_E000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
+		Octo maxValue = new Octo(0x4001_DFFF_FFFF_C000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
 
-		if (value <= -twoPow31)
+		if (value <= minValue)
 		{
 			return int.MinValue;
 		}
@@ -766,7 +772,7 @@ public partial struct Octo
 		{
 			return 0;
 		}
-		else if (value >= +twoPow31)
+		else if (value >= maxValue)
 		{
 			return int.MaxValue;
 		}
@@ -801,9 +807,10 @@ public partial struct Octo
 	/// <exception cref="OverflowException"><paramref name="value"/> is outside the range of <see cref="int"/>.</exception>
 	public static explicit operator checked int(in Octo value)
 	{
-		Octo twoPow31 = new Octo(0x4001_E000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
+		Octo minValue = new Octo(0xC001_E000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
+		Octo maxValue = new Octo(0x4001_DFFF_FFFF_C000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
 
-		if (value <= -twoPow31 || Octo.IsNaN(value) || value >= +twoPow31)
+		if (value < minValue || Octo.IsNaN(value) || value > maxValue)
 		{
 			Thrower.IntegerOverflow();
 		}
@@ -837,9 +844,10 @@ public partial struct Octo
 	/// <param name="value">The value to convert.</param>
 	public static explicit operator long(in Octo value)
 	{
-		Octo twoPow63 = new Octo(0x4003_E000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
+		Octo minValue = new Octo(0xC003_E000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
+		Octo maxValue = new Octo(0x4003_DFFF_FFFF_FFFF, 0xFFFF_C000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
 
-		if (value <= -twoPow63)
+		if (value <= minValue)
 		{
 			return long.MinValue;
 		}
@@ -847,7 +855,7 @@ public partial struct Octo
 		{
 			return 0;
 		}
-		else if (value >= +twoPow63)
+		else if (value >= maxValue)
 		{
 			return long.MaxValue;
 		}
@@ -882,9 +890,10 @@ public partial struct Octo
 	/// <exception cref="OverflowException"><paramref name="value"/> is outside the range of <see cref="long"/>.</exception>
 	public static explicit operator checked long(in Octo value)
 	{
-		Octo twoPow63 = new Octo(0x4003_E000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
+		Octo minValue = new Octo(0xC003_E000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
+		Octo maxValue = new Octo(0x4003_DFFF_FFFF_FFFF, 0xFFFF_C000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
 
-		if (value <= -twoPow63 || Octo.IsNaN(value) || value >= +twoPow63)
+		if (value < minValue || Octo.IsNaN(value) || value > maxValue)
 		{
 			Thrower.IntegerOverflow();
 		}
@@ -918,9 +927,10 @@ public partial struct Octo
 	/// <param name="value">The value to convert.</param>
 	public static explicit operator Int128(in Octo value)
 	{
-		Octo twoPow127 = new Octo(0x4007_E000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
+		Octo minValue = new Octo(0xC007_E000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
+		Octo maxValue = new Octo(0x4007_DFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_C000_0000_0000, 0x0000_0000_0000_0000);
 
-		if (value <= -twoPow127)
+		if (value <= minValue)
 		{
 			return Int128.MinValue;
 		}
@@ -928,7 +938,7 @@ public partial struct Octo
 		{
 			return Int128.Zero;
 		}
-		else if (value >= +twoPow127)
+		else if (value >= maxValue)
 		{
 			return Int128.MaxValue;
 		}
@@ -963,9 +973,10 @@ public partial struct Octo
 	/// <exception cref="OverflowException"><paramref name="value"/> is outside the range of <see cref="Int128"/>.</exception>
 	public static explicit operator checked Int128(in Octo value)
 	{
-		Octo twoPow127 = new Octo(0x4007_E000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
+		Octo minValue = new Octo(0xC007_E000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
+		Octo maxValue = new Octo(0x4007_DFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_C000_0000_0000, 0x0000_0000_0000_0000);
 
-		if (value <= -twoPow127 || Octo.IsNaN(value) || value >= +twoPow127)
+		if (value < minValue || Octo.IsNaN(value) || value > maxValue)
 		{
 			Thrower.IntegerOverflow();
 		}
@@ -1173,9 +1184,6 @@ public partial struct Octo
 	/// <exception cref="OverflowException"><paramref name="value"/> is not finite.</exception>
 	public static explicit operator BigInteger(in Octo value)
 	{
-		const int kcbitUInt128 = 128;
-		const int kcbitUInt256 = 256;
-
 		if (!IsFinite(value))
 		{
 			Thrower.IntegerOverflow();
@@ -1188,40 +1196,16 @@ public partial struct Octo
 			return BigInteger.Zero;
 		}
 
-		if (exp <= 0)
+		BigInteger result;
+		if (exp >= 0)
 		{
-			if (exp <= -kcbitUInt256)
-			{
-				return BigInteger.Zero;
-			}
-			return (BigInteger)(sign < 0 ? -(man >> -exp) : (man >> -exp));
-		}
-		else if (exp <= BiasedExponentLength)
-		{
-			return (BigInteger)(sign < 0 ? -(man << exp) : (man << exp));
+			result = (BigInteger)man << exp;
 		}
 		else
 		{
-			// Overflow into at least 3 uints.
-			// Move the leading 1 to the high bit.
-			man <<= BiasedExponentLength;
-			exp -= BiasedExponentLength;
-
-			// Compute cu and cbit so that exp == 32 * cu - cbit and 0 <= cbit < 32.
-			int cu = (exp - 1) / kcbitUInt128 + 1;
-			int cbit = cu * kcbitUInt128 - exp;
-			Debug.Assert(0 <= cbit && cbit < kcbitUInt128);
-			Debug.Assert(cu >= 1);
-
-			// Populate the uints.
-			Span<UInt128> bits = stackalloc UInt128[cu + 2];
-			bits[cu + 1] = (UInt128)(man >> (cbit + kcbitUInt128));
-			bits[cu] = unchecked((UInt128)(man >> cbit));
-			if (cbit > 0)
-				bits[cu - 1] = unchecked((UInt128)man) << (kcbitUInt128 - cbit);
-
-			return sign > 0 ? new BigInteger(MemoryMarshal.Cast<UInt128, byte>(bits), true) : -(new BigInteger(MemoryMarshal.Cast<UInt128, byte>(bits)));
+			result = (BigInteger)man >> -exp;
 		}
+		return sign < 0 ? -result : result;
 	}
 
 	/// <summary>
@@ -1519,43 +1503,56 @@ public partial struct Octo
 	/// <param name="value">The value to convert.</param>
 	public static explicit operator Octo(BigInteger value)
 	{
-		Span<byte> bits = stackalloc byte[value.GetByteCount()];
-
 		int sign = value.Sign;
-		value.TryWriteBytes(bits, out int length);
-		scoped Span<UInt128> bits128;
-		length /= Unsafe.SizeOf<UInt128>();
-		if (!BitOperations.IsPow2(bits.Length) && bits.Length >= 8)
+		if (sign == 0)
 		{
-			int pow2Length = length * Unsafe.SizeOf<UInt128>();
-			var remainder = bits[pow2Length..];
-			bits128 = stackalloc UInt128[++length];
-			bits[..pow2Length].CopyTo(MemoryMarshal.AsBytes(bits128));
-			for (int i = remainder.Length - 1, shift = 128 - 8; i >= 0; i--, shift -= 8)
-			{
-				bits128[^1] = (UInt128)remainder[i] << shift;
-			}
+			return Octo.Zero;
 		}
-		else if (bits.Length < 4)
+		if (sign >= 0 && value.CompareTo(ulong.MaxValue) <= 0)
 		{
-			bits128 = stackalloc UInt128[length = 1];
-			bits.CopyTo(MemoryMarshal.AsBytes(bits128));
+			return (ulong)value;
 		}
-		else
+		if (sign < 0 && value.CompareTo(long.MinValue) >= 0)
 		{
-			bits128 = MemoryMarshal.Cast<byte, UInt128>(bits);
+			return (long)value;
+		}
+		
+		BigInteger magnitude = sign < 0 ? -value : value;
+		
+		int byteCount = magnitude.GetByteCount();
+		byte[]? array = null;
+		Span<byte> bits = byteCount >= Calculator.StackAllocThreshold 
+			? (array = ArrayPool<byte>.Shared.Rent(byteCount)).AsSpan(0, byteCount) 
+			: stackalloc byte[byteCount];
+		bits.Clear();
+
+		magnitude.TryWriteBytes(bits, out int bytesWritten);
+		
+		int uintCount = (bytesWritten + 15) / 16;
+		
+		scoped Span<UInt128> bits128 = stackalloc UInt128[uintCount];
+		bits128.Clear();
+		
+		bits.CopyTo(MemoryMarshal.AsBytes(bits128));
+
+		if (uintCount == 1)
+		{
+			UInt128 slice64 = bits128[0];
+			if (array is not null) ArrayPool<byte>.Shared.Return(array);
+	        
+			Octo result = slice64;
+			return sign < 0 ? -result : result; 
+		}
+		
+		if (magnitude.GetBitLength() > MaxExponent + 1)
+		{
+			if (array is not null) ArrayPool<byte>.Shared.Return(array);
+			return sign == 1 ? Octo.PositiveInfinity : Octo.NegativeInfinity;
 		}
 
-		if (length == 1)
-		{
-			return bits128[0];
-		}
-
-		// The maximum exponent for quads is 262143, which corresponds to a UInt128 bit length of 2048.
-		// All BigIntegers with bits[] longer than 8192 evaluate to Quad.Infinity (or NegativeInfinity).
-		const int InfinityLength = (MaxExponent + 1) / 128;
-
-		if (length > InfinityLength)
+		// The maximum exponent for octos is 262143, which corresponds to a UInt128 bit length of 2048.
+		// All BigIntegers with bits[] longer than 8192 evaluate to Octo.PositiveInfinity (or NegativeInfinity).
+		if (magnitude.GetBitLength() > MaxExponent + 1)
 		{
 			if (sign == 1)
 				return Octo.PositiveInfinity;
@@ -1564,12 +1561,12 @@ public partial struct Octo
 		}
 
 		UInt256 h = bits128[^1];
-		UInt256 m = length > 1 ? bits128[^2] : 0;
-		UInt256 l = length > 2 ? bits128[^3] : 0;
+		UInt256 m = uintCount > 1 ? bits128[^2] : 0;
+		UInt256 l = uintCount > 2 ? bits128[^3] : 0;
 
 		int z = (int)UInt128.LeadingZeroCount((UInt128)h);
 
-		int exp = (length - 2) * 128 - z;
+		int exp = (uintCount - 2) * 128 - z;
 		UInt256 man = (h << 128 + z) | (m << z) | (l >> 128 - z);
 
 		return BitHelper.GetOctoFromParts(sign, exp, man);
