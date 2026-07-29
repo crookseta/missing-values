@@ -44,14 +44,14 @@ public readonly partial struct Int512
 	public static readonly Int512 Zero = default;
 
 #if BIGENDIAN
-		private readonly ulong _p7;
-		private readonly ulong _p6;
-		private readonly ulong _p5;
-		private readonly ulong _p4;
-		private readonly ulong _p3;
-		private readonly ulong _p2;
-		private readonly ulong _p1;
-		private readonly ulong _p0;
+	private readonly ulong _p7;
+	private readonly ulong _p6;
+	private readonly ulong _p5;
+	private readonly ulong _p4;
+	private readonly ulong _p3;
+	private readonly ulong _p2;
+	private readonly ulong _p1;
+	private readonly ulong _p0;
 #else
 	private readonly ulong _p0;
 	private readonly ulong _p1;

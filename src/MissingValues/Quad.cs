@@ -150,8 +150,8 @@ public readonly partial struct Quad
 	}
 
 #if BIGENDIAN
-        internal readonly ulong _upper;
-        internal readonly ulong _lower;
+	internal readonly ulong _upper;
+	internal readonly ulong _lower;
 #else
 	internal readonly ulong _lower;
 	internal readonly ulong _upper;

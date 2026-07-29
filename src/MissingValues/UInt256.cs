@@ -40,10 +40,10 @@ public readonly partial struct UInt256
 	public static readonly UInt256 Zero = default;
 
 #if BIGENDIAN
-		private readonly ulong _p3;
-		private readonly ulong _p2;
-		private readonly ulong _p1;
-		private readonly ulong _p0;
+	private readonly ulong _p3;
+	private readonly ulong _p2;
+	private readonly ulong _p1;
+	private readonly ulong _p0;
 #else
 	private readonly ulong _p0;
 	private readonly ulong _p1;

@@ -227,10 +227,10 @@ public readonly partial struct Octo
 	}
 
 #if BIGENDIAN
-		internal readonly ulong _bits3;
-		internal readonly ulong _bits2;
-		internal readonly ulong _bits1;
-		internal readonly ulong _bits0;
+	internal readonly ulong _bits3;
+	internal readonly ulong _bits2;
+	internal readonly ulong _bits1;
+	internal readonly ulong _bits0;
 #else
 	internal readonly ulong _bits0;
 	internal readonly ulong _bits1;
