@@ -16,6 +16,7 @@ namespace MissingValues.Benchmarks.Core
 		[BenchmarkCategory("UInt512", "Unsigned", "Integer")]
 		public class MathOperators
 		{
+			public const int MaxLength = 100_000;
 			private static readonly Random rng = new Random(7);
 			[Params(100, 10_000, 100_000)]
 			public int Length;
@@ -275,31 +276,31 @@ namespace MissingValues.Benchmarks.Core
 			
 			public IEnumerable<object[]> Arguments512x64()
 			{
-				yield return [rng.NextIntegerArray<UInt512>(Length, new UInt512(1, 0, 0, 0, 0, 0, 0, 0), UInt512.MaxValue), rng.NextIntegerArray<UInt512>(Length, ulong.MaxValue)];
+				yield return [rng.NextIntegerArray<UInt512>(MaxLength, new UInt512(1, 0, 0, 0, 0, 0, 0, 0), UInt512.MaxValue), rng.NextIntegerArray<UInt512>(MaxLength, ulong.MaxValue)];
 			}
 			public IEnumerable<object[]> Arguments512x128()
 			{
-				yield return [rng.NextIntegerArray<UInt512>(Length, new UInt512(1, 0, 0, 0, 0, 0, 0, 0), UInt512.MaxValue), rng.NextIntegerArray<UInt512>(Length, new UInt256(0, 0, 1, 0), UInt128.MaxValue)];
+				yield return [rng.NextIntegerArray<UInt512>(MaxLength, new UInt512(1, 0, 0, 0, 0, 0, 0, 0), UInt512.MaxValue), rng.NextIntegerArray<UInt512>(MaxLength, new UInt256(0, 0, 1, 0), UInt128.MaxValue)];
 			}
 			public IEnumerable<object[]> Arguments512x256()
 			{
-				yield return [rng.NextIntegerArray<UInt512>(Length, new UInt512(1, 0, 0, 0, 0, 0, 0, 0), UInt512.MaxValue), rng.NextIntegerArray<UInt512>(Length, new UInt256(1, 0, 0, 0), UInt256.MaxValue)];
+				yield return [rng.NextIntegerArray<UInt512>(MaxLength, new UInt512(1, 0, 0, 0, 0, 0, 0, 0), UInt512.MaxValue), rng.NextIntegerArray<UInt512>(MaxLength, new UInt256(1, 0, 0, 0), UInt256.MaxValue)];
 			}
 			public IEnumerable<object[]> Arguments512x512()
 			{
-				yield return [rng.NextIntegerArray<UInt512>(Length, new UInt512(1, 0, 0, 0, 0, 0, 0, 0), UInt512.MaxValue), rng.NextIntegerArray<UInt512>(Length, new UInt512(1, 0, 0, 0, 0, 0, 0, 0), UInt512.MaxValue)];
+				yield return [rng.NextIntegerArray<UInt512>(MaxLength, new UInt512(1, 0, 0, 0, 0, 0, 0, 0), UInt512.MaxValue), rng.NextIntegerArray<UInt512>(MaxLength, new UInt512(1, 0, 0, 0, 0, 0, 0, 0), UInt512.MaxValue)];
 			}
 			public IEnumerable<object[]> Arguments256x512()
 			{
-				yield return [rng.NextIntegerArray<UInt512>(Length, new UInt256(1, 0, 0, 0), UInt256.MaxValue), rng.NextIntegerArray<UInt512>(Length, new UInt512(1, 0, 0, 0, 0, 0, 0, 0), UInt512.MaxValue)];
+				yield return [rng.NextIntegerArray<UInt512>(MaxLength, new UInt256(1, 0, 0, 0), UInt256.MaxValue), rng.NextIntegerArray<UInt512>(MaxLength, new UInt512(1, 0, 0, 0, 0, 0, 0, 0), UInt512.MaxValue)];
 			}
 			public IEnumerable<object[]> Arguments128x512()
 			{
-				yield return [rng.NextIntegerArray<UInt512>(Length, new UInt256(0, 0, 1, 0), UInt128.MaxValue), rng.NextIntegerArray<UInt512>(Length, new UInt512(1, 0, 0, 0, 0, 0, 0, 0), UInt512.MaxValue)];
+				yield return [rng.NextIntegerArray<UInt512>(MaxLength, new UInt256(0, 0, 1, 0), UInt128.MaxValue), rng.NextIntegerArray<UInt512>(MaxLength, new UInt512(1, 0, 0, 0, 0, 0, 0, 0), UInt512.MaxValue)];
 			}
 			public IEnumerable<object[]> Arguments64x512()
 			{
-				yield return [rng.NextIntegerArray<UInt512>(Length, ulong.MaxValue), rng.NextIntegerArray<UInt512>(Length, new UInt512(1, 0, 0, 0, 0, 0, 0, 0), UInt512.MaxValue)];
+				yield return [rng.NextIntegerArray<UInt512>(MaxLength, ulong.MaxValue), rng.NextIntegerArray<UInt512>(MaxLength, new UInt512(1, 0, 0, 0, 0, 0, 0, 0), UInt512.MaxValue)];
 			}
 		}
 

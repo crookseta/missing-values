@@ -408,4 +408,97 @@ namespace MissingValues.Benchmarks
 			}
 		}
 	}
+
+	[HideColumns("Job", "Error", "StdDev")]
+	[GenericTypeArguments(typeof(Int256))]
+	[GenericTypeArguments(typeof(UInt256))]
+	[GenericTypeArguments(typeof(Int512))]
+	[GenericTypeArguments(typeof(UInt512))]
+	public class GenericBitOperationBenchmarks<T>
+		where T : IBinaryInteger<T>
+	{
+		[Params(100, 10_000, 250_000, 750_000)]
+		public int Length;
+
+		private T[] _v1, _v2;
+		private T[] _destination;
+
+		[GlobalSetup]
+		public void Setup()
+		{
+			_v1 = new T[Length];
+			_v2 = new T[Length];
+
+			Span<byte> bytes = stackalloc byte[Unsafe.SizeOf<T>()];
+
+			for (int i = 0; i < Length; i++)
+			{
+				Random.Shared.NextBytes(bytes);
+				_v1[i] = Unsafe.ReadUnaligned<T>(ref bytes[0]);
+			}
+			Random.Shared.GetItems(_v1, _v2.AsSpan());
+
+			_destination = new T[Length];
+		}
+
+		[Benchmark]
+		public T[] BitwiseAndOperator()
+		{
+			for (int i = 0; i < Length; i++)
+			{
+				_destination[i] = _v1[i] & _v2[i];
+			}
+			return _destination;
+		}
+
+		[Benchmark]
+		public T[] BitwiseOrOperator()
+		{
+			for (int i = 0; i < Length; i++)
+			{
+				_destination[i] = _v1[i] | _v2[i];
+			}
+			return _destination;
+		}
+		
+		[Benchmark]
+		public T[] BitwiseXorOperator()
+		{
+			for (int i = 0; i < Length; i++)
+			{
+				_destination[i] = _v1[i] ^ _v2[i];
+			}
+			return _destination;
+		}
+		
+		[Benchmark]
+		public T[] OnesComplementOperator()
+		{
+			for (int i = 0; i < Length; i++)
+			{
+				_destination[i] = ~_v1[i];
+			}
+			return _destination;
+		}
+		
+		[Benchmark]
+		public T[] BitwiseAndNotOperator()
+		{
+			for (int i = 0; i < Length; i++)
+			{
+				_destination[i] = _v1[i] & ~_v2[i];
+			}
+			return _destination;
+		}
+		
+		[Benchmark]
+		public T[] ConditionalSelectOperator()
+		{
+			for (int i = 0; i < Length; i++)
+			{
+				_destination[i] = (_v1[i] & _v2[i]) | (_v1[i] & ~_v2[i]);
+			}
+			return _destination;
+		}
+	}
 }
