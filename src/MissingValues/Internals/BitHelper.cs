@@ -359,7 +359,13 @@ namespace MissingValues.Internals
 			}
 			return 448 + BitOperations.TrailingZeroCount(value.Part7);
 		}
-		
+
+		internal static bool TryReadLittleEndian<T>(ReadOnlySpan<byte> source, bool isUnsigned, out T value)
+			where T : unmanaged, IBigInteger<T>
+		{
+			return T.TryReadLittleEndian(source, isUnsigned, out value);
+		}
+
 		internal static int GetTrimLength(in UInt256 value)
 		{
 			if (value.Part3 != 0)

@@ -12,7 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\MissingValues\MissingValues.csproj" />
+    <ProjectReference Include="..\..\src\MissingValues\MissingValues.csproj" />
   </ItemGroup>
 
 </Project>

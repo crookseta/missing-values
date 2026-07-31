@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="../tests/MissingValues.Tests/MissingValues.Tests.csproj" />
+  <Project Path="MissingValues.Benchmarks/MissingValues.Benchmarks.csproj" />
+  <Project Path="MissingValues/MissingValues.csproj" />
+</Solution>
