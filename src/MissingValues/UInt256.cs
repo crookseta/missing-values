@@ -100,7 +100,7 @@ public readonly partial struct UInt256
 	/// </summary>
 	/// <param name="parts">Span holding the 64-bit parts of the 256-bit value</param>
 	/// <exception cref="ArgumentOutOfRangeException">Span is too small for the value</exception>
-	public UInt256(ReadOnlySpan<ulong> parts)
+	internal UInt256(ReadOnlySpan<ulong> parts)
 	{
 		if (Vector256.IsHardwareAccelerated && BitConverter.IsLittleEndian)
 		{

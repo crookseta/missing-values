@@ -153,7 +153,7 @@ public readonly partial struct Int512
 	/// </summary>
 	/// <param name="parts">Span holding the 64-bit parts of the 512-bit value</param>
 	/// <exception cref="ArgumentOutOfRangeException">Span is too small for the value</exception>
-	public Int512(ReadOnlySpan<ulong> parts)
+	internal Int512(ReadOnlySpan<ulong> parts)
 	{
 		if (Vector512.IsHardwareAccelerated && BitConverter.IsLittleEndian)
 		{
