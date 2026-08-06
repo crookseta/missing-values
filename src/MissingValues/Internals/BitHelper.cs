@@ -487,6 +487,53 @@ namespace MissingValues.Internals
 
 			return T.Create(source);
 		}
+		
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		internal static ulong ReadUInt64Chunk(ReadOnlySpan<byte> bytes, int chunkIndex)
+		{
+			if (chunkIndex < 0)
+			{
+				return 0;
+			}
+			
+			int offset = chunkIndex * 8;
+			int remaining = bytes.Length - offset;
+
+			if (remaining >= 8)
+			{
+				return BinaryPrimitives.ReadUInt64LittleEndian(bytes[offset..]);
+			}
+
+			ulong result = 0;
+			for (int i = 0; i < remaining; i++)
+			{
+				result |= (ulong)bytes[offset + i] << (i * 8);
+			}
+			return result;
+		}
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		internal static UInt128 ReadUInt128Chunk(ReadOnlySpan<byte> bytes, int chunkIndex)
+		{
+			if (chunkIndex < 0)
+			{
+				return UInt128.Zero;
+			}
+			
+			int offset = chunkIndex * 16;
+			int remaining = bytes.Length - offset;
+
+			if (remaining >= 16)
+			{
+				return BinaryPrimitives.ReadUInt128LittleEndian(bytes[offset..]);
+			}
+
+			UInt128 result = UInt128.Zero;
+			for (int i = 0; i < remaining; i++)
+			{
+				result |= (UInt128)bytes[offset + i] << (i * 16);
+			}
+			return result;
+		}
 
 		/// <summary>
 		/// Static Helper class for storing variables and not loading them prematurely.

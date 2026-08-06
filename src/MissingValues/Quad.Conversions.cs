@@ -2,6 +2,7 @@ using System.Buffers;
 using System.Buffers.Binary;
 using System.Diagnostics;
 using System.Numerics;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using MissingValues.Internals;
 using MissingValues.Primitives;
@@ -1204,12 +1205,12 @@ public partial struct Quad
 	/// <exception cref="OverflowException"><paramref name="value"/> is not finite.</exception>
 	public static explicit operator BigInteger(Quad value)
 	{
-		if (!IsFinite(value))
+		BitHelper.GetQuadParts(value, out int sign, out int exp, out var man, out bool isFinite);
+		
+		if (!isFinite)
 		{
 			Thrower.IntegerOverflow();
 		}
-
-		BitHelper.GetQuadParts(value, out int sign, out int exp, out var man, out _);
 
 		if (man == UInt128.Zero)
 		{
@@ -1219,11 +1220,52 @@ public partial struct Quad
 		BigInteger result;
 		if (exp >= 0)
 		{
-			result = (BigInteger)man << exp;
+			(int byteShift, int bitShift) = Math.DivRem(exp, 8);
+			int bytesNeeded = 16 + byteShift + (bitShift > 0 ? 1 : 0);
+			
+			byte[]? array = null;
+			Span<byte> buffer = bytesNeeded >= Calculator.StackAllocThreshold
+				? (array = ArrayPool<byte>.Shared.Rent(bytesNeeded)).AsSpan(0, bytesNeeded)
+				: stackalloc byte[bytesNeeded];
+			buffer.Clear();
+
+			if (bitShift == 0)
+			{
+				BinaryPrimitives.WriteUInt128LittleEndian(buffer[byteShift..], man);
+			}
+			else
+			{
+				ulong low = (ulong)man;
+				ulong high = (ulong)(man >> 64);
+
+				ulong shiftedLow = low << bitShift;
+				ulong shiftedHigh = (high << bitShift) | (low >> (64 - bitShift));
+				ulong carry = high >> (64 - bitShift);
+
+				BinaryPrimitives.WriteUInt128LittleEndian(buffer[byteShift..], new UInt128(shiftedHigh, shiftedLow));
+				if (carry > 0)
+				{
+					buffer[byteShift + 16] = (byte)carry;
+				}
+			}
+			
+			result = new BigInteger(buffer, isUnsigned: true, isBigEndian: false);
+			
+			if (array is not null)
+			{
+				ArrayPool<byte>.Shared.Return(array);
+			}
 		}
 		else
 		{
-			result = (BigInteger)man >> -exp;
+			exp = -exp;
+			
+			if (exp >= 128)
+			{
+				return BigInteger.Zero;
+			}
+			
+			result = (BigInteger)(man >> exp);
 		}
 		return sign < 0 ? -result : result;
 	}
@@ -1524,56 +1566,38 @@ public partial struct Quad
 		{
 			return Quad.Zero;
 		}
-		if (sign >= 0 && value.CompareTo(ulong.MaxValue) <= 0)
-		{
-			return (ulong)value;
-		}
-		if (sign < 0 && value.CompareTo(long.MinValue) >= 0)
-		{
-			return (long)value;
-		}
 		
 		BigInteger magnitude = sign < 0 ? -value : value;
+		
+		if (magnitude.CompareTo(ulong.MaxValue) <= 0)
+		{
+			Quad result = (ulong)magnitude;
+			return sign < 0 ? -result : result;
+		}
+		
+		// The maximum exponent for quads is 16383, which corresponds to ulong bit length of 256.
+		// All BigIntegers with bits[] longer than 512 evaluate to Quad.PositiveInfinity (or NegativeInfinity).
+		if (magnitude.GetBitLength() > MaxExponent + 1)
+		{
+			return sign == 1 ? Quad.PositiveInfinity : Quad.NegativeInfinity;
+		}
 
 		int byteCount = magnitude.GetByteCount();
 		byte[]? array = null;
 		Span<byte> bits = byteCount >= Calculator.StackAllocThreshold 
 			? (array = ArrayPool<byte>.Shared.Rent(byteCount)).AsSpan(0, byteCount) 
 			: stackalloc byte[byteCount];
+		
 		bits.Clear();
 
 		magnitude.TryWriteBytes(bits, out int bytesWritten);
-
 		int ulongCount = (bytesWritten + 7) / 8;
-	    
-		scoped Span<ulong> bits64 = stackalloc ulong[ulongCount];
-		bits64.Clear();
-	    
-		bits.CopyTo(MemoryMarshal.AsBytes(bits64));
 
-		if (ulongCount == 1)
-		{
-			ulong slice64 = bits64[0];
-			if (array is not null) ArrayPool<byte>.Shared.Return(array);
-	        
-			Quad result = slice64;
-			return sign < 0 ? -result : result; 
-		}
-
-		// The maximum exponent for quads is 16383, which corresponds to ulong bit length of 256.
-		// All BigIntegers with bits[] longer than 512 evaluate to Quad.PositiveInfinity (or NegativeInfinity).
-		if (magnitude.GetBitLength() > MaxExponent + 1)
-		{
-			if (array is not null) ArrayPool<byte>.Shared.Return(array);
-			return sign == 1 ? Quad.PositiveInfinity : Quad.NegativeInfinity;
-		}
-
-		UInt128 h = bits64[^1];
-		UInt128 m = ulongCount > 1 ? bits64[^2] : 0;
-		UInt128 l = ulongCount > 2 ? bits64[^3] : 0;
+		UInt128 h = BitHelper.ReadUInt64Chunk(bits, ulongCount - 1);
+		UInt128 m = BitHelper.ReadUInt64Chunk(bits, ulongCount - 2);
+		UInt128 l = BitHelper.ReadUInt64Chunk(bits, ulongCount - 3);
 
 		int z = BitOperations.LeadingZeroCount((ulong)h);
-
 		int exp = (ulongCount - 2) * 64 - z;
 		UInt128 man = (h << (64 + z)) | (m << z) | (l >> (64 - z));
 	    

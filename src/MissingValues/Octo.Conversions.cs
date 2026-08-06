@@ -1,4 +1,5 @@
 using System.Buffers;
+using System.Buffers.Binary;
 using System.Diagnostics;
 using System.Numerics;
 using System.Runtime.CompilerServices;
@@ -1184,12 +1185,12 @@ public partial struct Octo
 	/// <exception cref="OverflowException"><paramref name="value"/> is not finite.</exception>
 	public static explicit operator BigInteger(in Octo value)
 	{
-		if (!IsFinite(value))
+		BitHelper.GetOctoParts(in value, out int sign, out int exp, out var man, out bool isFinite);
+
+		if (!isFinite)
 		{
 			Thrower.IntegerOverflow();
 		}
-
-		BitHelper.GetOctoParts(in value, out int sign, out int exp, out var man, out _);
 
 		if (man == UInt256.Zero)
 		{
@@ -1199,11 +1200,52 @@ public partial struct Octo
 		BigInteger result;
 		if (exp >= 0)
 		{
-			result = (BigInteger)man << exp;
+			(int byteShift, int bitShift) = Math.DivRem(exp, 16);
+			int bytesNeeded = 32 + byteShift + (bitShift > 0 ? 1 : 0);
+			
+			byte[]? array = null;
+			Span<byte> buffer = bytesNeeded >= Calculator.StackAllocThreshold
+				? (array = ArrayPool<byte>.Shared.Rent(bytesNeeded)).AsSpan(0, bytesNeeded)
+				: stackalloc byte[bytesNeeded];
+			buffer.Clear();
+
+			if (bitShift == 0)
+			{
+				BinaryOperations.WriteUInt256LittleEndian(buffer[byteShift..], man);
+			}
+			else
+			{
+				UInt128 low = (UInt128)man;
+				UInt128 high = (UInt128)(man >> 128);
+
+				UInt128 shiftedLow = low << bitShift;
+				UInt128 shiftedHigh = (high << bitShift) | (low >> (128 - bitShift));
+				UInt128 carry = high >> (128 - bitShift);
+
+				BinaryOperations.WriteUInt256LittleEndian(buffer[byteShift..], new UInt256(shiftedHigh, shiftedLow));
+				if (carry > 0)
+				{
+					buffer[byteShift + 32] = (byte)carry;
+				}
+			}
+			
+			result = new BigInteger(buffer, isUnsigned: true, isBigEndian: false);
+			
+			if (array is not null)
+			{
+				ArrayPool<byte>.Shared.Return(array);
+			}
 		}
 		else
 		{
-			result = (BigInteger)man >> -exp;
+			exp = -exp;
+			
+			if (exp >= 256)
+			{
+				return BigInteger.Zero;
+			}
+			
+			result = (BigInteger)(man >> exp);
 		}
 		return sign < 0 ? -result : result;
 	}
@@ -1508,16 +1550,21 @@ public partial struct Octo
 		{
 			return Octo.Zero;
 		}
-		if (sign >= 0 && value.CompareTo(ulong.MaxValue) <= 0)
-		{
-			return (ulong)value;
-		}
-		if (sign < 0 && value.CompareTo(long.MinValue) >= 0)
-		{
-			return (long)value;
-		}
 		
 		BigInteger magnitude = sign < 0 ? -value : value;
+		
+		if (magnitude.CompareTo(ulong.MaxValue) <= 0)
+		{
+			Octo result = (ulong)magnitude;
+			return sign < 0 ? -result : result;
+		}
+		
+		// The maximum exponent for octos is 262143, which corresponds to a UInt128 bit length of 2048.
+		// All BigIntegers with bits[] longer than 8192 evaluate to Octo.PositiveInfinity (or NegativeInfinity).
+		if (magnitude.GetBitLength() > MaxExponent + 1)
+		{
+			return sign == 1 ? Octo.PositiveInfinity : Octo.NegativeInfinity;
+		}
 		
 		int byteCount = magnitude.GetByteCount();
 		byte[]? array = null;
@@ -1527,47 +1574,20 @@ public partial struct Octo
 		bits.Clear();
 
 		magnitude.TryWriteBytes(bits, out int bytesWritten);
-		
 		int uintCount = (bytesWritten + 15) / 16;
-		
-		scoped Span<UInt128> bits128 = stackalloc UInt128[uintCount];
-		bits128.Clear();
-		
-		bits.CopyTo(MemoryMarshal.AsBytes(bits128));
 
-		if (uintCount == 1)
-		{
-			UInt128 slice64 = bits128[0];
-			if (array is not null) ArrayPool<byte>.Shared.Return(array);
-	        
-			Octo result = slice64;
-			return sign < 0 ? -result : result; 
-		}
-		
-		if (magnitude.GetBitLength() > MaxExponent + 1)
-		{
-			if (array is not null) ArrayPool<byte>.Shared.Return(array);
-			return sign == 1 ? Octo.PositiveInfinity : Octo.NegativeInfinity;
-		}
+		UInt256 h = BitHelper.ReadUInt128Chunk(bits, uintCount - 1);
+		UInt256 m = BitHelper.ReadUInt128Chunk(bits, uintCount - 2);
+		UInt256 l = BitHelper.ReadUInt128Chunk(bits, uintCount - 3);
 
-		// The maximum exponent for octos is 262143, which corresponds to a UInt128 bit length of 2048.
-		// All BigIntegers with bits[] longer than 8192 evaluate to Octo.PositiveInfinity (or NegativeInfinity).
-		if (magnitude.GetBitLength() > MaxExponent + 1)
-		{
-			if (sign == 1)
-				return Octo.PositiveInfinity;
-			else
-				return Octo.NegativeInfinity;
-		}
-
-		UInt256 h = bits128[^1];
-		UInt256 m = uintCount > 1 ? bits128[^2] : 0;
-		UInt256 l = uintCount > 2 ? bits128[^3] : 0;
-
-		int z = (int)UInt128.LeadingZeroCount((UInt128)h);
-
+		int z = (int)UInt128.LeadingZeroCount(h.Lower);
 		int exp = (uintCount - 2) * 128 - z;
 		UInt256 man = (h << 128 + z) | (m << z) | (l >> 128 - z);
+		
+		if (array is not null)
+		{
+			ArrayPool<byte>.Shared.Return(array);
+		}
 
 		return BitHelper.GetOctoFromParts(sign, exp, man);
 	}
