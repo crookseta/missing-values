@@ -236,8 +236,6 @@ public readonly partial struct Int512
 	/// </exception>
 	public static Int512 Pow(Int512 value, int exponent)
 	{
-		const int UIntCount = Size / sizeof(ulong);
-
 		ArgumentOutOfRangeException.ThrowIfNegative(exponent);
 
 		if (exponent == 0)
@@ -249,75 +247,20 @@ public readonly partial struct Int512
 			return value;
 		}
 
-		uint power = checked((uint)exponent);
-		int size;
-		ulong[]? bitsArray = null;
-		scoped Span<ulong> bits;
+		UInt512 absolute = UInt512.Pow((UInt512)Abs(value), exponent);
 
-		if (value <= long.MaxValue && value >= long.MinValue)
+		Int512 result;
+		if (unchecked((long)value._p7) < 0)
 		{
-			long sign = (long)value;
-			if (sign == 1)
-				return value;
-			if (sign == -1)
-				return (exponent & 1) != 0 ? value : One;
-			if (sign == 0)
-				return value;
-
-			if (power >= ((Size * 8) - 1))
-			{
-				Thrower.ArithmeticOverflow(Thrower.ArithmeticOperation.Exponentiation);
-			}
-
-			size = Calculator.PowBound(power, 1);
-
-			bits = (size <= Calculator.StackAllocThreshold
-				? stackalloc ulong[Calculator.StackAllocThreshold]
-				: bitsArray = ArrayPool<ulong>.Shared.Rent(size));
-			bits.Clear();
-
-			Calculator.Pow(unchecked((ulong)sign), power, bits[..size]);
+			result = int.IsEvenInteger(exponent)
+				? checked((Int512)absolute)
+				: (absolute == new UInt512(0x8000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000)
+					? MinValue
+					: -checked((Int512)absolute));
 		}
 		else
 		{
-			if (power >= ((Size * 8) - 1))
-			{
-				Thrower.ArithmeticOverflow(Thrower.ArithmeticOperation.Exponentiation);
-			}
-
-			int valueLength = BitHelper.GetTrimLength(in value);
-			size = Calculator.PowBound(power, valueLength);
-
-			Span<ulong> valueSpan = stackalloc ulong[UIntCount];
-			valueSpan.Clear();
-			BitHelper.Write(valueSpan, in value);
-
-			bits = (size <= Calculator.StackAllocThreshold
-				? stackalloc ulong[Calculator.StackAllocThreshold]
-				: bitsArray = ArrayPool<ulong>.Shared.Rent(size));
-			bits.Clear();
-
-			Calculator.Pow(valueSpan[..valueLength], power, bits[..size]);
-		}
-
-		if (size > UIntCount)
-		{
-			Span<ulong> overflow = bits[UIntCount..];
-
-			for (int i = 0; i < overflow.Length; i++)
-			{
-				if (overflow[i] != 0)
-				{
-					Thrower.ArithmeticOverflow(Thrower.ArithmeticOperation.Exponentiation);
-				}
-			}
-		}
-
-		Int512 result = new Int512(bits);
-
-		if (bitsArray is not null)
-		{
-			ArrayPool<ulong>.Shared.Return(bitsArray);
+			result = checked((Int512)absolute);
 		}
 
 		return result;

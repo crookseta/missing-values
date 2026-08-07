@@ -183,8 +183,6 @@ public readonly partial struct Int256
 	/// </exception>
 	public static Int256 Pow(Int256 value, int exponent)
 	{
-		const int UIntCount = Size / sizeof(ulong);
-
 		ArgumentOutOfRangeException.ThrowIfNegative(exponent);
 
 		if (exponent == 0)
@@ -196,75 +194,20 @@ public readonly partial struct Int256
 			return value;
 		}
 
-		uint power = checked((uint)exponent);
-		int size;
-		ulong[]? bitsArray = null;
-		scoped Span<ulong> bits;
+		UInt256 absolute = UInt256.Pow((UInt256)Abs(value), exponent);
 
-		if (value <= long.MaxValue && value >= long.MinValue)
+		Int256 result;
+		if (unchecked((long)value._p3) < 0)
 		{
-			int sign = (int)value;
-			if (sign == 1)
-				return value;
-			if (sign == -1)
-				return (exponent & 1) != 0 ? value : One;
-			if (sign == 0)
-				return value;
-
-			if (power >= ((Size * 8) - 1))
-			{
-				Thrower.ArithmeticOverflow(Thrower.ArithmeticOperation.Exponentiation);
-			}
-
-			size = Calculator.PowBound(power, 1);
-
-			bits = (size <= Calculator.StackAllocThreshold
-				? stackalloc ulong[Calculator.StackAllocThreshold]
-				: bitsArray = ArrayPool<ulong>.Shared.Rent(size));
-			bits.Clear();
-
-			Calculator.Pow(unchecked((ulong)sign), power, bits[..size]);
+			result = int.IsEvenInteger(exponent)
+				? checked((Int256)absolute)
+				: (absolute == new UInt256(0x8000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000)
+					? MinValue
+					: -checked((Int256)absolute));
 		}
 		else
 		{
-			if (power >= ((Size * 8) - 1))
-			{
-				Thrower.ArithmeticOverflow(Thrower.ArithmeticOperation.Exponentiation);
-			}
-
-			int valueLength = BitHelper.GetTrimLength(in value);
-			size = Calculator.PowBound(power, valueLength);
-
-			Span<ulong> valueSpan = stackalloc ulong[UIntCount];
-			valueSpan.Clear();
-			BitHelper.Write(valueSpan, in value);
-
-			bits = (size <= Calculator.StackAllocThreshold
-				? stackalloc ulong[Calculator.StackAllocThreshold]
-				: bitsArray = ArrayPool<ulong>.Shared.Rent(size));
-			bits.Clear();
-
-			Calculator.Pow(valueSpan[..valueLength], power, bits[..size]);
-		}
-
-		if (size > UIntCount)
-		{
-			Span<ulong> overflow = bits[UIntCount..];
-
-			for (int i = 0; i < overflow.Length; i++)
-			{
-				if (overflow[i] != 0)
-				{
-					Thrower.ArithmeticOverflow(Thrower.ArithmeticOperation.Exponentiation);
-				}
-			}
-		}
-
-		Int256 result = new Int256(bits);
-
-		if (bitsArray is not null)
-		{
-			ArrayPool<ulong>.Shared.Return(bitsArray);
+			result = checked((Int256)absolute);
 		}
 
 		return result;

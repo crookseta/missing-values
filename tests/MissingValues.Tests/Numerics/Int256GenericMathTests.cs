@@ -6,6 +6,7 @@ using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 using MissingValues.Tests.Data;
+using MissingValues.Tests.Extensions;
 using static MissingValues.Tests.Data.Int256DataSources;
 
 using DataSources = MissingValues.Tests.Data.Int256DataSources;
@@ -14,6 +15,18 @@ namespace MissingValues.Tests.Numerics;
 
 public class Int256GenericMathTests
 {
+	[Test]
+	public async Task PowTest()
+	{
+		await Assert.That(Int256.Pow(Int256.One, int.MaxValue)).IsEqualTo(Int256.One);
+		await Assert.That(Int256.Pow(Int256.NegativeTwo, 255)).IsEqualTo(Int256.MinValue);
+		
+		await Assert.That(Int256.Pow(Int256.NegativeTwo, 31)).IsEqualTo(Int256.Int32MinValue);
+		await Assert.That(Int256.Pow(Int256.Two, 31)).IsEqualTo(Int256.Int32MaxValue + Int256.One);
+		
+		await Assert.That(Int256.Pow(new Int256(0, 0, 0, 3), 100)).IsEqualTo(new Int256(0x0000_0000_0000_0000, 0x0000_0000_5A46_53CA, 0x6737_6856_5B41_F775, 0xD694_7D55_CF38_13D1));
+	}
+	
 	#region Operators
 	[Test]
 	[MethodDataSource<DataSources>(nameof(op_AdditionTestData))]

@@ -5,6 +5,7 @@ using System.Linq;
 using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
+using MissingValues.Tests.Extensions;
 using static MissingValues.Tests.Data.UInt512DataSources;
 
 using DataSources = MissingValues.Tests.Data.UInt512DataSources;
@@ -13,6 +14,18 @@ namespace MissingValues.Tests.Numerics;
 
 public class UInt512GenericMathTests
 {
+	[Test]
+	public async Task PowTest()
+	{
+		await Assert.That(UInt512.Pow(UInt512.One, int.MaxValue)).IsEqualTo(UInt512.One);
+		
+		await Assert.That(UInt512.Pow(UInt512.Two, 32)).IsEqualTo(UInt512.UInt32MaxValue + UInt512.One);
+		
+		await Assert.That(UInt512.Pow(new UInt512(0, 0, 0, 3), 100)).IsEqualTo(new UInt512(0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_5A46_53CA, 0x6737_6856_5B41_F775, 0xD694_7D55_CF38_13D1));
+		await Assert.That(UInt512.Pow(new UInt512(0, 0, 0, 10), 77)).IsEqualTo(new UInt512(0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0xDD15_FE86_AFFA_D912, 0x49EF_0EB7_13F3_9EBE, 0xAA98_7B6E_6FD2_A000, 0x0000_0000_0000_0000));
+		await Assert.That(UInt512.Pow(new UInt512(0, 0, 0, 10), 154)).IsEqualTo(new UInt512(0xBEEE_FB58_4AFF_8603, 0xAAFB_550F_FACF_D8FA, 0x5CA4_7E4F_88D4_5371, 0x27CB_D2FE_6214_5F08, 0x4544_B653_3551_55B6, 0xAF99_D40A_E400_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000));
+	}
+	
 	#region Operators
 	[Test]
 	[MethodDataSource<DataSources>(nameof(op_AdditionTestData))]

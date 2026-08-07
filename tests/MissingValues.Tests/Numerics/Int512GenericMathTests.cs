@@ -5,6 +5,7 @@ using System.Linq;
 using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
+using MissingValues.Tests.Extensions;
 using static MissingValues.Tests.Data.Int512DataSources;
 
 using DataSources = MissingValues.Tests.Data.Int512DataSources;
@@ -13,6 +14,19 @@ namespace MissingValues.Tests.Numerics;
 
 public class Int512GenericMathTests
 {
+	[Test]
+	public async Task PowTest()
+	{
+		await Assert.That(Int512.Pow(Int512.One, int.MaxValue)).IsEqualTo(Int512.One);
+		await Assert.That(Int512.Pow(Int512.NegativeTwo, 511)).IsEqualTo(Int512.MinValue);
+		
+		await Assert.That(Int512.Pow(Int512.NegativeTwo, 31)).IsEqualTo(Int512.Int32MinValue);
+		await Assert.That(Int512.Pow(Int512.Two, 31)).IsEqualTo(Int512.Int32MaxValue + Int512.One);
+		
+		await Assert.That(Int512.Pow(new Int512(0, 0, 0, 3), 100)).IsEqualTo(new Int512(0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_5A46_53CA, 0x6737_6856_5B41_F775, 0xD694_7D55_CF38_13D1));
+		await Assert.That(Int512.Pow(new Int512(0, 0, 0, 10), 77)).IsEqualTo(new Int512(0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0xDD15_FE86_AFFA_D912, 0x49EF_0EB7_13F3_9EBE, 0xAA98_7B6E_6FD2_A000, 0x0000_0000_0000_0000));
+	}
+	
 	#region Operators
 	[Test]
 	[MethodDataSource<DataSources>(nameof(op_AdditionTestData))]
