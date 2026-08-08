@@ -1409,7 +1409,11 @@ public partial struct Octo :
 				exponent = BinaryPrimitives.ReverseEndianness(exponent);
 			}
 
-			Unsafe.WriteUnaligned(ref MemoryMarshal.GetReference(destination), exponent);
+			if (!BitConverter.TryWriteBytes(destination, exponent))
+			{
+				bytesWritten = 0;
+				return false;
+			}
 
 			bytesWritten = sizeof(int);
 			return true;
@@ -1432,7 +1436,11 @@ public partial struct Octo :
 				exponent = BinaryPrimitives.ReverseEndianness(exponent);
 			}
 
-			Unsafe.WriteUnaligned(ref MemoryMarshal.GetReference(destination), exponent);
+			if (!BitConverter.TryWriteBytes(destination, exponent))
+			{
+				bytesWritten = 0;
+				return false;
+			}
 
 			bytesWritten = sizeof(int);
 			return true;
@@ -1455,7 +1463,11 @@ public partial struct Octo :
 				significand = BinaryOperations.ReverseEndianness(in significand);
 			}
 
-			Unsafe.WriteUnaligned(ref MemoryMarshal.GetReference(destination), significand);
+			if (!BinaryOperations.TryWriteBytes(destination, significand))
+			{
+				bytesWritten = 0;
+				return false;
+			}
 
 			bytesWritten = Unsafe.SizeOf<UInt256>();
 			return true;
@@ -1478,7 +1490,11 @@ public partial struct Octo :
 				significand = BinaryOperations.ReverseEndianness(in significand);
 			}
 
-			Unsafe.WriteUnaligned(ref MemoryMarshal.GetReference(destination), significand);
+			if (!BinaryOperations.TryWriteBytes(destination, significand))
+			{
+				bytesWritten = 0;
+				return false;
+			}
 
 			bytesWritten = Unsafe.SizeOf<UInt256>();
 			return true;

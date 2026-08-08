@@ -529,7 +529,11 @@ public partial struct Quad :
 				exponent = BinaryPrimitives.ReverseEndianness(exponent);
 			}
 
-			Unsafe.WriteUnaligned(ref MemoryMarshal.GetReference(destination), exponent);
+			if (!BitConverter.TryWriteBytes(destination, exponent))
+			{
+				bytesWritten = 0;
+				return false;
+			}
 
 			bytesWritten = sizeof(short);
 			return true;
@@ -552,7 +556,11 @@ public partial struct Quad :
 				exponent = BinaryPrimitives.ReverseEndianness(exponent);
 			}
 
-			Unsafe.WriteUnaligned(ref MemoryMarshal.GetReference(destination), exponent);
+			if (!BitConverter.TryWriteBytes(destination, exponent))
+			{
+				bytesWritten = 0;
+				return false;
+			}
 
 			bytesWritten = sizeof(short);
 			return true;
@@ -575,7 +583,15 @@ public partial struct Quad :
 				significand = BinaryPrimitives.ReverseEndianness(significand);
 			}
 
+#if NET9_0_OR_GREATER
+			if (!BitConverter.TryWriteBytes(destination, significand))
+			{
+				bytesWritten = 0;
+				return false;
+			}
+#else
 			Unsafe.WriteUnaligned(ref MemoryMarshal.GetReference(destination), significand);
+#endif
 
 			bytesWritten = Unsafe.SizeOf<UInt128>();
 			return true;
@@ -598,7 +614,15 @@ public partial struct Quad :
 				significand = BinaryPrimitives.ReverseEndianness(significand);
 			}
 
+#if NET9_0_OR_GREATER
+			if (!BitConverter.TryWriteBytes(destination, significand))
+			{
+				bytesWritten = 0;
+				return false;
+			}
+#else
 			Unsafe.WriteUnaligned(ref MemoryMarshal.GetReference(destination), significand);
+#endif
 
 			bytesWritten = Unsafe.SizeOf<UInt128>();
 			return true;
