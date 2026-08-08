@@ -11,10 +11,10 @@ public static partial class BinaryOperations
     /// </summary>
     /// <param name="value">The number to convert.</param>
     /// <returns>An array of bytes with length 16.</returns>
-    public static byte[] GetBytes(Quad value)
+    public static byte[] GetBytes(in Quad value)
     {
         byte[] destination = new byte[16];
-        TryWriteBytes<Quad>((Span<byte>) destination, value);
+        TryWriteBytes<Quad>((Span<byte>) destination, in value);
         return destination;
     }
     
@@ -23,10 +23,10 @@ public static partial class BinaryOperations
     /// </summary>
     /// <param name="value">The number to convert.</param>
     /// <returns>An array of bytes with length 16.</returns>
-    public static byte[] GetBytes(Octo value)
+    public static byte[] GetBytes(in Octo value)
     {
         byte[] destination = new byte[16];
-        TryWriteBytes<Octo>((Span<byte>) destination, value);
+        TryWriteBytes<Octo>((Span<byte>) destination, in value);
         return destination;
     }
     
@@ -35,10 +35,10 @@ public static partial class BinaryOperations
     /// </summary>
     /// <param name="value">The number to convert.</param>
     /// <returns>An array of bytes with length 32.</returns>
-    public static byte[] GetBytes(UInt256 value)
+    public static byte[] GetBytes(in UInt256 value)
     {
         byte[] destination = new byte[UInt256.Size];
-        TryWriteBytes<UInt256>((Span<byte>) destination, value);
+        TryWriteBytes<UInt256>((Span<byte>) destination, in value);
         return destination;
     }
     
@@ -47,10 +47,10 @@ public static partial class BinaryOperations
     /// </summary>
     /// <param name="value">The number to convert.</param>
     /// <returns>An array of bytes with length 32.</returns>
-    public static byte[] GetBytes(Int256 value)
+    public static byte[] GetBytes(in Int256 value)
     {
         byte[] destination = new byte[Int256.Size];
-        TryWriteBytes<Int256>((Span<byte>) destination, value);
+        TryWriteBytes<Int256>((Span<byte>) destination, in value);
         return destination;
     }
     
@@ -59,10 +59,10 @@ public static partial class BinaryOperations
     /// </summary>
     /// <param name="value">The number to convert.</param>
     /// <returns>An array of bytes with length 64.</returns>
-    public static byte[] GetBytes(UInt512 value)
+    public static byte[] GetBytes(in UInt512 value)
     {
         byte[] destination = new byte[UInt512.Size];
-        TryWriteBytes<UInt512>((Span<byte>) destination, value);
+        TryWriteBytes<UInt512>((Span<byte>) destination, in value);
         return destination;
     }
     
@@ -71,10 +71,10 @@ public static partial class BinaryOperations
     /// </summary>
     /// <param name="value">The number to convert.</param>
     /// <returns>An array of bytes with length 64.</returns>
-    public static byte[] GetBytes(Int512 value)
+    public static byte[] GetBytes(in Int512 value)
     {
         byte[] destination = new byte[Int512.Size];
-        TryWriteBytes<Int512>((Span<byte>) destination, value);
+        TryWriteBytes<Int512>((Span<byte>) destination, in value);
         return destination;
     }
     
@@ -324,7 +324,7 @@ public static partial class BinaryOperations
     /// <param name="destination">When this method returns, the bytes representing the converted quadruple-precision floating-point value.</param>
     /// <param name="value">The quadruple-precision floating-point value to convert.</param>
     /// <returns><see langword="true" /> if the conversion was successful; <see langword="false" /> otherwise.</returns>
-    public static bool TryWriteBytes(Span<byte> destination, Quad value) => TryWriteBytes<Quad>(destination, value);
+    public static bool TryWriteBytes(Span<byte> destination, in Quad value) => TryWriteBytes<Quad>(destination, in value);
 
     /// <summary>
     /// Converts an octuple-precision floating-point value into a span of bytes.
@@ -332,7 +332,7 @@ public static partial class BinaryOperations
     /// <param name="destination">When this method returns, the bytes representing the converted octuple-precision floating-point value.</param>
     /// <param name="value">The octuple-precision floating-point value to convert.</param>
     /// <returns><see langword="true" /> if the conversion was successful; <see langword="false" /> otherwise.</returns>
-    public static bool TryWriteBytes(Span<byte> destination, Octo value) => TryWriteBytes<Octo>(destination, value);
+    public static bool TryWriteBytes(Span<byte> destination, in Octo value) => TryWriteBytes<Octo>(destination, in value);
     
     /// <summary>
     /// Converts a 256-bit unsigned integer into a span of bytes.
@@ -340,7 +340,7 @@ public static partial class BinaryOperations
     /// <param name="destination">When this method returns, the bytes representing the converted 256-bit unsigned integer.</param>
     /// <param name="value">The 256-bit unsigned integer to convert.</param>
     /// <returns><see langword="true" /> if the conversion was successful; <see langword="false" /> otherwise.</returns>
-    public static bool TryWriteBytes(Span<byte> destination, UInt256 value) => TryWriteBytes<UInt256>(destination, value);
+    public static bool TryWriteBytes(Span<byte> destination, in UInt256 value) => TryWriteBytes<UInt256>(destination, in value);
 
     /// <summary>
     /// Converts a 256-bit integer into a span of bytes.
@@ -348,7 +348,7 @@ public static partial class BinaryOperations
     /// <param name="destination">When this method returns, the bytes representing the converted 256-bit integer.</param>
     /// <param name="value">The 256-bit integer to convert.</param>
     /// <returns><see langword="true" /> if the conversion was successful; <see langword="false" /> otherwise.</returns>
-    public static bool TryWriteBytes(Span<byte> destination, Int256 value) => TryWriteBytes<Int256>(destination, value);
+    public static bool TryWriteBytes(Span<byte> destination, in Int256 value) => TryWriteBytes<Int256>(destination, in value);
 
     /// <summary>
     /// Converts a 512-bit unsigned integer into a span of bytes.
@@ -356,7 +356,7 @@ public static partial class BinaryOperations
     /// <param name="destination">When this method returns, the bytes representing the converted 512-bit unsigned integer.</param>
     /// <param name="value">The 512-bit unsigned integer to convert.</param>
     /// <returns><see langword="true" /> if the conversion was successful; <see langword="false" /> otherwise.</returns>
-    public static bool TryWriteBytes(Span<byte> destination, UInt512 value) => TryWriteBytes<UInt512>(destination, value);
+    public static bool TryWriteBytes(Span<byte> destination, in UInt512 value) => TryWriteBytes<UInt512>(destination, in value);
 
     /// <summary>
     /// Converts a 512-bit integer into a span of bytes.
@@ -364,7 +364,7 @@ public static partial class BinaryOperations
     /// <param name="destination">When this method returns, the bytes representing the converted 512-bit integer.</param>
     /// <param name="value">The 512-bit integer to convert.</param>
     /// <returns><see langword="true" /> if the conversion was successful; <see langword="false" /> otherwise.</returns>
-    public static bool TryWriteBytes(Span<byte> destination, Int512 value) => TryWriteBytes<Int512>(destination, value);
+    public static bool TryWriteBytes(Span<byte> destination, in Int512 value) => TryWriteBytes<Int512>(destination, in value);
     
     /// <summary>
     /// Write a <see cref="Quad"/> into a span of bytes, as big endian.
@@ -582,7 +582,8 @@ public static partial class BinaryOperations
         return MemoryMarshal.TryWrite(destination, in value);
     }
     
-    private static bool TryWriteBytes<T>(Span<byte> destination, T value)
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static bool TryWriteBytes<T>(Span<byte> destination, in T value)
         where T : unmanaged
     {
         if (destination.Length < Unsafe.SizeOf<T>())

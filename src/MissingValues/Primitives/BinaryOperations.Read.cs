@@ -1,4 +1,5 @@
 using System.Buffers.Binary;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using MissingValues.Internals;
 
@@ -6,6 +7,96 @@ namespace MissingValues.Primitives;
 
 public static partial class BinaryOperations
 {
+    /// <summary>
+    /// Returns a quadruple-precision floating-point value converted from 16 bytes at a specified position in a byte array.
+    /// </summary>
+    /// <param name="value">An array of bytes.</param>
+    /// <param name="startIndex">The starting position within <paramref name="value"/>.</param>
+    /// <returns>A quadruple-precision floating-point value formed by 16 bytes beginning at <paramref name="startIndex"/>.</returns>
+    public static Quad ToQuad(byte[] value, int startIndex) => To<Quad>(value, startIndex);
+    /// <summary>
+    /// Converts a read-only byte span into a quadruple-precision floating-point value.
+    /// </summary>
+    /// <param name="value">A read-only span containing the bytes to convert.</param>
+    /// <returns>A quadruple-precision floating-point value representing the converted bytes.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Quad ToQuad(ReadOnlySpan<byte> value) => To<Quad>(value);
+    
+    /// <summary>
+    /// Returns an octuple-precision floating-point value converted from 32 bytes at a specified position in a byte array.
+    /// </summary>
+    /// <param name="value">An array of bytes.</param>
+    /// <param name="startIndex">The starting position within <paramref name="value"/>.</param>
+    /// <returns>An octuple-precision floating-point value formed by 32 bytes beginning at <paramref name="startIndex"/>.</returns>
+    public static Octo ToOcto(byte[] value, int startIndex) => To<Octo>(value, startIndex);
+    /// <summary>
+    /// Converts a read-only byte span into an octuple-precision floating-point value.
+    /// </summary>
+    /// <param name="value">A read-only span containing the bytes to convert.</param>
+    /// <returns>An octuple-precision floating-point value representing the converted bytes.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Octo ToOcto(ReadOnlySpan<byte> value) => To<Octo>(value);
+    
+    /// <summary>
+    /// Returns a 256-bit unsigned integer converted from 32 bytes at a specified position in a byte array.
+    /// </summary>
+    /// <param name="value">An array of bytes.</param>
+    /// <param name="startIndex">The starting position within <paramref name="value"/>.</param>
+    /// <returns>A 256-bit unsigned integer formed by 32 bytes beginning at <paramref name="startIndex"/>.</returns>
+    public static UInt256 ToUInt256(byte[] value, int startIndex) => To<UInt256>(value, startIndex);
+    /// <summary>
+    /// Converts a read-only byte span into a 256-bit unsigned integer.
+    /// </summary>
+    /// <param name="value">A read-only span containing the bytes to convert.</param>
+    /// <returns>A 256-bit unsigned integer representing the converted bytes.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static UInt256 ToUInt256(ReadOnlySpan<byte> value) => To<UInt256>(value);
+    
+    /// <summary>
+    /// Returns a 256-bit integer converted from 32 bytes at a specified position in a byte array.
+    /// </summary>
+    /// <param name="value">An array of bytes.</param>
+    /// <param name="startIndex">The starting position within <paramref name="value"/>.</param>
+    /// <returns>A 256-bit integer formed by 32 bytes beginning at <paramref name="startIndex"/>.</returns>
+    public static Int256 ToInt256(byte[] value, int startIndex) => To<Int256>(value, startIndex);
+    /// <summary>
+    /// Converts a read-only byte span into a 256-bit integer.
+    /// </summary>
+    /// <param name="value">A read-only span containing the bytes to convert.</param>
+    /// <returns>A 256-bit integer representing the converted bytes.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Int256 ToInt256(ReadOnlySpan<byte> value) => To<Int256>(value);
+    
+    /// <summary>
+    /// Returns a 512-bit unsigned integer converted from 64 bytes at a specified position in a byte array.
+    /// </summary>
+    /// <param name="value">An array of bytes.</param>
+    /// <param name="startIndex">The starting position within <paramref name="value"/>.</param>
+    /// <returns>A 512-bit unsigned integer formed by 64 bytes beginning at <paramref name="startIndex"/>.</returns>
+    public static UInt512 ToUInt512(byte[] value, int startIndex) => To<UInt512>(value, startIndex);
+    /// <summary>
+    /// Converts a read-only byte span into a 512-bit unsigned integer.
+    /// </summary>
+    /// <param name="value">A read-only span containing the bytes to convert.</param>
+    /// <returns>A 512-bit unsigned integer representing the converted bytes.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static UInt512 ToUInt512(ReadOnlySpan<byte> value) => To<UInt512>(value);
+    
+    /// <summary>
+    /// Returns a 512-bit integer converted from 64 bytes at a specified position in a byte array.
+    /// </summary>
+    /// <param name="value">An array of bytes.</param>
+    /// <param name="startIndex">The starting position within <paramref name="value"/>.</param>
+    /// <returns>A 512-bit integer formed by 64 bytes beginning at <paramref name="startIndex"/>.</returns>
+    public static Int512 ToInt512(byte[] value, int startIndex) => To<Int512>(value, startIndex);
+    /// <summary>
+    /// Converts a read-only byte span into a 512-bit integer.
+    /// </summary>
+    /// <param name="value">A read-only span containing the bytes to convert.</param>
+    /// <returns>A 512-bit integer representing the converted bytes.</returns>
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public static Int512 ToInt512(ReadOnlySpan<byte> value) => To<Int512>(value);
+
     /// <summary>
     /// Reads a <see cref="Quad"/> from the beginning of a read-only span of bytes, as big endian.
     /// </summary>
@@ -428,5 +519,23 @@ public static partial class BinaryOperations
         bool success = MemoryMarshal.TryRead(source, out Int512 tmp);
         value = ReverseEndianness(in tmp);
         return success;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static T To<T>(byte[] value, int startIndex)
+        where T : unmanaged
+    {
+        ArgumentNullException.ThrowIfNull(value);
+        ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual((uint)startIndex, (uint)value.Length);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(startIndex, value.Length - 16);
+        
+        return Unsafe.ReadUnaligned<T>(ref value[startIndex]);
+    }
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private static T To<T>(ReadOnlySpan<byte> value)
+        where T : unmanaged
+    {
+        ArgumentOutOfRangeException.ThrowIfLessThan(value.Length, Unsafe.SizeOf<T>());
+        return Unsafe.ReadUnaligned<T>(ref MemoryMarshal.GetReference(value));
     }
 }

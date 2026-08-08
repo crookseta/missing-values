@@ -5,7 +5,7 @@ using System.Runtime.Intrinsics;
 namespace MissingValues.Primitives;
 
 /// <summary>
-/// Provides methods for reading and bytes as <see cref="MissingValues"/> primitive types.
+/// Provides methods for reading and writing bytes as <see cref="MissingValues"/> primitive types.
 /// </summary>
 public static partial class BinaryOperations
 {
