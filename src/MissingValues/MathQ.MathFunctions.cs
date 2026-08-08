@@ -715,7 +715,7 @@ namespace MissingValues
 			r = x / s;              // error <= 0.5 ulps; |r| < |t|
 			w = t + t;              // t+t is exact
 			r = (r - t) / (w + r);  // r-t is exact; w+r ~= 3*t
-			t = t + t * r;          // error <= 0.5 + 0.5/3 + epsilon
+			t += t * r;          // error <= 0.5 + 0.5/3 + epsilon
 
 			return t * v;
 		}
@@ -1265,8 +1265,8 @@ namespace MissingValues
 
 			var tbl = Constants.Exp.Table[n2];
 			dr = (double)r;
-			q = r2 + r * r * (Constants.Exp.A2 + r * (Constants.Exp.A3 + r * (Constants.Exp.A4 + r * (Constants.Exp.A5 + r * (Constants.Exp.A6 +
-				dr * (Constants.Exp.A7 + dr * (Constants.Exp.A8 + dr * (Constants.Exp.A9 + dr * Constants.Exp.A10))))))));
+			q = r2 + r * r * (Constants.Exp.A2 + r * (Constants.Exp.A3 + r * (Constants.Exp.A4 + r * (Constants.Exp.A5 + r * 
+				(Constants.Exp.A6 + dr * (Constants.Exp.A7 + dr * (Constants.Exp.A8 + dr * (Constants.Exp.A9 + dr * Constants.Exp.A10))))))));
 			t = tbl.lo + tbl.hi;
 			hip = tbl.hi;
 			lop = tbl.lo + t * (q + r1);
@@ -1435,7 +1435,7 @@ namespace MissingValues
 				++q;
 				rem -= sigB;
 			} while ((rem & Quad.SignMask) == UInt128.Zero);
-		selectRem:
+			selectRem:
 			UInt128 meanRem = rem + altRem;
 			if (((meanRem & Quad.SignMask) != UInt128.Zero)
 				|| ((meanRem == UInt128.Zero) && ((q & 1) != 0)))
@@ -1502,7 +1502,7 @@ namespace MissingValues
 
 			rp = default;
 			Quad d, valHi, valLo;
-			double dd;
+			Quad dd;
 			double dk;
 			ulong lx;
 			int i, k;
@@ -1558,9 +1558,9 @@ namespace MissingValues
 
 			dd = (double)d;
 			valLo = d * d * d * (Constants.Log.P3 +
-		d * (Constants.Log.P4 + d * (Constants.Log.P5 + d * (Constants.Log.P6 + d * (Constants.Log.P7 + d * (Constants.Log.P8 +
-		dd * (Constants.Log.P9 + dd * (Constants.Log.P10 + dd * (Constants.Log.P11 + dd * (Constants.Log.P12 + dd * (Constants.Log.P13 +
-		dd * Constants.Log.P14))))))))))) + (Constants.Log.FLo(i) + dk * Constants.Log.LN2LO) + d * d * Constants.Log.P2;
+				d * (Constants.Log.P4 + d * (Constants.Log.P5 + d * (Constants.Log.P6 + d * (Constants.Log.P7 + d * (Constants.Log.P8 +
+				dd * (Constants.Log.P9 + dd * (Constants.Log.P10 + dd * (Constants.Log.P11 + dd * (Constants.Log.P12 + dd * 
+				(Constants.Log.P13 + dd * Constants.Log.P14))))))))))) + (Constants.Log.FLo(i) + dk * Constants.Log.LN2LO) + d * d * Constants.Log.P2;
 			valHi = d;
 
 			Sum3(ref valHi, ref valLo, Constants.Log.FHi(i) + dk * Constants.Log.LN2HI);
@@ -1587,12 +1587,12 @@ namespace MissingValues
 				return newBase; // IEEE 754-2008: NaN payload must be preserved
 			}
 
-			if (newBase == 1)
+			if (newBase == Quad.One)
 			{
 				return Quad.NaN;
 			}
 
-			if ((a != 1) && ((newBase == 0) || Quad.IsPositiveInfinity(newBase)))
+			if (a != Quad.One && (newBase == Quad.Zero || Quad.IsPositiveInfinity(newBase)))
 			{
 				return Quad.NaN;
 			}
@@ -2868,7 +2868,7 @@ namespace MissingValues
 			}
 			Quad toint = Epsilon;
 			y = x + toint - toint - x;
-			if (y > 0)
+			if (y > Quad.Zero)
 			{
 				y--;
 			}
