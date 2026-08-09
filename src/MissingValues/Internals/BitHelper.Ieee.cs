@@ -7,7 +7,7 @@ namespace MissingValues.Internals
 {
 	internal static partial class BitHelper
 	{
-		public static Quad GetQuadFromParts(int sign, int exp, UInt128 man)
+		internal static Quad GetQuadFromParts(int sign, int exp, UInt128 man)
 		{
 			const int Bias = Quad.ExponentBias + Quad.BiasedExponentShift;
 			UInt128 bits;
@@ -62,7 +62,7 @@ namespace MissingValues.Internals
 
 			return BinaryOperations.UInt128BitsToQuad(bits);
 		}
-		public static Octo GetOctoFromParts(int sign, int exp, UInt256 man)
+		internal static Octo GetOctoFromParts(int sign, int exp, UInt256 man)
 		{
 			const int Bias = Octo.ExponentBias + Octo.BiasedExponentShift;
 			UInt256 bits;
@@ -118,7 +118,7 @@ namespace MissingValues.Internals
 			return BinaryOperations.UInt256BitsToOcto(bits);
 		}
 
-		public static void GetQuadParts(Quad dbl, out int sign, out int exp, out UInt128 man, out bool fFinite)
+		internal static void GetQuadParts(Quad dbl, out int sign, out int exp, out UInt128 man, out bool fFinite)
 		{
 			const int Bias = Quad.ExponentBias + Quad.BiasedExponentShift;
 			UInt128 bits = BinaryOperations.QuadToUInt128Bits(dbl);
@@ -146,7 +146,7 @@ namespace MissingValues.Internals
 				exp -= Bias;
 			}
 		}
-		public static void GetOctoParts(in Octo dbl, out int sign, out int exp, out UInt256 man, out bool fFinite)
+		internal static void GetOctoParts(in Octo dbl, out int sign, out int exp, out UInt256 man, out bool fFinite)
 		{
 			const int Bias = Octo.ExponentBias + Octo.BiasedExponentShift;
 			UInt256 bits = BinaryOperations.OctoToUInt256Bits(dbl);

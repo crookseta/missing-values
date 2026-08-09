@@ -194,7 +194,7 @@ namespace MissingValues.Info
 			{
 				ArrayPool<byte>.Shared.Return(digitsArray);
 			}
-
+			builder.Dispose();
 			return result;
 			static void Format<TFormat>(ref ValueListBuilder<TChar> vlb, ref NumberInfo number, int nMaxDigits, bool isUpper, NumberFormatInfo info)
 				where TFormat : struct, INumberFormat

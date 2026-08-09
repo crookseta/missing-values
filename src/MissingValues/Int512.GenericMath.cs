@@ -351,7 +351,7 @@ public partial struct Int512 :
 	public static Int512 Parse(ReadOnlySpan<char> s, NumberStyles style, IFormatProvider? provider)
 	{
 		var status = NumberParser.TryParseToSigned<Int512, UInt512, Utf16Char>(Utf16Char.CastFromCharSpan(s), style, provider, out Int512 output);
-		if (!status)
+		if (!status.IsSuccessful())
 		{
 			status.Throw<Int512>(s.ToString());
 		}
@@ -363,7 +363,7 @@ public partial struct Int512 :
 	{
 		ArgumentNullException.ThrowIfNull(s);
 		var status = NumberParser.TryParseToSigned<Int512, UInt512, Utf16Char>(Utf16Char.CastFromCharSpan(s), style, provider, out Int512 output);
-		if (!status)
+		if (!status.IsSuccessful())
 		{
 			status.Throw<Int512>(s.ToString());
 		}
@@ -374,7 +374,7 @@ public partial struct Int512 :
 	public static Int512 Parse(ReadOnlySpan<char> s, IFormatProvider? provider)
 	{
 		var status = NumberParser.TryParseToSigned<Int512, UInt512, Utf16Char>(Utf16Char.CastFromCharSpan(s), NumberStyles.Integer, provider, out Int512 output);
-		if (!status)
+		if (!status.IsSuccessful())
 		{
 			status.Throw<Int512>(s.ToString());
 		}
@@ -386,7 +386,7 @@ public partial struct Int512 :
 	{
 		ArgumentNullException.ThrowIfNull(s);
 		var status = NumberParser.TryParseToSigned<Int512, UInt512, Utf16Char>(Utf16Char.CastFromCharSpan(s), NumberStyles.Integer, provider, out Int512 output);
-		if (!status)
+		if (!status.IsSuccessful())
 		{
 			status.Throw<Int512>(s.ToString());
 		}
@@ -397,7 +397,7 @@ public partial struct Int512 :
 	public static Int512 Parse(ReadOnlySpan<byte> utf8Text, NumberStyles style, IFormatProvider? provider)
 	{
 		var status = NumberParser.TryParseToSigned<Int512, UInt512, Utf8Char>(Utf8Char.CastFromByteSpan(utf8Text), style, provider, out Int512 output);
-		if (!status)
+		if (!status.IsSuccessful())
 		{
 			status.Throw<Int512>(utf8Text);
 		}
@@ -408,7 +408,7 @@ public partial struct Int512 :
 	public static Int512 Parse(ReadOnlySpan<byte> utf8Text, IFormatProvider? provider)
 	{
 		var status = NumberParser.TryParseToSigned<Int512, UInt512, Utf8Char>(Utf8Char.CastFromByteSpan(utf8Text), NumberStyles.Integer, provider, out Int512 output);
-		if (!status)
+		if (!status.IsSuccessful())
 		{
 			status.Throw<Int512>(utf8Text);
 		}
@@ -492,7 +492,7 @@ public partial struct Int512 :
 			return false;
 		}
 
-		return NumberParser.TryParseToSigned<Int512, UInt512, Utf16Char>(Utf16Char.CastFromCharSpan(s), style, provider, out result);
+		return NumberParser.TryParseToSigned<Int512, UInt512, Utf16Char>(Utf16Char.CastFromCharSpan(s), style, provider, out result).IsSuccessful();
 	}
 
 	/// <inheritdoc/>
@@ -504,7 +504,7 @@ public partial struct Int512 :
 			return false;
 		}
 
-		return NumberParser.TryParseToSigned<Int512, UInt512, Utf16Char>(Utf16Char.CastFromCharSpan(s), style, provider, out result);
+		return NumberParser.TryParseToSigned<Int512, UInt512, Utf16Char>(Utf16Char.CastFromCharSpan(s), style, provider, out result).IsSuccessful();
 	}
 
 	/// <inheritdoc/>
@@ -516,7 +516,7 @@ public partial struct Int512 :
 			return false;
 		}
 
-		return NumberParser.TryParseToSigned<Int512, UInt512, Utf16Char>(Utf16Char.CastFromCharSpan(s), NumberStyles.Integer, provider, out result);
+		return NumberParser.TryParseToSigned<Int512, UInt512, Utf16Char>(Utf16Char.CastFromCharSpan(s), NumberStyles.Integer, provider, out result).IsSuccessful();
 	}
 
 	/// <inheritdoc/>
@@ -528,7 +528,7 @@ public partial struct Int512 :
 			return false;
 		}
 
-		return NumberParser.TryParseToSigned<Int512, UInt512, Utf16Char>(Utf16Char.CastFromCharSpan(s), NumberStyles.Integer, provider, out result);
+		return NumberParser.TryParseToSigned<Int512, UInt512, Utf16Char>(Utf16Char.CastFromCharSpan(s), NumberStyles.Integer, provider, out result).IsSuccessful();
 	}
 
 	/// <inheritdoc/>
@@ -540,7 +540,7 @@ public partial struct Int512 :
 			return false;
 		}
 
-		return NumberParser.TryParseToSigned<Int512, UInt512, Utf8Char>(Utf8Char.CastFromByteSpan(utf8Text), style, provider, out result);
+		return NumberParser.TryParseToSigned<Int512, UInt512, Utf8Char>(Utf8Char.CastFromByteSpan(utf8Text), style, provider, out result).IsSuccessful();
 	}
 	/// <inheritdoc/>
 	public static bool TryParse(ReadOnlySpan<byte> utf8Text, IFormatProvider? provider, [MaybeNullWhen(false)] out Int512 result)
@@ -551,7 +551,7 @@ public partial struct Int512 :
 			return false;
 		}
 
-		return NumberParser.TryParseToSigned<Int512, UInt512, Utf8Char>(Utf8Char.CastFromByteSpan(utf8Text), NumberStyles.Integer, provider, out result);
+		return NumberParser.TryParseToSigned<Int512, UInt512, Utf8Char>(Utf8Char.CastFromByteSpan(utf8Text), NumberStyles.Integer, provider, out result).IsSuccessful();
 	}
 
 	static bool IBinaryInteger<Int512>.TryReadBigEndian(ReadOnlySpan<byte> source, bool isUnsigned, out Int512 value)

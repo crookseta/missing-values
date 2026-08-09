@@ -13,7 +13,7 @@ namespace MissingValues.Internals
 		private readonly UInt32Wrapper _exponent;
 		private readonly UInt256Wrapper _significand;
 
-		public FloatDebugView(T floating)
+		internal FloatDebugView(T floating)
 		{
 			_sign = T.IsNegative(floating);
 			if (floating is Quad quad)
@@ -36,26 +36,26 @@ namespace MissingValues.Internals
 			}
 		}
 
-		public bool Sign => _sign;
-		public UInt32Wrapper Exponent => _exponent;
-		public UInt256Wrapper Significand => _significand;
+		internal bool Sign => _sign;
+		internal UInt32Wrapper Exponent => _exponent;
+		internal UInt256Wrapper Significand => _significand;
 
-		[DebuggerDisplay($"{{{nameof(ToString)}(),nq}}")]
-		public readonly struct UInt256Wrapper
+		[DebuggerDisplay($"{{{nameof(Display)}(),nq}}")]
+		internal readonly struct UInt256Wrapper
 		{
 			private readonly UInt256 _value;
 
-			public override string ToString()
+			internal string Display()
 			{
 				return _value.ToString("X", CultureInfo.InvariantCulture);
 			}
 		}
-		[DebuggerDisplay($"{{{nameof(ToString)}(),nq}}")]
-		public readonly struct UInt32Wrapper
+		[DebuggerDisplay($"{{{nameof(Display)}(),nq}}")]
+		internal readonly struct UInt32Wrapper
 		{
 			private readonly uint _value;
 
-			public override string ToString()
+			internal string Display()
 			{
 				return _value.ToString("X");
 			}

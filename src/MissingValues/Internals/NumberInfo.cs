@@ -20,51 +20,37 @@ namespace MissingValues.Internals
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public void Add(TInt state)
+		internal void Add(TInt state)
 		{
 			_state |= state;
 		}
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public void Remove(TInt state)
+		internal void Remove(TInt state)
 		{
 			_state &= ~state;
 		}
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public void RemoveAll()
+		internal void RemoveAll()
 		{
 			_state = TInt.Zero;
 		}
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public readonly bool Contains(TInt state)
+		internal readonly bool Contains(TInt state)
 		{
 			return (_state & state) != TInt.Zero;
-		}
-
-		public override readonly string ToString()
-		{
-			return _state.ToString()!;
-		}
-
-		public static implicit operator State<TInt>(TInt @int)
-		{
-			return new State<TInt>(@int);
-		}
-		public static explicit operator TInt(State<TInt> state)
-		{
-			return state._state;
 		}
 	}
 
 	internal ref struct NumberInfo
 	{
-		public int DigitsCount;
-		public int Scale;
-		public bool IsNegative;
-		public bool IsFloating;
-		public bool HasNonZeroTail;
-		public Span<byte> Digits;
+		internal int DigitsCount;
+		internal int Scale;
+		internal bool IsNegative;
+		internal bool IsFloating;
+		internal bool HasNonZeroTail;
+		internal Span<byte> Digits;
 
-		public NumberInfo(Span<byte> digits)
+		internal NumberInfo(Span<byte> digits)
 		{
 			DigitsCount = 0;
 			Scale = 0;
@@ -74,7 +60,7 @@ namespace MissingValues.Internals
 			Digits = digits;
 			Digits[0] = (byte)'\0';
 		}
-		public NumberInfo(Span<byte> digits, bool isFloating)
+		internal NumberInfo(Span<byte> digits, bool isFloating)
 		{
 			DigitsCount = 0;
 			Scale = 0;
@@ -85,7 +71,7 @@ namespace MissingValues.Internals
 			Digits[0] = (byte)'\0';
 		}
 
-		public static bool TryConvertToInteger<TInteger>(ref NumberInfo number, out TInteger value)
+		internal static bool TryConvertToInteger<TInteger>(ref NumberInfo number, out TInteger value)
 			where TInteger : struct, IFormattableInteger<TInteger>, IMinMaxValue<TInteger>
 		{
 			// Based on: https://github.com/dotnet/runtime/blob/main/src/libraries/System.Private.CoreLib/src/System/Number.Parsing.cs
@@ -153,7 +139,7 @@ namespace MissingValues.Internals
 			return true;
 		}
 
-		public static TFloat ConvertToFloat<TFloat, TBits>(ref NumberInfo number)
+		internal static TFloat ConvertToFloat<TFloat, TBits>(ref NumberInfo number)
 			where TFloat : struct, IBinaryFloatingPointInfo<TFloat, TBits>
 			where TBits : unmanaged, IBinaryInteger<TBits>, IUnsignedNumber<TBits>
 		{
@@ -176,12 +162,7 @@ namespace MissingValues.Internals
 			return number.IsNegative ? -result : result;
 		}
 
-		public override string ToString()
-		{
-			return Encoding.UTF8.GetString(Digits[..DigitsCount]);
-		}
-
-		public static unsafe bool TryParse<TChar>(ReadOnlySpan<TChar> s, ref NumberInfo info, NumberFormatInfo formatInfo, NumberStyles styles)
+		internal static unsafe bool TryParse<TChar>(ReadOnlySpan<TChar> s, ref NumberInfo info, NumberFormatInfo formatInfo, NumberStyles styles)
 			where TChar : unmanaged, IUtfCharacter<TChar>
 		{
 			fixed (TChar* stringPointer = &MemoryMarshal.GetReference(s))
@@ -196,7 +177,7 @@ namespace MissingValues.Internals
 				return true;
 			}
 		}
-		public static unsafe bool TryParse<TChar>(scoped ref TChar* str, TChar* strEnd, ref NumberInfo number, NumberFormatInfo info, NumberStyles styles)
+		internal static unsafe bool TryParse<TChar>(scoped ref TChar* str, TChar* strEnd, ref NumberInfo number, NumberFormatInfo info, NumberStyles styles)
 			where TChar : unmanaged, IUtfCharacter<TChar>
 		{
 			// Based on: https://github.com/dotnet/runtime/blob/main/src/libraries/Common/src/System/Number.NumberBuffer.cs
@@ -252,7 +233,7 @@ namespace MissingValues.Internals
 			TChar.Copy(info.PositiveSign, positiveSign);
 			TChar.Copy(info.NegativeSign, negativeSign);
 
-			State<int> state = 0;
+			State<int> state = default;
 			TChar* p = str;
 			uint ch = (p < strEnd) ? (uint)(*p) : '\0';
 			TChar* next;

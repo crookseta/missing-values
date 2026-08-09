@@ -540,7 +540,7 @@ namespace MissingValues.Internals
 		/// </summary>
 		private static class Tables
 		{
-			public static ReadOnlySpan<ulong> Pow10Table =>
+			internal static ReadOnlySpan<ulong> Pow10Table =>
 			[
 			    // 10^0
 			    0x0000000000000001, 0x0000000000000000, 0x0000000000000000, 0x0000000000000000, 0x0000000000000000, 0x0000000000000000, 0x0000000000000000, 0x0000000000000000,

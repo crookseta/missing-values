@@ -324,7 +324,7 @@ public partial struct Int256 :
 	public static Int256 Parse(ReadOnlySpan<char> s, NumberStyles style, IFormatProvider? provider)
 	{
 		var status = NumberParser.TryParseToSigned<Int256, UInt256, Utf16Char>(Utf16Char.CastFromCharSpan(s), style, provider, out Int256 output);
-		if (!status)
+		if (!status.IsSuccessful())
 		{
 			status.Throw<Int256>(s.ToString());
 		}
@@ -336,7 +336,7 @@ public partial struct Int256 :
 	{
 		ArgumentNullException.ThrowIfNull(s);
 		var status = NumberParser.TryParseToSigned<Int256, UInt256, Utf16Char>(Utf16Char.CastFromCharSpan(s), style, provider, out Int256 output);
-		if (!status)
+		if (!status.IsSuccessful())
 		{
 			status.Throw<Int256>(s.ToString());
 		}
@@ -347,7 +347,7 @@ public partial struct Int256 :
 	public static Int256 Parse(ReadOnlySpan<char> s, IFormatProvider? provider)
 	{
 		var status = NumberParser.TryParseToSigned<Int256, UInt256, Utf16Char>(Utf16Char.CastFromCharSpan(s), NumberStyles.Integer, provider, out Int256 output);
-		if (!status)
+		if (!status.IsSuccessful())
 		{
 			status.Throw<Int256>(s.ToString());
 		}
@@ -359,7 +359,7 @@ public partial struct Int256 :
 	{
 		ArgumentNullException.ThrowIfNull(s);
 		var status = NumberParser.TryParseToSigned<Int256, UInt256, Utf16Char>(Utf16Char.CastFromCharSpan(s), NumberStyles.Integer, provider, out Int256 output);
-		if (!status)
+		if (!status.IsSuccessful())
 		{
 			status.Throw<Int256>(s.ToString());
 		}
@@ -370,7 +370,7 @@ public partial struct Int256 :
 	public static Int256 Parse(ReadOnlySpan<byte> utf8Text, NumberStyles style, IFormatProvider? provider)
 	{
 		var status = NumberParser.TryParseToSigned<Int256, UInt256, Utf8Char>(Utf8Char.CastFromByteSpan(utf8Text), style, provider, out Int256 output);
-		if (!status)
+		if (!status.IsSuccessful())
 		{
 			status.Throw<Int256>(utf8Text);
 		}
@@ -380,7 +380,7 @@ public partial struct Int256 :
 	public static Int256 Parse(ReadOnlySpan<byte> utf8Text, IFormatProvider? provider)
 	{
 		var status = NumberParser.TryParseToSigned<Int256, UInt256, Utf8Char>(Utf8Char.CastFromByteSpan(utf8Text), NumberStyles.Integer, provider, out Int256 output);
-		if (!status)
+		if (!status.IsSuccessful())
 		{
 			status.Throw<Int256>(utf8Text);
 		}
@@ -425,7 +425,7 @@ public partial struct Int256 :
 			return false;
 		}
 
-		return NumberParser.TryParseToSigned<Int256, UInt256, Utf16Char>(Utf16Char.CastFromCharSpan(s), style, provider, out result);
+		return NumberParser.TryParseToSigned<Int256, UInt256, Utf16Char>(Utf16Char.CastFromCharSpan(s), style, provider, out result).IsSuccessful();
 	}
 
 	/// <inheritdoc/>
@@ -437,7 +437,7 @@ public partial struct Int256 :
 			return false;
 		}
 
-		return NumberParser.TryParseToSigned<Int256, UInt256, Utf16Char>(Utf16Char.CastFromCharSpan(s), style, provider, out result);
+		return NumberParser.TryParseToSigned<Int256, UInt256, Utf16Char>(Utf16Char.CastFromCharSpan(s), style, provider, out result).IsSuccessful();
 	}
 
 	/// <inheritdoc/>
@@ -449,7 +449,7 @@ public partial struct Int256 :
 			return false;
 		}
 
-		return NumberParser.TryParseToSigned<Int256, UInt256, Utf16Char>(Utf16Char.CastFromCharSpan(s), NumberStyles.Integer, provider, out result);
+		return NumberParser.TryParseToSigned<Int256, UInt256, Utf16Char>(Utf16Char.CastFromCharSpan(s), NumberStyles.Integer, provider, out result).IsSuccessful();
 	}
 
 	/// <inheritdoc/>
@@ -461,7 +461,7 @@ public partial struct Int256 :
 			return false;
 		}
 
-		return NumberParser.TryParseToSigned<Int256, UInt256, Utf16Char>(Utf16Char.CastFromCharSpan(s), NumberStyles.Integer, provider, out result);
+		return NumberParser.TryParseToSigned<Int256, UInt256, Utf16Char>(Utf16Char.CastFromCharSpan(s), NumberStyles.Integer, provider, out result).IsSuccessful();
 	}
 
 	/// <inheritdoc/>
@@ -473,7 +473,7 @@ public partial struct Int256 :
 			return false;
 		}
 
-		return NumberParser.TryParseToSigned<Int256, UInt256, Utf8Char>(Utf8Char.CastFromByteSpan(utf8Text), style, provider, out result);
+		return NumberParser.TryParseToSigned<Int256, UInt256, Utf8Char>(Utf8Char.CastFromByteSpan(utf8Text), style, provider, out result).IsSuccessful();
 	}
 	/// <inheritdoc/>
 	public static bool TryParse(ReadOnlySpan<byte> utf8Text, IFormatProvider? provider, [MaybeNullWhen(false)] out Int256 result)
@@ -484,7 +484,7 @@ public partial struct Int256 :
 			return false;
 		}
 
-		return NumberParser.TryParseToSigned<Int256, UInt256, Utf8Char>(Utf8Char.CastFromByteSpan(utf8Text), NumberStyles.Integer, provider, out result);
+		return NumberParser.TryParseToSigned<Int256, UInt256, Utf8Char>(Utf8Char.CastFromByteSpan(utf8Text), NumberStyles.Integer, provider, out result).IsSuccessful();
 	}
 
 	static bool IBinaryInteger<Int256>.TryReadBigEndian(ReadOnlySpan<byte> source, bool isUnsigned, out Int256 value)

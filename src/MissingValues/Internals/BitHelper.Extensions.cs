@@ -9,13 +9,13 @@ namespace MissingValues.Internals
 			where TChar : unmanaged, IUtfCharacter<TChar>
 		{
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			public void AppendUtf16(ReadOnlySpan<char> source)
+			internal void AppendUtf16(ReadOnlySpan<char> source)
 			{
 				Span<TChar> span = builder.AppendSpan(TChar.GetLength(source));
 				TChar.Copy(source, span);
 			}
 			[MethodImpl(MethodImplOptions.AggressiveInlining)]
-			public void AppendUtf8(ReadOnlySpan<byte> source)
+			internal void AppendUtf8(ReadOnlySpan<byte> source)
 			{
 				Span<TChar> span = builder.AppendSpan(TChar.GetLength(source));
 				TChar.Copy(source, span);
@@ -23,19 +23,19 @@ namespace MissingValues.Internals
 		}
 		extension(UInt128 uInt128)
 		{
-			public ulong Upper
+			internal ulong Upper
 			{
 				[MethodImpl(MethodImplOptions.AggressiveInlining)]
 				get => GetUpper(in uInt128);
 			}
 
-			public ulong Lower
+			internal ulong Lower
 			{
 				[MethodImpl(MethodImplOptions.AggressiveInlining)]
 				get => GetLower(in uInt128);
 			}
 
-			public static int CountDigits(UInt128 value)
+			internal static int CountDigits(UInt128 value)
 			{
 				var x = value | UInt128.One;
 				int num1 = (int)UInt128.Log2(x) + 1;
@@ -44,7 +44,7 @@ namespace MissingValues.Internals
 			}
 			
 			#if !NET10_0_OR_GREATER
-			public static UInt128 BigMul(UInt128 a, UInt128 b, out UInt128 lower)
+			internal static UInt128 BigMul(UInt128 a, UInt128 b, out UInt128 lower)
 			{
 				// Adaptation of algorithm for multiplication
 				// of 32-bit unsigned integers described
@@ -70,25 +70,25 @@ namespace MissingValues.Internals
 		}
 		extension(Int128 int128)
 		{
-			public ulong Upper
+			internal ulong Upper
 			{
 				[MethodImpl(MethodImplOptions.AggressiveInlining)]
 				get => GetUpper(in int128);
 			}
 
-			public ulong Lower
+			internal ulong Lower
 			{
 				[MethodImpl(MethodImplOptions.AggressiveInlining)]
 				get => GetLower(in int128);
 			}
 		}
 		
-		public static void GetUpperAndLowerBits(UInt128 value, out ulong upper, out ulong lower)
+		internal static void GetUpperAndLowerBits(UInt128 value, out ulong upper, out ulong lower)
 		{
 			lower = value.Lower;
 			upper = value.Upper;
 		}
-		public static void GetUpperAndLowerBits(Int128 value, out ulong upper, out ulong lower)
+		internal static void GetUpperAndLowerBits(Int128 value, out ulong upper, out ulong lower)
 		{
 			lower = value.Lower;
 			upper = value.Upper;

@@ -371,8 +371,10 @@ internal static partial class NumberFormatter
 		Span<TChar> digits = stackalloc TChar[digitCount + 1];
 		UInt64ToDecChars((ulong)actualExponent, ref digits[digitCount], digitCount);
 		builder.Append(digits[..digitCount]);
-		
-		return builder.TryCopyTo(destination, out charsWritten);
+
+		bool success = builder.TryCopyTo(destination, out charsWritten);
+		builder.Dispose();
+		return success;
 
 		static TSignificand ExtractFractionAndBiasedExponent(in TFloat value, out int exponent)
 		{

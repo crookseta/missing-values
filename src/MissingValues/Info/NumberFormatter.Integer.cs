@@ -16,56 +16,56 @@ internal interface IFormattableInteger<TSelf> : IFormattableNumber<TSelf>, IBigI
 	/// </summary>
 	/// <param name="value">A hexadecimal character.</param>
 	/// <returns>The hexadecimal value of <paramref name="value"/> if it represents a number; otherwise, 0</returns>
-	abstract static TSelf GetHexValue(char value);
+	static abstract TSelf GetHexValue(char value);
 
-	abstract static int UnsignedCompare(in TSelf value1, in TSelf value2);
+	static abstract int UnsignedCompare(in TSelf value1, in TSelf value2);
 
-	abstract static int Log2Int32(in TSelf value);
+	static abstract int Log2Int32(in TSelf value);
 
-	abstract static int LeadingZeroCountInt32(in TSelf value);
+	static abstract int LeadingZeroCountInt32(in TSelf value);
 
 	static bool IFormattableNumber<TSelf>.IsBinaryInteger() => true;
 
 	/// <summary>
 	/// Gets the value <c>2</c> of the type.
 	/// </summary>
-	abstract static TSelf Two { get; }
+	static abstract TSelf Two { get; }
 	/// <summary>
 	/// Gets the value <c>16</c> of the type.
 	/// </summary>
-	abstract static TSelf Sixteen { get; }
+	static abstract TSelf Sixteen { get; }
 	/// <summary>
 	/// Gets the value <c>10</c> of the type.
 	/// </summary>
-	abstract static TSelf Ten { get; }
+	static abstract TSelf Ten { get; }
 
 	/// <summary>
 	/// Gets the value <c>4</c> of the type.
 	/// </summary>
-	abstract static TSelf TwoPow2 { get; }
+	static abstract TSelf TwoPow2 { get; }
 	/// <summary>
 	/// Gets the value <c>256</c> of the type.
 	/// </summary>
-	abstract static TSelf SixteenPow2 { get; }
+	static abstract TSelf SixteenPow2 { get; }
 	/// <summary>
 	/// Gets the value <c>100</c> of the type.
 	/// </summary>
-	abstract static TSelf TenPow2 { get; }
+	static abstract TSelf TenPow2 { get; }
 
 	/// <summary>
 	/// Gets the value <c>8</c> of the type.
 	/// </summary>
-	abstract static TSelf TwoPow3 { get; }
+	static abstract TSelf TwoPow3 { get; }
 	/// <summary>
 	/// Gets the value <c>4096</c> of the type.
 	/// </summary>
-	abstract static TSelf SixteenPow3 { get; }
+	static abstract TSelf SixteenPow3 { get; }
 	/// <summary>
 	/// Gets the value <c>1000</c> of the type.
 	/// </summary>
-	abstract static TSelf TenPow3 { get; }
+	static abstract TSelf TenPow3 { get; }
 
-	virtual static TSelf E19
+	static virtual TSelf E19
 	{
 		get => TSelf.CreateTruncating(10000000000000000000UL);
 	}
@@ -73,20 +73,20 @@ internal interface IFormattableInteger<TSelf> : IFormattableNumber<TSelf>, IBigI
 	/// <summary>
 	/// Gets the left-most digit of the maximum value of <typeparamref name="TSelf"/>.
 	/// </summary>
-	abstract static char LastDecimalDigitOfMaxValue { get; }
+	static abstract char LastDecimalDigitOfMaxValue { get; }
 	/// <summary>
 	/// Gets the number of digits of the maximum decimal value of <typeparamref name="TSelf"/>.
 	/// </summary>
-	abstract static int MaxDecimalDigits { get; }
+	static abstract int MaxDecimalDigits { get; }
 	/// <summary>
 	/// Gets the number of digits of the maximum hexadecimal value of <typeparamref name="TSelf"/>.
 	/// </summary>
-	abstract static int MaxHexDigits { get; }
+	static abstract int MaxHexDigits { get; }
 	/// <summary>
 	/// Gets the number of digits of the maximum binary value of <typeparamref name="TSelf"/>.
 	/// </summary>
-	abstract static int MaxBinaryDigits { get; }
-	abstract static bool IsUnsignedInteger { get; }
+	static abstract int MaxBinaryDigits { get; }
+	static abstract bool IsUnsignedInteger { get; }
 }
 
 internal interface IFormattableSignedInteger<TSigned> : IFormattableInteger<TSigned>, ISignedNumber<TSigned>
@@ -112,8 +112,8 @@ internal interface IFormattableUnsignedInteger<TUnsigned> : IFormattableInteger<
 
 internal static partial class NumberFormatter
 {
-	public const ulong E19 = 10_000_000_000_000_000_000UL;
-	public const int E19Digits = 19;
+	internal const ulong E19 = 10_000_000_000_000_000_000UL;
+	internal const int E19Digits = 19;
 	
 	internal static int CountDigits(ulong value)
 	{
@@ -239,7 +239,7 @@ internal static partial class NumberFormatter
 		}
 		UInt64ToDecChars(value.Part0, ref bufferEnd, digits);
 	}
-	public static unsafe void UnsignedIntegerToHexChars<T, TChar>(in T value, char isUpper, Span<TChar> destination, int digits)
+	internal static unsafe void UnsignedIntegerToHexChars<T, TChar>(in T value, char isUpper, Span<TChar> destination, int digits)
 		where T : unmanaged, IFormattableUnsignedInteger<T>
 		where TChar : unmanaged, IUtfCharacter<TChar>
 	{
@@ -286,7 +286,7 @@ internal static partial class NumberFormatter
 			}
 		}
 	}
-	public static unsafe void UnsignedIntegerToBinChars<T, TChar>(in T value, Span<TChar> destination, int digits)
+	internal static unsafe void UnsignedIntegerToBinChars<T, TChar>(in T value, Span<TChar> destination, int digits)
 		where T : unmanaged, IFormattableUnsignedInteger<T>
 		where TChar : unmanaged, IUtfCharacter<TChar>
 	{
@@ -331,7 +331,7 @@ internal static partial class NumberFormatter
 		}
 	}
 
-	public static string FormatInt<TSigned, TUnsigned>(in TSigned value, string? format, IFormatProvider? provider)
+	internal static string FormatInt<TSigned, TUnsigned>(in TSigned value, string? format, IFormatProvider? provider)
 		where TSigned : unmanaged, IFormattableSignedInteger<TSigned>
 		where TUnsigned : unmanaged, IFormattableUnsignedInteger<TUnsigned>
 	{
@@ -407,7 +407,7 @@ internal static partial class NumberFormatter
 				return FormatNumber(in value, format!, NumberFormatInfo.GetInstance(provider));
 		}
 	}
-	public static bool TryFormatInt<TSigned, TUnsigned, TChar>(in TSigned value, Span<TChar> destination, out int charsWritten, ReadOnlySpan<char> format, IFormatProvider? provider)
+	internal static bool TryFormatInt<TSigned, TUnsigned, TChar>(in TSigned value, Span<TChar> destination, out int charsWritten, ReadOnlySpan<char> format, IFormatProvider? provider)
 		where TSigned : unmanaged, IFormattableSignedInteger<TSigned>
 		where TUnsigned : unmanaged, IFormattableUnsignedInteger<TUnsigned>
 		where TChar : unmanaged, IUtfCharacter<TChar>
@@ -516,7 +516,7 @@ internal static partial class NumberFormatter
 				return TryFormatNumber(in value, destination, out charsWritten, format, NumberFormatInfo.GetInstance(provider));
 		}
 	}
-	public static string FormatUInt<TUnsigned>(in TUnsigned value, string? format, IFormatProvider? provider)
+	internal static string FormatUInt<TUnsigned>(in TUnsigned value, string? format, IFormatProvider? provider)
 		where TUnsigned : unmanaged, IFormattableUnsignedInteger<TUnsigned>
 	{
 		if (string.IsNullOrEmpty(format))
@@ -558,7 +558,7 @@ internal static partial class NumberFormatter
 				return FormatNumber(in value, format!, NumberFormatInfo.GetInstance(provider));
 		}
 	}
-	public static bool TryFormatUInt<TUnsigned, TChar>(in TUnsigned value, Span<TChar> destination, out int charsWritten, ReadOnlySpan<char> format, IFormatProvider? provider)
+	internal static bool TryFormatUInt<TUnsigned, TChar>(in TUnsigned value, Span<TChar> destination, out int charsWritten, ReadOnlySpan<char> format, IFormatProvider? provider)
 		where TUnsigned : unmanaged, IFormattableUnsignedInteger<TUnsigned>
 		where TChar : unmanaged, IUtfCharacter<TChar>
 	{

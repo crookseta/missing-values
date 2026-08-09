@@ -250,7 +250,7 @@ namespace MissingValues
 		public static UInt512 Parse(ReadOnlySpan<char> s, NumberStyles style, IFormatProvider? provider)
 		{
 			var status = NumberParser.TryParseToUnsigned(Utf16Char.CastFromCharSpan(s), style, provider, out UInt512 output);
-			if (!status)
+			if (!status.IsSuccessful())
 			{
 				status.Throw<UInt512>(s.ToString());
 			}
@@ -262,7 +262,7 @@ namespace MissingValues
 		{
 			ArgumentNullException.ThrowIfNull(s);
 			var status = NumberParser.TryParseToUnsigned(Utf16Char.CastFromCharSpan(s), style, provider, out UInt512 output);
-			if (!status)
+			if (!status.IsSuccessful())
 			{
 				status.Throw<UInt512>(s.ToString());
 			}
@@ -273,7 +273,7 @@ namespace MissingValues
 		public static UInt512 Parse(ReadOnlySpan<char> s, IFormatProvider? provider)
 		{
 			var status = NumberParser.TryParseToUnsigned(Utf16Char.CastFromCharSpan(s), NumberStyles.Integer, provider, out UInt512 output);
-			if (!status)
+			if (!status.IsSuccessful())
 			{
 				status.Throw<UInt512>(s.ToString());
 			}
@@ -285,7 +285,7 @@ namespace MissingValues
 		{
 			ArgumentNullException.ThrowIfNull(s);
 			var status = NumberParser.TryParseToUnsigned(Utf16Char.CastFromCharSpan(s), NumberStyles.Integer, provider, out UInt512 output);
-			if (!status)
+			if (!status.IsSuccessful())
 			{
 				status.Throw<UInt512>(s.ToString());
 			}
@@ -296,7 +296,7 @@ namespace MissingValues
 		public static UInt512 Parse(ReadOnlySpan<byte> utf8Text, NumberStyles style, IFormatProvider? provider)
 		{
 			var status = NumberParser.TryParseToUnsigned(Utf8Char.CastFromByteSpan(utf8Text), style, provider, out UInt512 output);
-			if (!status)
+			if (!status.IsSuccessful())
 			{
 				status.Throw<UInt512>(utf8Text);
 			}
@@ -306,7 +306,7 @@ namespace MissingValues
 		public static UInt512 Parse(ReadOnlySpan<byte> utf8Text, IFormatProvider? provider)
 		{
 			var status = NumberParser.TryParseToUnsigned(Utf8Char.CastFromByteSpan(utf8Text), NumberStyles.Integer, provider, out UInt512 output);
-			if (!status)
+			if (!status.IsSuccessful())
 			{
 				status.Throw<UInt512>(utf8Text);
 			}
@@ -355,7 +355,7 @@ namespace MissingValues
 				return false;
 			}
 
-			return NumberParser.TryParseToUnsigned(Utf16Char.CastFromCharSpan(s), style, provider, out result);
+			return NumberParser.TryParseToUnsigned(Utf16Char.CastFromCharSpan(s), style, provider, out result).IsSuccessful();
 		}
 
 		/// <inheritdoc/>
@@ -367,7 +367,7 @@ namespace MissingValues
 				return false;
 			}
 
-			return NumberParser.TryParseToUnsigned(Utf16Char.CastFromCharSpan(s), style, provider, out result);
+			return NumberParser.TryParseToUnsigned(Utf16Char.CastFromCharSpan(s), style, provider, out result).IsSuccessful();
 		}
 
 		/// <inheritdoc/>
@@ -379,7 +379,7 @@ namespace MissingValues
 				return false;
 			}
 
-			return NumberParser.TryParseToUnsigned(Utf16Char.CastFromCharSpan(s), NumberStyles.Integer, provider, out result);
+			return NumberParser.TryParseToUnsigned(Utf16Char.CastFromCharSpan(s), NumberStyles.Integer, provider, out result).IsSuccessful();
 		}
 
 		/// <inheritdoc/>
@@ -391,7 +391,7 @@ namespace MissingValues
 				return false;
 			}
 
-			return NumberParser.TryParseToUnsigned(Utf16Char.CastFromCharSpan(s), NumberStyles.Integer, provider, out result);
+			return NumberParser.TryParseToUnsigned(Utf16Char.CastFromCharSpan(s), NumberStyles.Integer, provider, out result).IsSuccessful();
 		}
 
 		/// <inheritdoc/>
@@ -403,7 +403,7 @@ namespace MissingValues
 				return false;
 			}
 
-			return NumberParser.TryParseToUnsigned(Utf8Char.CastFromByteSpan(utf8Text), style, provider, out result);
+			return NumberParser.TryParseToUnsigned(Utf8Char.CastFromByteSpan(utf8Text), style, provider, out result).IsSuccessful();
 		}
 		/// <inheritdoc/>
 		public static bool TryParse(ReadOnlySpan<byte> utf8Text, IFormatProvider? provider, [MaybeNullWhen(false)] out UInt512 result)
@@ -414,7 +414,7 @@ namespace MissingValues
 				return false;
 			}
 
-			return NumberParser.TryParseToUnsigned(Utf8Char.CastFromByteSpan(utf8Text), NumberStyles.Integer, provider, out result);
+			return NumberParser.TryParseToUnsigned(Utf8Char.CastFromByteSpan(utf8Text), NumberStyles.Integer, provider, out result).IsSuccessful();
 		}
 
 		static bool IBinaryInteger<UInt512>.TryReadBigEndian(ReadOnlySpan<byte> source, bool isUnsigned, out UInt512 value)

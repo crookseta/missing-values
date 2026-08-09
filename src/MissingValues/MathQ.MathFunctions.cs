@@ -18,7 +18,7 @@ namespace MissingValues
 		}
 
 		[StructLayout(LayoutKind.Sequential)]
-		public struct Word
+		internal struct Word
 		{
 #if BIGENDIAN
 			internal ushort se;
@@ -33,7 +33,7 @@ namespace MissingValues
 #endif
 		}
 		[StructLayout(LayoutKind.Sequential)]
-		public struct Word64
+		internal struct Word64
 		{
 #if BIGENDIAN
 			internal ulong hi;
@@ -47,7 +47,7 @@ namespace MissingValues
 
 	public static partial class MathQ
 	{
-		internal const int MaxRoundingDigits = 34;
+		private const int MaxRoundingDigits = 34;
 
 		private static Quad Epsilon => new Quad(0x406F_0000_0000_0000, 0x0000_0000_0000_0000);
 		private static Quad INVPIO2 => new Quad(0x3FFE_45F3_06DC_9C88, 0x2A53_F84E_AFA3_EA6A);

@@ -9,10 +9,10 @@ namespace MissingValues.Internals;
 
 internal static class Calculator
 {
-	public const int StackAllocThreshold = 128;
+	internal const int StackAllocThreshold = 128;
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public static ulong AddWithCarry(ulong a, ulong b, out ulong carry)
+	internal static ulong AddWithCarry(ulong a, ulong b, out ulong carry)
 	{
 		ulong result = a + b;
 		
@@ -24,7 +24,7 @@ internal static class Calculator
 	}
 	
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public static ulong AddWithCarry(ulong a, ulong b, ulong carryIn, out ulong carryOut)
+	internal static ulong AddWithCarry(ulong a, ulong b, ulong carryIn, out ulong carryOut)
 	{
 		ulong sum1 = a + b;
 		ulong c1 = (sum1 < a) ? 1 : (ulong)0;
@@ -35,14 +35,14 @@ internal static class Calculator
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public static UInt128 BigMul(ulong a, ulong b)
+	internal static UInt128 BigMul(ulong a, ulong b)
 	{
 		ulong high = BigMul(a, b, out ulong low);
 		return new UInt128(high, low);
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public static ulong BigMul(ulong a, ulong b, out ulong lower)
+	internal static ulong BigMul(ulong a, ulong b, out ulong lower)
 	{
 		if (Bmi2.X64.IsSupported)
 		{
@@ -64,7 +64,7 @@ internal static class Calculator
 	}
 	
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public static (ulong hi, ulong lo) BigMulAdd(ulong a, ulong b, ulong c)
+	internal static (ulong hi, ulong lo) BigMulAdd(ulong a, ulong b, ulong c)
 	{
 		ulong highProd = BigMul(a, b, out ulong lowProd);
 		
@@ -77,13 +77,13 @@ internal static class Calculator
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public static (ulong Quotient, uint Remainder) DivRemByUInt32(ulong left, uint right)
+	internal static (ulong Quotient, uint Remainder) DivRemByUInt32(ulong left, uint right)
 	{
 		ulong quotient = left / right;
 		return (quotient, (uint)left - ((uint)quotient * right));
 	}
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public static (UInt128 Quotient, ulong Remainder) DivRemByUInt64(UInt128 left, ulong right)
+	internal static (UInt128 Quotient, ulong Remainder) DivRemByUInt64(UInt128 left, ulong right)
 	{
 #if NET9_0_OR_GREATER
 		if (X86Base.X64.IsSupported)
@@ -106,7 +106,7 @@ internal static class Calculator
 		return (quotient, left.Lower - (quotient.Lower * right));
 	}
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public static ulong DivRemByUInt64(ulong hi, ulong lo, ulong divisor, out ulong remainder)
+	internal static ulong DivRemByUInt64(ulong hi, ulong lo, ulong divisor, out ulong remainder)
 	{
 		if (hi == 0)
 		{
@@ -163,7 +163,7 @@ internal static class Calculator
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public static void Square(Span<ulong> value, Span<ulong> bits)
+	internal static void Square(Span<ulong> value, Span<ulong> bits)
 	{
 		// Based on: https://github.com/dotnet/runtime/blob/main/src/libraries/System.Runtime.Numerics/src/System/Numerics/BigIntegerCalculator.SquMul.cs
 
@@ -203,7 +203,7 @@ internal static class Calculator
 		}
 	}
 
-	public static UInt256 Multiply(in UInt256 left, ulong right, out ulong carry)
+	internal static UInt256 Multiply(in UInt256 left, ulong right, out ulong carry)
 	{
 		// Based on: https://github.com/dotnet/runtime/blob/main/src/libraries/System.Runtime.Numerics/src/System/Numerics/BigIntegerCalculator.SquMul.cs
 
@@ -221,7 +221,7 @@ internal static class Calculator
 
 		return new UInt256(p3, p2, p1, p0);
 	}
-	public static UInt512 Multiply(in UInt512 left, ulong right, out ulong carry)
+	internal static UInt512 Multiply(in UInt512 left, ulong right, out ulong carry)
 	{
 		ulong p7, p6, p5, p4, p3, p2, p1, p0;
 		
@@ -239,7 +239,7 @@ internal static class Calculator
 			p3, p2, p1, p0
 			);
 	}
-	public static void Multiply(ReadOnlySpan<ulong> left, ReadOnlySpan<ulong> right, Span<ulong> bits)
+	internal static void Multiply(ReadOnlySpan<ulong> left, ReadOnlySpan<ulong> right, Span<ulong> bits)
 	{
 		// Based on: https://github.com/dotnet/runtime/blob/main/src/libraries/System.Runtime.Numerics/src/System/Numerics/BigIntegerCalculator.SquMul.cs
 		Debug.Assert(left.Length < 32);
@@ -299,7 +299,7 @@ internal static class Calculator
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public static void DivRem(in UInt256 left, ulong right, out UInt256 quotient, out ulong remainder)
+	internal static void DivRem(in UInt256 left, ulong right, out UInt256 quotient, out ulong remainder)
 	{
 		// Based on: https://github.com/dotnet/runtime/blob/main/src/libraries/System.Runtime.Numerics/src/System/Numerics/BigIntegerCalculator.DivRem.cs
 
@@ -356,7 +356,7 @@ internal static class Calculator
 	}
 	
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public static void DivRem(in UInt512 left, ulong right, out UInt512 quotient, out ulong remainder)
+	internal static void DivRem(in UInt512 left, ulong right, out UInt512 quotient, out ulong remainder)
 	{
 		// Based on: https://github.com/dotnet/runtime/blob/main/src/libraries/System.Runtime.Numerics/src/System/Numerics/BigIntegerCalculator.DivRem.cs
 
@@ -538,7 +538,7 @@ internal static class Calculator
 			p07, p06, p05, p04,
 			p03, p02, p01, p00);
 	}
-	public static void DivRem(ReadOnlySpan<ulong> left, ReadOnlySpan<ulong> right, Span<ulong> quotient, Span<ulong> remainder)
+	internal static void DivRem(ReadOnlySpan<ulong> left, ReadOnlySpan<ulong> right, Span<ulong> quotient, Span<ulong> remainder)
 	{
 		// Based on: https://github.com/dotnet/runtime/blob/main/src/libraries/System.Runtime.Numerics/src/System/Numerics/BigIntegerCalculator.DivRem.cs
 
@@ -546,7 +546,7 @@ internal static class Calculator
 		Divide(remainder, right, quotient);
 	}
 
-	public static UInt256 Divide(in UInt256 left, ulong right)
+	internal static UInt256 Divide(in UInt256 left, ulong right)
 	{
 		// Executes the division for one big and one 64-bit integer.
 		// Thus, we've similar code than below, but there is no loop for
@@ -598,7 +598,7 @@ internal static class Calculator
 		return new UInt256(p3, p2, p1, p0);
 	}
 	
-	public static UInt512 Divide(in UInt512 left, ulong right)
+	internal static UInt512 Divide(in UInt512 left, ulong right)
 	{
 		// Executes the division for one big and one 64-bit integer.
 		// Thus, we've similar code than below, but there is no loop for
@@ -777,7 +777,7 @@ internal static class Calculator
 			p03, p02, p01, p00);
 	}
 	
-	public static void Divide(Span<ulong> left, ReadOnlySpan<ulong> right, Span<ulong> bits)
+	internal static void Divide(Span<ulong> left, ReadOnlySpan<ulong> right, Span<ulong> bits)
 	{
 		// Based on: https://github.com/dotnet/runtime/blob/main/src/libraries/System.Runtime.Numerics/src/System/Numerics/BigIntegerCalculator.DivRem.cs
 
@@ -956,7 +956,7 @@ internal static class Calculator
 		}
 	}
 	
-	public static ulong Remainder(in UInt256 left, ulong right)
+	internal static ulong Remainder(in UInt256 left, ulong right)
 	{
 		// Based on: https://github.com/dotnet/runtime/blob/main/src/libraries/System.Runtime.Numerics/src/System/Numerics/BigIntegerCalculator.DivRem.cs
 
@@ -999,7 +999,7 @@ internal static class Calculator
 		return carry;
 	}
 	
-	public static ulong Remainder(in UInt512 left, ulong right)
+	internal static ulong Remainder(in UInt512 left, ulong right)
 	{
 		// Based on: https://github.com/dotnet/runtime/blob/main/src/libraries/System.Runtime.Numerics/src/System/Numerics/BigIntegerCalculator.DivRem.cs
 
@@ -1123,7 +1123,7 @@ internal static class Calculator
 
 		return carry;
 	}
-	public static void Remainder(ReadOnlySpan<ulong> left, ReadOnlySpan<ulong> right, Span<ulong> remainder)
+	internal static void Remainder(ReadOnlySpan<ulong> left, ReadOnlySpan<ulong> right, Span<ulong> remainder)
 	{
 		// Based on: https://github.com/dotnet/runtime/blob/main/src/libraries/System.Runtime.Numerics/src/System/Numerics/BigIntegerCalculator.DivRem.cs
 		// Same as above, but only returning the remainder.
@@ -1133,11 +1133,11 @@ internal static class Calculator
 		Divide(remainder, right, default);
 	}
 
-	public static void Pow(ulong value, uint power, Span<ulong> bits)
+	internal static void Pow(ulong value, uint power, Span<ulong> bits)
 	{
 		Pow(value != 0 ? new ReadOnlySpan<ulong>(in value) : default, power, bits);
 	}
-	public static void Pow(ReadOnlySpan<ulong> value, uint power, Span<ulong> bits)
+	internal static void Pow(ReadOnlySpan<ulong> value, uint power, Span<ulong> bits)
 	{
 		// Based on: https://github.com/dotnet/runtime/blob/main/src/libraries/System.Runtime.Numerics/src/System/Numerics/BigIntegerCalculator.PowMod.cs
 
@@ -1220,7 +1220,7 @@ internal static class Calculator
 		return ActualLength(value[..resultLength]);
 	}
 
-	public static int PowBound(uint power, int valueLength)
+	internal static int PowBound(uint power, int valueLength)
 	{
 		// Based on: https://github.com/dotnet/runtime/blob/main/src/libraries/System.Runtime.Numerics/src/System/Numerics/BigIntegerCalculator.PowMod.cs
 		// The basic pow algorithm, but instead of squaring
@@ -1242,7 +1242,7 @@ internal static class Calculator
 		return resultLength;
 	}
 
-	public static int ActualLength(ReadOnlySpan<ulong> value)
+	internal static int ActualLength(ReadOnlySpan<ulong> value)
 	{
 		// Based on: https://github.com/dotnet/runtime/blob/main/src/libraries/System.Runtime.Numerics/src/System/Numerics/BigIntegerCalculator.Utils.cs
 		// Since we're reusing memory here, the actual length

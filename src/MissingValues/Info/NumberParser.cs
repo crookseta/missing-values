@@ -26,29 +26,27 @@ namespace MissingValues.Info
 		private readonly struct HexConverter<TInteger> : IIntegerRadixConverter<TInteger>
 			where TInteger : struct, IFormattableInteger<TInteger>
 		{
-			public static NumberStyles AllowedStyles => NumberStyles.HexNumber;
+			static NumberStyles IIntegerRadixConverter<TInteger>.AllowedStyles => NumberStyles.HexNumber;
 
-			public static uint MaxDigitValue => 0xF;
+			static uint IIntegerRadixConverter<TInteger>.MaxDigitValue => 0xF;
 
-			public static int MaxDigitCount => TInteger.MaxHexDigits;
+			static int IIntegerRadixConverter<TInteger>.MaxDigitCount => TInteger.MaxHexDigits;
 
-			public static int MaxUInt64DigitCount => 16;
+			static int IIntegerRadixConverter<TInteger>.MaxUInt64DigitCount => 16;
 
-			public static int BitsPerCharacter => 4;
+			static int IIntegerRadixConverter<TInteger>.BitsPerCharacter => 4;
 
-			public static TInteger FromChar<TChar>(TChar ch)
-				where TChar : unmanaged, IUtfCharacter<TChar>
+			static TInteger IIntegerRadixConverter<TInteger>.FromChar<TChar>(TChar ch)
 			{
 				return TInteger.GetHexValue((char)ch);
 			}
 
-			public static bool IsValidChar<TChar>(TChar ch)
-				where TChar : unmanaged, IUtfCharacter<TChar>
+			static bool IIntegerRadixConverter<TInteger>.IsValidChar<TChar>(TChar ch)
 			{
 				return TChar.IsHexDigit(ch);
 			}
 
-			public static TInteger ShiftLeftForNextDigit(in TInteger value)
+			static TInteger IIntegerRadixConverter<TInteger>.ShiftLeftForNextDigit(in TInteger value)
 			{
 				return value << 4;
 			}
@@ -56,29 +54,27 @@ namespace MissingValues.Info
 		private readonly struct BinConverter<TInteger> : IIntegerRadixConverter<TInteger>
 			where TInteger : struct, IFormattableInteger<TInteger>
 		{
-			public static NumberStyles AllowedStyles => NumberStyles.BinaryNumber;
+			static NumberStyles IIntegerRadixConverter<TInteger>.AllowedStyles => NumberStyles.BinaryNumber;
 
-			public static uint MaxDigitValue => 0b1;
+			static uint IIntegerRadixConverter<TInteger>.MaxDigitValue => 0b1;
 
-			public static int MaxDigitCount => TInteger.MaxBinaryDigits;
+			static int IIntegerRadixConverter<TInteger>.MaxDigitCount => TInteger.MaxBinaryDigits;
 
-			public static int MaxUInt64DigitCount => 64;
+			static int IIntegerRadixConverter<TInteger>.MaxUInt64DigitCount => 64;
 
-			public static int BitsPerCharacter => 1;
+			static int IIntegerRadixConverter<TInteger>.BitsPerCharacter => 1;
 
-			public static TInteger FromChar<TChar>(TChar ch)
-				where TChar : unmanaged, IUtfCharacter<TChar>
+			static TInteger IIntegerRadixConverter<TInteger>.FromChar<TChar>(TChar ch)
 			{
 				return TInteger.GetDecimalValue((char)ch);
 			}
 
-			public static bool IsValidChar<TChar>(TChar ch)
-				where TChar : unmanaged, IUtfCharacter<TChar>
+			static bool IIntegerRadixConverter<TInteger>.IsValidChar<TChar>(TChar ch)
 			{
 				return ch == (TChar)'1' || ch == (TChar)'0';
 			}
 
-			public static TInteger ShiftLeftForNextDigit(in TInteger value)
+			static TInteger IIntegerRadixConverter<TInteger>.ShiftLeftForNextDigit(in TInteger value)
 			{
 				return value << 1;
 			}
@@ -86,10 +82,15 @@ namespace MissingValues.Info
 
 		internal readonly struct ParsingStatus
 		{
-			internal const int Success = 0;
-			internal const int Failed = 1;
-			internal const int Overflow = 2;
-			internal const int Underflow = 3;
+			private const int SuccessValue = 0;
+			private const int FailedValue = 1;
+			private const int OverflowValue = 2;
+			private const int UnderflowValue = 3;
+			
+			internal static ParsingStatus Success => new ParsingStatus(SuccessValue);
+			internal static ParsingStatus Failed => new ParsingStatus(FailedValue);
+			internal static ParsingStatus Overflow => new ParsingStatus(OverflowValue);
+			internal static ParsingStatus Underflow => new ParsingStatus(OverflowValue);
 
 			private readonly int _status;
 
@@ -108,14 +109,13 @@ namespace MissingValues.Info
 			{
 				throw _status switch
 				{
-					Overflow => new OverflowException($"Could not parse '{input}' as {typeof(T)}.\nThe input is bigger than {T.MaxValue}"),
-					Underflow => new OverflowException($"Could not parse '{input}' as {typeof(T)}.\nThe input is smaller than {T.MinValue}"),
+					OverflowValue => new OverflowException($"Could not parse '{input}' as {typeof(T)}.\nThe input is bigger than {T.MaxValue}"),
+					UnderflowValue => new OverflowException($"Could not parse '{input}' as {typeof(T)}.\nThe input is smaller than {T.MinValue}"),
 					_ => new FormatException($"Could not parse '{input}' as {typeof(T)}.\n"),
 				};
 			}
-
-			public static implicit operator ParsingStatus(int value) => new(value);
-			public static implicit operator bool(ParsingStatus self) => self._status == Success;
+			
+			internal bool IsSuccessful() => _status == SuccessValue;
 		}
 
 		#region Integer
@@ -431,7 +431,7 @@ namespace MissingValues.Info
 				status = ParseDecStringToUnsigned(raw, out result);
 			}
 
-			if (!status)
+			if (!status.IsSuccessful())
 			{
 				output = default;
 				return status;

@@ -38,7 +38,7 @@ internal unsafe ref partial struct BigNumber
 	private long _length;
 	private fixed ulong _blocks[MaxBlockCount];
 
-	public void Add(ulong value)
+	internal void Add(ulong value)
 	{
 		int length = (int)_length;
 		if (length == 0)
@@ -69,7 +69,7 @@ internal unsafe ref partial struct BigNumber
 		_length = length + 1;
 	}
 
-	public static void Add(scoped ref BigNumber lhs, scoped ref BigNumber rhs, out BigNumber result)
+	internal static void Add(scoped ref BigNumber lhs, scoped ref BigNumber rhs, out BigNumber result)
 	{
 		// determine which operand has the smaller length
 		ref BigNumber large = ref (lhs._length < rhs._length) ? ref rhs : ref lhs;
@@ -121,7 +121,7 @@ internal unsafe ref partial struct BigNumber
 		}
 	}
 
-	public static int Compare(scoped ref BigNumber lhs, scoped ref BigNumber rhs)
+	internal static int Compare(scoped ref BigNumber lhs, scoped ref BigNumber rhs)
 	{
 		Debug.Assert(unchecked((uint)(lhs._length)) <= MaxBlockCount);
 		Debug.Assert(unchecked((uint)(rhs._length)) <= MaxBlockCount);
@@ -155,33 +155,33 @@ internal unsafe ref partial struct BigNumber
 		return 0;
 	}
 
-	public static uint CountSignificantBits(uint value)
+	internal static uint CountSignificantBits(uint value)
 	{
 		return 32 - (uint)BitOperations.LeadingZeroCount(value);
 	}
 
-	public static uint CountSignificantBits(ulong value)
+	internal static uint CountSignificantBits(ulong value)
 	{
 		return 64 - (uint)BitOperations.LeadingZeroCount(value);
 	}
 
-	public static uint CountSignificantBits(UInt128 value)
+	internal static uint CountSignificantBits(UInt128 value)
 	{
 		return 128 - (uint)UInt128.LeadingZeroCount(value);
 	}
 
-	public static uint CountSignificantBits(UInt256 value)
+	internal static uint CountSignificantBits(UInt256 value)
 	{
 		return 256 - (uint)BitHelper.LeadingZeroCount(in value);
 	}
 
-	public static uint CountSignificantBits<T>(T value)
+	internal static uint CountSignificantBits<T>(T value)
 		where T : unmanaged, IBinaryInteger<T>, IUnsignedNumber<T>
 	{
 		return (uint)(sizeof(T) * 8) - uint.CreateChecked(T.LeadingZeroCount(value));
 	}
 
-	public static uint CountSignificantBits(ref BigNumber value)
+	internal static uint CountSignificantBits(ref BigNumber value)
 	{
 		if (value.IsZero())
 		{
@@ -195,7 +195,7 @@ internal unsafe ref partial struct BigNumber
 		return (lastIndex * BitsPerBlock) + CountSignificantBits(value._blocks[lastIndex]);
 	}
 
-	public static void DivRem(scoped ref BigNumber lhs, scoped ref BigNumber rhs, out BigNumber quo, out BigNumber rem)
+	internal static void DivRem(scoped ref BigNumber lhs, scoped ref BigNumber rhs, out BigNumber quo, out BigNumber rem)
 	{
 		// This is modified from the libraries BigIntegerCalculator.DivRem.cs implementation:
 		// https://github.com/dotnet/runtime/blob/main/src/libraries/System.Runtime.Numerics/src/System/Numerics/BigIntegerCalculator.DivRem.cs
@@ -387,7 +387,7 @@ internal unsafe ref partial struct BigNumber
 			rem._length = remLength;
 		}
 	}
-	public static ulong HeuristicDivide(ref BigNumber dividend, ref BigNumber divisor)
+	internal static ulong HeuristicDivide(ref BigNumber dividend, ref BigNumber divisor)
 	{
 		int divisorLength = (int)divisor._length;
 
@@ -467,7 +467,7 @@ internal unsafe ref partial struct BigNumber
 		return quotient;
 	}
 
-	public static void Multiply(scoped ref BigNumber lhs, ulong value, out BigNumber result)
+	internal static void Multiply(scoped ref BigNumber lhs, ulong value, out BigNumber result)
 	{
 		if (lhs._length <= 1)
 		{
@@ -513,7 +513,7 @@ internal unsafe ref partial struct BigNumber
 		}
 	}
 
-	public static void Multiply(scoped ref BigNumber lhs, scoped ref BigNumber rhs, out BigNumber result)
+	internal static void Multiply(scoped ref BigNumber lhs, scoped ref BigNumber rhs, out BigNumber result)
 	{
 		if (lhs._length <= 1)
 		{
@@ -586,7 +586,7 @@ internal unsafe ref partial struct BigNumber
 		}
 	}
 
-	public static void Pow2(uint exponent, out BigNumber result)
+	internal static void Pow2(uint exponent, out BigNumber result)
 	{
 		uint blocksToShift = DivRem64(exponent, out uint remainingBitsToShift);
 		result._length = (int)blocksToShift + 1;
@@ -598,7 +598,7 @@ internal unsafe ref partial struct BigNumber
 		result._blocks[blocksToShift] = 1UL << (int)(remainingBitsToShift);
 	}
 
-	public static void Pow10(uint exponent, out BigNumber result)
+	internal static void Pow10(uint exponent, out BigNumber result)
 	{
 		// We leverage two arrays - Pow10UInt64Table and Pow10BigNumTable to speed up the Pow10 calculation.
 		//
@@ -754,33 +754,33 @@ internal unsafe ref partial struct BigNumber
 		return carry.Lower;
 	}
 
-	public ulong GetBlock(uint index)
+	internal ulong GetBlock(uint index)
 	{
 		Debug.Assert(index < _length);
 		return _blocks[index];
 	}
-	public ulong GetBlockOrZero(uint index)
+	internal ulong GetBlockOrZero(uint index)
 	{
 		Debug.Assert(index < MaxBlockCount);
 		return index >= _length ? 0 : _blocks[index];
 	}
 
-	public readonly int GetLength()
+	internal readonly int GetLength()
 	{
 		return (int)_length;
 	}
 
-	public readonly bool IsZero()
+	internal readonly bool IsZero()
 	{
 		return _length == 0;
 	}
 
-	public void Multiply(ulong value)
+	internal void Multiply(ulong value)
 	{
 		Multiply(ref this, value, out this);
 	}
 
-	public void Multiply(scoped ref BigNumber value)
+	internal void Multiply(scoped ref BigNumber value)
 	{
 		if (value._length <= 1)
 		{
@@ -793,7 +793,7 @@ internal unsafe ref partial struct BigNumber
 		}
 	}
 
-	public void Multiply10()
+	internal void Multiply10()
 	{
 		if (IsZero())
 		{
@@ -822,7 +822,7 @@ internal unsafe ref partial struct BigNumber
 		}
 	}
 
-	public void MultiplyPow10(uint exponent)
+	internal void MultiplyPow10(uint exponent)
 	{
 		if (exponent <= MaxUInt64Pow10)
 		{
@@ -835,7 +835,7 @@ internal unsafe ref partial struct BigNumber
 		}
 	}
 
-	public static void SetUInt32(out BigNumber result, uint value)
+	internal static void SetUInt32(out BigNumber result, uint value)
 	{
 		if (value == 0)
 		{
@@ -848,7 +848,7 @@ internal unsafe ref partial struct BigNumber
 		}
 	}
 
-	public static void SetUInt64(out BigNumber result, ulong value)
+	internal static void SetUInt64(out BigNumber result, ulong value)
 	{
 		if (value == 0)
 		{
@@ -861,7 +861,7 @@ internal unsafe ref partial struct BigNumber
 		}
 	}
 
-	public static void SetUInt128(out BigNumber result, UInt128 value)
+	internal static void SetUInt128(out BigNumber result, UInt128 value)
 	{
 		if (value.Upper == 0)
 		{
@@ -876,7 +876,7 @@ internal unsafe ref partial struct BigNumber
 		}
 	}
 
-	public static void SetUInt256(out BigNumber result, UInt256 value)
+	internal static void SetUInt256(out BigNumber result, UInt256 value)
 	{
 		if (value.Part2 == 0 && value.Part3 == 0)
 		{
@@ -907,7 +907,7 @@ internal unsafe ref partial struct BigNumber
 		}
 	}
 
-	public static void SetValue<T>(out BigNumber result, T value)
+	internal static void SetValue<T>(out BigNumber result, T value)
 		where T : unmanaged, IBinaryInteger<T>, IUnsignedNumber<T>
 	{
 		Debug.Assert(typeof(T) == typeof(ulong) || typeof(T) == typeof(UInt128) || typeof(T) == typeof(UInt256));
@@ -925,7 +925,7 @@ internal unsafe ref partial struct BigNumber
 		}
 	}
 
-	public static void SetValue(out BigNumber result, scoped ref BigNumber value)
+	internal static void SetValue(out BigNumber result, scoped ref BigNumber value)
 	{
 		int rhsLength = (int)value._length;
 		result._length = rhsLength;
@@ -936,12 +936,12 @@ internal unsafe ref partial struct BigNumber
 		v.CopyTo(r);
 	}
 
-	public static void SetZero(out BigNumber result)
+	internal static void SetZero(out BigNumber result)
 	{
 		result._length = 0;
 	}
 
-	public void ShiftLeft(uint shift)
+	internal void ShiftLeft(uint shift)
 	{
 		// Process blocks high to low so that we can safely process in place
 		int length = (int)this._length;
@@ -1015,7 +1015,7 @@ internal unsafe ref partial struct BigNumber
 		}
 	}
 
-	public uint ToUInt32()
+	internal uint ToUInt32()
 	{
 		if (_length > 0)
 		{
@@ -1025,7 +1025,7 @@ internal unsafe ref partial struct BigNumber
 		return 0;
 	}
 
-	public ulong ToUInt64()
+	internal ulong ToUInt64()
 	{
 		if (_length > 0)
 		{
@@ -1035,7 +1035,7 @@ internal unsafe ref partial struct BigNumber
 		return 0;
 	}
 
-	public UInt128 ToUInt128()
+	internal UInt128 ToUInt128()
 	{
 		if (_length > 1)
 		{
@@ -1050,7 +1050,7 @@ internal unsafe ref partial struct BigNumber
 		return UInt128.Zero;
 	}
 
-	public UInt256 ToUInt256()
+	internal UInt256 ToUInt256()
 	{
 		if (_length > 3)
 		{
@@ -1072,7 +1072,7 @@ internal unsafe ref partial struct BigNumber
 		return UInt256.Zero;
 	}
 
-	public T ToUInt<T>() where T : unmanaged, IBinaryInteger<T>, IUnsignedNumber<T>
+	internal T ToUInt<T>() where T : unmanaged, IBinaryInteger<T>, IUnsignedNumber<T>
 	{
 		Debug.Assert(typeof(T) == typeof(uint) || typeof(T) == typeof(ulong) || typeof(T) == typeof(UInt128) || typeof(T) == typeof(UInt256));
 		if (typeof(T) == typeof(UInt256))
