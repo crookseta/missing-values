@@ -31,20 +31,19 @@ internal readonly struct CurrencyFormat : INumberFormat
 		"$- #"
 	];
 
-	public static bool CanRound => true;
+	static bool INumberFormat.CanRound => true;
 
-	public static int GetDefaultDecimalDigits(NumberFormatInfo info)
+	static int INumberFormat.GetDefaultDecimalDigits(NumberFormatInfo info)
 	{
 		return info.CurrencyDecimalDigits;
 	}
 
-	public static bool IsSupported<TNumber>() where TNumber : struct, IFormattableNumber<TNumber>
+	static bool INumberFormat.IsSupported<TNumber>()
 	{
 		return true;
 	}
 
-	public static void Format<TChar>(ref ValueListBuilder<TChar> vlb, ref NumberInfo number, int nMaxDigits, bool isUpper, NumberFormatInfo info)
-		where TChar : unmanaged, IUtfCharacter<TChar>
+	static void INumberFormat.Format<TChar>(ref ValueListBuilder<TChar> vlb, ref NumberInfo number, int nMaxDigits, bool isUpper, NumberFormatInfo info)
 	{
 		ReadOnlySpan<char> fmt = number.IsNegative ?
 			NegCurrencyFormats[(info.CurrencyNegativePattern)] :
@@ -80,33 +79,26 @@ internal readonly struct CurrencyFormat : INumberFormat
 		}
 	}
 
-	public static bool TryParse<TNumber, TChar>(ReadOnlySpan<TChar> s, NumberStyles styles, IFormatProvider? provider, [MaybeNullWhen(false)] out TNumber result)
-		where TNumber : struct, IFormattableNumber<TNumber>
-		where TChar : unmanaged, IUtfCharacter<TChar>
-	{
-		throw new NotImplementedException();
-	}
-
-	public static int GetRoundingPosition(ref NumberInfo number, ref int nMaxDigits)
+	static int INumberFormat.GetRoundingPosition(ref NumberInfo number, ref int nMaxDigits)
 	{
 		return number.Scale + nMaxDigits;
 	}
 }
 internal readonly struct EngineeringFormat : INumberFormat
 {
-	public static bool CanRound => true;
+	static bool INumberFormat.CanRound => true;
 
-	public static int GetDefaultDecimalDigits(NumberFormatInfo info)
+	static int INumberFormat.GetDefaultDecimalDigits(NumberFormatInfo info)
 	{
 		return 6;
 	}
 
-	public static bool IsSupported<TNumber>() where TNumber : struct, IFormattableNumber<TNumber>
+	static bool INumberFormat.IsSupported<TNumber>()
 	{
 		return TNumber.IsBinaryInteger();
 	}
 
-	public static void Format<TChar>(ref ValueListBuilder<TChar> vlb, ref NumberInfo number, int nMaxDigits, bool isUpper, NumberFormatInfo info) where TChar : unmanaged, IUtfCharacter<TChar>
+	static void INumberFormat.Format<TChar>(ref ValueListBuilder<TChar> vlb, ref NumberInfo number, int nMaxDigits, bool isUpper, NumberFormatInfo info)
 	{
 		Span<TChar> numberDecimalSeparator = stackalloc TChar[TChar.GetLength(info.NumberDecimalSeparator)];
 
@@ -140,33 +132,26 @@ internal readonly struct EngineeringFormat : INumberFormat
 		NumberFormatter.FormatExponent(ref vlb, info, e, isUpper ? 'E' : 'e', 3, true);
 	}
 
-	public static bool TryParse<TNumber, TChar>(ReadOnlySpan<TChar> s, NumberStyles styles, IFormatProvider? provider, [MaybeNullWhen(false)] out TNumber result)
-		where TNumber : struct, IFormattableNumber<TNumber>
-		where TChar : unmanaged, IUtfCharacter<TChar>
-	{
-		throw new NotImplementedException();
-	}
-
-	public static int GetRoundingPosition(ref NumberInfo number, ref int nMaxDigits)
+	static int INumberFormat.GetRoundingPosition(ref NumberInfo number, ref int nMaxDigits)
 	{
 		return ++nMaxDigits;
 	}
 }
 internal readonly struct FixedFormat : INumberFormat
 {
-	public static bool CanRound => true;
+	static bool INumberFormat.CanRound => true;
 
-	public static int GetDefaultDecimalDigits(NumberFormatInfo info)
+	static int INumberFormat.GetDefaultDecimalDigits(NumberFormatInfo info)
 	{
 		return info.NumberDecimalDigits;
 	}
 
-	public static bool IsSupported<TNumber>() where TNumber : struct, IFormattableNumber<TNumber>
+	static bool INumberFormat.IsSupported<TNumber>()
 	{
 		return true;
 	}
 
-	public static void Format<TChar>(ref ValueListBuilder<TChar> vlb, ref NumberInfo number, int nMaxDigits, bool isUpper, NumberFormatInfo info) where TChar : unmanaged, IUtfCharacter<TChar>
+	static void INumberFormat.Format<TChar>(ref ValueListBuilder<TChar> vlb, ref NumberInfo number, int nMaxDigits, bool isUpper, NumberFormatInfo info)
 	{
 		if (number.IsNegative)
 		{
@@ -185,14 +170,7 @@ internal readonly struct FixedFormat : INumberFormat
 		NumberFormatter.FormatGroupedNumeric(ref vlb, ref number, nMaxDigits, null, numberDecimalSeparator, numberGroupSeparator);
 	}
 
-	public static bool TryParse<TNumber, TChar>(ReadOnlySpan<TChar> s, NumberStyles styles, IFormatProvider? provider, [MaybeNullWhen(false)] out TNumber result)
-		where TNumber : struct, IFormattableNumber<TNumber>
-		where TChar : unmanaged, IUtfCharacter<TChar>
-	{
-		throw new NotImplementedException();
-	}
-
-	public static int GetRoundingPosition(ref NumberInfo number, ref int nMaxDigits)
+	static int INumberFormat.GetRoundingPosition(ref NumberInfo number, ref int nMaxDigits)
 	{
 		return number.Scale + nMaxDigits;
 	}
@@ -204,19 +182,19 @@ internal readonly struct NumericFormat : INumberFormat
 		"(#)", "-#", "- #", "#-", "# -",
 	];
 
-	public static bool CanRound => true;
+	static bool INumberFormat.CanRound => true;
 
-	public static int GetDefaultDecimalDigits(NumberFormatInfo info)
+	static int INumberFormat.GetDefaultDecimalDigits(NumberFormatInfo info)
 	{
 		return info.NumberDecimalDigits;
 	}
 
-	public static bool IsSupported<TNumber>() where TNumber : struct, IFormattableNumber<TNumber>
+	static bool INumberFormat.IsSupported<TNumber>()
 	{
 		return true;
 	}
 
-	public static void Format<TChar>(ref ValueListBuilder<TChar> vlb, ref NumberInfo number, int nMaxDigits, bool isUpper, NumberFormatInfo info) where TChar : unmanaged, IUtfCharacter<TChar>
+	static void INumberFormat.Format<TChar>(ref ValueListBuilder<TChar> vlb, ref NumberInfo number, int nMaxDigits, bool isUpper, NumberFormatInfo info)
 	{
 		ReadOnlySpan<char> fmt = number.IsNegative ?
 			NegNumberFormats[(info.NumberNegativePattern)] :
@@ -248,14 +226,7 @@ internal readonly struct NumericFormat : INumberFormat
 		}
 	}
 
-	public static bool TryParse<TNumber, TChar>(ReadOnlySpan<TChar> s, NumberStyles styles, IFormatProvider? provider, [MaybeNullWhen(false)] out TNumber result)
-		where TNumber : struct, IFormattableNumber<TNumber>
-		where TChar : unmanaged, IUtfCharacter<TChar>
-	{
-		throw new NotImplementedException();
-	}
-
-	public static int GetRoundingPosition(ref NumberInfo number, ref int nMaxDigits)
+	static int INumberFormat.GetRoundingPosition(ref NumberInfo number, ref int nMaxDigits)
 	{
 		return number.Scale + nMaxDigits;
 	}

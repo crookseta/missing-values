@@ -14,14 +14,14 @@ namespace MissingValues.Internals
 		private T[]? _arrayFromPool;
 		private int _pos;
 
-		public ValueListBuilder(Span<T> initialSpan)
+		internal ValueListBuilder(Span<T> initialSpan)
 		{
 			_span = initialSpan;
 			_arrayFromPool = null;
 			_pos = 0;
 		}
 
-		public int Length
+		internal int Length
 		{
 			get => _pos;
 			set
@@ -32,7 +32,7 @@ namespace MissingValues.Internals
 			}
 		}
 
-		public ref T this[int index]
+		internal ref T this[int index]
 		{
 			get
 			{
@@ -42,7 +42,7 @@ namespace MissingValues.Internals
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public void Append(T item)
+		internal void Append(T item)
 		{
 			int pos = _pos;
 
@@ -60,7 +60,7 @@ namespace MissingValues.Internals
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public void Append(scoped ReadOnlySpan<T> source)
+		internal void Append(scoped ReadOnlySpan<T> source)
 		{
 			int pos = _pos;
 			Span<T> span = _span;
@@ -87,7 +87,7 @@ namespace MissingValues.Internals
 			_pos += source.Length;
 		}
 
-		public void Insert(int index, scoped ReadOnlySpan<T> source)
+		internal void Insert(int index, scoped ReadOnlySpan<T> source)
 		{
 			Debug.Assert(index == 0, "Implementation currently only supports index == 0");
 
@@ -102,7 +102,7 @@ namespace MissingValues.Internals
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public Span<T> AppendSpan(int length)
+		internal Span<T> AppendSpan(int length)
 		{
 			Debug.Assert(length >= 0);
 
@@ -139,12 +139,12 @@ namespace MissingValues.Internals
 			_pos = pos + 1;
 		}
 
-		public ReadOnlySpan<T> AsSpan()
+		internal ReadOnlySpan<T> AsSpan()
 		{
 			return _span.Slice(0, _pos);
 		}
 
-		public bool TryCopyTo(Span<T> destination, out int itemsWritten)
+		internal bool TryCopyTo(Span<T> destination, out int itemsWritten)
 		{
 			if (_span.Slice(0, _pos).TryCopyTo(destination))
 			{
@@ -157,10 +157,10 @@ namespace MissingValues.Internals
 		}
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		public void Dispose()
+		internal void Dispose()
 		{
 			T[]? toReturn = _arrayFromPool;
-			if (toReturn != null)
+			if (toReturn is not null)
 			{
 				_arrayFromPool = null;
 				ArrayPool<T>.Shared.Return(toReturn);
@@ -202,7 +202,7 @@ namespace MissingValues.Internals
 			}
 		}
 
-		public ref T GetFirstReference()
+		internal ref T GetFirstReference()
 		{
 			return ref MemoryMarshal.GetReference(_span);
 		}

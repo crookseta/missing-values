@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using MissingValues.Primitives;
 
 namespace MissingValues
 {
@@ -17,7 +18,7 @@ namespace MissingValues
 		}
 
 		[StructLayout(LayoutKind.Sequential)]
-		public struct Word
+		internal struct Word
 		{
 #if BIGENDIAN
 			internal ushort se;
@@ -32,7 +33,7 @@ namespace MissingValues
 #endif
 		}
 		[StructLayout(LayoutKind.Sequential)]
-		public struct Word64
+		internal struct Word64
 		{
 #if BIGENDIAN
 			internal ulong hi;
@@ -46,7 +47,7 @@ namespace MissingValues
 
 	public static partial class MathQ
 	{
-		internal const int MaxRoundingDigits = 34;
+		private const int MaxRoundingDigits = 34;
 
 		private static Quad Epsilon => new Quad(0x406F_0000_0000_0000, 0x0000_0000_0000_0000);
 		private static Quad INVPIO2 => new Quad(0x3FFE_45F3_06DC_9C88, 0x2A53_F84E_AFA3_EA6A);
@@ -180,7 +181,7 @@ namespace MissingValues
 		/// <returns>A quadruple-precision floating-point number, x, such that 0 ≤ x ≤ <seealso cref="Quad.MaxValue"/>.</returns>
 		public static Quad Abs(Quad x)
 		{
-			return Quad.UInt128BitsToQuad(Quad.QuadToUInt128Bits(x) & Quad.InvertedSignMask);
+			return BinaryOperations.UInt128BitsToQuad(BinaryOperations.QuadToUInt128Bits(x) & Quad.InvertedSignMask);
 		}
 		/// <summary>
 		/// Returns the angle whose cosine is the specified number.
@@ -567,7 +568,7 @@ namespace MissingValues
 		/// <returns>The largest value that compares less than <paramref name="x"/>.</returns>
 		public static Quad BitDecrement(Quad x)
 		{
-			UInt128 bits = Quad.QuadToUInt128Bits(x);
+			UInt128 bits = BinaryOperations.QuadToUInt128Bits(x);
 
 			if ((bits & Quad.PositiveInfinityBits) >= Quad.PositiveInfinityBits)
 			{
@@ -587,7 +588,7 @@ namespace MissingValues
 			// Positive values need to be decremented
 
 			bits += unchecked((UInt128)(((Int128)bits < Int128.Zero) ? Int128.One : Int128.NegativeOne));
-			return Quad.UInt128BitsToQuad(bits);
+			return BinaryOperations.UInt128BitsToQuad(bits);
 		}
 		/// <summary>
 		/// Returns the smallest value that compares greater than a specified value.
@@ -596,7 +597,7 @@ namespace MissingValues
 		/// <returns>The smallest value that compares greater than <paramref name="x"/>.</returns>
 		public static Quad BitIncrement(Quad x)
 		{
-			UInt128 bits = Quad.QuadToUInt128Bits(x);
+			UInt128 bits = BinaryOperations.QuadToUInt128Bits(x);
 
 			if ((bits & Quad.PositiveInfinityBits) >= Quad.PositiveInfinityBits)
 			{
@@ -616,7 +617,7 @@ namespace MissingValues
 			// Positive values need to be incremented
 
 			bits += unchecked((UInt128)(((Int128)bits < Int128.Zero) ? Int128.NegativeOne : Int128.One));
-			return Quad.UInt128BitsToQuad(bits);
+			return BinaryOperations.UInt128BitsToQuad(bits);
 		}
 		/// <summary>
 		/// Returns the cube root of a specified number.
@@ -672,7 +673,7 @@ namespace MissingValues
 					break;
 			}
 
-			Quad v = Quad.UInt128BitsToQuad(new UInt128(((ulong)(sign | (0x3FFF + e / 3)) << 48), 0));
+			Quad v = BinaryOperations.UInt128BitsToQuad(new UInt128(((ulong)(sign | (0x3FFF + e / 3)) << 48), 0));
 
 			/*
 			 * The following is the guts of s_cbrtf, with the handling of
@@ -714,7 +715,7 @@ namespace MissingValues
 			r = x / s;              // error <= 0.5 ulps; |r| < |t|
 			w = t + t;              // t+t is exact
 			r = (r - t) / (w + r);  // r-t is exact; w+r ~= 3*t
-			t = t + t * r;          // error <= 0.5 + 0.5/3 + epsilon
+			t += t * r;          // error <= 0.5 + 0.5/3 + epsilon
 
 			return t * v;
 		}
@@ -789,15 +790,15 @@ namespace MissingValues
 		{
 			// This method is required to work for all inputs,
 			// including NaN, so we operate on the raw bits.
-			UInt128 xbits = Quad.QuadToUInt128Bits(x);
-			UInt128 ybits = Quad.QuadToUInt128Bits(y);
+			UInt128 xbits = BinaryOperations.QuadToUInt128Bits(x);
+			UInt128 ybits = BinaryOperations.QuadToUInt128Bits(y);
 
 			// Remove the sign from y, and remove everything but the sign from x
 			xbits &= Quad.InvertedSignMask;
 			ybits &= Quad.SignMask;
 
 			// Simply OR them to get the correct sign
-			return Quad.UInt128BitsToQuad(xbits | ybits);
+			return BinaryOperations.UInt128BitsToQuad(xbits | ybits);
 		}
 
 		private static int __rem_pio2l(Quad x, Span<Quad> y)
@@ -1264,8 +1265,8 @@ namespace MissingValues
 
 			var tbl = Constants.Exp.Table[n2];
 			dr = (double)r;
-			q = r2 + r * r * (Constants.Exp.A2 + r * (Constants.Exp.A3 + r * (Constants.Exp.A4 + r * (Constants.Exp.A5 + r * (Constants.Exp.A6 +
-				dr * (Constants.Exp.A7 + dr * (Constants.Exp.A8 + dr * (Constants.Exp.A9 + dr * Constants.Exp.A10))))))));
+			q = r2 + r * r * (Constants.Exp.A2 + r * (Constants.Exp.A3 + r * (Constants.Exp.A4 + r * (Constants.Exp.A5 + r * 
+				(Constants.Exp.A6 + dr * (Constants.Exp.A7 + dr * (Constants.Exp.A8 + dr * (Constants.Exp.A9 + dr * Constants.Exp.A10))))))));
 			t = tbl.lo + tbl.hi;
 			hip = tbl.hi;
 			lop = tbl.lo + t * (q + r1);
@@ -1315,9 +1316,9 @@ namespace MissingValues
 		/// <returns>(x * y) + z, rounded as one ternary operation.</returns>
 		public static Quad FusedMultiplyAdd(Quad x, Quad y, Quad z)
 		{
-			UInt128 result = BitHelper.MulAddQuadBits(Quad.QuadToUInt128Bits(x), Quad.QuadToUInt128Bits(y), Quad.QuadToUInt128Bits(z));
+			UInt128 result = BitHelper.MulAddQuadBits(BinaryOperations.QuadToUInt128Bits(x), BinaryOperations.QuadToUInt128Bits(y), BinaryOperations.QuadToUInt128Bits(z));
 
-			return Quad.UInt128BitsToQuad(result);
+			return BinaryOperations.UInt128BitsToQuad(result);
 		}
 		/// <summary>
 		/// Returns the remainder resulting from the division of a specified number by another specified number.
@@ -1327,12 +1328,12 @@ namespace MissingValues
 		/// <returns>A number equal to <paramref name="x"/> - (<paramref name="y"/> Q), where Q is the quotient of <paramref name="x"/> / <paramref name="y"/> rounded to the nearest integer</returns>
 		public static Quad IEEERemainder(Quad x, Quad y)
 		{
-			UInt128 uiA = Quad.QuadToUInt128Bits(x);
+			UInt128 uiA = BinaryOperations.QuadToUInt128Bits(x);
 			bool signA = Quad.IsNegative(x);
 			short expA = (short)Quad.ExtractBiasedExponentFromBits(uiA);
 			UInt128 sigA = Quad.ExtractTrailingSignificandFromBits(uiA);
 
-			UInt128 uiB = Quad.QuadToUInt128Bits(y);
+			UInt128 uiB = BinaryOperations.QuadToUInt128Bits(y);
 			short expB = (short)Quad.ExtractBiasedExponentFromBits(uiB);
 			UInt128 sigB = Quad.ExtractTrailingSignificandFromBits(uiB);
 
@@ -1434,7 +1435,7 @@ namespace MissingValues
 				++q;
 				rem -= sigB;
 			} while ((rem & Quad.SignMask) == UInt128.Zero);
-		selectRem:
+			selectRem:
 			UInt128 meanRem = rem + altRem;
 			if (((meanRem & Quad.SignMask) != UInt128.Zero)
 				|| ((meanRem == UInt128.Zero) && ((q & 1) != 0)))
@@ -1448,7 +1449,7 @@ namespace MissingValues
 				rem = -rem;
 			}
 			UInt128 resultBits = BitHelper.NormalizeRoundPackQuad(signRem, expB - 1, rem);
-			return Quad.UInt128BitsToQuad(resultBits);
+			return BinaryOperations.UInt128BitsToQuad(resultBits);
 		}
 		/// <summary>
 		/// Returns the base 2 integer logarithm of a specified number.
@@ -1501,7 +1502,7 @@ namespace MissingValues
 
 			rp = default;
 			Quad d, valHi, valLo;
-			double dd;
+			Quad dd;
 			double dk;
 			ulong lx;
 			int i, k;
@@ -1557,9 +1558,9 @@ namespace MissingValues
 
 			dd = (double)d;
 			valLo = d * d * d * (Constants.Log.P3 +
-		d * (Constants.Log.P4 + d * (Constants.Log.P5 + d * (Constants.Log.P6 + d * (Constants.Log.P7 + d * (Constants.Log.P8 +
-		dd * (Constants.Log.P9 + dd * (Constants.Log.P10 + dd * (Constants.Log.P11 + dd * (Constants.Log.P12 + dd * (Constants.Log.P13 +
-		dd * Constants.Log.P14))))))))))) + (Constants.Log.FLo(i) + dk * Constants.Log.LN2LO) + d * d * Constants.Log.P2;
+				d * (Constants.Log.P4 + d * (Constants.Log.P5 + d * (Constants.Log.P6 + d * (Constants.Log.P7 + d * (Constants.Log.P8 +
+				dd * (Constants.Log.P9 + dd * (Constants.Log.P10 + dd * (Constants.Log.P11 + dd * (Constants.Log.P12 + dd * 
+				(Constants.Log.P13 + dd * Constants.Log.P14))))))))))) + (Constants.Log.FLo(i) + dk * Constants.Log.LN2LO) + d * d * Constants.Log.P2;
 			valHi = d;
 
 			Sum3(ref valHi, ref valLo, Constants.Log.FHi(i) + dk * Constants.Log.LN2HI);
@@ -1586,12 +1587,12 @@ namespace MissingValues
 				return newBase; // IEEE 754-2008: NaN payload must be preserved
 			}
 
-			if (newBase == 1)
+			if (newBase == Quad.One)
 			{
 				return Quad.NaN;
 			}
 
-			if ((a != 1) && ((newBase == 0) || Quad.IsPositiveInfinity(newBase)))
+			if (a != Quad.One && (newBase == Quad.Zero || Quad.IsPositiveInfinity(newBase)))
 			{
 				return Quad.NaN;
 			}
@@ -2154,7 +2155,7 @@ namespace MissingValues
 
 			// Uses Newton Raphton Series to find 1/y
 			Quad x0;
-			var bits = Quad.ExtractFromBits(Quad.QuadToUInt128Bits(x));
+			var bits = Quad.ExtractFromBits(BinaryOperations.QuadToUInt128Bits(x));
 
 			// we save the original sign and exponent for later
 			bool sign = bits.sign;
@@ -2186,7 +2187,7 @@ namespace MissingValues
 				x0 = x1;
 			}
 
-			bits = Quad.ExtractFromBits(Quad.QuadToUInt128Bits(x0));
+			bits = Quad.ExtractFromBits(BinaryOperations.QuadToUInt128Bits(x0));
 
 			bits.exponent -= (ushort)(exp - Quad.ExponentBias);
 
@@ -2210,7 +2211,7 @@ namespace MissingValues
 			// source: berkeley-softfloat-3/source/f128_roundToInt.c
 
 			UInt128 uiZ;
-			UInt128 bits = Quad.QuadToUInt128Bits(x);
+			UInt128 bits = BinaryOperations.QuadToUInt128Bits(x);
 			ulong uiZ64 = x._upper, uiZ0 = x._lower, roundBitsMask;
 			ulong lastBitMask64, lastBitMask0;
 			ushort biasedExponent = Quad.ExtractBiasedExponentFromBits(bits);
@@ -2264,7 +2265,7 @@ namespace MissingValues
 					}
 					uiZ = bits & new UInt128(BitHelper.PackToQuadUI64(true, 0, 0), 0);
 
-					return Quad.UInt128BitsToQuad(uiZ);
+					return BinaryOperations.UInt128BitsToQuad(uiZ);
 				}
 
 				uiZ = bits & new UInt128(0xFFFF_FFFF_FFFF_FFFF, 0x0);
@@ -2279,7 +2280,7 @@ namespace MissingValues
 				lastBitMask0 = 0;
 			}
 
-			return Quad.UInt128BitsToQuad(uiZ);
+			return BinaryOperations.UInt128BitsToQuad(uiZ);
 		}
 		/// <summary>
 		/// Rounds a quadruple-precision floating-point value to a specified number of fractional digits, and rounds midpoint values to the nearest even number.
@@ -2561,7 +2562,7 @@ namespace MissingValues
 			// This is based on the 'Berkeley SoftFloat Release 3e' algorithm
 			// source: berkeley-softfloat-3/source/f128_sqrt.c
 
-			UInt128 bits = Quad.QuadToUInt128Bits(x);
+			UInt128 bits = BinaryOperations.QuadToUInt128Bits(x);
 			bool signA = Quad.IsNegative(x);
 			int exp = Quad.ExtractBiasedExponentFromBits(bits);
 			UInt128 sig = Quad.ExtractTrailingSignificandFromBits(bits);
@@ -2701,7 +2702,7 @@ namespace MissingValues
 				}
 			}
 
-			return Quad.UInt128BitsToQuad(BitHelper.RoundPackToQuad(false, expZ, sigZ, sigZExtra));
+			return BinaryOperations.UInt128BitsToQuad(BitHelper.RoundPackToQuad(false, expZ, sigZ, sigZExtra));
 		}
 		/// <summary>
 		/// Returns the tangent of the specified angle.
@@ -2867,7 +2868,7 @@ namespace MissingValues
 			}
 			Quad toint = Epsilon;
 			y = x + toint - toint - x;
-			if (y > 0)
+			if (y > Quad.Zero)
 			{
 				y--;
 			}

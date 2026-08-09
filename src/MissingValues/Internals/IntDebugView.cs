@@ -9,20 +9,20 @@ namespace MissingValues.Internals
 	{
 		private readonly UInt64Wrapper[] _array;
 
-		public IntDebugView(T integer)
+		internal IntDebugView(T integer)
 		{
 			_array = MemoryMarshal.CreateReadOnlySpan(ref Unsafe.As<T, UInt64Wrapper>(ref integer), Unsafe.SizeOf<T>() / sizeof(ulong)).ToArray();
 		}
 
 		[DebuggerBrowsable(DebuggerBrowsableState.RootHidden)]
-		public UInt64Wrapper[] Segments => _array;
+		internal UInt64Wrapper[] Segments => _array;
 
-		[DebuggerDisplay($"{{{nameof(ToString)}(),nq}}")]
-		public readonly struct UInt64Wrapper
+		[DebuggerDisplay($"{{{nameof(Display)}(),nq}}")]
+		internal readonly struct UInt64Wrapper
 		{
 			private readonly ulong _value;
 
-			public override string ToString()
+			internal string Display()
 			{
 				return _value.ToString("X16");
 			}

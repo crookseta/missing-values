@@ -13,32 +13,32 @@ internal static partial class NumberFormatter
 		where TSelf : struct, IBinaryFloatingPointDecimalFormat<TSelf, TSignificand>
 		where TSignificand : unmanaged, IBinaryInteger<TSignificand>, IUnsignedNumber<TSignificand>
 	{
-		abstract static ReadOnlySpan<Ryu.CachePower> GenericPow5Table { get; }
-		abstract static ReadOnlySpan<Ryu.CachePowerSplit> GenericPow5Split { get; }
-		abstract static ReadOnlySpan<Ryu.CachePowerSplit> GenericPow5InvSplit { get; }
-		abstract static ReadOnlySpan<ulong> Pow5Errors { get; }
-		abstract static ReadOnlySpan<ulong> Pow5InvErrors { get; }
-		abstract static uint Pow5InvBitCount { get; }
-		abstract static uint Pow5BitCount { get; }
-		abstract static uint Pow5TableSize { get; }
-		abstract static TSignificand Two { get; }
-		abstract static TSignificand Four { get; }
-		abstract static TSignificand Five { get; }
-		abstract static TSignificand Ten { get; }
+		static abstract ReadOnlySpan<Ryu.CachePower> GenericPow5Table { get; }
+		static abstract ReadOnlySpan<Ryu.CachePowerSplit> GenericPow5Split { get; }
+		static abstract ReadOnlySpan<Ryu.CachePowerSplit> GenericPow5InvSplit { get; }
+		static abstract ReadOnlySpan<ulong> Pow5Errors { get; }
+		static abstract ReadOnlySpan<ulong> Pow5InvErrors { get; }
+		static abstract uint Pow5InvBitCount { get; }
+		static abstract uint Pow5BitCount { get; }
+		static abstract uint Pow5TableSize { get; }
+		static abstract TSignificand Two { get; }
+		static abstract TSignificand Four { get; }
+		static abstract TSignificand Five { get; }
+		static abstract TSignificand Ten { get; }
 
-		abstract static TSelf Build(in TSignificand mantissa, int exponent, bool sign);
-		abstract static uint Pow5Factor(TSignificand value);
-		abstract static uint ToUInt32(in TSignificand value);
-		abstract static TSignificand FromUInt32(uint value);
-		virtual static bool MultipleOfPowerOf2(in TSignificand value, uint p)
+		static abstract TSelf Build(in TSignificand mantissa, int exponent, bool sign);
+		static abstract uint Pow5Factor(TSignificand value);
+		static abstract uint ToUInt32(in TSignificand value);
+		static abstract TSignificand FromUInt32(uint value);
+		static virtual bool MultipleOfPowerOf2(in TSignificand value, uint p)
 		{
 			return (value & (((TSignificand.One) << (int)p) - TSignificand.One)) == TSignificand.Zero;
 		}
-		virtual static bool MultipleOfPowerOf5(in TSignificand value, uint p)
+		static virtual bool MultipleOfPowerOf5(in TSignificand value, uint p)
 		{
 			return TSelf.Pow5Factor(value) >= p;
 		}
-		abstract static TSignificand MulShift(TSignificand m, ReadOnlySpan<ulong> mul, int j);
+		static abstract TSignificand MulShift(TSignificand m, ReadOnlySpan<ulong> mul, int j);
 
 		bool Sign { get; }
 		int Exponent { get; }
@@ -58,14 +58,14 @@ internal static partial class NumberFormatter
 		{
 			private ulong _s0;
 
-			public CachePower(ulong S0, ulong S1)
+			internal CachePower(ulong S0, ulong S1)
 			{
 				this[0] = S0;
 				this[1] = S1;
 				this[2] = default;
 				this[3] = default;
 			}
-			public CachePower(ulong S0, ulong S1, ulong S2, ulong S3)
+			internal CachePower(ulong S0, ulong S1, ulong S2, ulong S3)
 			{
 				this[0] = S0;
 				this[1] = S1;
@@ -78,7 +78,7 @@ internal static partial class NumberFormatter
 		{
 			private ulong _s0;
 
-			public CachePowerSplit(ulong S0, ulong S1, ulong S2, ulong S3)
+			internal CachePowerSplit(ulong S0, ulong S1, ulong S2, ulong S3)
 			{
 				this[0] = S0;
 				this[1] = S1;
@@ -89,7 +89,7 @@ internal static partial class NumberFormatter
 				this[6] = default;
 				this[7] = default;
 			}
-			public CachePowerSplit(ulong S0, ulong S1, ulong S2, ulong S3, ulong S4, ulong S5, ulong S6, ulong S7)
+			internal CachePowerSplit(ulong S0, ulong S1, ulong S2, ulong S3, ulong S4, ulong S5, ulong S6, ulong S7)
 			{
 				this[0] = S0;
 				this[1] = S1;
@@ -105,7 +105,7 @@ internal static partial class NumberFormatter
 		private record struct FloatingDecimal<TSignificand>(TSignificand Mantissa, int Exponent, bool Sign) : IBinaryFloatingPointDecimalFormat<FloatingDecimal<TSignificand>, TSignificand>
 			where TSignificand : unmanaged, IBinaryInteger<TSignificand>, IUnsignedNumber<TSignificand>
 		{
-			public static ReadOnlySpan<CachePower> GenericPow5Table
+			static ReadOnlySpan<CachePower> IBinaryFloatingPointDecimalFormat<FloatingDecimal<TSignificand>, TSignificand>.GenericPow5Table
 			{
 				get
 				{
@@ -120,7 +120,7 @@ internal static partial class NumberFormatter
 				}
 			}
 
-			public static ReadOnlySpan<CachePowerSplit> GenericPow5Split
+			static ReadOnlySpan<CachePowerSplit> IBinaryFloatingPointDecimalFormat<FloatingDecimal<TSignificand>, TSignificand>.GenericPow5Split
 			{
 				get
 				{
@@ -135,7 +135,7 @@ internal static partial class NumberFormatter
 				}
 			}
 
-			public static ReadOnlySpan<CachePowerSplit> GenericPow5InvSplit
+			static ReadOnlySpan<CachePowerSplit> IBinaryFloatingPointDecimalFormat<FloatingDecimal<TSignificand>, TSignificand>.GenericPow5InvSplit
 			{
 				get
 				{
@@ -150,7 +150,7 @@ internal static partial class NumberFormatter
 				}
 			}
 
-			public static ReadOnlySpan<ulong> Pow5Errors
+			static ReadOnlySpan<ulong> IBinaryFloatingPointDecimalFormat<FloatingDecimal<TSignificand>, TSignificand>.Pow5Errors
 			{
 				get
 				{
@@ -165,7 +165,7 @@ internal static partial class NumberFormatter
 				}
 			}
 
-			public static ReadOnlySpan<ulong> Pow5InvErrors
+			static ReadOnlySpan<ulong> IBinaryFloatingPointDecimalFormat<FloatingDecimal<TSignificand>, TSignificand>.Pow5InvErrors
 			{
 				get
 				{
@@ -180,7 +180,7 @@ internal static partial class NumberFormatter
 				}
 			}
 
-			public static uint Pow5InvBitCount
+			static uint IBinaryFloatingPointDecimalFormat<FloatingDecimal<TSignificand>, TSignificand>.Pow5InvBitCount
 			{
 				get
 				{
@@ -195,7 +195,7 @@ internal static partial class NumberFormatter
 				}
 			}
 
-			public static uint Pow5BitCount
+			static uint IBinaryFloatingPointDecimalFormat<FloatingDecimal<TSignificand>, TSignificand>.Pow5BitCount
 			{
 				get
 				{
@@ -210,7 +210,7 @@ internal static partial class NumberFormatter
 				}
 			}
 
-			public static uint Pow5TableSize
+			static uint IBinaryFloatingPointDecimalFormat<FloatingDecimal<TSignificand>, TSignificand>.Pow5TableSize
 			{
 				get
 				{
@@ -225,25 +225,25 @@ internal static partial class NumberFormatter
 				}
 			}
 
-			public static TSignificand Two => TSignificand.CreateTruncating(2);
+			static TSignificand IBinaryFloatingPointDecimalFormat<FloatingDecimal<TSignificand>, TSignificand>.Two => TSignificand.CreateTruncating(2);
 
-			public static TSignificand Four => TSignificand.CreateTruncating(4);
+			static TSignificand IBinaryFloatingPointDecimalFormat<FloatingDecimal<TSignificand>, TSignificand>.Four => TSignificand.CreateTruncating(4);
 
-			public static TSignificand Five => TSignificand.CreateTruncating(5);
+			static TSignificand IBinaryFloatingPointDecimalFormat<FloatingDecimal<TSignificand>, TSignificand>.Five => TSignificand.CreateTruncating(5);
 
-			public static TSignificand Ten => TSignificand.CreateTruncating(10);
+			static TSignificand IBinaryFloatingPointDecimalFormat<FloatingDecimal<TSignificand>, TSignificand>.Ten => TSignificand.CreateTruncating(10);
 
-			public static FloatingDecimal<TSignificand> Build(in TSignificand mantissa, int exponent, bool sign)
+			static FloatingDecimal<TSignificand> IBinaryFloatingPointDecimalFormat<FloatingDecimal<TSignificand>, TSignificand>.Build(in TSignificand mantissa, int exponent, bool sign)
 			{
 				return new(mantissa, exponent, sign);
 			}
 
-			public static TSignificand FromUInt32(uint value)
+			static TSignificand IBinaryFloatingPointDecimalFormat<FloatingDecimal<TSignificand>, TSignificand>.FromUInt32(uint value)
 			{
 				return TSignificand.CreateChecked(value);
 			}
 
-			public static TSignificand MulShift(TSignificand m, ReadOnlySpan<ulong> mul, int j)
+			static TSignificand IBinaryFloatingPointDecimalFormat<FloatingDecimal<TSignificand>, TSignificand>.MulShift(TSignificand m, ReadOnlySpan<ulong> mul, int j)
 			{
 				if (typeof(TSignificand) == typeof(UInt128))
 				{
@@ -275,9 +275,9 @@ internal static partial class NumberFormatter
 				}
 			}
 
-			public static uint Pow5Factor(TSignificand value)
+			static uint IBinaryFloatingPointDecimalFormat<FloatingDecimal<TSignificand>, TSignificand>.Pow5Factor(TSignificand value)
 			{
-				var five = Five;
+				var five = TSignificand.CreateTruncating(5);
 				for (uint i = 0; value > TSignificand.Zero; ++i)
 				{
 					(value, TSignificand rem) = TSignificand.DivRem(value, five);
@@ -290,7 +290,7 @@ internal static partial class NumberFormatter
 				return 0;
 			}
 
-			public static uint ToUInt32(in TSignificand value)
+			static uint IBinaryFloatingPointDecimalFormat<FloatingDecimal<TSignificand>, TSignificand>.ToUInt32(in TSignificand value)
 			{
 				return uint.CreateTruncating(value);
 			}
@@ -298,7 +298,7 @@ internal static partial class NumberFormatter
 
 		private const int FDExceptionalExponent = 0x7FFF_FFFF;
 
-		public static void Format<TFloat, TSignificand, TChar>(in TFloat value, scoped Span<TChar> destination, out int charsWritten, ReadOnlySpan<char> format, out bool isExceptional, NumberFormatInfo? info, int? precision = null)
+		internal static void Format<TFloat, TSignificand, TChar>(in TFloat value, scoped Span<TChar> destination, out int charsWritten, ReadOnlySpan<char> format, out bool isExceptional, NumberFormatInfo? info, int? precision = null)
 			where TFloat : struct, IBinaryFloatingPointInfo<TFloat, TSignificand>
 			where TSignificand : unmanaged, IBinaryInteger<TSignificand>, IUnsignedNumber<TSignificand>
 			where TChar : unmanaged, IUtfCharacter<TChar>
@@ -315,7 +315,7 @@ internal static partial class NumberFormatter
 			var fd = FloatToDecimal<TFloat, FloatingDecimal<TSignificand>, TSignificand>(in value, digits);
 			charsWritten = ToCharSpan<FloatingDecimal<TSignificand>, TSignificand, TChar>(in fd, destination, format, info is null ? NumberFormatInfo.CurrentInfo : info!, out isExceptional);
 		}
-		public static void Format<TFloat, TSignificand>(in TFloat value, scoped ref NumberInfo number, out bool isExceptional)
+		internal static void Format<TFloat, TSignificand>(in TFloat value, scoped ref NumberInfo number, out bool isExceptional)
 			where TFloat : struct, IBinaryFloatingPointInfo<TFloat, TSignificand>
 			where TSignificand : unmanaged, IBinaryInteger<TSignificand>, IUnsignedNumber<TSignificand>
 		{
@@ -435,7 +435,7 @@ internal static partial class NumberFormatter
 			return index;
 		}
 
-		public static TDecimal FloatToDecimal<TFloat, TDecimal, TSignificand>(in TFloat value, int digits)
+		internal static TDecimal FloatToDecimal<TFloat, TDecimal, TSignificand>(in TFloat value, int digits)
 			where TFloat : struct, IBinaryFloatingPointInfo<TFloat, TSignificand>
 			where TDecimal : struct, IBinaryFloatingPointDecimalFormat<TDecimal, TSignificand>
 			where TSignificand : unmanaged, IBinaryInteger<TSignificand>, IUnsignedNumber<TSignificand>
@@ -653,7 +653,7 @@ internal static partial class NumberFormatter
 
 			return TDecimal.Build(output, exp, ieeeSign);
 		}
-		public static (TSignificand Mantissa, int Exponent, bool Sign) FloatToDecimalExtract<TFloat, TSignificand>(in TFloat value)
+		internal static (TSignificand Mantissa, int Exponent, bool Sign) FloatToDecimalExtract<TFloat, TSignificand>(in TFloat value)
 			where TFloat : struct, IBinaryFloatingPointInfo<TFloat, TSignificand>
 			where TSignificand : unmanaged, IBinaryInteger<TSignificand>, IUnsignedNumber<TSignificand>
 		{

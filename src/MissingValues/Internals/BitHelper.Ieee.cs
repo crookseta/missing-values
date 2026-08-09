@@ -1,12 +1,13 @@
 ﻿using System.Diagnostics;
 using System.Numerics;
 using System.Runtime.CompilerServices;
+using MissingValues.Primitives;
 
 namespace MissingValues.Internals
 {
 	internal static partial class BitHelper
 	{
-		public static Quad GetQuadFromParts(int sign, int exp, UInt128 man)
+		internal static Quad GetQuadFromParts(int sign, int exp, UInt128 man)
 		{
 			const int Bias = Quad.ExponentBias + Quad.BiasedExponentShift;
 			UInt128 bits;
@@ -59,9 +60,9 @@ namespace MissingValues.Internals
 			if (sign < 0)
 				bits |= Quad.SignMask;
 
-			return Quad.UInt128BitsToQuad(bits);
+			return BinaryOperations.UInt128BitsToQuad(bits);
 		}
-		public static Octo GetOctoFromParts(int sign, int exp, UInt256 man)
+		internal static Octo GetOctoFromParts(int sign, int exp, UInt256 man)
 		{
 			const int Bias = Octo.ExponentBias + Octo.BiasedExponentShift;
 			UInt256 bits;
@@ -114,13 +115,13 @@ namespace MissingValues.Internals
 			if (sign < 0)
 				bits |= Octo.SignMask;
 
-			return Octo.UInt256BitsToOcto(bits);
+			return BinaryOperations.UInt256BitsToOcto(bits);
 		}
 
-		public static void GetQuadParts(Quad dbl, out int sign, out int exp, out UInt128 man, out bool fFinite)
+		internal static void GetQuadParts(Quad dbl, out int sign, out int exp, out UInt128 man, out bool fFinite)
 		{
 			const int Bias = Quad.ExponentBias + Quad.BiasedExponentShift;
-			UInt128 bits = Quad.QuadToUInt128Bits(dbl);
+			UInt128 bits = BinaryOperations.QuadToUInt128Bits(dbl);
 
 			sign = 1 - ((int)(bits >> 126) & 2);
 			man = bits & Quad.TrailingSignificandMask;
@@ -145,10 +146,10 @@ namespace MissingValues.Internals
 				exp -= Bias;
 			}
 		}
-		public static void GetOctoParts(in Octo dbl, out int sign, out int exp, out UInt256 man, out bool fFinite)
+		internal static void GetOctoParts(in Octo dbl, out int sign, out int exp, out UInt256 man, out bool fFinite)
 		{
 			const int Bias = Octo.ExponentBias + Octo.BiasedExponentShift;
-			UInt256 bits = Octo.OctoToUInt256Bits(dbl);
+			UInt256 bits = BinaryOperations.OctoToUInt256Bits(dbl);
 
 			sign = 1 - ((int)(bits.Part3 >> 62) & 2);
 			man = bits & Octo.TrailingSignificandMask;
@@ -644,7 +645,7 @@ namespace MissingValues.Internals
 			UInt256 signInt = (sign ? UInt256.One : UInt256.Zero) << 255;
 			UInt256 sigInt = significand >> 20;
 
-			return Octo.UInt256BitsToOcto(
+			return BinaryOperations.UInt256BitsToOcto(
 				   signInt
 				   | (new UInt256(0x7FFF_F000_0000_0000, 0x0, 0x0, 0x0) | new UInt256(0x0000_0800_0000_0000, 0x0, 0x0, 0x0))
 				   | sigInt
@@ -655,7 +656,7 @@ namespace MissingValues.Internals
 			UInt128 signInt = (sign ? UInt128.One : UInt128.Zero) << 127;
 			UInt128 sigInt = significand >> 16;
 
-			return Quad.UInt128BitsToQuad(
+			return BinaryOperations.UInt128BitsToQuad(
 				   signInt
 				   | (new UInt128(0x7FFF_0000_0000_0000, 0x0) | new UInt128(0x0000_8000_0000_0000, 0x0))
 				   | sigInt

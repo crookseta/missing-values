@@ -1,5 +1,6 @@
 ﻿using System.Runtime.CompilerServices;
 using MissingValues.Internals;
+using MissingValues.Primitives;
 
 namespace MissingValues
 {
@@ -53,13 +54,13 @@ namespace MissingValues
 
 			if (signA == signB)
 			{
-				return Quad.UInt128BitsToQuad(BitHelper.AddQuadBits(
-					 Quad.QuadToUInt128Bits(left), Quad.QuadToUInt128Bits(right), signA));
+				return BinaryOperations.UInt128BitsToQuad(BitHelper.AddQuadBits(
+					BinaryOperations.QuadToUInt128Bits(left), BinaryOperations.QuadToUInt128Bits(right), signA));
 			}
 			else
 			{
-				return Quad.UInt128BitsToQuad(BitHelper.SubQuadBits(
-					Quad.QuadToUInt128Bits(left), Quad.QuadToUInt128Bits(right), signA));
+				return BinaryOperations.UInt128BitsToQuad(BitHelper.SubQuadBits(
+					BinaryOperations.QuadToUInt128Bits(left), BinaryOperations.QuadToUInt128Bits(right), signA));
 			}
 		}
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -75,13 +76,13 @@ namespace MissingValues
 
 			if (signA == signB)
 			{
-				return Quad.UInt128BitsToQuad(BitHelper.SubQuadBits(
-					Quad.QuadToUInt128Bits(left), Quad.QuadToUInt128Bits(right), signA));
+				return BinaryOperations.UInt128BitsToQuad(BitHelper.SubQuadBits(
+					BinaryOperations.QuadToUInt128Bits(left), BinaryOperations.QuadToUInt128Bits(right), signA));
 			}
 			else
 			{
-				return Quad.UInt128BitsToQuad(BitHelper.AddQuadBits(
-					Quad.QuadToUInt128Bits(left), Quad.QuadToUInt128Bits(right), signA));
+				return BinaryOperations.UInt128BitsToQuad(BitHelper.AddQuadBits(
+					BinaryOperations.QuadToUInt128Bits(left), BinaryOperations.QuadToUInt128Bits(right), signA));
 			}
 		}
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -165,7 +166,7 @@ namespace MissingValues
 				sigZ = BitHelper.ShortShiftRightJamExtra(sigZ, sigZExtra, 1, out sigZExtra);
 			}
 
-			return Quad.UInt128BitsToQuad(BitHelper.RoundPackToQuad(signZ, expZ, sigZ, sigZExtra));
+			return BinaryOperations.UInt128BitsToQuad(BitHelper.RoundPackToQuad(signZ, expZ, sigZ, sigZExtra));
 		}
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		internal static Quad Div(Quad left, Quad right)
@@ -281,7 +282,7 @@ namespace MissingValues
 			ulong sigZExtra = ((ulong)q << 60);
 			term = new UInt128(0, qs[1]) << 54;
 			UInt128 sigZ = new UInt128((ulong)qs[2] << 19, ((ulong)qs[0] << 25) + (q >> 4)) + term;
-			return Quad.UInt128BitsToQuad(BitHelper.RoundPackToQuad(signZ, expZ, sigZ, sigZExtra));
+			return BinaryOperations.UInt128BitsToQuad(BitHelper.RoundPackToQuad(signZ, expZ, sigZ, sigZExtra));
 		}
 	}
 }

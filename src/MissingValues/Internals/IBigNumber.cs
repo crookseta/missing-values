@@ -179,6 +179,10 @@ internal interface IBigBinaryNumber<TSelf> : IBigNumber<TSelf>, IBinaryNumber<TS
 internal interface IBigInteger<TSelf> : IBigBinaryNumber<TSelf>, IBinaryInteger<TSelf>
 	where TSelf : IBigInteger<TSelf>?
 {
+	bool TryCopyTo(Span<ulong> destination);
+	
+	static abstract TSelf Create(ReadOnlySpan<ulong> parts);
+	
 	/// <summary>Shifts a value left by a given amount.</summary>
 	/// <param name="value">The value which is shifted left by <paramref name="shiftAmount" />.</param>
 	/// <param name="shiftAmount">The amount by which <paramref name="value" /> is shifted left.</param>

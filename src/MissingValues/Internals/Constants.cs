@@ -4,11 +4,11 @@ namespace MissingValues.Internals;
 
 internal static class Constants
 {
-	public static class Log
+	internal static class Log
 	{
-		public const int Intervals = 128;
-		public const int Log2Intervals = 7;
-		public const int TSIZE = Intervals + 1;
+		internal const int Intervals = 128;
+		internal const int Log2Intervals = 7;
+		internal const int TSIZE = Intervals + 1;
 
 		private static ReadOnlySpan<TConstant> T => new TConstant[]
 		{
@@ -275,70 +275,70 @@ internal static class Constants
 			new(2f, 0f)
 		};
 
-		public static Quad P2 => new Quad(0xBFFE_0000_0000_0000, 0x0000_0000_0000_0000);
-		public static Quad P3 => new Quad(0x3FFD_5555_5555_5555, 0x5555_5555_5555_4D42);
-		public static Quad P4 => new Quad(0xBFFC_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFDA_B14E);
-		public static Quad P5 => new Quad(0x3FFC_9999_9999_9999, 0x9999_999A_6D35_67F4);
-		public static Quad P6 => new Quad(0xBFFC_5555_5555_5555, 0x5555_5672_67A5_8E13);
-		public static Quad P7 => new Quad(0x3FFC_2492_4924_9249, 0x248E_D79A_0AE4_34DE);
-		public static Quad P8 => new Quad(0xBFFB_FFFF_FFFF_FFFF, 0xFA13_E917_65E4_6140);
-		public static Quad P9 => new Quad(0x3FFB_C71C_71C7_1C7E, 0xD54D_6D66_A8B2_C988);
-		public static Quad P10 => new Quad(0xBFFB_9999_9999_A0A9, 0x1EA5_57FE_E717_E405);
-		public static Quad P11 => new Quad(0x3FFB_745D_1739_6211, 0x107D_5489_11E4_3450);
-		public static Quad P12 => new Quad(0xBFFB_5555_5172_2C7A, 0x2FC3_D1C0_7002_5776);
-		public static Quad P13 => new Quad(0x3FFB_3B19_8520_4A4A, 0xE07C_9C4B_3F70_D6F0);
-		public static Quad P14 => new Quad(0xBFFB_2562_276C_DC5C, 0xFF73_89B1_89F8_903B);
+		internal static Quad P2 => new Quad(0xBFFE_0000_0000_0000, 0x0000_0000_0000_0000);
+		internal static Quad P3 => new Quad(0x3FFD_5555_5555_5555, 0x5555_5555_5555_4D42);
+		internal static Quad P4 => new Quad(0xBFFC_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFDA_B14E);
+		internal static Quad P5 => new Quad(0x3FFC_9999_9999_9999, 0x9999_999A_6D35_67F4);
+		internal static Quad P6 => new Quad(0xBFFC_5555_5555_5555, 0x5555_5672_67A5_8E13);
+		internal static Quad P7 => new Quad(0x3FFC_2492_4924_9249, 0x248E_D79A_0AE4_34DE);
+		internal static Quad P8 => new Quad(0xBFFB_FFFF_FFFF_FFFF, 0xFA13_E917_65E4_6140);
+		internal static Quad P9 => new Quad(0x3FFB_C71C_71C7_1C7E, 0xD54D_6D66_A8B2_C988);
+		internal static Quad P10 => new Quad(0xBFFB_9999_9999_A0A9, 0x1EA5_57FE_E717_E405);
+		internal static Quad P11 => new Quad(0x3FFB_745D_1739_6211, 0x107D_5489_11E4_3450);
+		internal static Quad P12 => new Quad(0xBFFB_5555_5172_2C7A, 0x2FC3_D1C0_7002_5776);
+		internal static Quad P13 => new Quad(0x3FFB_3B19_8520_4A4A, 0xE07C_9C4B_3F70_D6F0);
+		internal static Quad P14 => new Quad(0xBFFB_2562_276C_DC5C, 0xFF73_89B1_89F8_903B);
 
-		public const double InvLn10Hi = 4.3429448176175356e-1;
-		public const double InvLn2Hi = 1.4426950402557850e0;
+		internal const double InvLn10Hi = 4.3429448176175356e-1;
+		internal const double InvLn2Hi = 1.4426950402557850e0;
 
-		public static Quad InvLn10Lo => new Quad(0x3FDE_3728_7195_355B, 0xAAAF_AD33_DC32_3EE3);
-		public static Quad InvLn2Lo => new Quad(0x3FE0_5C17_F0BB_BE87, 0xFED0_691D_3E88_EB57);
-		public static Quad InvLn10LoPHi => new Quad(0x3FFD_BCB7_B152_6E50, 0xE36B_E631_DFF2_801F);
-		public static Quad InvLn2LoPHi => new Quad(0x3FFF_7154_7652_B82F, 0xE24D_68D5_7C9B_F07B);
+		internal static Quad InvLn10Lo => new Quad(0x3FDE_3728_7195_355B, 0xAAAF_AD33_DC32_3EE3);
+		internal static Quad InvLn2Lo => new Quad(0x3FE0_5C17_F0BB_BE87, 0xFED0_691D_3E88_EB57);
+		internal static Quad InvLn10LoPHi => new Quad(0x3FFD_BCB7_B152_6E50, 0xE36B_E631_DFF2_801F);
+		internal static Quad InvLn2LoPHi => new Quad(0x3FFF_7154_7652_B82F, 0xE24D_68D5_7C9B_F07B);
 
-		public const float LN2HI = 0.693147182464599609375f;
-		public static Quad LN2LO => new Quad(0xBFE2_05C6_10CA_86C3, 0x898C_FF81_A12A_17E2);
+		internal const float LN2HI = 0.693147182464599609375f;
+		internal static Quad LN2LO => new Quad(0xBFE2_05C6_10CA_86C3, 0x898C_FF81_A12A_17E2);
 
-		public static float G(int index) => T[index].G;
-		public static float FHi(int index) => T[index].FHi;
-		public static Quad FLo(int index) => T[index].FLo;
-		public static float E(int index) => U[index].E;
-		public static float H(int index) => U[index].H;
+		internal static float G(int index) => T[index].G;
+		internal static float FHi(int index) => T[index].FHi;
+		internal static Quad FLo(int index) => T[index].FLo;
+		internal static float E(int index) => U[index].E;
+		internal static float H(int index) => U[index].H;
 
 		private record struct TConstant(float G, float FHi, Quad FLo);
 		private record struct UConstant(float H, float E);
 
-		public struct LD
+		internal struct LD
 		{
-			public Quad Hi;
-			public Quad Lo;
-			public int LoSet;
+			internal Quad Hi;
+			internal Quad Lo;
+			internal int LoSet;
 		}
 	}
-	public static class Asin
+	internal static class Asin
 	{
-		public static Quad pS0 => new Quad(0x3FFC_5555_5555_5555, 0x5555_5555_5555_5ACB);
-		public static Quad pS1 => new Quad(0xBFFE_7733_C865_9C3C, 0x29EA_3614_B02F_2E41);
-		public static Quad pS2 => new Quad(0x3FFF_5797_9B5B_674E, 0x91B5_0237_574C_7D1E);
-		public static Quad pS3 => new Quad(0xBFFF_5328_2885_3E02, 0x7A76_AE0D_EC75_A3DC);
-		public static Quad pS4 => new Quad(0x3FFE_85BC_D120_445D, 0x1E68_6012_F127_DCD9);
-		public static Quad pS5 => new Quad(0xBFFD_0650_52B7_026F, 0x590C_744B_6978_9B90);
-		public static Quad pS6 => new Quad(0x3FFA_89CD_FE96_9597, 0xD61A_8F51_A8DD_0C37);
-		public static Quad pS7 => new Quad(0xBFF7_2203_159A_1D9D, 0x9944_1478_415C_791C);
-		public static Quad pS8 => new Quad(0x3FF2_2F25_83B7_EC31, 0x8DDA_1ADA_B639_2121);
-		public static Quad pS9 => new Quad(0xBFE8_C42C_02E3_4D40, 0x972F_241C_19F8_A186);
-		public static Quad qS1 => new Quad(0xC001_3633_A319_01F9, 0xEC3C_755C_50ED_E994);
-		public static Quad qS2 => new Quad(0x4002_3EEB_09AC_020A, 0x0443_12EC_E6E7_A13E);
-		public static Quad qS3 => new Quad(0xC002_6A2B_54F9_B826, 0x9216_B712_3B22_1EAB);
-		public static Quad qS4 => new Quad(0x4001_EF5C_E06F_68D3, 0xB151_4081_08B0_3471);
-		public static Quad qS5 => new Quad(0xC000_A11D_BB7D_E998, 0x9DDC_9D89_0C3A_63C4);
-		public static Quad qS6 => new Quad(0x3FFE_A7D9_6024_76DB, 0x8849_72B3_5236_11EE);
-		public static Quad qS7 => new Quad(0xBFFB_E679_5462_B32C, 0xA615_34B1_42EE_9992);
-		public static Quad qS8 => new Quad(0x3FF8_10D3_9D46_3279, 0x7749_8241_5549_DFE3);
-		public static Quad qS9 => new Quad(0xBFF2_A230_064A_F874, 0x87AA_66DC_CC58_B501);
+		internal static Quad pS0 => new Quad(0x3FFC_5555_5555_5555, 0x5555_5555_5555_5ACB);
+		internal static Quad pS1 => new Quad(0xBFFE_7733_C865_9C3C, 0x29EA_3614_B02F_2E41);
+		internal static Quad pS2 => new Quad(0x3FFF_5797_9B5B_674E, 0x91B5_0237_574C_7D1E);
+		internal static Quad pS3 => new Quad(0xBFFF_5328_2885_3E02, 0x7A76_AE0D_EC75_A3DC);
+		internal static Quad pS4 => new Quad(0x3FFE_85BC_D120_445D, 0x1E68_6012_F127_DCD9);
+		internal static Quad pS5 => new Quad(0xBFFD_0650_52B7_026F, 0x590C_744B_6978_9B90);
+		internal static Quad pS6 => new Quad(0x3FFA_89CD_FE96_9597, 0xD61A_8F51_A8DD_0C37);
+		internal static Quad pS7 => new Quad(0xBFF7_2203_159A_1D9D, 0x9944_1478_415C_791C);
+		internal static Quad pS8 => new Quad(0x3FF2_2F25_83B7_EC31, 0x8DDA_1ADA_B639_2121);
+		internal static Quad pS9 => new Quad(0xBFE8_C42C_02E3_4D40, 0x972F_241C_19F8_A186);
+		internal static Quad qS1 => new Quad(0xC001_3633_A319_01F9, 0xEC3C_755C_50ED_E994);
+		internal static Quad qS2 => new Quad(0x4002_3EEB_09AC_020A, 0x0443_12EC_E6E7_A13E);
+		internal static Quad qS3 => new Quad(0xC002_6A2B_54F9_B826, 0x9216_B712_3B22_1EAB);
+		internal static Quad qS4 => new Quad(0x4001_EF5C_E06F_68D3, 0xB151_4081_08B0_3471);
+		internal static Quad qS5 => new Quad(0xC000_A11D_BB7D_E998, 0x9DDC_9D89_0C3A_63C4);
+		internal static Quad qS6 => new Quad(0x3FFE_A7D9_6024_76DB, 0x8849_72B3_5236_11EE);
+		internal static Quad qS7 => new Quad(0xBFFB_E679_5462_B32C, 0xA615_34B1_42EE_9992);
+		internal static Quad qS8 => new Quad(0x3FF8_10D3_9D46_3279, 0x7749_8241_5549_DFE3);
+		internal static Quad qS9 => new Quad(0xBFF2_A230_064A_F874, 0x87AA_66DC_CC58_B501);
 
-		public static Quad R(Quad z)
+		internal static Quad R(Quad z)
 		{
 			Quad p, q;
 			p = z * (pS0 + z * (pS1 + z * (pS2 + z * (pS3 + z * (pS4 + z * (pS5 + z * (pS6 + z * (pS7 + z * (pS8 + z * pS9)))))))));
@@ -346,23 +346,23 @@ internal static class Constants
 			return p / q;
 		}
 	}
-	public static class Atan
+	internal static class Atan
 	{
-		public static ReadOnlySpan<Quad> AtanHi => new Quad[4]
+		internal static ReadOnlySpan<Quad> AtanHi => new Quad[4]
 		{
 			new Quad(0x3FFD_DAC6_7056_1BB4, 0xF68A_DFC8_8BD9_7875),
 			new Quad(0x3FFE_921F_B544_42D1, 0x8469_898C_C517_01B8),
 			new Quad(0x3FFE_F730_BD28_1F69, 0xB200_F10F_5E19_7794),
 			new Quad(0x3FFF_921F_B544_42D1, 0x8469_898C_C517_01B8),
 		};
-		public static ReadOnlySpan<Quad> AtanLo => new Quad[4]
+		internal static ReadOnlySpan<Quad> AtanLo => new Quad[4]
 		{
 			new Quad(0x3F89_A06D_C282_B0E4, 0xC39B_E01C_59E2_DCDD),
 			new Quad(0x3F8B_CD12_9024_E088, 0xA67C_C740_20BB_EA64),
 			new Quad(0xBF8B_EBE5_66C9_9ADA, 0x9F23_1BCC_AE27_916C),
 			new Quad(0x3F8C_CD12_9024_E088, 0xA67C_C740_20BB_EA64),
 		};
-		public static ReadOnlySpan<Quad> AT => new Quad[24]
+		internal static ReadOnlySpan<Quad> AT => new Quad[24]
 		{
 			new Quad(0x3FFD_5555_5555_5555, 0x5555_5555_5555_5551),
 			new Quad(0xBFFC_9999_9999_9999, 0x9999_9999_9999_149E),
@@ -390,20 +390,20 @@ internal static class Constants
 			new Quad(0xBFF6_52D9_4B40_71FF, 0x85CE_62C9_80D9_F92C),
 		};
 
-		public static Quad Even(Quad x)
+		internal static Quad Even(Quad x)
 		{
 			return (AT[0] + x * (AT[2] + x * (AT[4] + x * (AT[6] + x * (AT[8] +
 				x * (AT[10] + x * (AT[12] + x * (AT[14] + x * (AT[16] +
 				x * (AT[18] + x * (AT[20] + x * AT[22])))))))))));
 		}
-		public static Quad Odd(Quad x)
+		internal static Quad Odd(Quad x)
 		{
 			return (AT[1] + x * (AT[3] + x * (AT[5] + x * (AT[7] + x * (AT[9] +
 				x * (AT[11] + x * (AT[13] + x * (AT[15] + x * (AT[17] +
 				x * (AT[19] + x * (AT[21] + x * AT[23])))))))))));
 		}
 	}
-	public static class Cos
+	internal static class Cos
 	{
 		// Domain [-0.7854, 0.7854], range ~[-1.80e-37, 1.79e-37]:
 		// |cos(newBase) - c(newBase))| < 2**-122.0
@@ -419,52 +419,52 @@ internal static class Constants
 		private static Quad C10 => new Quad(0xBFB9_0CE2_0CD8_68A2, 0x04B8_FF44_E6BF_56E0);
 		private static Quad C11 => new Quad(0x3FAF_EF81_27D7_65B0, 0x90B7_B2A6_9D9B_4DA3);
 
-		public static Quad Poly(in Quad z)
+		internal static Quad Poly(in Quad z)
 		{
 			return (z * (C1 + z * (C2 + z * (C3 + z * (C4 + z * (C5 + z * (C6 + z * (C7 + z * (C8 + z * (C9 + z * (C10 + z * C11)))))))))));
 		}
 	}
-	public static class Exp
+	internal static class Exp
 	{
-		public const int Intervals = 128;
-		public const int Log2Intervals = 7;
-		public const int TBLBITS = 7;
-		public const int TBLSIZE = (1 << TBLBITS);
+		internal const int Intervals = 128;
+		internal const int Log2Intervals = 7;
+		internal const int TBLBITS = 7;
+		internal const int TBLSIZE = (1 << TBLBITS);
 
-		public static Quad TINY => new Quad(0x18EF_0000_0000_0000, 0x0000_0000_0000_0000);
+		internal static Quad TINY => new Quad(0x18EF_0000_0000_0000, 0x0000_0000_0000_0000);
 
-		public static Quad O_THRESHOLD => new Quad(0x400C_62E4_2FEF_A39E, 0xF357_93C7_6730_07E5);
-		public static Quad U_THRESHOLD => new Quad(0xC00C_654B_B3B2_C73E, 0xBB05_9FAB_B506_FF33);
+		internal static Quad O_THRESHOLD => new Quad(0x400C_62E4_2FEF_A39E, 0xF357_93C7_6730_07E5);
+		internal static Quad U_THRESHOLD => new Quad(0xC00C_654B_B3B2_C73E, 0xBB05_9FAB_B506_FF33);
 
-		public static Quad L1 => new Quad(0x3FF7_62E4_2FEF_A39E, 0xF357_93C7_6800_0000);
-		public const double L2 = -1.0253670638894731e-29;
-		public const double INV_L = 1.8466496523378731e+2;
+		internal static Quad L1 => new Quad(0x3FF7_62E4_2FEF_A39E, 0xF357_93C7_6800_0000);
+		internal const double L2 = -1.0253670638894731e-29;
+		internal const double INV_L = 1.8466496523378731e+2;
 
-		public static Quad A2 => new Quad(0x3FFE_0000_0000_0000, 0x0000_0000_0000_0000);
-		public static Quad A3 => new Quad(0x3FFC_5555_5555_5555, 0x5555_5555_554B_7525);
-		public static Quad A4 => new Quad(0x3FFA_5555_5555_5555, 0x5555_5555_5518_49BB);
-		public static Quad A5 => new Quad(0x3FF8_1111_1111_1111, 0x1111_1841_CBEC_C116);
-		public static Quad A6 => new Quad(0x3FF5_6C16_C16C_16C1, 0x6C16_F5C1_B4A5_137E);
+		internal static Quad A2 => new Quad(0x3FFE_0000_0000_0000, 0x0000_0000_0000_0000);
+		internal static Quad A3 => new Quad(0x3FFC_5555_5555_5555, 0x5555_5555_554B_7525);
+		internal static Quad A4 => new Quad(0x3FFA_5555_5555_5555, 0x5555_5555_5518_49BB);
+		internal static Quad A5 => new Quad(0x3FF8_1111_1111_1111, 0x1111_1841_CBEC_C116);
+		internal static Quad A6 => new Quad(0x3FF5_6C16_C16C_16C1, 0x6C16_F5C1_B4A5_137E);
 
-		public const double A7 = 1.9841269841269470e-4;
-		public const double A8 = 2.4801587301585286e-5;
-		public const double A9 = 2.7557324277411235e-6;
-		public const double A10 = 2.7557333722375069e-7;
+		internal const double A7 = 1.9841269841269470e-4;
+		internal const double A8 = 2.4801587301585286e-5;
+		internal const double A9 = 2.7557324277411235e-6;
+		internal const double A10 = 2.7557333722375069e-7;
 
-		public static Quad P1 => new Quad(0x3FFE_62E4_2FEF_A39E, 0xF358_0000_0000_0000);
-		public static Quad P2 => new Quad(0x3FFC_EBFB_DFF8_2C58, 0xEA86_0000_0000_0000);
-		public static Quad P3 => new Quad(0x3FFA_C6B0_8D70_4A0B, 0xF8B4_0000_0000_0000);
-		public static Quad P4 => new Quad(0x3FF8_3B2A_B6FB_A4E7, 0x729C_0000_0000_0000);
-		public static Quad P5 => new Quad(0x3FF5_5D87_FE78_A673, 0x1108_0000_0000_0000);
-		public static Quad P6 => new Quad(0x3FF2_4309_12F8_6C78, 0x76F4_0000_0000_0000);
+		internal static Quad P1 => new Quad(0x3FFE_62E4_2FEF_A39E, 0xF358_0000_0000_0000);
+		internal static Quad P2 => new Quad(0x3FFC_EBFB_DFF8_2C58, 0xEA86_0000_0000_0000);
+		internal static Quad P3 => new Quad(0x3FFA_C6B0_8D70_4A0B, 0xF8B4_0000_0000_0000);
+		internal static Quad P4 => new Quad(0x3FF8_3B2A_B6FB_A4E7, 0x729C_0000_0000_0000);
+		internal static Quad P5 => new Quad(0x3FF5_5D87_FE78_A673, 0x1108_0000_0000_0000);
+		internal static Quad P6 => new Quad(0x3FF2_4309_12F8_6C78, 0x76F4_0000_0000_0000);
 
-		public const double P7 = 1.52527338040596140779402503651063227608e-05;
-		public const double P8 = 1.32154867901441125734062539270885494602e-06;
-		public const double P9 = 1.01780877050780307255070818422265643832e-07;
-		public const double P10 = 7.05491279594400222715807284969494195259e-09;
-		public const double redux = 60847228810955011271841753858048d;
+		internal const double P7 = 1.52527338040596140779402503651063227608e-05;
+		internal const double P8 = 1.32154867901441125734062539270885494602e-06;
+		internal const double P9 = 1.01780877050780307255070818422265643832e-07;
+		internal const double P10 = 7.05491279594400222715807284969494195259e-09;
+		internal const double redux = 60847228810955011271841753858048d;
 
-		public static ReadOnlySpan<Quad> Tbl => new Quad[TBLSIZE]
+		internal static ReadOnlySpan<Quad> Tbl => new Quad[TBLSIZE]
 		{
 			new Quad(0x3FFE_6A09_E667_F3BC, 0xC908_B2FB_1366_DFEA),
 			new Quad(0x3FFE_6C01_2750_BDAB, 0xEED7_6A99_800F_4EDE),
@@ -595,7 +595,7 @@ internal static class Constants
 			new Quad(0x3FFF_6623_8825_5222, 0x4912_7D9E_29B9_2EA2),
 			new Quad(0x3FFF_6815_5D44_CA97, 0x3081_C572_27B9_F69E),
 		};
-		public static ReadOnlySpan<float> Eps => new float[TBLSIZE]
+		internal static ReadOnlySpan<float> Eps => new float[TBLSIZE]
 		{
 			-5.36660379003503270454048253701289997311e-31f,
 			-1.68037387647786328179134075490534908542e-32f,
@@ -727,7 +727,7 @@ internal static class Constants
 			1.75211476690628781731767593326663762804e-31f,
 		};
 
-		public static ReadOnlySpan<(Quad hi, Quad lo)> Table => new (Quad, Quad)[]
+		internal static ReadOnlySpan<(Quad hi, Quad lo)> Table => new (Quad, Quad)[]
 		{
 			(Quad.One, Quad.Zero),
 			(new Quad(0x3FFF_0163_DA9F_B333, 0x56D8_4A66_AE00_0000), new Quad(0x3FA4_9B6E_6FD2_001F, 0x6026_1B05_F120_203C)),
@@ -860,80 +860,80 @@ internal static class Constants
 		};
 
 
-		public const double T1 = -0.1659;
-		public const double T2 = 0.1659;
-		public const double T3 = 0.03125;
+		internal const double T1 = -0.1659;
+		internal const double T2 = 0.1659;
+		internal const double T3 = 0.03125;
 
-		public static Quad C3 => new Quad(0x3FFC_5555_5555_5555, 0x5555_5555_5555_5555);
-		public static Quad C4 => new Quad(0x3FFA_5555_5555_5555, 0x5555_5555_5555_5555);
-		public static Quad C5 => new Quad(0x3FF8_1111_1111_1111, 0x1111_1111_1111_1210);
-		public static Quad C6 => new Quad(0x3FF5_6C16_C16C_16C1, 0x6C16_C16C_16C3_49BB);
-		public static Quad C7 => new Quad(0x3FF2_A01A_01A0_1A01, 0xA01A_01A0_1705_DF4D);
-		public static Quad C8 => new Quad(0x3FEF_A01A_01A0_1A01, 0xA01A_019A_1378_E5FF);
-		public static Quad C9 => new Quad(0x3FEC_71DE_3A55_6C73, 0x38FA_ACF0_D2CA_7A76);
-		public static Quad C10 => new Quad(0x3FE9_27E4_FB77_89F5, 0xC735_B315_7B02_281A);
-		public static Quad C11 => new Quad(0x3FE5_AE64_567F_544E, 0x40AA_E1AD_408F_F6F6);
-		public static Quad C12 => new Quad(0x3FE2_1EED_8EFF_8D87, 0x5892_66C9_2620_C7F8);
-		public static Quad C13 => new Quad(0x3FDE_6124_613A_7DB6, 0x9258_5198_970E_8AB2);
+		internal static Quad C3 => new Quad(0x3FFC_5555_5555_5555, 0x5555_5555_5555_5555);
+		internal static Quad C4 => new Quad(0x3FFA_5555_5555_5555, 0x5555_5555_5555_5555);
+		internal static Quad C5 => new Quad(0x3FF8_1111_1111_1111, 0x1111_1111_1111_1210);
+		internal static Quad C6 => new Quad(0x3FF5_6C16_C16C_16C1, 0x6C16_C16C_16C3_49BB);
+		internal static Quad C7 => new Quad(0x3FF2_A01A_01A0_1A01, 0xA01A_01A0_1705_DF4D);
+		internal static Quad C8 => new Quad(0x3FEF_A01A_01A0_1A01, 0xA01A_019A_1378_E5FF);
+		internal static Quad C9 => new Quad(0x3FEC_71DE_3A55_6C73, 0x38FA_ACF0_D2CA_7A76);
+		internal static Quad C10 => new Quad(0x3FE9_27E4_FB77_89F5, 0xC735_B315_7B02_281A);
+		internal static Quad C11 => new Quad(0x3FE5_AE64_567F_544E, 0x40AA_E1AD_408F_F6F6);
+		internal static Quad C12 => new Quad(0x3FE2_1EED_8EFF_8D87, 0x5892_66C9_2620_C7F8);
+		internal static Quad C13 => new Quad(0x3FDE_6124_613A_7DB6, 0x9258_5198_970E_8AB2);
 
-		public const double C14 = 1.1470745580491932e-11;
-		public const double C15 = 7.6471620181090468e-13;
-		public const double C16 = 4.7793721460260450e-14;
-		public const double C17 = 2.8074757356658877e-15;
-		public const double C18 = 1.4760610323699476e-16;
+		internal const double C14 = 1.1470745580491932e-11;
+		internal const double C15 = 7.6471620181090468e-13;
+		internal const double C16 = 4.7793721460260450e-14;
+		internal const double C17 = 2.8074757356658877e-15;
+		internal const double C18 = 1.4760610323699476e-16;
 
-		public static Quad D3 => new Quad(0x3FFC_5555_5555_5555, 0x5555_5555_5555_57DC);
-		public static Quad D4 => new Quad(0x3FFA_5555_5555_5555, 0x5555_5555_554D_1BF7);
-		public static Quad D5 => new Quad(0x3FF8_1111_1111_1111, 0x1111_1111_1D39_4AC0);
-		public static Quad D6 => new Quad(0x3FF5_6C16_C16C_16C1, 0x6C16_C156_6C41_F8CD);
-		public static Quad D7 => new Quad(0x3FF2_A01A_01A0_1A01, 0xA01A_1BAA_3B05_95A8);
-		public static Quad D8 => new Quad(0x3FEF_A01A_01A0_1A01, 0xA003_A377_84AA_1CC4);
-		public static Quad D9 => new Quad(0x3FEC_71DE_3A55_6C73, 0x472C_BF84_45DA_065C);
-		public static Quad D10 => new Quad(0x3FE9_27E4_FB77_89EE, 0xFEBF_E259_FF3A_096A);
-		public static Quad D11 => new Quad(0x3FE5_AE64_567F_593A, 0xDF45_05DB_A46C_FCDD);
-		public static Quad D12 => new Quad(0x3FE2_1EED_8EFE_319A, 0x2583_3D8F_7F44_69B4);
-		public static Quad D13 => new Quad(0x3FDE_6124_61CB_7935, 0x9D69_C3EC_6E4A_DF76);
+		internal static Quad D3 => new Quad(0x3FFC_5555_5555_5555, 0x5555_5555_5555_57DC);
+		internal static Quad D4 => new Quad(0x3FFA_5555_5555_5555, 0x5555_5555_554D_1BF7);
+		internal static Quad D5 => new Quad(0x3FF8_1111_1111_1111, 0x1111_1111_1D39_4AC0);
+		internal static Quad D6 => new Quad(0x3FF5_6C16_C16C_16C1, 0x6C16_C156_6C41_F8CD);
+		internal static Quad D7 => new Quad(0x3FF2_A01A_01A0_1A01, 0xA01A_1BAA_3B05_95A8);
+		internal static Quad D8 => new Quad(0x3FEF_A01A_01A0_1A01, 0xA003_A377_84AA_1CC4);
+		internal static Quad D9 => new Quad(0x3FEC_71DE_3A55_6C73, 0x472C_BF84_45DA_065C);
+		internal static Quad D10 => new Quad(0x3FE9_27E4_FB77_89EE, 0xFEBF_E259_FF3A_096A);
+		internal static Quad D11 => new Quad(0x3FE5_AE64_567F_593A, 0xDF45_05DB_A46C_FCDD);
+		internal static Quad D12 => new Quad(0x3FE2_1EED_8EFE_319A, 0x2583_3D8F_7F44_69B4);
+		internal static Quad D13 => new Quad(0x3FDE_6124_61CB_7935, 0x9D69_C3EC_6E4A_DF76);
 
-		public const double D14 = 1.1470726176204336e-11;
-		public const double D15 = 7.6478532249581686e-13;
-		public const double D16 = 4.7628892832607741e-14;
-		public const double D17 = 3.0524857220358650e-15;
+		internal const double D14 = 1.1470726176204336e-11;
+		internal const double D15 = 7.6478532249581686e-13;
+		internal const double D16 = 4.7628892832607741e-14;
+		internal const double D17 = 3.0524857220358650e-15;
 	}
-	public static class RemPio
+	internal static class RemPio
 	{
-		public const double TWO24 = 1.67772160000000000000e+07;
-		public const double TWON24 = 5.96046447753906250000e-08;
+		internal const double TWO24 = 1.67772160000000000000e+07;
+		internal const double TWON24 = 5.96046447753906250000e-08;
 
 		/// <summary>
 		/// First 68 bits of pi/2
 		/// </summary>
-		public static Quad PIO2_1 => new Quad(0x3FFF_921F_B544_42D1, 0x8469_8000_0000_0000);
+		internal static Quad PIO2_1 => new Quad(0x3FFF_921F_B544_42D1, 0x8469_8000_0000_0000);
 		/// <summary>
 		/// pi/2 - pio2_1
 		/// </summary>
-		public static Quad PIO2_1T => new Quad(0x3FBA_3198_A2E0_3707, 0x344A_4093_8222_99F3);
+		internal static Quad PIO2_1T => new Quad(0x3FBA_3198_A2E0_3707, 0x344A_4093_8222_99F3);
 		/// <summary>
 		/// Second 68 bits of pi/2
 		/// </summary>
-		public static Quad PIO2_2 => new Quad(0x3FBA_3198_A2E0_3707, 0x344A_4000_0000_0000);
+		internal static Quad PIO2_2 => new Quad(0x3FBA_3198_A2E0_3707, 0x344A_4000_0000_0000);
 		/// <summary>
 		/// pi/2 - (pio2_1+pio2_2)
 		/// </summary>
-		public static Quad PIO2_2T => new Quad(0x3F71_2704_4533_E63A, 0x0105_DF53_1D89_CD91);
+		internal static Quad PIO2_2T => new Quad(0x3F71_2704_4533_E63A, 0x0105_DF53_1D89_CD91);
 		/// <summary>
 		/// Third 68 bits of pi/2
 		/// </summary>
-		public static Quad PIO2_3 => new Quad(0x3F71_2704_4533_E63A, 0x0105_E000_0000_0000);
+		internal static Quad PIO2_3 => new Quad(0x3F71_2704_4533_E63A, 0x0105_E000_0000_0000);
 		/// <summary>
 		/// pi/2 - (pio2_1+pio2_2+pio2_3)
 		/// </summary>
-		public static Quad PIO2_3T => new Quad(0xBF28_59C4_EC64_DDAE, 0xB5F7_8671_CBFB_2210);
+		internal static Quad PIO2_3T => new Quad(0xBF28_59C4_EC64_DDAE, 0xB5F7_8671_CBFB_2210);
 
-		public static ReadOnlySpan<int> INIT_JK =>
+		internal static ReadOnlySpan<int> INIT_JK =>
 		[
 			3, 4, 4, 6
 		];
-		public static ReadOnlySpan<int> IPIO2 =>
+		internal static ReadOnlySpan<int> IPIO2 =>
 		[
 			0xA2F983, 0x6E4E44, 0x1529FC, 0x2757D1, 0xF534DD, 0xC0DB62,
 			0x95993C, 0x439041, 0xFE5163, 0xABDEBB, 0xC561B7, 0x246E3A,
@@ -1052,7 +1052,7 @@ internal static class Constants
 			0x5B2746, 0xED3400, 0x7700D2, 0x55F4FC, 0x4D5901, 0x8071E0,
 		];
 
-		public static ReadOnlySpan<double> PIO2 =>
+		internal static ReadOnlySpan<double> PIO2 =>
 		[
 			1.57079625129699707031e+00,
 			7.54978941586159635335e-08,
@@ -1064,33 +1064,33 @@ internal static class Constants
 			2.16741683877804819444e-51,
 		];
 	}
-	public static class Pow
+	internal static class Pow
 	{
-		public static ReadOnlySpan<Quad> bp => new Quad[]
+		internal static ReadOnlySpan<Quad> bp => new Quad[]
 		{
 			Quad.One,
 			new Quad(0x3FFF_8000_0000_0000, 0x0000_0000_0000_0000),
 		};
-		public static ReadOnlySpan<Quad> dp_h => new Quad[]
+		internal static ReadOnlySpan<Quad> dp_h => new Quad[]
 		{
 			Quad.Zero,
 			new Quad(0x3FFE_2B80_3473_F7AD, 0x0000_0000_0000_0000),
 		};
-		public static ReadOnlySpan<Quad> dp_l => new Quad[]
+		internal static ReadOnlySpan<Quad> dp_l => new Quad[]
 		{
 			Quad.Zero,
 			new Quad(0x3FC9_E7E8_02C4_8281, 0xA2EB_7449_3CF9_A8E9),
 		};
 
-		public static Quad Two113 => new Quad(0x4070_0000_0000_0000, 0x0000_0000_0000_0000);
-		public static Quad Huge => new Quad(0x66EC_B8E4_99A8_8823, 0x5EA6_6F64_97E3_640C);
-		public static Quad Tiny => new Quad(0x1911_2949_9E40_33AF, 0x742A_E235_CC08_1BCC);
+		internal static Quad Two113 => new Quad(0x4070_0000_0000_0000, 0x0000_0000_0000_0000);
+		internal static Quad Huge => new Quad(0x66EC_B8E4_99A8_8823, 0x5EA6_6F64_97E3_640C);
+		internal static Quad Tiny => new Quad(0x1911_2949_9E40_33AF, 0x742A_E235_CC08_1BCC);
 
 		/* 3/2 log x = 3 z + z^3 + z^3 (z^2 R(z^2))
 		z = (x-1)/(x+1)
 		1 <= x <= 1.25
 		Peak relative error 2.3e-37 */
-		public static ReadOnlySpan<Quad> LN => new Quad[]
+		internal static ReadOnlySpan<Quad> LN => new Quad[]
 		{
 			new Quad(0xC003_EC77_8283_108D, 0xD351_763D_521C_F8D2),
 			new Quad(0x4005_048B_0968_DA68, 0x634C_653D_9344_2FEA),
@@ -1098,7 +1098,7 @@ internal static class Constants
 			new Quad(0x4002_9053_A023_4C25, 0x1CD1_C99C_785B_5FD7),
 			new Quad(0xBFFE_FC3F_1F7D_5799, 0xD1FB_8916_3835_3084),
 		};
-		public static ReadOnlySpan<Quad> LD => new Quad[]
+		internal static ReadOnlySpan<Quad> LD => new Quad[]
 		{
 			new Quad(0xC004_9A63_976D_3876, 0x3019_37DD_C470_295E),
 			new Quad(0x4006_2267_2C06_4F53, 0xB6C4_2A88_A788_8557),
@@ -1110,7 +1110,7 @@ internal static class Constants
 		/* exp(x) = 1 + x - x / (1 - 2 / (x - x^2 R(x^2)))
 		0 <= x <= 0.5
 		Peak relative error 5.7e-38  */
-		public static ReadOnlySpan<Quad> PN => new Quad[]
+		internal static ReadOnlySpan<Quad> PN => new Quad[]
 		{
 			new Quad(0x401B_E4A3_6C93_1089, 0xE86D_ACEC_7D0C_4054),
 			new Quad(0x4016_1DAB_FE99_88E2, 0xE3E6_18A4_38A1_5AF6),
@@ -1118,7 +1118,7 @@ internal static class Constants
 			new Quad(0x4004_A014_9D04_634B, 0x152F_8666_0A12_0EFC),
 			new Quad(0x3FF8_29CE_C291_D944, 0x9CC0_10B8_DCC7_94E7),
 		};
-		public static ReadOnlySpan<Quad> PD => new Quad[]
+		internal static ReadOnlySpan<Quad> PD => new Quad[]
 		{
 			new Quad(0x401E_6B7A_916E_4C67, 0x6E52_41B1_5DC9_3056),
 			new Quad(0x4019_981B_F72D_FA14, 0x87E5_3E0C_F616_1D0C),
@@ -1127,37 +1127,37 @@ internal static class Constants
 		};
 
 		/* ln 2 */
-		public static Quad LG2 => new Quad(0x3FFE_62E4_2FEF_A39E, 0xF357_93C7_6730_07E6);
-		public static Quad LG2_H => new Quad(0x3FFE_62E4_2FEF_A39E, 0xF000_0000_0000_0000);
-		public static Quad LG2_L => new Quad(0x3FC7_ABC9_E3B3_9803, 0xF2F6_AF40_F343_2673);
-		public static Quad OVT => new Quad(0x3FC9_7154_7652_B82F, 0xE459_FDE3_A492_DA6D);
+		internal static Quad LG2 => new Quad(0x3FFE_62E4_2FEF_A39E, 0xF357_93C7_6730_07E6);
+		internal static Quad LG2_H => new Quad(0x3FFE_62E4_2FEF_A39E, 0xF000_0000_0000_0000);
+		internal static Quad LG2_L => new Quad(0x3FC7_ABC9_E3B3_9803, 0xF2F6_AF40_F343_2673);
+		internal static Quad OVT => new Quad(0x3FC9_7154_7652_B82F, 0xE459_FDE3_A492_DA6D);
 		/* 2/(3*log(2)) */
-		public static Quad CP => new Quad(0x3FFE_EC70_9DC3_A03F, 0xD749_FC15_522B_C2F9);
-		public static Quad CP_H => new Quad(0x3FFE_EC70_9DC3_A03F, 0xD000_0000_0000_0000);
-		public static Quad CP_L => new Quad(0x3FC8_D27F_0554_8AF0, 0xBE29_B09C_E4FC_7094);
+		internal static Quad CP => new Quad(0x3FFE_EC70_9DC3_A03F, 0xD749_FC15_522B_C2F9);
+		internal static Quad CP_H => new Quad(0x3FFE_EC70_9DC3_A03F, 0xD000_0000_0000_0000);
+		internal static Quad CP_L => new Quad(0x3FC8_D27F_0554_8AF0, 0xBE29_B09C_E4FC_7094);
 
 
 		[StructLayout(LayoutKind.Explicit, Size = 16)]
-		public unsafe struct QuadShape
+		internal struct QuadShape
 		{
-			[FieldOffset(0)] public Quad Value;
+			[FieldOffset(0)] internal Quad Value;
 
 #if BIGENDIAN
-			[FieldOffset(0)] public ulong Upper;
-			[FieldOffset(8)] public ulong Lower;
+			[FieldOffset(0)] internal ulong Upper;
+			[FieldOffset(8)] internal ulong Lower;
 
-			[FieldOffset(0)] public uint UpperHi;
-			[FieldOffset(4)] public uint UpperLo;
-			[FieldOffset(8)] public uint LowerHi;
-			[FieldOffset(12)] public uint LowerLo;
+			[FieldOffset(0)] internal uint UpperHi;
+			[FieldOffset(4)] internal uint UpperLo;
+			[FieldOffset(8)] internal uint LowerHi;
+			[FieldOffset(12)] internal uint LowerLo;
 #else
-			[FieldOffset(0)] public ulong Lower;
-			[FieldOffset(8)] public ulong Upper;
+			[FieldOffset(0)] internal ulong Lower;
+			[FieldOffset(8)] internal ulong Upper;
 
-			[FieldOffset(0)] public uint LowerLo;
-			[FieldOffset(4)] public uint LowerHi;
-			[FieldOffset(8)] public uint UpperLo;
-			[FieldOffset(12)] public uint UpperHi;
+			[FieldOffset(0)] internal uint LowerLo;
+			[FieldOffset(4)] internal uint LowerHi;
+			[FieldOffset(8)] internal uint UpperLo;
+			[FieldOffset(12)] internal uint UpperHi;
 #endif
 		}
 	}

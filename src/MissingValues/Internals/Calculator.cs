@@ -9,10 +9,10 @@ namespace MissingValues.Internals;
 
 internal static class Calculator
 {
-	public const int StackAllocThreshold = 128;
+	internal const int StackAllocThreshold = 128;
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public static ulong AddWithCarry(ulong a, ulong b, out ulong carry)
+	internal static ulong AddWithCarry(ulong a, ulong b, out ulong carry)
 	{
 		ulong result = a + b;
 		
@@ -22,16 +22,27 @@ internal static class Calculator
     
 		return result;
 	}
+	
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	internal static ulong AddWithCarry(ulong a, ulong b, ulong carryIn, out ulong carryOut)
+	{
+		ulong sum1 = a + b;
+		ulong c1 = (sum1 < a) ? 1 : (ulong)0;
+		ulong sum2 = sum1 + carryIn;
+		ulong c2 = (sum2 < sum1) ? 1 : (ulong)0;
+		carryOut = c1 + c2;
+		return sum2;
+	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public static UInt128 BigMul(ulong a, ulong b)
+	internal static UInt128 BigMul(ulong a, ulong b)
 	{
 		ulong high = BigMul(a, b, out ulong low);
 		return new UInt128(high, low);
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public static ulong BigMul(ulong a, ulong b, out ulong lower)
+	internal static ulong BigMul(ulong a, ulong b, out ulong lower)
 	{
 		if (Bmi2.X64.IsSupported)
 		{
@@ -53,7 +64,7 @@ internal static class Calculator
 	}
 	
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public static (ulong hi, ulong lo) BigMulAdd(ulong a, ulong b, ulong c)
+	internal static (ulong hi, ulong lo) BigMulAdd(ulong a, ulong b, ulong c)
 	{
 		ulong highProd = BigMul(a, b, out ulong lowProd);
 		
@@ -66,13 +77,13 @@ internal static class Calculator
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public static (ulong Quotient, uint Remainder) DivRemByUInt32(ulong left, uint right)
+	internal static (ulong Quotient, uint Remainder) DivRemByUInt32(ulong left, uint right)
 	{
 		ulong quotient = left / right;
 		return (quotient, (uint)left - ((uint)quotient * right));
 	}
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public static (UInt128 Quotient, ulong Remainder) DivRemByUInt64(UInt128 left, ulong right)
+	internal static (UInt128 Quotient, ulong Remainder) DivRemByUInt64(UInt128 left, ulong right)
 	{
 #if NET9_0_OR_GREATER
 		if (X86Base.X64.IsSupported)
@@ -93,6 +104,41 @@ internal static class Calculator
 #endif
 		UInt128 quotient = left / right;
 		return (quotient, left.Lower - (quotient.Lower * right));
+	}
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	internal static ulong DivRemByUInt64(ulong hi, ulong lo, ulong divisor, out ulong remainder)
+	{
+		if (hi == 0)
+		{
+			(ulong q, ulong r) = Math.DivRem(lo, divisor);
+			remainder = r;
+			return q;
+		}
+		if (divisor <= uint.MaxValue)
+		{
+			ulong loHi = lo >> 32;
+			ulong loLo = lo & 0xFFFFFFFF;
+
+			(ulong qHi, ulong r1) = Math.DivRem((hi << 32) | loHi, divisor);
+			(ulong qLo, ulong r2) = Math.DivRem((r1 << 32) | loLo, divisor);
+
+			remainder = r2;
+			return ((qHi << 32) | qLo);
+		}
+#if NET9_0_OR_GREATER
+#pragma warning disable SYSLIB5004 // X86Base.DivRem is experimental
+		if (X86Base.X64.IsSupported)
+		{
+			(ulong q, ulong r) = X86Base.X64.DivRem(lo, hi, divisor);
+			remainder = (ulong)r;
+			return (ulong)q;
+		}
+#pragma warning restore SYSLIB5004
+#endif
+		UInt128 value = new UInt128(hi, lo);
+		ulong quotient = (value / divisor).Lower;
+		remainder = lo - quotient * divisor;
+		return quotient;
 	}
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	internal static UInt128 DivideByUInt64(UInt128 left, ulong right)
@@ -116,22 +162,19 @@ internal static class Calculator
 		return left / right;
 	}
 
-	public static void Square(ref ulong value, int valueLength, Span<ulong> bits)
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	internal static void Square(Span<ulong> value, Span<ulong> bits)
 	{
 		// Based on: https://github.com/dotnet/runtime/blob/main/src/libraries/System.Runtime.Numerics/src/System/Numerics/BigIntegerCalculator.SquMul.cs
 
-		Debug.Assert(bits.Length == valueLength + valueLength);
+		Debug.Assert(bits.Length == value.Length + value.Length);
 
 		// Executes different algorithms for computing z = a * a
 		// based on the actual length of a. If a is "small" enough
 		// we stick to the classic "grammar-school" method; for the
 		// rest we switch to implementations with less complexity
 		// albeit more overhead (which needs to pay off!).
-
-		// Switching to managed references helps eliminating
-		// index bounds check...
-		ref ulong resultPtr = ref MemoryMarshal.GetReference(bits);
-
+		
 		// Squares the bits using the "grammar-school" method.
 		// Envisioning the "rhombus" of a pen-and-paper calculation
 		// we see that computing z_i+j += a_j * a_i can be optimized
@@ -143,24 +186,24 @@ internal static class Calculator
 		// = 2^64 - 1 (which perfectly matches with ulong!). But
 		// here we would need an UInt65... Hence, we split these
 		// operation and do some extra shifts.
-		for (int i = 0; i < valueLength; i++)
+		for (int i = 0; i < value.Length; i++)
 		{
 			UInt128 carry = default;
-			ulong v = Unsafe.Add(ref value, i);
+			ulong v = value[i];
 			for (int j = 0; j < i; j++)
 			{
-				UInt128 digit1 = Unsafe.Add(ref resultPtr, i + j) + carry;
-				UInt128 digit2 = BigMul(Unsafe.Add(ref value, j), v);
-				Unsafe.Add(ref resultPtr, i + j) = unchecked((ulong)(digit1 + (digit2 << 1)));
-				carry = (digit2 + (digit1 >> 1)) >> 31;
+				UInt128 digit1 = bits[i + j] + carry;
+				UInt128 digit2 = BigMul(value[j], v);
+				bits[i + j] = unchecked((ulong)(digit1 + (digit2 << 1)));
+				carry = (digit2 + (digit1 >> 1)) >> 63;
 			}
 			UInt128 digits = BigMul(v, v) + carry;
-			Unsafe.Add(ref resultPtr, i + i) = digits.Lower;
-			Unsafe.Add(ref resultPtr, i + i + 1) = digits.Upper;
+			bits[i + i] = digits.Lower;
+			bits[i + i + 1] = digits.Upper;
 		}
 	}
 
-	public static UInt256 Multiply(in UInt256 left, ulong right, out ulong carry)
+	internal static UInt256 Multiply(in UInt256 left, ulong right, out ulong carry)
 	{
 		// Based on: https://github.com/dotnet/runtime/blob/main/src/libraries/System.Runtime.Numerics/src/System/Numerics/BigIntegerCalculator.SquMul.cs
 
@@ -178,7 +221,7 @@ internal static class Calculator
 
 		return new UInt256(p3, p2, p1, p0);
 	}
-	public static UInt512 Multiply(in UInt512 left, ulong right, out ulong carry)
+	internal static UInt512 Multiply(in UInt512 left, ulong right, out ulong carry)
 	{
 		ulong p7, p6, p5, p4, p3, p2, p1, p0;
 		
@@ -196,17 +239,11 @@ internal static class Calculator
 			p3, p2, p1, p0
 			);
 	}
-	public static void Multiply(ReadOnlySpan<ulong> left, ReadOnlySpan<ulong> right, Span<ulong> bits)
+	internal static void Multiply(ReadOnlySpan<ulong> left, ReadOnlySpan<ulong> right, Span<ulong> bits)
 	{
 		// Based on: https://github.com/dotnet/runtime/blob/main/src/libraries/System.Runtime.Numerics/src/System/Numerics/BigIntegerCalculator.SquMul.cs
 		Debug.Assert(left.Length < 32);
 		Debug.Assert(right.Length < 32);
-
-		// Switching to managed references helps eliminating
-		// index bounds check...
-		ref ulong leftPtr = ref MemoryMarshal.GetReference(left);
-		ref ulong rightPtr = ref MemoryMarshal.GetReference(right);
-		ref ulong resultPtr = ref MemoryMarshal.GetReference(bits);
 
 		// Multiplies the bits using the "grammar-school" method.
 		// Envisioning the "rhombus" of a pen-and-paper calculation
@@ -217,21 +254,52 @@ internal static class Calculator
 
 		for (int i = 0; i < right.Length; i++)
 		{
-			ulong rv = Unsafe.Add(ref rightPtr, i);
-			UInt128 carry = default;
-			for (int j = 0; j < left.Length; j++)
+			bits[i + left.Length] = MulAdd1(bits.Slice(i), left, right[i]);;
+		}
+
+		return;
+
+		static ulong MulAdd1(Span<ulong> result, ReadOnlySpan<ulong> left, ulong multiplier)
+		{
+			Debug.Assert(result.Length >= left.Length);
+		
+			int length = left.Length;
+			int i = 0;
+			ulong carry = 0;
+		
+			// Unroll by 4: mulx has 3-5 cycle latency but 1 cycle throughput,
+			// so issuing 4 multiplies allows the CPU to pipeline them while
+			// carry chains complete sequentially behind.
+			for (; i + 3 < length; i += 4)
 			{
-				ref ulong elementPtr = ref Unsafe.Add(ref resultPtr, i + j);
-				UInt128 digits = elementPtr + carry + BigMul(Unsafe.Add(ref leftPtr, j), rv);
-				elementPtr = unchecked((ulong)digits);
-				carry = digits.Upper;
+				UInt128 p0 = (UInt128)left[i] * multiplier + result[i] + carry;
+				result[i] = p0.Lower;
+
+				UInt128 p1 = (UInt128)left[i + 1] * multiplier + result[i + 1] + p0.Upper;
+				result[i + 1] = p1.Lower;
+
+				UInt128 p2 = (UInt128)left[i + 2] * multiplier + result[i + 2] + p1.Upper;
+				result[i + 2] = p2.Lower;
+
+				UInt128 p3 = (UInt128)left[i + 3] * multiplier + result[i + 3] + p2.Upper;
+				result[i + 3] = p3.Lower;
+
+				carry = p3.Upper;
 			}
-			Unsafe.Add(ref resultPtr, i + left.Length) = (ulong)carry;
+
+			for (; i < length; i++)
+			{
+				UInt128 product = BigMul(left[i], multiplier) + result[i] + carry;
+				result[i] = product.Lower;
+				carry = product.Upper;
+			}
+		
+			return carry;
 		}
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public static void DivRem(in UInt256 left, ulong right, out UInt256 quotient, out ulong remainder)
+	internal static void DivRem(in UInt256 left, ulong right, out UInt256 quotient, out ulong remainder)
 	{
 		// Based on: https://github.com/dotnet/runtime/blob/main/src/libraries/System.Runtime.Numerics/src/System/Numerics/BigIntegerCalculator.DivRem.cs
 
@@ -288,7 +356,7 @@ internal static class Calculator
 	}
 	
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	public static void DivRem(in UInt512 left, ulong right, out UInt512 quotient, out ulong remainder)
+	internal static void DivRem(in UInt512 left, ulong right, out UInt512 quotient, out ulong remainder)
 	{
 		// Based on: https://github.com/dotnet/runtime/blob/main/src/libraries/System.Runtime.Numerics/src/System/Numerics/BigIntegerCalculator.DivRem.cs
 
@@ -470,7 +538,7 @@ internal static class Calculator
 			p07, p06, p05, p04,
 			p03, p02, p01, p00);
 	}
-	public static void DivRem(ReadOnlySpan<ulong> left, ReadOnlySpan<ulong> right, Span<ulong> quotient, Span<ulong> remainder)
+	internal static void DivRem(ReadOnlySpan<ulong> left, ReadOnlySpan<ulong> right, Span<ulong> quotient, Span<ulong> remainder)
 	{
 		// Based on: https://github.com/dotnet/runtime/blob/main/src/libraries/System.Runtime.Numerics/src/System/Numerics/BigIntegerCalculator.DivRem.cs
 
@@ -478,7 +546,7 @@ internal static class Calculator
 		Divide(remainder, right, quotient);
 	}
 
-	public static UInt256 Divide(in UInt256 left, ulong right)
+	internal static UInt256 Divide(in UInt256 left, ulong right)
 	{
 		// Executes the division for one big and one 64-bit integer.
 		// Thus, we've similar code than below, but there is no loop for
@@ -530,7 +598,7 @@ internal static class Calculator
 		return new UInt256(p3, p2, p1, p0);
 	}
 	
-	public static UInt512 Divide(in UInt512 left, ulong right)
+	internal static UInt512 Divide(in UInt512 left, ulong right)
 	{
 		// Executes the division for one big and one 64-bit integer.
 		// Thus, we've similar code than below, but there is no loop for
@@ -709,7 +777,7 @@ internal static class Calculator
 			p03, p02, p01, p00);
 	}
 	
-	public static void Divide(Span<ulong> left, ReadOnlySpan<ulong> right, Span<ulong> bits)
+	internal static void Divide(Span<ulong> left, ReadOnlySpan<ulong> right, Span<ulong> bits)
 	{
 		// Based on: https://github.com/dotnet/runtime/blob/main/src/libraries/System.Runtime.Numerics/src/System/Numerics/BigIntegerCalculator.DivRem.cs
 
@@ -741,7 +809,8 @@ internal static class Calculator
 			int n = i - right.Length;
 			ulong t = ((uint)i < (uint)left.Length) ? left[i] : 0;
 
-			UInt128 valHi = new UInt128(t, left[i - 1]);
+			ulong valHi1 = t;
+			ulong valHi0 = left[i - 1];
 			ulong valLo = (i > 1) ? left[i - 2] : 0;
 
 			// We shifted the divisor, we shift the dividend too
@@ -749,25 +818,25 @@ internal static class Calculator
 			{
 				ulong valNx = i > 2 ? left[i - 3] : 0;
 
-				valHi = (valHi << shift) | (valLo >> backShift);
+				valHi1 = (valHi1 << shift) | (valHi0 >> backShift);
+				valHi0 = (valHi0 << shift) | (valLo >> backShift);
 				valLo = (valLo << shift) | (valNx >> backShift);
 			}
 
 			// First guess for the current digit of the quotient,
 			// which naturally must have only 64 bits...
-			UInt128 digit = DivideByUInt64(valHi, divHi);
-			ulong digit64 = digit.Upper != 0 ? 0xFFFF_FFFF_FFFF_FFFF : (ulong)digit;
+			ulong digit = (valHi1 >= divHi) ? ulong.MaxValue : DivRemByUInt64(valHi1, valHi0, divHi, out _);
 
 			// Our first guess may be a little bit too big
-			while (DivideGuessTooBig(digit64, valHi, valLo, divHi, divLo))
+			while (DivideGuessTooBig(digit, valHi1, valHi0, valLo, divHi, divLo))
 			{
-				--digit64;
+				--digit;
 			}
 
-			if (digit64 > 0)
+			if (digit > 0)
 			{
 				// Now it's time to subtract our current quotient
-				ulong carry = SubtractDivisor(left[n..], right, digit64);
+				ulong carry = SubtractDivisor(left[n..], right, digit);
 
 				if (carry != t)
 				{
@@ -776,7 +845,7 @@ internal static class Calculator
 					// Our guess was still exactly one too high
 					carry = AddDivisor(left[n..], right);
 
-					--digit64;
+					--digit;
 					Debug.Assert(carry == 1);
 				}
 			}
@@ -784,7 +853,7 @@ internal static class Calculator
 			// We have the digit!
 			if ((uint)n < (uint)bits.Length)
 			{
-				bits[n] = digit64;
+				bits[n] = digit;
 			}
 
 			if ((uint)i < (uint)left.Length)
@@ -797,65 +866,97 @@ internal static class Calculator
 		
 		static ulong AddDivisor(Span<ulong> left, ReadOnlySpan<ulong> right)
 		{
-			UInt128 carry = default;
+			ulong carry = 0;
 
 			// Repairs the dividend, if the last subtract was too much
 
 			for (int i = 0; i < right.Length; i++)
 			{
 				ref ulong leftElement = ref left[i];
-				UInt128 digit = (leftElement + carry) + right[i];
-
-				leftElement = digit.Lower;
-				carry = digit.Upper;
+				leftElement = AddWithCarry(leftElement, right[i], carry, out carry);
 			}
 
-			return (ulong)carry;
+			return carry;
 		}
 
-		static bool DivideGuessTooBig(ulong q, UInt128 valHi, ulong valLo, ulong divHi, ulong divLo)
+		static bool DivideGuessTooBig(ulong q, ulong valHi1, ulong valHi0, ulong valLo, ulong divHi, ulong divLo)
 		{
 			// We multiply the two most significant limbs of the divisor
 			// with the current guess for the quotient. If those are bigger
 			// than the three most significant limbs of the current dividend
 			// we return true, which means the current guess is still too big.
-			UInt128 chkHi = BigMul(divHi, q);
-			UInt128 chkLo = BigMul(divLo, q);
 
-			chkHi += chkLo.Upper;
-			chkLo = chkLo.Lower;
+			ulong chkHiHi = Math.BigMul(divHi, q, out ulong chkHiLo);
+			ulong chkLoHi = Math.BigMul(divLo, q, out ulong chkLoLo);
 
-			return (chkHi > valHi) || ((chkHi == valHi) && (chkLo > valLo));
+			chkHiLo += chkLoHi;
+			if (chkHiLo < chkLoHi)
+			{
+				chkHiHi++;
+			}
+
+			return (chkHiHi > valHi1)
+			       || ((chkHiHi == valHi1) && ((chkHiLo > valHi0) || ((chkHiLo == valHi0) && (chkLoLo > valLo))));
 		}
 
-		static ulong SubtractDivisor(Span<ulong> left, ReadOnlySpan<ulong> right, ulong q)
+		static ulong SubtractDivisor(Span<ulong> left, ReadOnlySpan<ulong> right, ulong multiplier)
 		{
 			// Combines a subtract and a multiply operation, which is naturally
 			// more efficient than multiplying and then subtracting...
 
-			UInt128 carry = default;
+			int length = right.Length;
+			int i = 0;
+			ulong carry = 0;
+			
+			for (; i + 3 < length; i += 4)
+            {
+                UInt128 prod0 = (UInt128)(ulong)right[i] * (ulong)multiplier + (ulong)carry;
+                ulong lo0 = (ulong)prod0;
+                ulong hi0 = (ulong)(prod0 >> 64);
+                ulong orig0 = left[i];
+                left[i] = orig0 - lo0;
+                hi0 += (orig0 < lo0) ? 1UL : 0;
 
-			for (int i = 0; i < right.Length; i++)
-			{
-				carry += BigMul(right[i], q);
+                UInt128 prod1 = (UInt128)(ulong)right[i + 1] * (ulong)multiplier + (ulong)hi0;
+                ulong lo1 = (ulong)prod1;
+                ulong hi1 = (ulong)(prod1 >> 64);
+                ulong orig1 = left[i + 1];
+                left[i + 1] = orig1 - lo1;
+                hi1 += (orig1 < lo1) ? 1UL : 0;
 
-				ulong digit = carry.Lower;
-				carry = carry.Upper;
+                UInt128 prod2 = (UInt128)(ulong)right[i + 2] * (ulong)multiplier + (ulong)hi1;
+                ulong lo2 = (ulong)prod2;
+                ulong hi2 = (ulong)(prod2 >> 64);
+                ulong orig2 = left[i + 2];
+                left[i + 2] = orig2 - lo2;
+                hi2 += (orig2 < lo2) ? 1UL : 0;
 
-				ref ulong leftElement = ref left[i];
+                UInt128 prod3 = (UInt128)(ulong)right[i + 3] * (ulong)multiplier + (ulong)hi2;
+                ulong lo3 = (ulong)prod3;
+                ulong hi3 = (ulong)(prod3 >> 64);
+                ulong orig3 = left[i + 3];
+                left[i + 3] = orig3 - lo3;
+                hi3 += (orig3 < lo3) ? 1UL : 0;
 
-				if (leftElement < digit)
-				{
-					++carry;
-				}
-				leftElement = unchecked(leftElement - digit);
-			}
+                carry = hi3;
+            }
 
-			return carry.Lower;
+            for (; i < length; i++)
+            {
+                UInt128 product = (UInt128)(ulong)right[i] * (ulong)multiplier + (ulong)carry;
+                ulong lo = (ulong)product;
+                ulong hi = (ulong)(product >> 64);
+                ulong orig = left[i];
+                left[i] = orig - lo;
+                hi += (orig < lo) ? 1UL : 0;
+                carry = hi;
+            }
+
+			return carry;
 		}
 	}
 	
-	public static ulong Remainder(in UInt256 left, ulong right)
+	internal static ulong Remainder(in UInt256 left, ulong right)
 	{
 		// Based on: https://github.com/dotnet/runtime/blob/main/src/libraries/System.Runtime.Numerics/src/System/Numerics/BigIntegerCalculator.DivRem.cs
 
@@ -898,7 +999,7 @@ internal static class Calculator
 		return carry;
 	}
 	
-	public static ulong Remainder(in UInt512 left, ulong right)
+	internal static ulong Remainder(in UInt512 left, ulong right)
 	{
 		// Based on: https://github.com/dotnet/runtime/blob/main/src/libraries/System.Runtime.Numerics/src/System/Numerics/BigIntegerCalculator.DivRem.cs
 
@@ -1022,7 +1123,7 @@ internal static class Calculator
 
 		return carry;
 	}
-	public static void Remainder(ReadOnlySpan<ulong> left, ReadOnlySpan<ulong> right, Span<ulong> remainder)
+	internal static void Remainder(ReadOnlySpan<ulong> left, ReadOnlySpan<ulong> right, Span<ulong> remainder)
 	{
 		// Based on: https://github.com/dotnet/runtime/blob/main/src/libraries/System.Runtime.Numerics/src/System/Numerics/BigIntegerCalculator.DivRem.cs
 		// Same as above, but only returning the remainder.
@@ -1032,11 +1133,11 @@ internal static class Calculator
 		Divide(remainder, right, default);
 	}
 
-	public static void Pow(ulong value, uint power, Span<ulong> bits)
+	internal static void Pow(ulong value, uint power, Span<ulong> bits)
 	{
 		Pow(value != 0 ? new ReadOnlySpan<ulong>(in value) : default, power, bits);
 	}
-	public static void Pow(ReadOnlySpan<ulong> value, uint power, Span<ulong> bits)
+	internal static void Pow(ReadOnlySpan<ulong> value, uint power, Span<ulong> bits)
 	{
 		// Based on: https://github.com/dotnet/runtime/blob/main/src/libraries/System.Runtime.Numerics/src/System/Numerics/BigIntegerCalculator.PowMod.cs
 
@@ -1109,7 +1210,7 @@ internal static class Calculator
 
 		int resultLength = valueLength + valueLength;
 
-		Square(ref MemoryMarshal.GetReference(value), valueLength, temp[..resultLength]);
+		Square(value[..valueLength], temp[..resultLength]);
 
 		value.Clear();
 		//switch buffers
@@ -1119,7 +1220,7 @@ internal static class Calculator
 		return ActualLength(value[..resultLength]);
 	}
 
-	public static int PowBound(uint power, int valueLength)
+	internal static int PowBound(uint power, int valueLength)
 	{
 		// Based on: https://github.com/dotnet/runtime/blob/main/src/libraries/System.Runtime.Numerics/src/System/Numerics/BigIntegerCalculator.PowMod.cs
 		// The basic pow algorithm, but instead of squaring
@@ -1141,7 +1242,7 @@ internal static class Calculator
 		return resultLength;
 	}
 
-	public static int ActualLength(ReadOnlySpan<ulong> value)
+	internal static int ActualLength(ReadOnlySpan<ulong> value)
 	{
 		// Based on: https://github.com/dotnet/runtime/blob/main/src/libraries/System.Runtime.Numerics/src/System/Numerics/BigIntegerCalculator.Utils.cs
 		// Since we're reusing memory here, the actual length

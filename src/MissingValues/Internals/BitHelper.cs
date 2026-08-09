@@ -4,6 +4,7 @@ using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics;
+using MissingValues.Primitives;
 
 namespace MissingValues.Internals
 {
@@ -215,31 +216,32 @@ namespace MissingValues.Internals
 
 		internal static int Log10(in UInt256 value)
 		{
+			// https://graphics.stanford.edu/~seander/bithacks.html#IntegerLog10
 			UInt256 x = value | UInt256.One;
 			int num1 = Log2(in x) + 1;
 			int num2 = (num1 * 1233) >> 12;
-			return x < Read<UInt256>(Tables.Pow10Table[(num2 << 3)..]) ? num2 - 1 : num2;
+			return x < new UInt256(Tables.Pow10Table[(num2 << 3)..]) ? num2 - 1 : num2;
 		}
 		internal static int Log10(in Int256 value)
 		{
 			Int256 x = value | Int256.One;
 			int num1 = Log2(in x) + 1;
 			int num2 = (num1 * 1233) >> 12;
-			return x < Read<Int256>(Tables.Pow10Table[(num2 << 3)..]) ? num2 - 1 : num2;
+			return x < new Int256(Tables.Pow10Table[(num2 << 3)..]) ? num2 - 1 : num2;
 		}
 		internal static int Log10(in UInt512 value)
 		{
 			UInt512 x = value | UInt512.One;
 			int num1 = Log2(in x) + 1;
 			int num2 = (num1 * 1233) >> 12;
-			return x < Read<UInt512>(Tables.Pow10Table[(num2 << 3)..]) ? num2 - 1 : num2;
+			return x < new UInt512(Tables.Pow10Table[(num2 << 3)..]) ? num2 - 1 : num2;
 		}
 		internal static int Log10(in Int512 value)
 		{
 			Int512 x = value | Int512.One;
 			int num1 = Log2(in x) + 1;
 			int num2 = (num1 * 1233) >> 12;
-			return x < Read<Int512>(Tables.Pow10Table[(num2 << 3)..]) ? num2 - 1 : num2;
+			return x < new Int512(Tables.Pow10Table[(num2 << 3)..]) ? num2 - 1 : num2;
 		}
 
 		internal static int PopCount(in UInt256 value)
@@ -259,79 +261,6 @@ namespace MissingValues.Internals
 		{
 			return BitOperations.PopCount(value.Part0) + BitOperations.PopCount(value.Part1) + BitOperations.PopCount(value.Part2) + BitOperations.PopCount(value.Part3)
 			+ BitOperations.PopCount(value.Part4) + BitOperations.PopCount(value.Part5) + BitOperations.PopCount(value.Part6) + BitOperations.PopCount(value.Part7);
-		}
-
-		internal static UInt256 ReverseEndianness(in UInt256 value)
-		{
-			if (Vector256.IsHardwareAccelerated)
-			{
-				return Unsafe.BitCast<Vector256<byte>, UInt256>(
-					Vector256.Shuffle(
-						Unsafe.BitCast<UInt256, Vector256<byte>>(value),
-						Vector256.Create((byte)31, 30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0)
-						)
-					);
-			}
-			return new UInt256(BinaryPrimitives.ReverseEndianness(value.Part0), BinaryPrimitives.ReverseEndianness(value.Part1), BinaryPrimitives.ReverseEndianness(value.Part2), BinaryPrimitives.ReverseEndianness(value.Part3));
-		}
-		internal static Int256 ReverseEndianness(in Int256 value)
-		{
-			if (Vector256.IsHardwareAccelerated)
-			{
-				return Unsafe.BitCast<Vector256<byte>, Int256>(
-					Vector256.Shuffle(
-						Unsafe.BitCast<Int256, Vector256<byte>>(value),
-						Vector256.Create((byte)31, 30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0)
-					)
-				);
-			}
-			return new Int256(BinaryPrimitives.ReverseEndianness(value.Part0), BinaryPrimitives.ReverseEndianness(value.Part1), BinaryPrimitives.ReverseEndianness(value.Part2), BinaryPrimitives.ReverseEndianness(value.Part3));
-		}
-		internal static UInt512 ReverseEndianness(in UInt512 value)
-		{
-			if (Vector512.IsHardwareAccelerated)
-			{
-				return Unsafe.BitCast<Vector512<byte>, UInt512>(
-					Vector512.Shuffle(
-						Unsafe.BitCast<UInt512, Vector512<byte>>(value),
-						Vector512.Create(
-							(byte)63, 62, 61, 60, 59, 58, 57, 56, 55, 54, 53, 52, 51, 50, 49, 48, 47, 46, 45, 44, 43, 42, 41, 40, 39, 38, 37, 36, 35, 34, 33, 32,
-							31, 30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0
-							)
-					)
-				);
-			}
-			if (Vector256.IsHardwareAccelerated)
-			{
-				return new UInt512(ReverseEndianness(value.Lower), ReverseEndianness(value.Upper));
-			}
-			return new UInt512(
-				BinaryPrimitives.ReverseEndianness(value.Part0), BinaryPrimitives.ReverseEndianness(value.Part1), BinaryPrimitives.ReverseEndianness(value.Part2), BinaryPrimitives.ReverseEndianness(value.Part3),
-				BinaryPrimitives.ReverseEndianness(value.Part4), BinaryPrimitives.ReverseEndianness(value.Part5), BinaryPrimitives.ReverseEndianness(value.Part6), BinaryPrimitives.ReverseEndianness(value.Part7)
-				);
-		}
-		internal static Int512 ReverseEndianness(in Int512 value)
-		{
-			if (Vector512.IsHardwareAccelerated)
-			{
-				return Unsafe.BitCast<Vector512<byte>, Int512>(
-					Vector512.Shuffle(
-						Unsafe.BitCast<Int512, Vector512<byte>>(value),
-						Vector512.Create(
-							(byte)63, 62, 61, 60, 59, 58, 57, 56, 55, 54, 53, 52, 51, 50, 49, 48, 47, 46, 45, 44, 43, 42, 41, 40, 39, 38, 37, 36, 35, 34, 33, 32,
-							31, 30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0
-						)
-					)
-				);
-			}
-			if (Vector256.IsHardwareAccelerated)
-			{
-				return new Int512(ReverseEndianness(value.Lower), ReverseEndianness(value.Upper));
-			}
-			return new Int512(
-				BinaryPrimitives.ReverseEndianness(value.Part0), BinaryPrimitives.ReverseEndianness(value.Part1), BinaryPrimitives.ReverseEndianness(value.Part2), BinaryPrimitives.ReverseEndianness(value.Part3),
-				BinaryPrimitives.ReverseEndianness(value.Part4), BinaryPrimitives.ReverseEndianness(value.Part5), BinaryPrimitives.ReverseEndianness(value.Part6), BinaryPrimitives.ReverseEndianness(value.Part7)
-				);
 		}
 
 		internal static int TrailingZeroCount(in UInt256 value)
@@ -430,7 +359,13 @@ namespace MissingValues.Internals
 			}
 			return 448 + BitOperations.TrailingZeroCount(value.Part7);
 		}
-		
+
+		internal static bool TryReadLittleEndian<T>(ReadOnlySpan<byte> source, bool isUnsigned, out T value)
+			where T : unmanaged, IBigInteger<T>
+		{
+			return T.TryReadLittleEndian(source, isUnsigned, out value);
+		}
+
 		internal static int GetTrimLength(in UInt256 value)
 		{
 			if (value.Part3 != 0)
@@ -537,22 +472,11 @@ namespace MissingValues.Internals
 			where T : unmanaged, IBigInteger<T>
 		{
 			Debug.Assert(((typeof(T) == typeof(UInt256) || typeof(T) == typeof(Int256)) && destination.Length >= 4) || ((typeof(T) == typeof(UInt512) || typeof(T) == typeof(Int512)) && destination.Length >= 8));
-			
-			if (BitConverter.IsLittleEndian)
+
+			if (!value.TryCopyTo(destination))
 			{
-				Unsafe.WriteUnaligned(ref Unsafe.As<ulong, byte>(ref MemoryMarshal.GetReference(destination)), value);
+				Thrower.OutOfRange(nameof(value));
 			}
-			
-			ref byte dest = ref Unsafe.As<ulong, byte>(ref MemoryMarshal.GetReference(destination));
-			Unsafe.WriteUnaligned(ref Unsafe.Add(ref dest, sizeof(ulong) * 0), ulong.CreateTruncating(value));
-			Unsafe.WriteUnaligned(ref Unsafe.Add(ref dest, sizeof(ulong) * 1), ulong.CreateTruncating(value >>> 64));
-			Unsafe.WriteUnaligned(ref Unsafe.Add(ref dest, sizeof(ulong) * 2), ulong.CreateTruncating(value >>> 128));
-			Unsafe.WriteUnaligned(ref Unsafe.Add(ref dest, sizeof(ulong) * 3), ulong.CreateTruncating(value >>> 192));
-			if (typeof(T) != typeof(UInt512) && typeof(T) != typeof(Int512)) return;
-			Unsafe.WriteUnaligned(ref Unsafe.Add(ref dest, sizeof(ulong) * 4), ulong.CreateTruncating(value >>> 256));
-			Unsafe.WriteUnaligned(ref Unsafe.Add(ref dest, sizeof(ulong) * 5), ulong.CreateTruncating(value >>> 320));
-			Unsafe.WriteUnaligned(ref Unsafe.Add(ref dest, sizeof(ulong) * 6), ulong.CreateTruncating(value >>> 384));
-			Unsafe.WriteUnaligned(ref Unsafe.Add(ref dest, sizeof(ulong) * 7), ulong.CreateTruncating(value >>> 448));
 		}
 		
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -561,22 +485,54 @@ namespace MissingValues.Internals
 		{
 			Debug.Assert(((typeof(T) == typeof(UInt256) || typeof(T) == typeof(Int256)) && source.Length >= 4) || ((typeof(T) == typeof(UInt512) || typeof(T) == typeof(Int512)) && source.Length >= 8));
 
-			if (BitConverter.IsLittleEndian)
+			return T.Create(source);
+		}
+		
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		internal static ulong ReadUInt64Chunk(ReadOnlySpan<byte> bytes, int chunkIndex)
+		{
+			if (chunkIndex < 0)
 			{
-				return Unsafe.ReadUnaligned<T>(in Unsafe.As<ulong, byte>(ref MemoryMarshal.GetReference(source)));
+				return 0;
 			}
 			
-			T result = T.CreateTruncating(source[0]);
-			result |= T.CreateTruncating(source[1]) << 64;
-			result |= T.CreateTruncating(source[2]) << 128;
-			result |= T.CreateTruncating(source[3]) << 192;
-			if (typeof(T) != typeof(UInt512) && typeof(T) != typeof(Int512)) return result;
-			result |= T.CreateTruncating(source[4]) << 256;
-			result |= T.CreateTruncating(source[5]) << 320;
-			result |= T.CreateTruncating(source[6]) << 384;
-			result |= T.CreateTruncating(source[7]) << 448;
-			return result;
+			int offset = chunkIndex * 8;
+			int remaining = bytes.Length - offset;
 
+			if (remaining >= 8)
+			{
+				return BinaryPrimitives.ReadUInt64LittleEndian(bytes[offset..]);
+			}
+
+			ulong result = 0;
+			for (int i = 0; i < remaining; i++)
+			{
+				result |= (ulong)bytes[offset + i] << (i * 8);
+			}
+			return result;
+		}
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		internal static UInt128 ReadUInt128Chunk(ReadOnlySpan<byte> bytes, int chunkIndex)
+		{
+			if (chunkIndex < 0)
+			{
+				return UInt128.Zero;
+			}
+			
+			int offset = chunkIndex * 16;
+			int remaining = bytes.Length - offset;
+
+			if (remaining >= 16)
+			{
+				return BinaryPrimitives.ReadUInt128LittleEndian(bytes[offset..]);
+			}
+
+			UInt128 result = UInt128.Zero;
+			for (int i = 0; i < remaining; i++)
+			{
+				result |= (UInt128)bytes[offset + i] << (i * 16);
+			}
+			return result;
 		}
 
 		/// <summary>
@@ -584,7 +540,7 @@ namespace MissingValues.Internals
 		/// </summary>
 		private static class Tables
 		{
-			public static ReadOnlySpan<ulong> Pow10Table =>
+			internal static ReadOnlySpan<ulong> Pow10Table =>
 			[
 			    // 10^0
 			    0x0000000000000001, 0x0000000000000000, 0x0000000000000000, 0x0000000000000000, 0x0000000000000000, 0x0000000000000000, 0x0000000000000000, 0x0000000000000000,
