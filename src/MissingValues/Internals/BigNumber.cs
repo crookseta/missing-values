@@ -494,7 +494,7 @@ internal unsafe ref partial struct BigNumber
 
 		while (index < lhsLength)
 		{
-			UInt128 product = Calculator.BigMul(lhs._blocks[index], value) + carry;
+			UInt128 product = Math.BigMul(lhs._blocks[index], value) + carry;
 			result._blocks[index] = product.Lower;
 			carry = product.Upper;
 
@@ -564,7 +564,7 @@ internal unsafe ref partial struct BigNumber
 
 				do
 				{
-					UInt128 product = result._blocks[resultIndex] + Calculator.BigMul(small._blocks[smallIndex], large._blocks[largeIndex]) + carry;
+					UInt128 product = result._blocks[resultIndex] + Math.BigMul(small._blocks[smallIndex], large._blocks[largeIndex]) + carry;
 					carry = product.Upper;
 					result._blocks[resultIndex] = product.Lower;
 

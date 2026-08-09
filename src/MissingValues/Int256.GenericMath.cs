@@ -289,9 +289,7 @@ public partial struct Int256 :
 
 	static Int256 INumberBase<Int256>.MinMagnitudeNumber(Int256 x, Int256 y) => MinMagnitude(x, y);
 
-#if NET9_0_OR_GREATER
-		static Int256 INumberBase<Int256>.MultiplyAddEstimate(Int256 left, Int256 right, Int256 addend) => (left * right) + addend;
-#endif
+	static Int256 INumberBase<Int256>.MultiplyAddEstimate(Int256 left, Int256 right, Int256 addend) => (left * right) + addend;
 
 	/// <inheritdoc/>
 	public static Int256 Max(Int256 x, Int256 y) => (x >= y) ? x : y;

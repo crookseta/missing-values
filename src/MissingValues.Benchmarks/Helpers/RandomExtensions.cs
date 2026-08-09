@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 namespace MissingValues.Benchmarks.Helpers;
 internal static class RandomExtensions
 {
+#if !NET11_0_OR_GREATER
 	public static T NextInteger<T>(this Random random)
 		where T : unmanaged, IBinaryInteger<T>
 	{
@@ -54,7 +55,7 @@ internal static class RandomExtensions
 		return result;
 	}
 
-	public static T NextFloat<T>(this Random random)
+	public static T NextBinaryFloat<T>(this Random random)
 		where T : unmanaged, IBinaryFloatingPointIeee754<T>
 	{
 		Debug.Assert(Unsafe.SizeOf<T>() <= Unsafe.SizeOf<UInt512>());
@@ -62,9 +63,10 @@ internal static class RandomExtensions
 
 		return T.CreateTruncating(NextInteger<UInt512>(random) >> (512 - significandBitLength)) * (T.One / T.CreateTruncating(UInt512.One << significandBitLength));
 	}
+#endif
 
 	public static T[] NextIntegerArray<T>(this Random random, int length)
-		where T : unmanaged, IBinaryInteger<T>
+		where T : unmanaged, IBinaryInteger<T>, IMinMaxValue<T>
 	{
 		T[] result = new T[length];
 

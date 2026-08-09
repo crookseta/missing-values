@@ -687,9 +687,7 @@ public partial struct Octo :
 		return y;
 	}
 
-#if NET9_0_OR_GREATER
-		static Octo INumberBase<Octo>.MultiplyAddEstimate(Octo left, Octo right, Octo addend) => (left * right) + addend;
-#endif
+	static Octo INumberBase<Octo>.MultiplyAddEstimate(Octo left, Octo right, Octo addend) => (left * right) + addend;
 
 	/// <inheritdoc/>
 	public static Octo Parse(ReadOnlySpan<char> s, NumberStyles style, IFormatProvider? provider)

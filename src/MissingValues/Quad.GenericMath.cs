@@ -308,9 +308,7 @@ public partial struct Quad :
 		return IsNegative(x) ? x : y;
 	}
 
-#if NET9_0_OR_GREATER
-		static Quad INumberBase<Quad>.MultiplyAddEstimate(Quad left, Quad right, Quad addend) => (left * right) + addend;
-#endif
+	static Quad INumberBase<Quad>.MultiplyAddEstimate(Quad left, Quad right, Quad addend) => (left * right) + addend;
 
 	/// <inheritdoc/>
 	public static Quad Parse(ReadOnlySpan<char> s, NumberStyles style, IFormatProvider? provider)
@@ -582,16 +580,11 @@ public partial struct Quad :
 			{
 				significand = BinaryPrimitives.ReverseEndianness(significand);
 			}
-
-#if NET9_0_OR_GREATER
 			if (!BitConverter.TryWriteBytes(destination, significand))
 			{
 				bytesWritten = 0;
 				return false;
 			}
-#else
-			Unsafe.WriteUnaligned(ref MemoryMarshal.GetReference(destination), significand);
-#endif
 
 			bytesWritten = Unsafe.SizeOf<UInt128>();
 			return true;
@@ -613,16 +606,11 @@ public partial struct Quad :
 			{
 				significand = BinaryPrimitives.ReverseEndianness(significand);
 			}
-
-#if NET9_0_OR_GREATER
 			if (!BitConverter.TryWriteBytes(destination, significand))
 			{
 				bytesWritten = 0;
 				return false;
 			}
-#else
-			Unsafe.WriteUnaligned(ref MemoryMarshal.GetReference(destination), significand);
-#endif
 
 			bytesWritten = Unsafe.SizeOf<UInt128>();
 			return true;

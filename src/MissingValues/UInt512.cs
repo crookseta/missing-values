@@ -219,7 +219,7 @@ public readonly partial struct UInt512
 			{
 				if (left._p7 == 0 && left._p6 == 0 && left._p5 == 0 && left._p4 == 0 && left._p3 == 0 && left._p2 == 0 && left._p1 == 0)
 				{
-					ulong up = Calculator.BigMul(left._p0, right._p0, out ulong low);
+					ulong up = Math.BigMul(left._p0, right._p0, out ulong low);
 					lower = new UInt512(0, 0, 0, 0, 0, 0, up, low);
 					return Zero;
 				}
