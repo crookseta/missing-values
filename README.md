@@ -79,3 +79,5 @@ Console.WriteLine($"Sum: {sum}");
 
 // Prints 2000000000000000000000062,75
 ```
+## References
+Access the documentation [here](./docs/README.md)
