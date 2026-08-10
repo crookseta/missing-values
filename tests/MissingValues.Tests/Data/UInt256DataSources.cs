@@ -599,7 +599,18 @@ public class UInt256DataSources
 
 	public static IEnumerable<Func<(UInt256, string, IFormatProvider?, string)>> ToStringTestData()
 	{
-		yield return () => ((UInt256)Int256.MaxValue, "e25", CultureInfo.InvariantCulture, "5.7896044618658097711785493e+76");
+		yield return () => (UInt256.UInt32MaxValue, "x", CultureInfo.InvariantCulture, "ffffffff");
+		yield return () => (UInt256.UInt32MaxValue, "X", CultureInfo.InvariantCulture, "FFFFFFFF");
+		yield return () => (UInt256.UInt64MaxValue, "X", CultureInfo.InvariantCulture, "FFFFFFFFFFFFFFFF");
+		yield return () => (UInt256.UInt128MaxValue, "X", CultureInfo.InvariantCulture, "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF");
+		yield return () => (UInt256.MaxValue, "X", CultureInfo.InvariantCulture, "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF");
+		
+		yield return () => (UInt256.UInt32MaxValue, "B", CultureInfo.InvariantCulture, "11111111111111111111111111111111");
+		yield return () => (UInt256.UInt64MaxValue, "B", CultureInfo.InvariantCulture, "1111111111111111111111111111111111111111111111111111111111111111");
+		yield return () => (UInt256.UInt128MaxValue, "B", CultureInfo.InvariantCulture, "11111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111");
+		yield return () => (UInt256.MaxValue, "B", CultureInfo.InvariantCulture, "1111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111");
+		
+		yield return () => (UInt256.Int256MaxValue, "e25", CultureInfo.InvariantCulture, "5.7896044618658097711785493e+76");
 	}
 
 	public static IEnumerable<Func<(UInt256, UInt256, UInt256, UInt256)>> ClampTestData()
