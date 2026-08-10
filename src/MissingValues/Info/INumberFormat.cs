@@ -231,3 +231,72 @@ internal readonly struct NumericFormat : INumberFormat
 		return number.Scale + nMaxDigits;
 	}
 }
+
+internal interface IIntegerRadixConverter<TInteger>
+	where TInteger : struct, IFormattableInteger<TInteger>
+{
+	static abstract NumberStyles AllowedStyles { get; }
+	static abstract bool IsValidChar<TChar>(TChar ch) where TChar : unmanaged, IUtfCharacter<TChar>;
+	static abstract TInteger FromChar<TChar>(TChar ch) where TChar : unmanaged, IUtfCharacter<TChar>;
+	static abstract uint MaxDigitValue { get; }
+	static abstract int MaxDigitCount { get; }
+	static abstract int MaxUInt64DigitCount { get; }
+	static abstract int BitsPerCharacter { get; }
+	static abstract TInteger ShiftLeftForNextDigit(in TInteger value);
+}
+internal readonly struct HexConverter<TInteger> : IIntegerRadixConverter<TInteger>
+	where TInteger : struct, IFormattableInteger<TInteger>
+{
+	static NumberStyles IIntegerRadixConverter<TInteger>.AllowedStyles => NumberStyles.HexNumber;
+
+	static uint IIntegerRadixConverter<TInteger>.MaxDigitValue => 0xF;
+
+	static int IIntegerRadixConverter<TInteger>.MaxDigitCount => TInteger.MaxHexDigits;
+
+	static int IIntegerRadixConverter<TInteger>.MaxUInt64DigitCount => 16;
+
+	static int IIntegerRadixConverter<TInteger>.BitsPerCharacter => 4;
+
+	static TInteger IIntegerRadixConverter<TInteger>.FromChar<TChar>(TChar ch)
+	{
+		return TInteger.GetHexValue((char)ch);
+	}
+
+	static bool IIntegerRadixConverter<TInteger>.IsValidChar<TChar>(TChar ch)
+	{
+		return TChar.IsHexDigit(ch);
+	}
+
+	static TInteger IIntegerRadixConverter<TInteger>.ShiftLeftForNextDigit(in TInteger value)
+	{
+		return value << 4;
+	}
+}
+internal readonly struct BinConverter<TInteger> : IIntegerRadixConverter<TInteger>
+	where TInteger : struct, IFormattableInteger<TInteger>
+{
+	static NumberStyles IIntegerRadixConverter<TInteger>.AllowedStyles => NumberStyles.BinaryNumber;
+
+	static uint IIntegerRadixConverter<TInteger>.MaxDigitValue => 0b1;
+
+	static int IIntegerRadixConverter<TInteger>.MaxDigitCount => TInteger.MaxBinaryDigits;
+
+	static int IIntegerRadixConverter<TInteger>.MaxUInt64DigitCount => 64;
+
+	static int IIntegerRadixConverter<TInteger>.BitsPerCharacter => 1;
+
+	static TInteger IIntegerRadixConverter<TInteger>.FromChar<TChar>(TChar ch)
+	{
+		return TInteger.GetDecimalValue((char)ch);
+	}
+
+	static bool IIntegerRadixConverter<TInteger>.IsValidChar<TChar>(TChar ch)
+	{
+		return ch == (TChar)'1' || ch == (TChar)'0';
+	}
+
+	static TInteger IIntegerRadixConverter<TInteger>.ShiftLeftForNextDigit(in TInteger value)
+	{
+		return value << 1;
+	}
+}
