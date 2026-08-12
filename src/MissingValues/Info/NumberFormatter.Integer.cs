@@ -248,7 +248,7 @@ internal static partial class NumberFormatter
 		destination[..digits].Fill((TChar)'0');
 		int hexBase = (isUpper - ('X' - 'A' + 10));
 		Span<ulong> value64 = stackalloc ulong[Unsafe.SizeOf<T>() / sizeof(ulong)];
-		Unsafe.WriteUnaligned(ref Unsafe.As<ulong, byte>(ref MemoryMarshal.GetReference(value64)), value);
+		value.TryCopyTo(value64);
 		value64 = value64[..^(T.LeadingZeroCountInt32(in value) / 64)];
 		
 		ulong v;
@@ -276,7 +276,7 @@ internal static partial class NumberFormatter
 				byte digit = (byte)(v & TConverter.MaxDigitValue);
 				destination[--digits] = (TChar)(char)(digit + (digit < 10 ? (byte)'0' : hexBase));
 				digitsLeft--;
-				v >>= TConverter.BitsPerCharacter;
+				v >>>= TConverter.BitsPerCharacter;
 			}
 		}
 	}
@@ -317,7 +317,7 @@ internal static partial class NumberFormatter
 				precision = int.Max(precision, CountBinDigits(in u));
 				return string.Create(precision, (u, fmt), (destination, number) =>
 				{
-					UnsignedIntegerToRadixChars<TUnsigned, Utf16Char, HexConverter<TUnsigned>>(in number.u, number.fmt, Utf16Char.CastFromCharSpan(destination), destination.Length);
+					UnsignedIntegerToRadixChars<TUnsigned, Utf16Char, BinConverter<TUnsigned>>(in number.u, number.fmt, Utf16Char.CastFromCharSpan(destination), destination.Length);
 				});
 			case 'x':
 			case 'X':
@@ -325,7 +325,7 @@ internal static partial class NumberFormatter
 				precision = int.Max(precision, CountHexDigits(in u));
 				return string.Create(precision, (u, fmt), (destination, number) =>
 				{
-					UnsignedIntegerToRadixChars<TUnsigned, Utf16Char, BinConverter<TUnsigned>>(in number.u, number.fmt, Utf16Char.CastFromCharSpan(destination), destination.Length);
+					UnsignedIntegerToRadixChars<TUnsigned, Utf16Char, HexConverter<TUnsigned>>(in number.u, number.fmt, Utf16Char.CastFromCharSpan(destination), destination.Length);
 				});
 			case 'd':
 			case 'D':
