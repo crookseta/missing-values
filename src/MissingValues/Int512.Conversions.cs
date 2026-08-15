@@ -1,5 +1,6 @@
 using System.Numerics;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using MissingValues.Internals;
 using MissingValues.Primitives;
 
@@ -716,6 +717,19 @@ public partial struct Int512
 		}
 		return (Half)(UInt512)(value);
 	}
+	/// <summary>
+	/// Explicitly converts a <see cref="Int512" /> value to a <see cref="NFloat"/>.
+	/// </summary>
+	/// <param name="value">The value to convert.</param>
+	public static explicit operator NFloat(in Int512 value)
+	{
+		if ((long)value._p7 < 0)
+		{
+			Int512 abs = -value;
+			return -(NFloat)(UInt512)(abs);
+		}
+		return (NFloat)(UInt512)(value);
+	}
 	
 	//Unsigned
 	/// <summary>
@@ -939,4 +953,21 @@ public partial struct Int512
 	/// <param name="value">The value to convert.</param>
 	/// <exception cref="OverflowException"><paramref name="value"/> is outside the range of <see cref="Int512"/>.</exception>
 	public static explicit operator checked Int512(Half value) => checked((Int512)(double)value);
+	/// <summary>
+	/// Explicitly converts a <see cref="NFloat" /> value to a <see cref="Int512"/>.
+	/// </summary>
+	/// <param name="value">The value to convert.</param>
+	public static explicit operator Int512(NFloat value)
+	{
+		return NFloat.Size == 8 ? (Int512)(double)value : (Int512)(float)value;
+	}
+	/// <summary>
+	/// Explicitly converts a <see cref="NFloat" /> value to a <see cref="Int512"/>.
+	/// </summary>
+	/// <param name="value">The value to convert.</param>
+	/// <exception cref="OverflowException"><paramref name="value"/> is outside the range of <see cref="Int512"/>.</exception>
+	public static explicit operator checked Int512(NFloat value)
+	{
+		return NFloat.Size == 8 ? checked((Int512)(double)value) : checked((Int512)(float)value);
+	}
 }

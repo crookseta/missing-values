@@ -1,5 +1,6 @@
 using System.Numerics;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using MissingValues.Internals;
 using MissingValues.Primitives;
 
@@ -703,6 +704,19 @@ public partial struct Int256
 		}
 		return (Half)(UInt256)(value);
 	}
+	/// <summary>
+	/// Explicitly converts a <see cref="Int256" /> value to a <see cref="NFloat"/>.
+	/// </summary>
+	/// <param name="value">The value to convert.</param>
+	public static explicit operator NFloat(in Int256 value)
+	{
+		if ((long)value._p3 < 0)
+		{
+			Int256 abs = -value;
+			return -(NFloat)(UInt256)(abs);
+		}
+		return (NFloat)(UInt256)(value);
+	}
 	
 	/// <summary>
 	/// Implicitly converts a <see cref="sbyte" /> value to a <see cref="Int256"/>.
@@ -917,4 +931,21 @@ public partial struct Int256
 	/// <param name="value">The value to convert.</param>
 	/// <exception cref="OverflowException"><paramref name="value"/> is outside the range of <see cref="Int256"/>.</exception>
 	public static explicit operator checked Int256(Half value) => checked((Int256)(double)value);
+	/// <summary>
+	/// Explicitly converts a <see cref="NFloat" /> value to a <see cref="Int256"/>.
+	/// </summary>
+	/// <param name="value">The value to convert.</param>
+	public static explicit operator Int256(NFloat value)
+	{
+		return NFloat.Size == 8 ? (Int256)(double)value : (Int256)(float)value;
+	}
+	/// <summary>
+	/// Explicitly converts a <see cref="NFloat" /> value to a <see cref="Int256"/>.
+	/// </summary>
+	/// <param name="value">The value to convert.</param>
+	/// <exception cref="OverflowException"><paramref name="value"/> is outside the range of <see cref="Int256"/>.</exception>
+	public static explicit operator checked Int256(NFloat value)
+	{
+		return NFloat.Size == 8 ? checked((Int256)(double)value) : checked((Int256)(float)value);
+	}
 }
