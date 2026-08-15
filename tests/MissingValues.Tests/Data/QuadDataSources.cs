@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Numerics;
+using System.Runtime.InteropServices;
 using System.Text;
 using MissingValues.Tests.Data.Sources;
 using MissingValues.Tests.Extensions;
@@ -1119,6 +1120,21 @@ public class QuadDataSources
 		yield return () => (Quad.TwoOver256, UInt512.UInt256MaxValue + UInt512.One);
 		yield return () => (Quad.TwoOver512, UInt512.MaxValue);
 	}
+	
+	public static IEnumerable<Func<(Quad, nuint)>> ConvertToCheckedUIntPtrTestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(Quad, nuint)>> ConvertToSaturatingUIntPtrTestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(Quad, nuint)>> ConvertToTruncatingUIntPtrTestData()
+	{
+		throw new NotImplementedException();
+	}
 
 	public static IEnumerable<Func<(Quad, sbyte)>> ConvertToCheckedSByteTestData()
 	{
@@ -1435,6 +1451,21 @@ public class QuadDataSources
 		yield return () => (Quad.MaxValue, Int512.MaxValue);
 	}
 	
+	public static IEnumerable<Func<(Quad, nint)>> ConvertToCheckedIntPtrTestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(Quad, nint)>> ConvertToSaturatingIntPtrTestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(Quad, nint)>> ConvertToTruncatingIntPtrTestData()
+	{
+		throw new NotImplementedException();
+	}
+	
 	public static IEnumerable<Func<(Quad, BigInteger)>> ConvertToCheckedBigIntegerTestData()
 	{
 		yield return () => (Quad.DoubleMinValue, (BigInteger)double.MinValue);
@@ -1623,6 +1654,21 @@ public class QuadDataSources
 		yield return () => (Quad.One, Octo.One);
 		yield return () => (Quad.PositiveInfinity, Octo.PositiveInfinity);
 	}
+	
+	public static IEnumerable<Func<(Quad, NFloat)>> ConvertToCheckedNFloatTestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(Quad, NFloat)>> ConvertToSaturatingNFloatTestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(Quad, NFloat)>> ConvertToTruncatingNFloatTestData()
+	{
+		throw new NotImplementedException();
+	}
 
 	public static IEnumerable<Func<(byte, Quad)>> ConvertFromCheckedByteTestData()
 	{
@@ -1757,6 +1803,21 @@ public class QuadDataSources
 		yield return () => (uint.MaxValue, Quad.UInt32MaxValue);
 		yield return () => (ulong.MaxValue, Quad.UInt64MaxValue);
 		yield return () => (UInt128.MaxValue, Quad.TwoOver128);
+	}
+	
+	public static IEnumerable<Func<(nuint, Quad)>> ConvertFromCheckedUIntPtrTestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(nuint, Quad)>> ConvertFromSaturatingUIntPtrTestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(nuint, Quad)>> ConvertFromTruncatingUIntPtrTestData()
+	{
+		throw new NotImplementedException();
 	}
 
 	public static IEnumerable<Func<(sbyte, Quad)>> ConvertFromCheckedSByteTestData()
@@ -1951,6 +2012,21 @@ public class QuadDataSources
 		yield return () => (Int128.MaxValue, Quad.TwoOver127);
 	}
 	
+	public static IEnumerable<Func<(nint, Quad)>> ConvertFromCheckedIntPtrTestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(nint, Quad)>> ConvertFromSaturatingIntPtrTestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(nint, Quad)>> ConvertFromTruncatingIntPtrTestData()
+	{
+		throw new NotImplementedException();
+	}
+	
 	public static IEnumerable<Func<(BigInteger, Quad)>> ConvertFromCheckedBigIntegerTestData()
 	{
 		yield return () => (Values.QuadMinValue, Quad.MinValue);
@@ -2135,5 +2211,20 @@ public class QuadDataSources
 		yield return () => (1d, Quad.One);
 		yield return () => (double.MaxValue, Quad.DoubleMaxValue);
 		yield return () => (double.PositiveInfinity, Quad.PositiveInfinity);
+	}
+	
+	public static IEnumerable<Func<(NFloat, Quad)>> ConvertFromCheckedNFloatTestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(NFloat, Quad)>> ConvertFromSaturatingNFloatTestData()
+	{
+		throw new NotImplementedException();
+	}
+	
+	public static IEnumerable<Func<(NFloat, Quad)>> ConvertFromTruncatingNFloatTestData()
+	{
+		throw new NotImplementedException();
 	}
 }

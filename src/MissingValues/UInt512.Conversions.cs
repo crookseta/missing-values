@@ -1,5 +1,6 @@
 using System.Numerics;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics;
 using MissingValues.Internals;
 using MissingValues.Primitives;
@@ -71,6 +72,7 @@ public partial struct UInt512
 			result = value switch
 			{
 				char actual => (UInt512)actual,
+				NFloat actual => (UInt512)actual,
 				Half actual => (UInt512)actual,
 				float actual => (UInt512)actual,
 				double actual => (UInt512)actual,
@@ -92,6 +94,7 @@ public partial struct UInt512
 				Int256 actual => (UInt512)actual,
 				Int512 actual => (UInt512)actual,
 				BigInteger actual => (UInt512)actual,
+				nint actual => (UInt512)actual,
 				_ => BitHelper.DefaultConvert<UInt512>(out converted)
 			};
 		}
@@ -107,6 +110,11 @@ public partial struct UInt512
 		result = value switch
 		{
 			char actual => actual,
+#if TARGET_32BIT
+			NFloat actual => (actual < 0) ? MinValue : (UInt512)actual,
+#else
+			NFloat actual => (actual < 0) ? MinValue : (actual > TwoPow512) ? MaxValue : (UInt512)actual,
+#endif
 			Half actual => (actual < Half.Zero) ? MinValue : (UInt512)actual,
 			float actual => (actual < 0) ? MinValue : (UInt512)actual,
 			double actual => (actual < 0) ? MinValue : (actual > TwoPow512) ? MaxValue : (UInt512)actual,
@@ -127,6 +135,7 @@ public partial struct UInt512
 			Int128 actual => (actual < 0) ? MinValue : (UInt512)actual,
 			Int256 actual => (actual < 0) ? MinValue : (UInt512)actual,
 			Int512 actual => (actual < 0) ? MinValue : (UInt512)actual,
+			nint actual => (actual < 0) ? MinValue : (UInt512)actual,
 			BigInteger actual => (BigInteger.IsNegative(actual)) ? MinValue : (actual > (BigInteger)MaxValue) ? MaxValue : (UInt512)actual,
 			_ => BitHelper.DefaultConvert<UInt512>(out converted)
 		};
@@ -137,31 +146,35 @@ public partial struct UInt512
 	private static bool TryConvertFromTruncating<TOther>(TOther value, out UInt512 result)
 	{
 		bool converted = true;
-		result = value switch
+		unchecked
 		{
-			char actual => actual,
-			Half actual => (actual < Half.Zero) ? MinValue : (UInt512)actual,
-			float actual => (actual < 0) ? MinValue : (UInt512)actual,
-			double actual => (actual < 0) ? MinValue : (UInt512)actual,
-			decimal actual => (actual < 0) ? MinValue : (UInt512)actual,
-			byte actual => actual,
-			ushort actual => actual,
-			uint actual => actual,
-			ulong actual => actual,
-			UInt128 actual => actual,
-			UInt256 actual => actual,
-			UInt512 actual => actual,
-			nuint actual => actual,
-			sbyte actual => (UInt512)actual,
-			short actual => (UInt512)actual,
-			int actual => (UInt512)actual,
-			long actual => (UInt512)actual,
-			Int128 actual => (UInt512)actual,
-			Int256 actual => (UInt512)actual,
-			Int512 actual => (UInt512)actual,
-			BigInteger actual => (UInt512)actual,
-			_ => BitHelper.DefaultConvert<UInt512>(out converted)
-		};
+			result = value switch
+			{
+				char actual => actual,
+				Half actual => (actual < Half.Zero) ? MinValue : (UInt512)actual,
+				float actual => (actual < 0) ? MinValue : (UInt512)actual,
+				double actual => (actual < 0) ? MinValue : (UInt512)actual,
+				decimal actual => (actual < 0) ? MinValue : (UInt512)actual,
+				byte actual => actual,
+				ushort actual => actual,
+				uint actual => actual,
+				ulong actual => actual,
+				UInt128 actual => actual,
+				UInt256 actual => actual,
+				UInt512 actual => actual,
+				nuint actual => actual,
+				sbyte actual => (UInt512)actual,
+				short actual => (UInt512)actual,
+				int actual => (UInt512)actual,
+				long actual => (UInt512)actual,
+				Int128 actual => (UInt512)actual,
+				Int256 actual => (UInt512)actual,
+				Int512 actual => (UInt512)actual,
+				nint actual => (UInt512)actual,
+				BigInteger actual => (UInt512)actual,
+				_ => BitHelper.DefaultConvert<UInt512>(out converted)
+			};
+		}
 		return converted;
 	}
 
@@ -174,6 +187,7 @@ public partial struct UInt512
 			result = result switch
 			{
 				char => (TOther)(object)(char)value,
+				NFloat => (TOther)(object)(NFloat)value,
 				Half => (TOther)(object)(Half)value,
 				float => (TOther)(object)(float)value,
 				double => (TOther)(object)(double)value,
@@ -209,6 +223,7 @@ public partial struct UInt512
 		result = result switch
 		{
 			char => (TOther)(object)(char)value,
+			NFloat => (TOther)(object)(NFloat)value,
 			Half => (TOther)(object)(Half)value,
 			float => (TOther)(object)(float)value,
 			double => (TOther)(object)(double)value,
@@ -253,6 +268,7 @@ public partial struct UInt512
 			result = result switch
 			{
 				char => (TOther)(object)(char)value,
+				NFloat => (TOther)(object)(NFloat)value,
 				Half => (TOther)(object)(Half)value,
 				float => (TOther)(object)(float)value,
 				double => (TOther)(object)(double)value,
@@ -653,7 +669,7 @@ public partial struct UInt512
 	{
 		if (value.Upper == UInt256.Zero)
 		{
-			return (value._p3 | value._p2 | value._p1) != 0 ? (Quad)value.Lower : value._p0;
+			return (value._p3 | value._p2 | value._p1) != 0 ? (Quad)value.Lower : (Quad)value._p0;
 		}
 		else
 		{
@@ -704,8 +720,12 @@ public partial struct UInt512
 			return upper + lower;
 		}
 
-		if (value.Upper == 0)
+		if (value._p7 == 0 && value._p6 == 0 && value._p5 == 0 && value._p4 == 0)
 		{
+			if (value._p3 == 0 && value._p2 == 0 && value._p1 == 0)
+			{
+				return (double)value._p0;
+			}
 			return (double)value.Lower;
 		}
 		
@@ -728,7 +748,15 @@ public partial struct UInt512
 	/// </summary>
 	/// <param name="value">The value to convert.</param>
 	public static explicit operator Half(in UInt512 value) => (Half)(double)value;
-	
+	/// <summary>
+	/// Explicitly converts a <see cref="UInt512" /> value to a <see cref="NFloat"/>.
+	/// </summary>
+	/// <param name="value">The value to convert.</param>
+	public static explicit operator NFloat(in UInt512 value)
+	{
+		return NFloat.Size == 8 ? (NFloat)(double)value : (NFloat)(float)value;
+	}
+
 	/// <summary>
 	/// Implicitly converts a <see cref="char" /> value to a <see cref="UInt512"/>.
 	/// </summary>
@@ -981,6 +1009,37 @@ public partial struct UInt512
 		return result;
 	}
 
+	/// <summary>
+	/// Explicitly converts a <see cref="NFloat" /> value to a <see cref="UInt512"/>.
+	/// </summary>
+	/// <param name="value">The value to convert.</param>
+	public static explicit operator UInt512(NFloat value)
+	{
+		if (NFloat.Size == 8)
+		{
+			return (UInt512)(double)value;
+		}
+		else
+		{
+			return (UInt512)(float)value;
+		}
+	}
+	/// <summary>
+	/// Explicitly converts a <see cref="NFloat" /> value to a <see cref="UInt512"/>.
+	/// </summary>
+	/// <param name="value">The value to convert.</param>
+	/// <exception cref="OverflowException"><paramref name="value"/> is outside the range of <see cref="UInt512"/>.</exception>
+	public static explicit operator checked UInt512(NFloat value)
+	{
+		if (NFloat.Size == 8)
+		{
+			return checked((UInt512)(double)value);
+		}
+		else
+		{
+			return checked((UInt512)(float)value);
+		}
+	}
 	/// <summary>
 	/// Explicitly converts a <see cref="Half" /> value to a <see cref="UInt512"/>.
 	/// </summary>

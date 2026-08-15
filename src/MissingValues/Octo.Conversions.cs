@@ -95,6 +95,7 @@ public partial struct Octo
 			Int128 actual => (Octo)actual,
 			Int256 actual => (Octo)actual,
 			Int512 actual => (Octo)actual,
+			nint actual => (Octo)actual,
 			BigInteger actual => (Octo)actual,
 			_ => BitHelper.DefaultConvert<Octo>(out converted)
 		};
@@ -596,6 +597,23 @@ public partial struct Octo
 		{
 			return UInt512.MinValue;
 		}
+	}
+	/// <summary>
+	/// Explicitly converts a <see cref="Quad" /> value to a <see cref="nuint"/>.
+	/// </summary>
+	/// <param name="value">The value to convert.</param>
+	public static explicit operator nuint(in Octo value)
+	{
+		return nuint.Size == 8 ? (nuint)(ulong)value : (nuint)(uint)value;
+	}
+	/// <summary>
+	/// Explicitly converts a <see cref="Quad" /> value to a <see cref="nuint"/>.
+	/// </summary>
+	/// <param name="value">The value to convert.</param>
+	/// <exception cref="OverflowException"><paramref name="value"/> is outside the range of <see cref="nuint"/>.</exception>
+	public static explicit operator checked nuint(in Octo value)
+	{
+		return nuint.Size == 8 ? checked((nuint)(ulong)value) : checked((nuint)(uint)value);
 	}
 
 	/// <summary>
@@ -1177,6 +1195,37 @@ public partial struct Octo
 			return Int512.Zero;
 		}
 	}
+	/// <summary>
+	/// Explicitly converts a <see cref="Octo" /> value to a <see cref="nint"/>.
+	/// </summary>
+	/// <param name="value">The value to convert.</param>
+	public static explicit operator nint(in Octo value)
+	{
+		if (nint.Size == 8)
+		{
+			return (nint)(int)value;
+		}
+		else
+		{
+			return (nint)(long)value;
+		}
+	}
+	/// <summary>
+	/// Explicitly converts a <see cref="Octo" /> value to a <see cref="nint"/>.
+	/// </summary>
+	/// <param name="value">The value to convert.</param>
+	/// <exception cref="OverflowException"><paramref name="value"/> is outside the range of <see cref="nint"/>.</exception>
+	public static explicit operator checked nint(in Octo value)
+	{
+		if (nint.Size == 8)
+		{
+			return checked((nint)(int)value);
+		}
+		else
+		{
+			return checked((nint)(long)value);
+		}
+	}
 
 	/// <summary>
 	/// Explicitly converts a <see cref="Octo" /> value to a <see cref="BigInteger"/>.
@@ -1392,6 +1441,14 @@ public partial struct Octo
 
 		return BitConverter.UInt16BitsToHalf(BitHelper.RoundPackToHalf(sign, (short)exp, (ushort)(sigHalf | 0x4000)));
 	}
+	/// <summary>
+	/// Explicitly converts a <see cref="Octo" /> value to a <see cref="NFloat"/>.
+	/// </summary>
+	/// <param name="value">The value to convert.</param>
+	public static explicit operator NFloat(in Octo value)
+	{
+		return NFloat.Size == 8 ? (NFloat)(double)value : (NFloat)(float)value;
+	}
 	
 	/// <summary>
 	/// Implicitly converts a <see cref="byte" /> value to a <see cref="Octo"/>.
@@ -1472,6 +1529,19 @@ public partial struct Octo
 
 		return new Octo(false, (uint)(0x400EB - shiftDist), sig);
 	}
+	/// <summary>
+	/// Implicitly converts a <see cref="nuint" /> value to a <see cref="Octo"/>.
+	/// </summary>
+	/// <param name="value">The value to convert.</param>
+	public static implicit operator Octo(nuint value)
+	{
+		if (value == 0)
+		{
+			return Octo.Zero;
+		}
+
+		return nuint.Size == 8 ? (Octo)(ulong)value : (Octo)(uint)value;
+	}
 	
 	/// <summary>
 	/// Implicitly converts a <see cref="sbyte" /> value to a <see cref="Octo"/>.
@@ -1537,6 +1607,19 @@ public partial struct Octo
 			return -(Octo)(UInt128)value;
 		}
 		return (Octo)(UInt128)value;
+	}
+	/// <summary>
+	/// Implicitly converts a <see cref="nint" /> value to a <see cref="Octo"/>.
+	/// </summary>
+	/// <param name="value">The value to convert.</param>
+	public static implicit operator Octo(nint value)
+	{
+		if (Int128.IsNegative(value))
+		{
+			value = -value;
+			return -(Octo)(nuint)value;
+		}
+		return (Octo)(nuint)value;
 	}
 
 	/// <summary>
@@ -1704,5 +1787,13 @@ public partial struct Octo
 		}
 
 		return new Octo(sign, (uint)(exp + (ExponentBias - HalfExponentBias)), (UInt256)sig << 226);
+	}
+	/// <summary>
+	/// Implicitly converts a <see cref="NFloat" /> value to a <see cref="Octo"/>.
+	/// </summary>
+	/// <param name="value">The value to convert.</param>
+	public static explicit operator Octo(NFloat value)
+	{
+		return NFloat.Size == 8 ? (Octo)(double)value : (Octo)(float)value;
 	}
 }
