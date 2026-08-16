@@ -638,6 +638,34 @@ public partial struct Int256
 		}
 		return (decimal)(double)(UInt256)(value);
 	}
+
+#if NET11_0_OR_GREATER
+	/// <summary>
+	/// Explicitly converts a <see cref="Int256" /> value to a <see cref="Decimal32"/>.
+	/// </summary>
+	/// <param name="value">The value to convert.</param>
+	public static explicit operator Decimal32(in Int256 value)
+	{
+		return BitHelper.ConvertToDecimalN<Decimal32, Int256>(in value);
+	}
+	/// <summary>
+	/// Explicitly converts a <see cref="Int256" /> value to a <see cref="Decimal64"/>.
+	/// </summary>
+	/// <param name="value">The value to convert.</param>
+	public static explicit operator Decimal64(in Int256 value)
+	{
+		return BitHelper.ConvertToDecimalN<Decimal64, Int256>(in value);
+	}
+	/// <summary>
+	/// Explicitly converts a <see cref="Int256" /> value to a <see cref="Decimal128"/>.
+	/// </summary>
+	/// <param name="value">The value to convert.</param>
+	public static explicit operator Decimal128(in Int256 value)
+	{
+		return BitHelper.ConvertToDecimalN<Decimal128, Int256>(in value);
+	}
+#endif
+	
 	/// <summary>
 	/// Explicitly converts a <see cref="Int256" /> value to a <see cref="Octo"/>.
 	/// </summary>
@@ -852,6 +880,63 @@ public partial struct Int256
 	/// <param name="value">The value to convert.</param>
 	/// <exception cref="OverflowException"><paramref name="value"/> is outside the range of <see cref="Int256"/>.</exception>
 	public static explicit operator checked Int256(decimal value) => checked((Int256)(double)value);
+
+#if NET11_0_OR_GREATER
+	/// <summary>
+	/// Explicitly converts a <see cref="Decimal32" /> value to a <see cref="Int256"/>.
+	/// </summary>
+	/// <param name="value">The value to convert.</param>
+	public static explicit operator Int256(Decimal32 value)
+	{
+		return BitHelper.ConvertFromDecimalN<Int256, Decimal32>(value);
+	}
+	/// <summary>
+	/// Explicitly converts a <see cref="Decimal32" /> value to a <see cref="Int256"/>.
+	/// </summary>
+	/// <param name="value">The value to convert.</param>
+	/// <exception cref="OverflowException"><paramref name="value"/> is outside the range of <see cref="Int256"/>.</exception>
+	public static explicit operator checked Int256(Decimal32 value)
+	{
+		return BitHelper.ConvertFromDecimalN<Int256, Decimal32>(value, true);
+	}
+	
+	/// <summary>
+	/// Explicitly converts a <see cref="Decimal64" /> value to a <see cref="Int256"/>.
+	/// </summary>
+	/// <param name="value">The value to convert.</param>
+	public static explicit operator Int256(Decimal64 value)
+	{
+		return BitHelper.ConvertFromDecimalN<Int256, Decimal64>(value);
+	}
+	/// <summary>
+	/// Explicitly converts a <see cref="Decimal64" /> value to a <see cref="Int256"/>.
+	/// </summary>
+	/// <param name="value">The value to convert.</param>
+	/// <exception cref="OverflowException"><paramref name="value"/> is outside the range of <see cref="Int256"/>.</exception>
+	public static explicit operator checked Int256(Decimal64 value)
+	{
+		return BitHelper.ConvertFromDecimalN<Int256, Decimal64>(value, true);
+	}
+	
+	/// <summary>
+	/// Explicitly converts a <see cref="Decimal128" /> value to a <see cref="Int256"/>.
+	/// </summary>
+	/// <param name="value">The value to convert.</param>
+	public static explicit operator Int256(Decimal128 value)
+	{
+		return BitHelper.ConvertFromDecimalN<Int256, Decimal128>(value);
+	}
+	/// <summary>
+	/// Explicitly converts a <see cref="Decimal128" /> value to a <see cref="Int256"/>.
+	/// </summary>
+	/// <param name="value">The value to convert.</param>
+	/// <exception cref="OverflowException"><paramref name="value"/> is outside the range of <see cref="Int256"/>.</exception>
+	public static explicit operator checked Int256(Decimal128 value)
+	{
+		return BitHelper.ConvertFromDecimalN<Int256, Decimal128>(value, true);
+	}
+#endif
+	
 	/// <summary>
 	/// Explicitly converts a <see cref="double" /> value to a <see cref="Int256"/>.
 	/// </summary>
