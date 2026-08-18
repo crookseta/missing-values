@@ -1896,17 +1896,32 @@ public class OctoDataSources
 	
 	public static IEnumerable<Func<(nuint, Octo)>> ConvertFromCheckedUIntPtrTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (0, Octo.Zero);
+		yield return () => (1, Octo.One);
+		yield return () => (byte.MaxValue, Octo.ByteMaxValue);
+		yield return () => (ushort.MaxValue, Octo.UInt16MaxValue);
+		yield return () => (uint.MaxValue, Octo.UInt32MaxValue);
+		yield return () => (nuint.MaxValue, Octo.UIntPtrMaxValue);
 	}
 	
 	public static IEnumerable<Func<(nuint, Octo)>> ConvertFromSaturatingUIntPtrTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (0, Octo.Zero);
+		yield return () => (1, Octo.One);
+		yield return () => (byte.MaxValue, Octo.ByteMaxValue);
+		yield return () => (ushort.MaxValue, Octo.UInt16MaxValue);
+		yield return () => (uint.MaxValue, Octo.UInt32MaxValue);
+		yield return () => (nuint.MaxValue, Octo.UIntPtrMaxValue);
 	}
 	
 	public static IEnumerable<Func<(nuint, Octo)>> ConvertFromTruncatingUIntPtrTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (0, Octo.Zero);
+		yield return () => (1, Octo.One);
+		yield return () => (byte.MaxValue, Octo.ByteMaxValue);
+		yield return () => (ushort.MaxValue, Octo.UInt16MaxValue);
+		yield return () => (uint.MaxValue, Octo.UInt32MaxValue);
+		yield return () => (nuint.MaxValue, Octo.UIntPtrMaxValue);
 	}
 
 	public static IEnumerable<Func<(sbyte, Octo)>> ConvertFromCheckedSByteTestData()
@@ -2106,17 +2121,47 @@ public class OctoDataSources
 	
 	public static IEnumerable<Func<(nint, Octo)>> ConvertFromCheckedIntPtrTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (nint.MinValue, Octo.IntPtrMinValue);
+		yield return () => (int.MinValue, Octo.Int32MinValue);
+		yield return () => (short.MinValue, Octo.Int16MinValue);
+		yield return () => (sbyte.MinValue, Octo.SByteMinValue);
+		yield return () => (-1, Octo.NegativeOne);
+		yield return () => (0, Octo.Zero);
+		yield return () => (1, Octo.One);
+		yield return () => (sbyte.MaxValue, Octo.SByteMaxValue);
+		yield return () => (short.MaxValue, Octo.Int16MaxValue);
+		yield return () => (int.MaxValue, Octo.Int32MaxValue);
+		yield return () => (nint.MaxValue, Octo.IntPtrMaxValue);
 	}
 	
 	public static IEnumerable<Func<(nint, Octo)>> ConvertFromSaturatingIntPtrTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (nint.MinValue, Octo.IntPtrMinValue);
+		yield return () => (int.MinValue, Octo.Int32MinValue);
+		yield return () => (short.MinValue, Octo.Int16MinValue);
+		yield return () => (sbyte.MinValue, Octo.SByteMinValue);
+		yield return () => (-1, Octo.NegativeOne);
+		yield return () => (0, Octo.Zero);
+		yield return () => (1, Octo.One);
+		yield return () => (sbyte.MaxValue, Octo.SByteMaxValue);
+		yield return () => (short.MaxValue, Octo.Int16MaxValue);
+		yield return () => (int.MaxValue, Octo.Int32MaxValue);
+		yield return () => (nint.MaxValue, Octo.IntPtrMaxValue);
 	}
 	
 	public static IEnumerable<Func<(nint, Octo)>> ConvertFromTruncatingIntPtrTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (nint.MinValue, Octo.IntPtrMinValue);
+		yield return () => (int.MinValue, Octo.Int32MinValue);
+		yield return () => (short.MinValue, Octo.Int16MinValue);
+		yield return () => (sbyte.MinValue, Octo.SByteMinValue);
+		yield return () => (-1, Octo.NegativeOne);
+		yield return () => (0, Octo.Zero);
+		yield return () => (1, Octo.One);
+		yield return () => (sbyte.MaxValue, Octo.SByteMaxValue);
+		yield return () => (short.MaxValue, Octo.Int16MaxValue);
+		yield return () => (int.MaxValue, Octo.Int32MaxValue);
+		yield return () => (nint.MaxValue, Octo.IntPtrMaxValue);
 	}
 	
 	public static IEnumerable<Func<(BigInteger, Octo)>> ConvertFromCheckedBigIntegerTestData()
@@ -2319,16 +2364,40 @@ public class OctoDataSources
 	
 	public static IEnumerable<Func<(NFloat, Octo)>> ConvertFromCheckedNFloatTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (NFloat.NegativeInfinity, Octo.NegativeInfinity);
+		yield return () => (NFloat.MinValue, Octo.NFloatMinValue);
+		yield return () => (-1f, Octo.NegativeOne);
+		yield return () => (-0.5f, Octo.NegativeHalf);
+		yield return () => (0f, Octo.Zero);
+		yield return () => (0.5f, Octo.Half);
+		yield return () => (1f, Octo.One);
+		yield return () => (NFloat.MaxValue, Octo.NFloatMaxValue);
+		yield return () => (NFloat.PositiveInfinity, Octo.PositiveInfinity);
 	}
 	
 	public static IEnumerable<Func<(NFloat, Octo)>> ConvertFromSaturatingNFloatTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (NFloat.NegativeInfinity, Octo.NegativeInfinity);
+		yield return () => (NFloat.MinValue, Octo.NFloatMinValue);
+		yield return () => (-1f, Octo.NegativeOne);
+		yield return () => (-0.5f, Octo.NegativeHalf);
+		yield return () => (0f, Octo.Zero);
+		yield return () => (0.5f, Octo.Half);
+		yield return () => (1f, Octo.One);
+		yield return () => (NFloat.MaxValue, Octo.NFloatMaxValue);
+		yield return () => (NFloat.PositiveInfinity, Octo.PositiveInfinity);
 	}
 	
 	public static IEnumerable<Func<(NFloat, Octo)>> ConvertFromTruncatingNFloatTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (NFloat.NegativeInfinity, Octo.NegativeInfinity);
+		yield return () => (NFloat.MinValue, Octo.NFloatMinValue);
+		yield return () => (-1f, Octo.NegativeOne);
+		yield return () => (-0.5f, Octo.NegativeHalf);
+		yield return () => (0f, Octo.Zero);
+		yield return () => (0.5f, Octo.Half);
+		yield return () => (1f, Octo.One);
+		yield return () => (NFloat.MaxValue, Octo.NFloatMaxValue);
+		yield return () => (NFloat.PositiveInfinity, Octo.PositiveInfinity);
 	}
 }

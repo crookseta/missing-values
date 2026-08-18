@@ -1721,17 +1721,29 @@ public class UInt256DataSources
 	
 	public static IEnumerable<Func<(nuint, UInt256)>> ConvertFromCheckedUIntPtrTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (1, UInt256.One);
+		yield return () => (byte.MaxValue, UInt256.ByteMaxValue);
+		yield return () => (ushort.MaxValue, UInt256.UInt16MaxValue);
+		yield return () => (uint.MaxValue, UInt256.UInt32MaxValue);
+		yield return () => (nuint.MaxValue, UInt256.UIntPtrMaxValue);
 	}
 	
 	public static IEnumerable<Func<(nuint, UInt256)>> ConvertFromSaturatingUIntPtrTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (1, UInt256.One);
+		yield return () => (byte.MaxValue, UInt256.ByteMaxValue);
+		yield return () => (ushort.MaxValue, UInt256.UInt16MaxValue);
+		yield return () => (uint.MaxValue, UInt256.UInt32MaxValue);
+		yield return () => (nuint.MaxValue, UInt256.UIntPtrMaxValue);
 	}
 	
 	public static IEnumerable<Func<(nuint, UInt256)>> ConvertFromTruncatingUIntPtrTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (1, UInt256.One);
+		yield return () => (byte.MaxValue, UInt256.ByteMaxValue);
+		yield return () => (ushort.MaxValue, UInt256.UInt16MaxValue);
+		yield return () => (uint.MaxValue, UInt256.UInt32MaxValue);
+		yield return () => (nuint.MaxValue, UInt256.UIntPtrMaxValue);
 	}
 
 	public static IEnumerable<Func<(sbyte, UInt256)>> ConvertFromCheckedSByteTestData()
@@ -1886,17 +1898,37 @@ public class UInt256DataSources
 	
 	public static IEnumerable<Func<(nint, UInt256)>> ConvertFromCheckedIntPtrTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (1, UInt256.One);
+		yield return () => (sbyte.MaxValue, UInt256.SByteMaxValue);
+		yield return () => (short.MaxValue, UInt256.Int16MaxValue);
+		yield return () => (int.MaxValue, UInt256.Int32MaxValue);
+		yield return () => (nint.MaxValue, UInt256.IntPtrMaxValue);
 	}
 	
 	public static IEnumerable<Func<(nint, UInt256)>> ConvertFromSaturatingIntPtrTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (nint.MinValue, UInt256.Zero);
+		yield return () => (int.MinValue, UInt256.Zero);
+		yield return () => (short.MinValue, UInt256.Zero);
+		yield return () => (sbyte.MinValue, UInt256.Zero);
+		yield return () => (1, UInt256.One);
+		yield return () => (sbyte.MaxValue, UInt256.SByteMaxValue);
+		yield return () => (short.MaxValue, UInt256.Int16MaxValue);
+		yield return () => (int.MaxValue, UInt256.Int32MaxValue);
+		yield return () => (nint.MaxValue, UInt256.IntPtrMaxValue);
 	}
 	
 	public static IEnumerable<Func<(nint, UInt256)>> ConvertFromTruncatingIntPtrTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (nint.MinValue, nint.Size == 8 ? new UInt256(0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0x8000_0000_0000_0000) : new UInt256(0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_8000_0000));
+		yield return () => (int.MinValue, new UInt256(0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_8000_0000));
+		yield return () => (short.MinValue, new UInt256(0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_8000));
+		yield return () => (sbyte.MinValue, new UInt256(0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FF80));
+		yield return () => (1, UInt256.One);
+		yield return () => (sbyte.MaxValue, UInt256.SByteMaxValue);
+		yield return () => (short.MaxValue, UInt256.Int16MaxValue);
+		yield return () => (int.MaxValue, UInt256.Int32MaxValue);
+		yield return () => (nint.MaxValue, UInt256.IntPtrMaxValue);
 	}
 
 	public static IEnumerable<Func<(BigInteger, UInt256)>> ConvertFromCheckedBigIntegerTestData()
@@ -2040,16 +2072,30 @@ public class UInt256DataSources
 	
 	public static IEnumerable<Func<(NFloat, UInt256)>> ConvertFromCheckedNFloatTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (1f, UInt256.One);
+		yield return () => (byte.MaxValue, UInt256.ByteMaxValue);
+		yield return () => (sbyte.MaxValue, UInt256.SByteMaxValue);
+		yield return () => (short.MaxValue, UInt256.Int16MaxValue);
+		yield return () => (ushort.MaxValue, UInt256.UInt16MaxValue);
 	}
 	
 	public static IEnumerable<Func<(NFloat, UInt256)>> ConvertFromSaturatingNFloatTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (NFloat.MinValue, UInt256.Zero);
+		yield return () => (1f, UInt256.One);
+		yield return () => (byte.MaxValue, UInt256.ByteMaxValue);
+		yield return () => (sbyte.MaxValue, UInt256.SByteMaxValue);
+		yield return () => (short.MaxValue, UInt256.Int16MaxValue);
+		yield return () => (ushort.MaxValue, UInt256.UInt16MaxValue);
 	}
 	
 	public static IEnumerable<Func<(NFloat, UInt256)>> ConvertFromTruncatingNFloatTestData()
 	{
-		throw new NotImplementedException();
+		yield return () => (NFloat.MinValue, UInt256.Zero);
+		yield return () => (1f, UInt256.One);
+		yield return () => (byte.MaxValue, UInt256.ByteMaxValue);
+		yield return () => (sbyte.MaxValue, UInt256.SByteMaxValue);
+		yield return () => (short.MaxValue, UInt256.Int16MaxValue);
+		yield return () => (ushort.MaxValue, UInt256.UInt16MaxValue);
 	}
 }
