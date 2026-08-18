@@ -79,6 +79,7 @@ public partial struct Quad
 			Half actual => (Quad)actual,
 			float actual => (Quad)actual,
 			double actual => (Quad)actual,
+			NFloat actual => (Quad)actual,
 			Quad actual => actual,
 			decimal actual => (Quad)actual,
 			byte actual => (Quad)actual,
@@ -96,6 +97,7 @@ public partial struct Quad
 			Int128 actual => (Quad)actual,
 			Int256 actual => (Quad)actual,
 			Int512 actual => (Quad)actual,
+			nint actual => (Quad)actual,
 			BigInteger actual => (Quad)actual,
 			_ => BitHelper.DefaultConvert<Quad>(out converted)
 		};
@@ -114,6 +116,7 @@ public partial struct Quad
 				Half => (TOther)(object)(Half)value,
 				float => (TOther)(object)(float)value,
 				double => (TOther)(object)(double)value,
+				NFloat => (TOther)(object)(NFloat)value,
 				Quad => (TOther)(object)value,
 				Octo => (TOther)(object)(Octo)value,
 				decimal => (TOther)(object)(decimal)value,
@@ -155,6 +158,7 @@ public partial struct Quad
 			Half => (TOther)(object)(Half)value,
 			float => (TOther)(object)(float)value,
 			double => (TOther)(object)(double)value,
+			NFloat => (TOther)(object)(NFloat)value,
 			Quad => (TOther)(object)value,
 			Octo => (TOther)(object)(Octo)value,
 			decimal => (TOther)(object)(decimal)value,
@@ -584,6 +588,23 @@ public partial struct Quad
 		{
 			return UInt512.MinValue;
 		}
+	}
+	/// <summary>
+	/// Explicitly converts a <see cref="Quad" /> value to a <see cref="nuint"/>.
+	/// </summary>
+	/// <param name="value">The value to convert.</param>
+	public static explicit operator nuint(Quad value)
+	{
+		return nuint.Size == 8 ? (nuint)(ulong)value : (nuint)(uint)value;
+	}
+	/// <summary>
+	/// Explicitly converts a <see cref="Quad" /> value to a <see cref="nuint"/>.
+	/// </summary>
+	/// <param name="value">The value to convert.</param>
+	/// <exception cref="OverflowException"><paramref name="value"/> is outside the range of <see cref="nuint"/>.</exception>
+	public static explicit operator checked nuint(Quad value)
+	{
+		return nuint.Size == 8 ? checked((nuint)(ulong)value) : checked((nuint)(uint)value);
 	}
 
 	/// <summary>
@@ -1197,6 +1218,37 @@ public partial struct Quad
 			return Int512.Zero;
 		}
 	}
+	/// <summary>
+	/// Explicitly converts a <see cref="Quad" /> value to a <see cref="nint"/>.
+	/// </summary>
+	/// <param name="value">The value to convert.</param>
+	public static explicit operator nint(Quad value)
+	{
+		if (nint.Size == 8)
+		{
+			return (nint)(long)value;
+		}
+		else
+		{
+			return (nint)(int)value;
+		}
+	}
+	/// <summary>
+	/// Explicitly converts a <see cref="Quad" /> value to a <see cref="nint"/>.
+	/// </summary>
+	/// <param name="value">The value to convert.</param>
+	/// <exception cref="OverflowException"><paramref name="value"/> is outside the range of <see cref="nint"/>.</exception>
+	public static explicit operator checked nint(Quad value)
+	{
+		if (nint.Size == 8)
+		{
+			return checked((nint)(long)value);
+		}
+		else
+		{
+			return checked((nint)(int)value);
+		}
+	}
 
 	/// <summary>
 	/// Explicitly converts a <see cref="Quad" /> value to a <see cref="BigInteger"/>.
@@ -1409,6 +1461,14 @@ public partial struct Quad
 
 		return BitConverter.UInt16BitsToHalf(BitHelper.RoundPackToHalf(sign, (short)(exp), (ushort)(sigHalf | 0x4000)));
 	}
+	/// <summary>
+	/// Explicitly converts a <see cref="Quad" /> value to a <see cref="NFloat"/>.
+	/// </summary>
+	/// <param name="value">The value to convert.</param>
+	public static explicit operator NFloat(Quad value)
+	{
+		return NFloat.Size == 8 ? (NFloat)(double)value : (NFloat)(float)value;
+	}
 	
 	/// <summary>
 	/// Implicitly converts a <see cref="byte" /> value to a <see cref="Quad"/>.
@@ -1488,6 +1548,19 @@ public partial struct Quad
 		UInt128 e = (UInt128)(0x407D - shiftDist); // Exponent plus 16383, minus one, except for zero.
 		return BinaryOperations.UInt128BitsToQuad((e << 112) + m);
 	}
+	/// <summary>
+	/// Implicitly converts a <see cref="nuint" /> value to a <see cref="Quad"/>.
+	/// </summary>
+	/// <param name="value">The value to convert.</param>
+	public static implicit operator Quad(nuint value)
+	{
+		if (value == 0)
+		{
+			return Quad.Zero;
+		}
+
+		return nuint.Size == 8 ? (Quad)(ulong)value : (Quad)(uint)value;
+	}
 
 	/// <summary>
 	/// Implicitly converts a <see cref="sbyte" /> value to a <see cref="Quad"/>.
@@ -1553,6 +1626,19 @@ public partial struct Quad
 			return -(Quad)(UInt128)value;
 		}
 		return (Quad)(UInt128)value;
+	}
+	/// <summary>
+	/// Implicitly converts a <see cref="nint" /> value to a <see cref="Quad"/>.
+	/// </summary>
+	/// <param name="value">The value to convert.</param>
+	public static implicit operator Quad(nint value)
+	{
+		if (Int128.IsNegative(value))
+		{
+			value = -value;
+			return -(Quad)(nuint)value;
+		}
+		return (Quad)(nuint)value;
 	}
 
 	/// <summary>
@@ -1721,5 +1807,13 @@ public partial struct Quad
 		}
 
 		return new Quad(sign, (ushort)(exp + (ExponentBias - HalfExponentBias)), (UInt128)sig << 102);
+	}
+	/// <summary>
+	/// Implicitly converts a <see cref="NFloat" /> value to a <see cref="Quad"/>.
+	/// </summary>
+	/// <param name="value">The value to convert.</param>
+	public static implicit operator Quad(NFloat value)
+	{
+		return NFloat.Size == 8 ? (Quad)(double)value : (Quad)(float)value;
 	}
 }

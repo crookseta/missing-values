@@ -24,6 +24,11 @@ public static class Int256Extensions
 
 		public static Int256 UInt64MaxValue => new(0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0xFFFF_FFFF_FFFF_FFFF);
 
+		public static Int256 IntPtrMaxValue => nint.Size == 8 ? Int256.Int64MaxValue : Int256.Int32MaxValue;
+		public static Int256 IntPtrMinValue => nint.Size == 8 ? Int256.Int64MinValue : Int256.Int32MinValue;
+
+		public static Int256 UIntPtrMaxValue => nuint.Size == 8 ? Int256.UInt64MaxValue : Int256.UInt32MaxValue;
+
 		public static Int256 Int128MaxValue => new(0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x7FFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF);
 		public static Int256 Int128MinValue => new(0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0x8000_0000_0000_0000, 0x0000_0000_0000_0000);
 

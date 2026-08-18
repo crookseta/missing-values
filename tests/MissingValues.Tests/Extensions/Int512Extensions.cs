@@ -47,6 +47,11 @@ public static class Int512Extensions
 		public static Int512 UInt64MaxValue => new(
 			0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 
 			0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0xFFFF_FFFF_FFFF_FFFF);
+		
+		public static Int512 IntPtrMaxValue => nint.Size == 8 ? Int512.Int64MaxValue : Int512.Int32MaxValue;
+		public static Int512 IntPtrMinValue => nint.Size == 8 ? Int512.Int64MinValue : Int512.Int32MinValue;
+
+		public static Int512 UIntPtrMaxValue => nuint.Size == 8 ? Int512.UInt64MaxValue : Int512.UInt32MaxValue;
 
 		public static Int512 Int128MaxValue => new(
 			0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 

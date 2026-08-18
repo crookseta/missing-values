@@ -1,5 +1,6 @@
 using System.Numerics;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics;
 using MissingValues.Internals;
 using MissingValues.Primitives;
@@ -72,6 +73,7 @@ public partial struct UInt256
 			result = value switch
 			{
 				char actual => (UInt256)actual,
+				NFloat actual => (UInt256)actual,
 				Half actual => (UInt256)actual,
 				float actual => (UInt256)actual,
 				double actual => (UInt256)actual,
@@ -91,6 +93,7 @@ public partial struct UInt256
 				Int128 actual => (UInt256)actual,
 				Int256 actual => (UInt256)actual,
 				Int512 actual => (UInt256)actual,
+				nint actual => (UInt256)actual,
 				BigInteger actual => (UInt256)actual,
 				_ => BitHelper.DefaultConvert<UInt256>(out converted)
 			};
@@ -108,6 +111,11 @@ public partial struct UInt256
 		result = value switch
 		{
 			char actual => actual,
+#if TARGET_32BIT
+			NFloat actual => (actual < 0) ? MinValue : (UInt256)actual,
+#else
+			NFloat actual => (actual < 0) ? MinValue : (actual > TwoPow256) ? MaxValue : (UInt256)actual,
+#endif
 			Half actual => (actual < Half.Zero) ? MinValue : (UInt256)actual,
 			float actual => (actual < 0) ? MinValue : (UInt256)actual,
 			double actual => (actual < 0) ? MinValue : (actual > TwoPow256) ? MaxValue : (UInt256)actual,
@@ -127,6 +135,7 @@ public partial struct UInt256
 			Int128 actual => (actual < 0) ? MinValue : (UInt256)actual,
 			Int256 actual => (actual < 0) ? MinValue : (UInt256)actual,
 			Int512 actual => (actual < 0) ? MinValue : (actual > (Int512)MaxValue) ? MaxValue : (UInt256)actual,
+			nint actual => (actual < 0) ? MinValue : (UInt256)actual,
 			BigInteger actual => (BigInteger.IsNegative(actual)) ? MinValue : (actual > (BigInteger)MaxValue) ? MaxValue : (UInt256)actual,
 			_ => BitHelper.DefaultConvert<UInt256>(out converted)
 		};
@@ -141,6 +150,7 @@ public partial struct UInt256
 		result = value switch
 		{
 			char actual => actual,
+			NFloat actual => (actual < 0) ? MinValue : (UInt256)actual,
 			Half actual => (actual < Half.Zero) ? MinValue : (UInt256)actual,
 			float actual => (actual < 0) ? MinValue : (UInt256)actual,
 			double actual => (actual < 0) ? MinValue : (UInt256)actual,
@@ -160,6 +170,7 @@ public partial struct UInt256
 			Int128 actual => (UInt256)actual,
 			Int256 actual => (UInt256)actual,
 			Int512 actual => (UInt256)actual,
+			nint actual => (UInt256)actual,
 			BigInteger actual => (UInt256)actual,
 			_ => BitHelper.DefaultConvert<UInt256>(out converted)
 		};
@@ -175,6 +186,7 @@ public partial struct UInt256
 			result = result switch
 			{
 				char => (TOther)(object)(char)value,
+				NFloat => (TOther)(object)(NFloat)value,
 				Half => (TOther)(object)(Half)value,
 				float => (TOther)(object)(float)value,
 				double => (TOther)(object)(double)value,
@@ -210,6 +222,7 @@ public partial struct UInt256
 		result = result switch
 		{
 			char => (TOther)(object)(char)value,
+			NFloat => (TOther)(object)(NFloat)value,
 			Half => (TOther)(object)(Half)value,
 			float => (TOther)(object)(float)value,
 			double => (TOther)(object)(double)value,
@@ -257,6 +270,7 @@ public partial struct UInt256
 				Half => (TOther)(object)(Half)value,
 				float => (TOther)(object)(float)value,
 				double => (TOther)(object)(double)value,
+				NFloat => (TOther)(object)(NFloat)value,
 				decimal => (TOther)(object)(decimal)value,
 				byte => (TOther)(object)(byte)value,
 				ushort => (TOther)(object)(ushort)value,
@@ -688,7 +702,15 @@ public partial struct UInt256
 	/// </summary>
 	/// <param name="value">The value to convert.</param>
 	public static explicit operator Half(in UInt256 value) => (Half)(double)value;
-		
+	/// <summary>
+	/// Explicitly converts a <see cref="UInt256" /> value to a <see cref="Half"/>.
+	/// </summary>
+	/// <param name="value">The value to convert.</param>
+	public static explicit operator NFloat(in UInt256 value)
+	{
+		return NFloat.Size == 8 ? (NFloat)(double)value : (NFloat)(float)value;
+	}
+
 	/// <summary>
 	/// Implicitly converts a <see cref="char" /> value to a <see cref="UInt256"/>.
 	/// </summary>
@@ -758,6 +780,37 @@ public partial struct UInt256
 		}
 
 		return ToUInt256(value);
+	}
+	/// <summary>
+	/// Explicitly converts a <see cref="NFloat" /> value to a <see cref="UInt512"/>.
+	/// </summary>
+	/// <param name="value">The value to convert.</param>
+	public static explicit operator UInt256(NFloat value)
+	{
+		if (NFloat.Size == 8)
+		{
+			return (UInt256)(double)value;
+		}
+		else
+		{
+			return (UInt256)(float)value;
+		}
+	}
+	/// <summary>
+	/// Explicitly converts a <see cref="NFloat" /> value to a <see cref="UInt512"/>.
+	/// </summary>
+	/// <param name="value">The value to convert.</param>
+	/// <exception cref="OverflowException"><paramref name="value"/> is outside the range of <see cref="UInt512"/>.</exception>
+	public static explicit operator checked UInt256(NFloat value)
+	{
+		if (NFloat.Size == 8)
+		{
+			return checked((UInt256)(double)value);
+		}
+		else
+		{
+			return checked((UInt256)(float)value);
+		}
 	}
 	/// <summary>
 	/// Explicitly converts a <see cref="decimal" /> value to a <see cref="UInt256"/>.

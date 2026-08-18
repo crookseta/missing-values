@@ -1,3 +1,5 @@
+using System.Runtime.InteropServices;
+
 namespace MissingValues.Tests.Extensions;
 
 public static class OctoExtensions
@@ -33,6 +35,7 @@ public static class OctoExtensions
 		public static Octo UInt16MaxValue => Values.CreateFloat<Octo>(0x4000_EFFF_E000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
 		public static Octo UInt32MaxValue => Values.CreateFloat<Octo>(0x4001_EFFF_FFFF_E000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
 		public static Octo UInt64MaxValue => Values.CreateFloat<Octo>(0x4003_EFFF_FFFF_FFFF, 0xFFFF_E000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
+		public static Octo UIntPtrMaxValue => nuint.Size == 8 ? Octo.UInt64MaxValue : Octo.UInt32MaxValue;
 		public static Octo UInt128MaxValue => Values.CreateFloat<Octo>(0x4007_EFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_E000_0000_0000, 0x0000_0000_0000_0000);
 		public static Octo TwoOver255 => Values.CreateFloat<Octo>(0x400F_E000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
 		public static Octo TwoOver256 => Values.CreateFloat<Octo>(0x400F_F000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
@@ -47,6 +50,8 @@ public static class OctoExtensions
 		public static Octo Int32MinValue => Values.CreateFloat<Octo>(0xC001_E000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
 		public static Octo Int64MaxValue => Values.CreateFloat<Octo>(0x4003_DFFF_FFFF_FFFF, 0xFFFF_C000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
 		public static Octo Int64MinValue => Values.CreateFloat<Octo>(0xC003_E000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
+		public static Octo IntPtrMaxValue => nint.Size == 8 ? Octo.Int64MaxValue : Octo.Int32MaxValue;
+		public static Octo IntPtrMinValue => nint.Size == 8 ? Octo.Int64MinValue : Octo.Int32MinValue;
 		public static Octo Int128MaxValue => Values.CreateFloat<Octo>(0x4007_DFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xFFFF_C000_0000_0000, 0x0000_0000_0000_0000);
 		public static Octo Int128MinValue => Values.CreateFloat<Octo>(0xC007_E000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
 		
@@ -56,6 +61,8 @@ public static class OctoExtensions
 		public static Octo SingleMinValue => Values.CreateFloat<Octo>(0xC007_EFFF_FFE0_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
 		public static Octo DoubleMaxValue => Values.CreateFloat<Octo>(0x403F_EFFF_FFFF_FFFF, 0xFF00000000000000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
 		public static Octo DoubleMinValue => Values.CreateFloat<Octo>(0xC03F_EFFF_FFFF_FFFF, 0xFF00000000000000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
+		public static Octo NFloatMaxValue => NFloat.Size == 8 ? Octo.DoubleMaxValue : Octo.SingleMaxValue;
+		public static Octo NFloatMinValue => NFloat.Size == 8 ? Octo.DoubleMinValue : Octo.SingleMinValue;
 		public static Octo QuadMaxValue => Values.CreateFloat<Octo>(0x43FF_EFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xF000_0000_0000_0000, 0x0000_0000_0000_0000);
 		public static Octo QuadMinValue => Values.CreateFloat<Octo>(0xC3FF_EFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xF000_0000_0000_0000, 0x0000_0000_0000_0000);
 
