@@ -77,6 +77,7 @@ public partial struct Octo
 			Half actual => (Octo)actual,
 			float actual => (Octo)actual,
 			double actual => (Octo)actual,
+			NFloat actual => (Octo)actual,
 			Quad actual => (Octo)actual,
 			Octo actual => actual,
 			decimal actual => (Octo)actual,
@@ -114,6 +115,7 @@ public partial struct Octo
 				Half => (TOther)(object)(Half)value,
 				float => (TOther)(object)(float)value,
 				double => (TOther)(object)(double)value,
+				NFloat => (TOther)(object)(NFloat)value,
 				Quad => (TOther)(object)(Quad)value,
 				Octo => (TOther)(object)value,
 				decimal => (TOther)(object)(decimal)value,
@@ -155,6 +157,7 @@ public partial struct Octo
 			Half => (TOther)(object)(Half)value,
 			float => (TOther)(object)(float)value,
 			double => (TOther)(object)(double)value,
+			NFloat => (TOther)(object)(NFloat)value,
 			Quad => (TOther)(object)(Quad)value,
 			Octo => (TOther)(object)value,
 			decimal => (TOther)(object)(decimal)value,
@@ -1203,11 +1206,11 @@ public partial struct Octo
 	{
 		if (nint.Size == 8)
 		{
-			return (nint)(int)value;
+			return (nint)(long)value;
 		}
 		else
 		{
-			return (nint)(long)value;
+			return (nint)(int)value;
 		}
 	}
 	/// <summary>
@@ -1219,11 +1222,11 @@ public partial struct Octo
 	{
 		if (nint.Size == 8)
 		{
-			return checked((nint)(int)value);
+			return checked((nint)(long)value);
 		}
 		else
 		{
-			return checked((nint)(long)value);
+			return checked((nint)(int)value);
 		}
 	}
 
@@ -1792,7 +1795,7 @@ public partial struct Octo
 	/// Implicitly converts a <see cref="NFloat" /> value to a <see cref="Octo"/>.
 	/// </summary>
 	/// <param name="value">The value to convert.</param>
-	public static explicit operator Octo(NFloat value)
+	public static implicit operator Octo(NFloat value)
 	{
 		return NFloat.Size == 8 ? (Octo)(double)value : (Octo)(float)value;
 	}

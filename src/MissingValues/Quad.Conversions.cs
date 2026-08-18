@@ -79,6 +79,7 @@ public partial struct Quad
 			Half actual => (Quad)actual,
 			float actual => (Quad)actual,
 			double actual => (Quad)actual,
+			NFloat actual => (Quad)actual,
 			Quad actual => actual,
 			decimal actual => (Quad)actual,
 			byte actual => (Quad)actual,
@@ -115,6 +116,7 @@ public partial struct Quad
 				Half => (TOther)(object)(Half)value,
 				float => (TOther)(object)(float)value,
 				double => (TOther)(object)(double)value,
+				NFloat => (TOther)(object)(NFloat)value,
 				Quad => (TOther)(object)value,
 				Octo => (TOther)(object)(Octo)value,
 				decimal => (TOther)(object)(decimal)value,
@@ -156,6 +158,7 @@ public partial struct Quad
 			Half => (TOther)(object)(Half)value,
 			float => (TOther)(object)(float)value,
 			double => (TOther)(object)(double)value,
+			NFloat => (TOther)(object)(NFloat)value,
 			Quad => (TOther)(object)value,
 			Octo => (TOther)(object)(Octo)value,
 			decimal => (TOther)(object)(decimal)value,
@@ -1223,11 +1226,11 @@ public partial struct Quad
 	{
 		if (nint.Size == 8)
 		{
-			return (nint)(int)value;
+			return (nint)(long)value;
 		}
 		else
 		{
-			return (nint)(long)value;
+			return (nint)(int)value;
 		}
 	}
 	/// <summary>
@@ -1239,11 +1242,11 @@ public partial struct Quad
 	{
 		if (nint.Size == 8)
 		{
-			return checked((nint)(int)value);
+			return checked((nint)(long)value);
 		}
 		else
 		{
-			return checked((nint)(long)value);
+			return checked((nint)(int)value);
 		}
 	}
 
@@ -1809,7 +1812,7 @@ public partial struct Quad
 	/// Implicitly converts a <see cref="NFloat" /> value to a <see cref="Quad"/>.
 	/// </summary>
 	/// <param name="value">The value to convert.</param>
-	public static explicit operator Quad(NFloat value)
+	public static implicit operator Quad(NFloat value)
 	{
 		return NFloat.Size == 8 ? (Quad)(double)value : (Quad)(float)value;
 	}

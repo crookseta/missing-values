@@ -154,6 +154,7 @@ public partial struct UInt512
 				Half actual => (actual < Half.Zero) ? MinValue : (UInt512)actual,
 				float actual => (actual < 0) ? MinValue : (UInt512)actual,
 				double actual => (actual < 0) ? MinValue : (UInt512)actual,
+				NFloat actual => (actual < 0) ? MinValue : (UInt512)actual,
 				decimal actual => (actual < 0) ? MinValue : (UInt512)actual,
 				byte actual => actual,
 				ushort actual => actual,
