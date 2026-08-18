@@ -1,3 +1,5 @@
+using System.Runtime.InteropServices;
+
 namespace MissingValues.Tests.Extensions;
 
 public static class QuadExtensions
@@ -35,6 +37,7 @@ public static class QuadExtensions
 		public static Quad UInt16MaxValue => Values.CreateFloat<Quad>(0x400E_FFFE_0000_0000, 0x0000_0000_0000_0000);
 		public static Quad UInt32MaxValue => Values.CreateFloat<Quad>(0x401E_FFFF_FFFE_0000, 0x0000_0000_0000_0000);
 		public static Quad UInt64MaxValue => Values.CreateFloat<Quad>(0x403E_FFFF_FFFF_FFFF, 0xFFFE_0000_0000_0000);
+		public static Quad UIntPtrMaxValue => nuint.Size == 8 ? Quad.UInt64MaxValue : Quad.UInt32MaxValue;
 		public static Quad TwoOver128 => Values.CreateFloat<Quad>(0x407F_0000_0000_0000, 0x0000_0000_0000_0000);
 		public static Quad TwoOver256 => Values.CreateFloat<Quad>(0x40FF_0000_0000_0000, 0x0000_0000_0000_0000);
 		public static Quad TwoOver512 => Values.CreateFloat<Quad>(0x41FF_0000_0000_0000, 0x0000_0000_0000_0000);
@@ -50,6 +53,8 @@ public static class QuadExtensions
 		public static Quad Int32MinValue => Values.CreateFloat<Quad>(0xC01E_0000_0000_0000, 0x0000_0000_0000_0000);
 		public static Quad Int64MaxValue => Values.CreateFloat<Quad>(0x403D_FFFF_FFFF_FFFF, 0xFFFC_0000_0000_0000);
 		public static Quad Int64MinValue => Values.CreateFloat<Quad>(0xC03E_0000_0000_0000, 0x0000_0000_0000_0000);
+		public static Quad IntPtrMaxValue => nint.Size == 8 ? Quad.Int64MaxValue : Quad.Int32MaxValue;
+		public static Quad IntPtrMinValue => nint.Size == 8 ? Quad.Int64MinValue : Quad.Int32MinValue;
 
 		public static Quad HalfMaxValue => Values.CreateFloat<Quad>(0x400E_FFC0_0000_0000, 0x0000_0000_0000_0000);
 		public static Quad HalfMinValue => Values.CreateFloat<Quad>(0xC00E_FFC0_0000_0000, 0x0000_0000_0000_0000);
@@ -57,6 +62,8 @@ public static class QuadExtensions
 		public static Quad SingleMinValue => Values.CreateFloat<Quad>(0xC07E_FFFF_FE00_0000, 0x0000_0000_0000_0000);
 		public static Quad DoubleMaxValue => Values.CreateFloat<Quad>(0x43FE_FFFF_FFFF_FFFF, 0xF000_0000_0000_0000);
 		public static Quad DoubleMinValue => Values.CreateFloat<Quad>(0xC3FE_FFFF_FFFF_FFFF, 0xF000_0000_0000_0000);
+		public static Quad NFloatMaxValue => NFloat.Size == 8 ? Quad.DoubleMaxValue : Quad.SingleMaxValue;
+		public static Quad NFloatMinValue => NFloat.Size == 8 ? Quad.DoubleMinValue : Quad.SingleMinValue;
 		
 		public static Quad Decimal32MaxValue => Values.CreateFloat<Quad>(0x4141_2BA0_93E5_C611, 0x4735_DACF_2599_5A53);
 		public static Quad Decimal32MinValue => Values.CreateFloat<Quad>(0xC141_2BA0_93E5_C611, 0x4735_DACF_2599_5A53);

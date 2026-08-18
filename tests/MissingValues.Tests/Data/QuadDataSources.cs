@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Numerics;
+using System.Runtime.InteropServices;
 using System.Text;
 using MissingValues.Tests.Data.Sources;
 using MissingValues.Tests.Extensions;
@@ -1119,6 +1120,40 @@ public class QuadDataSources
 		yield return () => (Quad.TwoOver256, UInt512.UInt256MaxValue + UInt512.One);
 		yield return () => (Quad.TwoOver512, UInt512.MaxValue);
 	}
+	
+	public static IEnumerable<Func<(Quad, nuint)>> ConvertToCheckedUIntPtrTestData()
+	{
+		yield return () => (Quad.Half, 0);
+		yield return () => (Quad.One, 1);
+		yield return () => (Quad.ByteMaxValue, byte.MaxValue);
+		yield return () => (Quad.UInt16MaxValue, ushort.MaxValue);
+		yield return () => (Quad.UInt32MaxValue, uint.MaxValue);
+		yield return () => (Quad.UIntPtrMaxValue, nuint.MaxValue);
+	}
+	
+	public static IEnumerable<Func<(Quad, nuint)>> ConvertToSaturatingUIntPtrTestData()
+	{
+		yield return () => (Quad.NegativeOne, 0);
+		yield return () => (Quad.Half, 0);
+		yield return () => (Quad.One, 1);
+		yield return () => (Quad.ByteMaxValue, byte.MaxValue);
+		yield return () => (Quad.UInt16MaxValue, ushort.MaxValue);
+		yield return () => (Quad.UInt32MaxValue, uint.MaxValue);
+		yield return () => (Quad.UIntPtrMaxValue, nuint.MaxValue);
+		yield return () => (Quad.MaxValue, nuint.MaxValue);
+	}
+	
+	public static IEnumerable<Func<(Quad, nuint)>> ConvertToTruncatingUIntPtrTestData()
+	{
+		yield return () => (Quad.NegativeOne, 0);
+		yield return () => (Quad.Half, 0);
+		yield return () => (Quad.One, 1);
+		yield return () => (Quad.ByteMaxValue, byte.MaxValue);
+		yield return () => (Quad.UInt16MaxValue, ushort.MaxValue);
+		yield return () => (Quad.UInt32MaxValue, uint.MaxValue);
+		yield return () => (Quad.UIntPtrMaxValue, nuint.MaxValue);
+		yield return () => (Quad.MaxValue, nuint.MaxValue);
+	}
 
 	public static IEnumerable<Func<(Quad, sbyte)>> ConvertToCheckedSByteTestData()
 	{
@@ -1435,6 +1470,55 @@ public class QuadDataSources
 		yield return () => (Quad.MaxValue, Int512.MaxValue);
 	}
 	
+	public static IEnumerable<Func<(Quad, nint)>> ConvertToCheckedIntPtrTestData()
+	{
+		yield return () => (Quad.IntPtrMinValue, nint.MinValue);
+		yield return () => (Quad.Int32MinValue, int.MinValue);
+		yield return () => (Quad.Int16MinValue, short.MinValue);
+		yield return () => (Quad.SByteMinValue, sbyte.MinValue);
+		yield return () => (Quad.NegativeOne, -1);
+		yield return () => (Quad.Half, 0);
+		yield return () => (Quad.One, 1);
+		yield return () => (Quad.SByteMaxValue, sbyte.MaxValue);
+		yield return () => (Quad.Int16MaxValue, short.MaxValue);
+		yield return () => (Quad.Int32MaxValue, int.MaxValue);
+		yield return () => (Quad.IntPtrMaxValue, nint.MaxValue);
+	}
+	
+	public static IEnumerable<Func<(Quad, nint)>> ConvertToSaturatingIntPtrTestData()
+	{
+		yield return () => (Quad.MinValue, nint.MinValue);
+		yield return () => (Quad.IntPtrMinValue, nint.MinValue);
+		yield return () => (Quad.Int32MinValue, int.MinValue);
+		yield return () => (Quad.Int16MinValue, short.MinValue);
+		yield return () => (Quad.SByteMinValue, sbyte.MinValue);
+		yield return () => (Quad.NegativeOne, -1);
+		yield return () => (Quad.Half, 0);
+		yield return () => (Quad.One, 1);
+		yield return () => (Quad.SByteMaxValue, sbyte.MaxValue);
+		yield return () => (Quad.Int16MaxValue, short.MaxValue);
+		yield return () => (Quad.Int32MaxValue, int.MaxValue);
+		yield return () => (Quad.IntPtrMaxValue, nint.MaxValue);
+		yield return () => (Quad.MaxValue, nint.MaxValue);
+	}
+	
+	public static IEnumerable<Func<(Quad, nint)>> ConvertToTruncatingIntPtrTestData()
+	{
+		yield return () => (Quad.MinValue, nint.MinValue);
+		yield return () => (Quad.IntPtrMinValue, nint.MinValue);
+		yield return () => (Quad.Int32MinValue, int.MinValue);
+		yield return () => (Quad.Int16MinValue, short.MinValue);
+		yield return () => (Quad.SByteMinValue, sbyte.MinValue);
+		yield return () => (Quad.NegativeOne, -1);
+		yield return () => (Quad.Half, 0);
+		yield return () => (Quad.One, 1);
+		yield return () => (Quad.SByteMaxValue, sbyte.MaxValue);
+		yield return () => (Quad.Int16MaxValue, short.MaxValue);
+		yield return () => (Quad.Int32MaxValue, int.MaxValue);
+		yield return () => (Quad.IntPtrMaxValue, nint.MaxValue);
+		yield return () => (Quad.MaxValue, nint.MaxValue);
+	}
+	
 	public static IEnumerable<Func<(Quad, BigInteger)>> ConvertToCheckedBigIntegerTestData()
 	{
 		yield return () => (Quad.DoubleMinValue, (BigInteger)double.MinValue);
@@ -1623,6 +1707,39 @@ public class QuadDataSources
 		yield return () => (Quad.One, Octo.One);
 		yield return () => (Quad.PositiveInfinity, Octo.PositiveInfinity);
 	}
+	
+	public static IEnumerable<Func<(Quad, NFloat)>> ConvertToCheckedNFloatTestData()
+	{
+		yield return () => (Quad.NegativeInfinity, NFloat.NegativeInfinity);
+		yield return () => (Quad.NFloatMinValue, NFloat.MinValue);
+		yield return () => (Quad.NegativeOne, -1f);
+		yield return () => (Quad.Half, 0.5f);
+		yield return () => (Quad.One, 1f);
+		yield return () => (Quad.NFloatMaxValue, NFloat.MaxValue);
+		yield return () => (Quad.PositiveInfinity, NFloat.PositiveInfinity);
+	}
+	
+	public static IEnumerable<Func<(Quad, NFloat)>> ConvertToSaturatingNFloatTestData()
+	{
+		yield return () => (Quad.NegativeInfinity, NFloat.NegativeInfinity);
+		yield return () => (Quad.NFloatMinValue, NFloat.MinValue);
+		yield return () => (Quad.NegativeOne, -1f);
+		yield return () => (Quad.Half, 0.5f);
+		yield return () => (Quad.One, 1f);
+		yield return () => (Quad.NFloatMaxValue, NFloat.MaxValue);
+		yield return () => (Quad.PositiveInfinity, NFloat.PositiveInfinity);
+	}
+	
+	public static IEnumerable<Func<(Quad, NFloat)>> ConvertToTruncatingNFloatTestData()
+	{
+		yield return () => (Quad.NegativeInfinity, NFloat.NegativeInfinity);
+		yield return () => (Quad.NFloatMinValue, NFloat.MinValue);
+		yield return () => (Quad.NegativeOne, -1f);
+		yield return () => (Quad.Half, 0.5f);
+		yield return () => (Quad.One, 1f);
+		yield return () => (Quad.NFloatMaxValue, NFloat.MaxValue);
+		yield return () => (Quad.PositiveInfinity, NFloat.PositiveInfinity);
+	}
 
 	public static IEnumerable<Func<(byte, Quad)>> ConvertFromCheckedByteTestData()
 	{
@@ -1757,6 +1874,36 @@ public class QuadDataSources
 		yield return () => (uint.MaxValue, Quad.UInt32MaxValue);
 		yield return () => (ulong.MaxValue, Quad.UInt64MaxValue);
 		yield return () => (UInt128.MaxValue, Quad.TwoOver128);
+	}
+	
+	public static IEnumerable<Func<(nuint, Quad)>> ConvertFromCheckedUIntPtrTestData()
+	{
+		yield return () => (0, Quad.Zero);
+		yield return () => (1, Quad.One);
+		yield return () => (byte.MaxValue, Quad.ByteMaxValue);
+		yield return () => (ushort.MaxValue, Quad.UInt16MaxValue);
+		yield return () => (uint.MaxValue, Quad.UInt32MaxValue);
+		yield return () => (nuint.MaxValue, Quad.UIntPtrMaxValue);
+	}
+	
+	public static IEnumerable<Func<(nuint, Quad)>> ConvertFromSaturatingUIntPtrTestData()
+	{
+		yield return () => (0, Quad.Zero);
+		yield return () => (1, Quad.One);
+		yield return () => (byte.MaxValue, Quad.ByteMaxValue);
+		yield return () => (ushort.MaxValue, Quad.UInt16MaxValue);
+		yield return () => (uint.MaxValue, Quad.UInt32MaxValue);
+		yield return () => (nuint.MaxValue, Quad.UIntPtrMaxValue);
+	}
+	
+	public static IEnumerable<Func<(nuint, Quad)>> ConvertFromTruncatingUIntPtrTestData()
+	{
+		yield return () => (0, Quad.Zero);
+		yield return () => (1, Quad.One);
+		yield return () => (byte.MaxValue, Quad.ByteMaxValue);
+		yield return () => (ushort.MaxValue, Quad.UInt16MaxValue);
+		yield return () => (uint.MaxValue, Quad.UInt32MaxValue);
+		yield return () => (nuint.MaxValue, Quad.UIntPtrMaxValue);
 	}
 
 	public static IEnumerable<Func<(sbyte, Quad)>> ConvertFromCheckedSByteTestData()
@@ -1951,6 +2098,51 @@ public class QuadDataSources
 		yield return () => (Int128.MaxValue, Quad.TwoOver127);
 	}
 	
+	public static IEnumerable<Func<(nint, Quad)>> ConvertFromCheckedIntPtrTestData()
+	{
+		yield return () => (nint.MinValue, Quad.IntPtrMinValue);
+		yield return () => (int.MinValue, Quad.Int32MinValue);
+		yield return () => (short.MinValue, Quad.Int16MinValue);
+		yield return () => (sbyte.MinValue, Quad.SByteMinValue);
+		yield return () => (-1, Quad.NegativeOne);
+		yield return () => (0, Quad.Zero);
+		yield return () => (1, Quad.One);
+		yield return () => (sbyte.MaxValue, Quad.SByteMaxValue);
+		yield return () => (short.MaxValue, Quad.Int16MaxValue);
+		yield return () => (int.MaxValue, Quad.Int32MaxValue);
+		yield return () => (nint.MaxValue, Quad.IntPtrMaxValue);
+	}
+	
+	public static IEnumerable<Func<(nint, Quad)>> ConvertFromSaturatingIntPtrTestData()
+	{
+		yield return () => (nint.MinValue, Quad.IntPtrMinValue);
+		yield return () => (int.MinValue, Quad.Int32MinValue);
+		yield return () => (short.MinValue, Quad.Int16MinValue);
+		yield return () => (sbyte.MinValue, Quad.SByteMinValue);
+		yield return () => (-1, Quad.NegativeOne);
+		yield return () => (0, Quad.Zero);
+		yield return () => (1, Quad.One);
+		yield return () => (sbyte.MaxValue, Quad.SByteMaxValue);
+		yield return () => (short.MaxValue, Quad.Int16MaxValue);
+		yield return () => (int.MaxValue, Quad.Int32MaxValue);
+		yield return () => (nint.MaxValue, Quad.IntPtrMaxValue);
+	}
+	
+	public static IEnumerable<Func<(nint, Quad)>> ConvertFromTruncatingIntPtrTestData()
+	{
+		yield return () => (nint.MinValue, Quad.IntPtrMinValue);
+		yield return () => (int.MinValue, Quad.Int32MinValue);
+		yield return () => (short.MinValue, Quad.Int16MinValue);
+		yield return () => (sbyte.MinValue, Quad.SByteMinValue);
+		yield return () => (-1, Quad.NegativeOne);
+		yield return () => (0, Quad.Zero);
+		yield return () => (1, Quad.One);
+		yield return () => (sbyte.MaxValue, Quad.SByteMaxValue);
+		yield return () => (short.MaxValue, Quad.Int16MaxValue);
+		yield return () => (int.MaxValue, Quad.Int32MaxValue);
+		yield return () => (nint.MaxValue, Quad.IntPtrMaxValue);
+	}
+	
 	public static IEnumerable<Func<(BigInteger, Quad)>> ConvertFromCheckedBigIntegerTestData()
 	{
 		yield return () => (Values.QuadMinValue, Quad.MinValue);
@@ -2135,5 +2327,44 @@ public class QuadDataSources
 		yield return () => (1d, Quad.One);
 		yield return () => (double.MaxValue, Quad.DoubleMaxValue);
 		yield return () => (double.PositiveInfinity, Quad.PositiveInfinity);
+	}
+	
+	public static IEnumerable<Func<(NFloat, Quad)>> ConvertFromCheckedNFloatTestData()
+	{
+		yield return () => (NFloat.NegativeInfinity, Quad.NegativeInfinity);
+		yield return () => (NFloat.MinValue, Quad.NFloatMinValue);
+		yield return () => (-1f, Quad.NegativeOne);
+		yield return () => (-0.5f, Quad.NegativeHalf);
+		yield return () => (0f, Quad.Zero);
+		yield return () => (0.5f, Quad.Half);
+		yield return () => (1f, Quad.One);
+		yield return () => (NFloat.MaxValue, Quad.NFloatMaxValue);
+		yield return () => (NFloat.PositiveInfinity, Quad.PositiveInfinity);
+	}
+	
+	public static IEnumerable<Func<(NFloat, Quad)>> ConvertFromSaturatingNFloatTestData()
+	{
+		yield return () => (NFloat.NegativeInfinity, Quad.NegativeInfinity);
+		yield return () => (NFloat.MinValue, Quad.NFloatMinValue);
+		yield return () => (-1f, Quad.NegativeOne);
+		yield return () => (-0.5f, Quad.NegativeHalf);
+		yield return () => (0f, Quad.Zero);
+		yield return () => (0.5f, Quad.Half);
+		yield return () => (1f, Quad.One);
+		yield return () => (NFloat.MaxValue, Quad.NFloatMaxValue);
+		yield return () => (NFloat.PositiveInfinity, Quad.PositiveInfinity);
+	}
+	
+	public static IEnumerable<Func<(NFloat, Quad)>> ConvertFromTruncatingNFloatTestData()
+	{
+		yield return () => (NFloat.NegativeInfinity, Quad.NegativeInfinity);
+		yield return () => (NFloat.MinValue, Quad.NFloatMinValue);
+		yield return () => (-1f, Quad.NegativeOne);
+		yield return () => (-0.5f, Quad.NegativeHalf);
+		yield return () => (0f, Quad.Zero);
+		yield return () => (0.5f, Quad.Half);
+		yield return () => (1f, Quad.One);
+		yield return () => (NFloat.MaxValue, Quad.NFloatMaxValue);
+		yield return () => (NFloat.PositiveInfinity, Quad.PositiveInfinity);
 	}
 }
