@@ -463,6 +463,9 @@ public class OctoDataSources
 	    yield return () => ("1.000", NumberStyles.Float, CultureInfo.InvariantCulture, Octo.One);
 	    yield return () => ("1,000.00", NumberStyles.Float | NumberStyles.AllowThousands, CultureInfo.InvariantCulture, Octo.Thousand);
 	    yield return () => ("-1,000.00", NumberStyles.Float | NumberStyles.AllowThousands, CultureInfo.InvariantCulture, Octo.NegativeThousand);
+	    
+	    yield return () => ("9.99999E80000", NumberStyles.Float, CultureInfo.InvariantCulture, Octo.PositiveInfinity);
+	    yield return () => ("1E-80000", NumberStyles.Float, CultureInfo.InvariantCulture, Octo.Zero);
     }
 
     public static IEnumerable<Func<(char[], NumberStyles, IFormatProvider?, Octo)>> ParseSpanTestData()
@@ -485,6 +488,9 @@ public class OctoDataSources
 	    yield return () => ("1.000".ToCharArray(), NumberStyles.Float, CultureInfo.InvariantCulture, Octo.One);
 	    yield return () => ("1,000.00".ToCharArray(), NumberStyles.Float | NumberStyles.AllowThousands, CultureInfo.InvariantCulture, Octo.Thousand);
 	    yield return () => ("-1,000.00".ToCharArray(), NumberStyles.Float | NumberStyles.AllowThousands, CultureInfo.InvariantCulture, Octo.NegativeThousand);
+	    
+	    yield return () => ("9.99999E80000".ToCharArray(), NumberStyles.Float, CultureInfo.InvariantCulture, Octo.PositiveInfinity);
+	    yield return () => ("1E-80000".ToCharArray(), NumberStyles.Float, CultureInfo.InvariantCulture, Octo.Zero);
     }
 
     public static IEnumerable<Func<(byte[], NumberStyles, IFormatProvider?, Octo)>> ParseUtf8TestData()
@@ -507,6 +513,9 @@ public class OctoDataSources
 	    yield return () => ("1.000"u8.ToArray(), NumberStyles.Float, CultureInfo.InvariantCulture, Octo.One);
 	    yield return () => ("1,000.00"u8.ToArray(), NumberStyles.Float | NumberStyles.AllowThousands, CultureInfo.InvariantCulture, Octo.Thousand);
 	    yield return () => ("-1,000.00"u8.ToArray(), NumberStyles.Float | NumberStyles.AllowThousands, CultureInfo.InvariantCulture, Octo.NegativeThousand);
+	    
+	    yield return () => ("9.99999E80000"u8.ToArray(), NumberStyles.Float, CultureInfo.InvariantCulture, Octo.PositiveInfinity);
+	    yield return () => ("1E-80000"u8.ToArray(), NumberStyles.Float, CultureInfo.InvariantCulture, Octo.Zero);
     }
 
     public static IEnumerable<Func<(string, NumberStyles, IFormatProvider?, bool, Octo)>> TryParseTestData()
@@ -529,6 +538,9 @@ public class OctoDataSources
 		yield return () => ("1.000", NumberStyles.Float, CultureInfo.InvariantCulture, true, Octo.One);
 		yield return () => ("1,000.00", NumberStyles.Float | NumberStyles.AllowThousands, CultureInfo.InvariantCulture, true, Octo.Thousand);
 		yield return () => ("-1,000.00", NumberStyles.Float | NumberStyles.AllowThousands, CultureInfo.InvariantCulture, true, Octo.NegativeThousand);
+		
+		yield return () => ("9.99999E80000", NumberStyles.Float, CultureInfo.InvariantCulture, true, Octo.PositiveInfinity);
+		yield return () => ("1E-80000", NumberStyles.Float, CultureInfo.InvariantCulture, true, Octo.Zero);
     }
 
     public static IEnumerable<Func<(char[], NumberStyles, IFormatProvider?, bool, Octo)>> TryParseSpanTestData()
@@ -551,6 +563,9 @@ public class OctoDataSources
 	    yield return () => ("1.000".ToCharArray(), NumberStyles.Float, CultureInfo.InvariantCulture, true, Octo.One);
 	    yield return () => ("1,000.00".ToCharArray(), NumberStyles.Float | NumberStyles.AllowThousands, CultureInfo.InvariantCulture, true, Octo.Thousand);
 	    yield return () => ("-1,000.00".ToCharArray(), NumberStyles.Float | NumberStyles.AllowThousands, CultureInfo.InvariantCulture, true, Octo.NegativeThousand);
+	    
+	    yield return () => ("9.99999E80000".ToCharArray(), NumberStyles.Float, CultureInfo.InvariantCulture, true, Octo.PositiveInfinity);
+	    yield return () => ("1E-80000".ToCharArray(), NumberStyles.Float, CultureInfo.InvariantCulture, true, Octo.Zero);
     }
 
     public static IEnumerable<Func<(byte[], NumberStyles, IFormatProvider?, bool, Octo)>> TryParseUtf8TestData()
@@ -573,6 +588,9 @@ public class OctoDataSources
 	    yield return () => ("1.000"u8.ToArray(), NumberStyles.Float, CultureInfo.InvariantCulture, true, Octo.One);
 	    yield return () => ("1,000.00"u8.ToArray(), NumberStyles.Float | NumberStyles.AllowThousands, CultureInfo.InvariantCulture, true, Octo.Thousand);
 	    yield return () => ("-1,000.00"u8.ToArray(), NumberStyles.Float | NumberStyles.AllowThousands, CultureInfo.InvariantCulture, true, Octo.NegativeThousand);
+	    
+	    yield return () => ("9.99999E80000"u8.ToArray(), NumberStyles.Float, CultureInfo.InvariantCulture, true, Octo.PositiveInfinity);
+	    yield return () => ("1E-80000"u8.ToArray(), NumberStyles.Float, CultureInfo.InvariantCulture, true, Octo.Zero);
     }
 
     public static IEnumerable<Func<(Octo, string, IFormatProvider?, string)>> ToStringTestData()
