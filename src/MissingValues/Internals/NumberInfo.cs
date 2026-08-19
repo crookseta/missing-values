@@ -647,7 +647,7 @@ namespace MissingValues.Internals
 			return AssembleFloatingPointBits<TFloat, TBits>(completeMantissa, finalExponent, hasZeroTail);
 		}
 
-		private unsafe static TBits ConvertBigIntegerToFloatingPointBits<TFloat, TBits>(ref BigNumber value, uint integerBitsOfPrecision, bool hasNonZeroFractionalPart)
+		private static unsafe TBits ConvertBigIntegerToFloatingPointBits<TFloat, TBits>(ref BigNumber value, uint integerBitsOfPrecision, bool hasNonZeroFractionalPart)
 			where TFloat : struct, IBinaryFloatingPointInfo<TFloat, TBits>
 			where TBits : unmanaged, IBinaryInteger<TBits>, IUnsignedNumber<TBits>
 		{
@@ -716,24 +716,26 @@ namespace MissingValues.Internals
 				else // typeof(TBits) == typeof(UInt256)
 				{
 					// Otherwise, we need to read five blocks and combine them into a 256-bit mantissa
+					uint secondBottomBlockIndex = bottomBlockIndex--;
 					
 					exponent = baseExponent + ((int)(bottomBlockIndex) * 64);
+					exponent += (int)(topBlockBits);
 
 					int bottomBlockShift = (int)(topBlockBits);
-					int topBlockShift = 256 - bottomBlockShift;
+					int topBlockShift = size - bottomBlockShift;
 					int secondTopBlockShift = topBlockShift - 64;
 					int middleBlockShift = secondTopBlockShift - 64;
-
-					exponent += (int)(topBlockBits);
+					int secondBottomBlockShift = middleBlockShift - 64;
 
 					ulong bottomBlock = value.GetBlock(bottomBlockIndex);
 					ulong bottomBits = bottomBlock >> bottomBlockShift;
 
+					TBits secondBottomBits = TBits.CreateTruncating(value.GetBlock(secondBottomBlockIndex)) << secondBottomBlockShift;
 					TBits middleBits = TBits.CreateTruncating(value.GetBlock(middleBlockIndex)) << middleBlockShift;
 					TBits secondTopBits = TBits.CreateTruncating(value.GetBlock(secondTopBlockIndex)) << secondTopBlockShift;
 					TBits topBits = TBits.CreateTruncating(value.GetBlock(topBlockIndex)) << topBlockShift;
 
-					mantissa = topBits + secondTopBits + middleBits + TBits.CreateTruncating(bottomBits);
+					mantissa = topBits | secondTopBits | middleBits | secondBottomBits | TBits.CreateTruncating(bottomBits);
 
 					ulong unusedBottomBlockBitsMask = (1UL << (int)(topBlockBits)) - 1;
 					hasZeroTail &= (bottomBlock & unusedBottomBlockBitsMask) == 0;
