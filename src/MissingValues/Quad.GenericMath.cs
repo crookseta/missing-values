@@ -76,7 +76,7 @@ public partial struct Quad :
 
 	static int IBinaryFloatingPointInfo<Quad, UInt128>.ExponentBias => ExponentBias;
 
-	static int IBinaryFloatingPointInfo<Quad, UInt128>.OverflowDecimalExponent => (ExponentBias + (2 * 113) / 3);
+	static int IBinaryFloatingPointInfo<Quad, UInt128>.OverflowDecimalExponent => (ExponentBias + (2 * 113)) / 3;
 		
 	static int IBinaryFloatingPointInfo<Quad, UInt128>.InfinityExponent => 0x7FFF;
 

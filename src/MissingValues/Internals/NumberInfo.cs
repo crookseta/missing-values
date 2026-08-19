@@ -149,7 +149,7 @@ namespace MissingValues.Internals
 			{
 				result = TFloat.Zero;
 			}
-			else if (number.Scale > TFloat.OverflowDecimalExponent)
+			else if (number.Scale > TFloat.MaximumDecimalExponent)
 			{
 				result = TFloat.PositiveInfinity;
 			}
