@@ -64,7 +64,7 @@ public partial struct Quad :
 
 	static int IBinaryFloatingPointInfo<Quad, UInt128>.MinimumDecimalExponent => -4966;
 
-	static int IBinaryFloatingPointInfo<Quad, UInt128>.MaximumDecimalExponent => 4932;
+	static int IBinaryFloatingPointInfo<Quad, UInt128>.MaximumDecimalExponent => 4932 + 1;
 
 	static int IBinaryFloatingPointInfo<Quad, UInt128>.MinBiasedExponent => MinBiasedExponent;
 
@@ -76,7 +76,7 @@ public partial struct Quad :
 
 	static int IBinaryFloatingPointInfo<Quad, UInt128>.ExponentBias => ExponentBias;
 
-	static int IBinaryFloatingPointInfo<Quad, UInt128>.OverflowDecimalExponent => (ExponentBias + (2 * 113) / 3);
+	static int IBinaryFloatingPointInfo<Quad, UInt128>.OverflowDecimalExponent => (ExponentBias + (2 * 113)) / 3;
 		
 	static int IBinaryFloatingPointInfo<Quad, UInt128>.InfinityExponent => 0x7FFF;
 
