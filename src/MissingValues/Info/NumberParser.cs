@@ -17,11 +17,13 @@ namespace MissingValues.Info
 			private const int FailedValue = 1;
 			private const int OverflowValue = 2;
 			private const int UnderflowValue = 3;
+			private const int PartialValue = 4;
 			
 			internal static ParsingStatus Success => new ParsingStatus(SuccessValue);
 			internal static ParsingStatus Failed => new ParsingStatus(FailedValue);
 			internal static ParsingStatus Overflow => new ParsingStatus(OverflowValue);
 			internal static ParsingStatus Underflow => new ParsingStatus(OverflowValue);
+			internal static ParsingStatus Partial => new ParsingStatus(PartialValue);
 
 			private readonly int _status;
 
@@ -47,6 +49,17 @@ namespace MissingValues.Info
 			}
 			
 			internal bool IsSuccessful() => _status == SuccessValue;
+			internal bool IsSuccessfulOrPartial() => _status is SuccessValue or PartialValue;
+		}
+		
+		internal static int ConsumeTrailingNulls<TChar>(ReadOnlySpan<TChar> value, int index)
+			where TChar : unmanaged, IUtfCharacter<TChar>
+		{
+			// For compatibility, we need to allow trailing nulls at the end of a number string
+			var remainder = value.Slice(index);
+
+			var nullsToConsume = remainder.IndexOfAnyExcept(TChar.NullCharacter);
+			return index + ((nullsToConsume >= 0) ? nullsToConsume : remainder.Length);
 		}
 
 		#region Integer
