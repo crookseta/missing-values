@@ -1545,7 +1545,7 @@ public class OctoDataSources
 	
 	public static IEnumerable<Func<(Octo, BigInteger)>> ConvertToCheckedBigIntegerTestData()
 	{
-		yield return () => (Octo.QuadMinValue, (BigInteger)Quad.MinValue);
+		yield return () => (Octo.QuadMinValue, Values.QuadMinValue);
 		yield return () => (Octo.DoubleMinValue, (BigInteger)double.MinValue);
 		yield return () => (Octo.SingleMinValue, (BigInteger)float.MinValue);
 		yield return () => (Octo.HalfMinValue, (BigInteger)Half.MinValue);
@@ -1563,12 +1563,12 @@ public class OctoDataSources
 		yield return () => (Octo.HalfMaxValue, (BigInteger)Half.MaxValue);
 		yield return () => (Octo.SingleMaxValue, (BigInteger)float.MaxValue);
 		yield return () => (Octo.DoubleMaxValue, (BigInteger)double.MaxValue);
-		yield return () => (Octo.QuadMaxValue, (BigInteger)Quad.MaxValue);
+		yield return () => (Octo.QuadMaxValue, Values.QuadMaxValue);
 	}
 
 	public static IEnumerable<Func<(Octo, BigInteger)>> ConvertToSaturatingBigIntegerTestData()
 	{
-		yield return () => (Octo.QuadMinValue, (BigInteger)Quad.MinValue);
+		yield return () => (Octo.QuadMinValue, Values.QuadMinValue);
 		yield return () => (Octo.DoubleMinValue, (BigInteger)double.MinValue);
 		yield return () => (Octo.SingleMinValue, (BigInteger)float.MinValue);
 		yield return () => (Octo.HalfMinValue, (BigInteger)Half.MinValue);
@@ -1586,12 +1586,12 @@ public class OctoDataSources
 		yield return () => (Octo.HalfMaxValue, (BigInteger)Half.MaxValue);
 		yield return () => (Octo.SingleMaxValue, (BigInteger)float.MaxValue);
 		yield return () => (Octo.DoubleMaxValue, (BigInteger)double.MaxValue);
-		yield return () => (Octo.QuadMaxValue, (BigInteger)Quad.MaxValue);
+		yield return () => (Octo.QuadMaxValue, Values.QuadMaxValue);
 	}
 
 	public static IEnumerable<Func<(Octo, BigInteger)>> ConvertToTruncatingBigIntegerTestData()
 	{
-		yield return () => (Octo.QuadMinValue, (BigInteger)Quad.MinValue);
+		yield return () => (Octo.QuadMinValue, Values.QuadMinValue);
 		yield return () => (Octo.DoubleMinValue, (BigInteger)double.MinValue);
 		yield return () => (Octo.SingleMinValue, (BigInteger)float.MinValue);
 		yield return () => (Octo.HalfMinValue, (BigInteger)Half.MinValue);
@@ -1609,7 +1609,7 @@ public class OctoDataSources
 		yield return () => (Octo.HalfMaxValue, (BigInteger)Half.MaxValue);
 		yield return () => (Octo.SingleMaxValue, (BigInteger)float.MaxValue);
 		yield return () => (Octo.DoubleMaxValue, (BigInteger)double.MaxValue);
-		yield return () => (Octo.QuadMaxValue, (BigInteger)Quad.MaxValue);
+		yield return () => (Octo.QuadMaxValue, Values.QuadMaxValue);
 	}
 
 	public static IEnumerable<Func<(Octo, Half)>> ConvertToCheckedHalfTestData()

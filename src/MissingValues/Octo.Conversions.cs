@@ -602,7 +602,7 @@ public partial struct Octo
 		}
 	}
 	/// <summary>
-	/// Explicitly converts a <see cref="Quad" /> value to a <see cref="nuint"/>.
+	/// Explicitly converts a <see cref="Octo" /> value to a <see cref="nuint"/>.
 	/// </summary>
 	/// <param name="value">The value to convert.</param>
 	public static explicit operator nuint(in Octo value)
@@ -610,7 +610,7 @@ public partial struct Octo
 		return nuint.Size == 8 ? (nuint)(ulong)value : (nuint)(uint)value;
 	}
 	/// <summary>
-	/// Explicitly converts a <see cref="Quad" /> value to a <see cref="nuint"/>.
+	/// Explicitly converts a <see cref="Octo" /> value to a <see cref="nuint"/>.
 	/// </summary>
 	/// <param name="value">The value to convert.</param>
 	/// <exception cref="OverflowException"><paramref name="value"/> is outside the range of <see cref="nuint"/>.</exception>
@@ -1252,7 +1252,7 @@ public partial struct Octo
 		BigInteger result;
 		if (exp >= 0)
 		{
-			(int byteShift, int bitShift) = Math.DivRem(exp, 16);
+			(int byteShift, int bitShift) = Math.DivRem(exp, 8);
 			int bytesNeeded = 32 + byteShift + (bitShift > 0 ? 1 : 0);
 			
 			byte[]? array = null;
@@ -1267,8 +1267,8 @@ public partial struct Octo
 			}
 			else
 			{
-				UInt128 low = (UInt128)man;
-				UInt128 high = (UInt128)(man >> 128);
+				UInt128 low = man.Lower;
+				UInt128 high = man.Upper;
 
 				UInt128 shiftedLow = low << bitShift;
 				UInt128 shiftedHigh = (high << bitShift) | (low >> (128 - bitShift));
