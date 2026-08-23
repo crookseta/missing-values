@@ -297,6 +297,17 @@ namespace MissingValues.Info
 			output = default;
 			return false;
 		}
+		public static bool TryParsePartialToUnsigned<T, TChar>(ReadOnlySpan<TChar> s, NumberStyles style, IFormatProvider? formatProvider, out T output, out int elementsConsumed)
+			where T : struct, IFormattableUnsignedInteger<T>
+			where TChar : unmanaged, IUtfCharacter<TChar>
+		{
+			if (TryParseToUnsignedCore(s, style, formatProvider, out output, out elementsConsumed).IsSuccessfulOrPartial())
+			{
+				return true;
+			}
+			output = default;
+			return false;
+		}
 
 		public static ParsingStatus TryParseToUnsignedCore<T, TChar>(ReadOnlySpan<TChar> s, NumberStyles style, IFormatProvider? formatProvider, out T output, out int charsConsumed)
 			where T : struct, IFormattableUnsignedInteger<T>
@@ -408,6 +419,18 @@ namespace MissingValues.Info
 			where TChar : unmanaged, IUtfCharacter<TChar>
 		{
 			if (TryParseToSignedCore<TSigned, TUnsigned, TChar>(s, style, formatProvider, out output, out _).IsSuccessful())
+			{
+				return true;
+			}
+			output = default;
+			return false;
+		}
+		public static bool TryParsePartialToSigned<TSigned, TUnsigned, TChar>(ReadOnlySpan<TChar> s, NumberStyles style, IFormatProvider? formatProvider, out TSigned output, out int elementsConsumed)
+			where TSigned : struct, IFormattableSignedInteger<TSigned>
+			where TUnsigned : struct, IFormattableUnsignedInteger<TUnsigned>
+			where TChar : unmanaged, IUtfCharacter<TChar>
+		{
+			if (TryParseToSignedCore<TSigned, TUnsigned, TChar>(s, style, formatProvider, out output, out elementsConsumed).IsSuccessfulOrPartial())
 			{
 				return true;
 			}
@@ -552,6 +575,15 @@ namespace MissingValues.Info
 			where TChar : unmanaged, IUtfCharacter<TChar>
 		{
 			if (TryParseFloatCore<TFloat, TBits, TChar>(s, styles, provider, out result, out _).IsSuccessful()) return true;
+			result = TFloat.Zero;
+			return false;
+		}
+		internal static bool TryParsePartialFloat<TFloat, TBits, TChar>(ReadOnlySpan<TChar> s, NumberStyles styles, IFormatProvider? provider, out TFloat result, out int elementsConsumed)
+			where TFloat : struct, IBinaryFloatingPointInfo<TFloat, TBits>
+			where TBits : unmanaged, IBinaryInteger<TBits>, IUnsignedNumber<TBits>
+			where TChar : unmanaged, IUtfCharacter<TChar>
+		{
+			if (TryParseFloatCore<TFloat, TBits, TChar>(s, styles, provider, out result, out elementsConsumed).IsSuccessfulOrPartial()) return true;
 			result = TFloat.Zero;
 			return false;
 		}

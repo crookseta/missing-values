@@ -592,6 +592,81 @@ public class OctoDataSources
 	    yield return () => ("9.99999E80000"u8.ToArray(), NumberStyles.Float, CultureInfo.InvariantCulture, true, Octo.PositiveInfinity);
 	    yield return () => ("1E-80000"u8.ToArray(), NumberStyles.Float, CultureInfo.InvariantCulture, true, Octo.Zero);
     }
+    
+    public static IEnumerable<Func<(string, NumberStyles, IFormatProvider?, bool, Octo, int)>> TryParsePartialTestData()
+    {
+		yield return () => ("10.0", NumberStyles.Float, CultureInfo.InvariantCulture, true, Octo.Ten, 4);
+		yield return () => ("3", NumberStyles.Float, CultureInfo.InvariantCulture, true, Octo.Three, 1);
+		yield return () => ("-3", NumberStyles.Float, CultureInfo.InvariantCulture, true, Octo.NegativeThree, 2);
+		yield return () => ("2.0", NumberStyles.Float, CultureInfo.InvariantCulture, true, Octo.Two, 3);
+		yield return () => ("-2", NumberStyles.Float, CultureInfo.InvariantCulture, true, Octo.NegativeTwo, 2);
+		yield return () => ("0", NumberStyles.Float, CultureInfo.InvariantCulture, true, Octo.Zero, 1);
+		yield return () => ("-0", NumberStyles.Float, CultureInfo.InvariantCulture, true, Octo.NegativeZero, 2);
+		yield return () => ("1.61132571748576047361957211845200501064402387454966951747637125049607183E+78913", NumberStyles.Float, CultureInfo.InvariantCulture, true, Octo.MaxValue, 80);
+		yield return () => (NumberFormatInfo.CurrentInfo.PositiveInfinitySymbol, NumberStyles.Float, CultureInfo.InvariantCulture, true, Octo.PositiveInfinity, NumberFormatInfo.CurrentInfo.PositiveInfinitySymbol.Length);
+		yield return () => (NumberFormatInfo.CurrentInfo.NegativeInfinitySymbol, NumberStyles.Float, CultureInfo.InvariantCulture, true, Octo.NegativeInfinity, NumberFormatInfo.CurrentInfo.NegativeInfinitySymbol.Length);
+		yield return () => (NumberFormatInfo.CurrentInfo.NaNSymbol, NumberStyles.Float, CultureInfo.InvariantCulture, true, Octo.NaN, NumberFormatInfo.CurrentInfo.NaNSymbol.Length);
+		
+		yield return () => ("2.5E-1", NumberStyles.Float, CultureInfo.InvariantCulture, true, Octo.Quarter, 6);
+		yield return () => ("0.250", NumberStyles.Float, CultureInfo.InvariantCulture, true, Octo.Quarter, 5);
+		yield return () => ("$-0.25", NumberStyles.Currency, Helper.CustomInfo, true, Octo.NegativeQuarter, 6);
+		yield return () => ("1.000", NumberStyles.Float, CultureInfo.InvariantCulture, true, Octo.One, 5);
+		yield return () => ("1,000.00", NumberStyles.Float | NumberStyles.AllowThousands, CultureInfo.InvariantCulture, true, Octo.Thousand, 8);
+		yield return () => ("-1,000.00", NumberStyles.Float | NumberStyles.AllowThousands, CultureInfo.InvariantCulture, true, Octo.NegativeThousand, 9);
+		
+		yield return () => ("9.99999E80000", NumberStyles.Float, CultureInfo.InvariantCulture, true, Octo.PositiveInfinity, 13);
+		yield return () => ("1E-80000", NumberStyles.Float, CultureInfo.InvariantCulture, true, Octo.Zero, 8);
+    }
+    
+    public static IEnumerable<Func<(char[], NumberStyles, IFormatProvider?, bool, Octo, int)>> TryParsePartialSpanTestData()
+    {
+		yield return () => ("10.0".ToCharArray(), NumberStyles.Float, CultureInfo.InvariantCulture, true, Octo.Ten, 4);
+		yield return () => ("3".ToCharArray(), NumberStyles.Float, CultureInfo.InvariantCulture, true, Octo.Three, 1);
+		yield return () => ("-3".ToCharArray(), NumberStyles.Float, CultureInfo.InvariantCulture, true, Octo.NegativeThree, 2);
+		yield return () => ("2.0".ToCharArray(), NumberStyles.Float, CultureInfo.InvariantCulture, true, Octo.Two, 3);
+		yield return () => ("-2".ToCharArray(), NumberStyles.Float, CultureInfo.InvariantCulture, true, Octo.NegativeTwo, 2);
+		yield return () => ("0".ToCharArray(), NumberStyles.Float, CultureInfo.InvariantCulture, true, Octo.Zero, 1);
+		yield return () => ("-0".ToCharArray(), NumberStyles.Float, CultureInfo.InvariantCulture, true, Octo.NegativeZero, 2);
+		yield return () => ("1.61132571748576047361957211845200501064402387454966951747637125049607183E+78913".ToCharArray(), NumberStyles.Float, CultureInfo.InvariantCulture, true, Octo.MaxValue, 80);
+		yield return () => (NumberFormatInfo.CurrentInfo.PositiveInfinitySymbol.ToCharArray(), NumberStyles.Float, CultureInfo.InvariantCulture, true, Octo.PositiveInfinity, NumberFormatInfo.CurrentInfo.PositiveInfinitySymbol.Length);
+		yield return () => (NumberFormatInfo.CurrentInfo.NegativeInfinitySymbol.ToCharArray(), NumberStyles.Float, CultureInfo.InvariantCulture, true, Octo.NegativeInfinity, NumberFormatInfo.CurrentInfo.NegativeInfinitySymbol.Length);
+		yield return () => (NumberFormatInfo.CurrentInfo.NaNSymbol.ToCharArray(), NumberStyles.Float, CultureInfo.InvariantCulture, true, Octo.NaN, NumberFormatInfo.CurrentInfo.NaNSymbol.Length);
+		
+		yield return () => ("2.5E-1".ToCharArray(), NumberStyles.Float, CultureInfo.InvariantCulture, true, Octo.Quarter, 6);
+		yield return () => ("0.250".ToCharArray(), NumberStyles.Float, CultureInfo.InvariantCulture, true, Octo.Quarter, 5);
+		yield return () => ("$-0.25".ToCharArray(), NumberStyles.Currency, Helper.CustomInfo, true, Octo.NegativeQuarter, 6);
+		yield return () => ("1.000".ToCharArray(), NumberStyles.Float, CultureInfo.InvariantCulture, true, Octo.One, 5);
+		yield return () => ("1,000.00".ToCharArray(), NumberStyles.Float | NumberStyles.AllowThousands, CultureInfo.InvariantCulture, true, Octo.Thousand, 8);
+		yield return () => ("-1,000.00".ToCharArray(), NumberStyles.Float | NumberStyles.AllowThousands, CultureInfo.InvariantCulture, true, Octo.NegativeThousand, 9);
+		
+		yield return () => ("9.99999E80000".ToCharArray(), NumberStyles.Float, CultureInfo.InvariantCulture, true, Octo.PositiveInfinity, 13);
+		yield return () => ("1E-80000".ToCharArray(), NumberStyles.Float, CultureInfo.InvariantCulture, true, Octo.Zero, 8);
+    }
+    
+    public static IEnumerable<Func<(byte[], NumberStyles, IFormatProvider?, bool, Octo, int)>> TryParsePartialUtf8TestData()
+    {
+		yield return () => ("10.0"u8.ToArray(), NumberStyles.Float, CultureInfo.InvariantCulture, true, Octo.Ten, 4);
+		yield return () => ("3"u8.ToArray(), NumberStyles.Float, CultureInfo.InvariantCulture, true, Octo.Three, 1);
+		yield return () => ("-3"u8.ToArray(), NumberStyles.Float, CultureInfo.InvariantCulture, true, Octo.NegativeThree, 2);
+		yield return () => ("2.0"u8.ToArray(), NumberStyles.Float, CultureInfo.InvariantCulture, true, Octo.Two, 3);
+		yield return () => ("-2"u8.ToArray(), NumberStyles.Float, CultureInfo.InvariantCulture, true, Octo.NegativeTwo, 2);
+		yield return () => ("0"u8.ToArray(), NumberStyles.Float, CultureInfo.InvariantCulture, true, Octo.Zero, 1);
+		yield return () => ("-0"u8.ToArray(), NumberStyles.Float, CultureInfo.InvariantCulture, true, Octo.NegativeZero, 2);
+		yield return () => ("1.61132571748576047361957211845200501064402387454966951747637125049607183E+78913"u8.ToArray(), NumberStyles.Float, CultureInfo.InvariantCulture, true, Octo.MaxValue, 80);
+		yield return () => (Encoding.UTF8.GetBytes(NumberFormatInfo.CurrentInfo.PositiveInfinitySymbol), NumberStyles.Float, CultureInfo.InvariantCulture, true, Octo.PositiveInfinity, Encoding.UTF8.GetBytes(NumberFormatInfo.CurrentInfo.PositiveInfinitySymbol).Length);
+		yield return () => (Encoding.UTF8.GetBytes(NumberFormatInfo.CurrentInfo.NegativeInfinitySymbol), NumberStyles.Float, CultureInfo.InvariantCulture, true, Octo.NegativeInfinity, Encoding.UTF8.GetBytes(NumberFormatInfo.CurrentInfo.NegativeInfinitySymbol).Length);
+		yield return () => (Encoding.UTF8.GetBytes(NumberFormatInfo.CurrentInfo.NaNSymbol), NumberStyles.Float, CultureInfo.InvariantCulture, true, Octo.NaN, Encoding.UTF8.GetBytes(NumberFormatInfo.CurrentInfo.NaNSymbol).Length);
+		
+		yield return () => ("2.5E-1"u8.ToArray(), NumberStyles.Float, CultureInfo.InvariantCulture, true, Octo.Quarter, 6);
+		yield return () => ("0.250"u8.ToArray(), NumberStyles.Float, CultureInfo.InvariantCulture, true, Octo.Quarter, 5);
+		yield return () => ("$-0.25"u8.ToArray(), NumberStyles.Currency, Helper.CustomInfo, true, Octo.NegativeQuarter, 6);
+		yield return () => ("1.000"u8.ToArray(), NumberStyles.Float, CultureInfo.InvariantCulture, true, Octo.One, 5);
+		yield return () => ("1,000.00"u8.ToArray(), NumberStyles.Float | NumberStyles.AllowThousands, CultureInfo.InvariantCulture, true, Octo.Thousand, 8);
+		yield return () => ("-1,000.00"u8.ToArray(), NumberStyles.Float | NumberStyles.AllowThousands, CultureInfo.InvariantCulture, true, Octo.NegativeThousand, 9);
+		
+		yield return () => ("9.99999E80000"u8.ToArray(), NumberStyles.Float, CultureInfo.InvariantCulture, true, Octo.PositiveInfinity, 13);
+		yield return () => ("1E-80000"u8.ToArray(), NumberStyles.Float, CultureInfo.InvariantCulture, true, Octo.Zero, 8);
+    }
 
     public static IEnumerable<Func<(Octo, string, IFormatProvider?, string)>> ToStringTestData()
     {

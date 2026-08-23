@@ -371,6 +371,47 @@ public partial struct UInt256 :
 		return NumberParser.TryParseToUnsigned(Utf8Char.CastFromByteSpan(utf8Text), NumberStyles.Integer, provider, out result);
 	}
 
+#if NET11_0_OR_GREATER
+	/// <inheritdoc/>
+	public static bool TryParsePartial([NotNullWhen(true)] string? s, NumberStyles style, IFormatProvider? provider, out UInt256 result, out int charsConsumed)
+	{
+		if (string.IsNullOrWhiteSpace(s))
+		{
+			charsConsumed = 0;
+			result = default;
+			return false;
+		}
+		
+		return NumberParser.TryParsePartialToUnsigned(Utf16Char.CastFromCharSpan(s), style, provider, out result, out charsConsumed);
+	}
+
+	/// <inheritdoc/>
+	public static bool TryParsePartial(ReadOnlySpan<char> s, NumberStyles style, IFormatProvider? provider, out UInt256 result, out int charsConsumed)
+	{
+		if (s.Length == 0 || s.IsWhiteSpace())
+		{
+			charsConsumed = 0;
+			result = default;
+			return false;
+		}
+		
+		return NumberParser.TryParsePartialToUnsigned(Utf16Char.CastFromCharSpan(s), style, provider, out result, out charsConsumed);
+	}
+
+	/// <inheritdoc/>
+	public static bool TryParsePartial(ReadOnlySpan<byte> utf8Text, NumberStyles style, IFormatProvider? provider, out UInt256 result, out int bytesConsumed)
+	{
+		if (utf8Text.Length == 0 || !utf8Text.ContainsAnyExcept((byte)' '))
+		{
+			bytesConsumed = 0;
+			result = default;
+			return false;
+		}
+		
+		return NumberParser.TryParsePartialToUnsigned(Utf8Char.CastFromByteSpan(utf8Text), style, provider, out result, out bytesConsumed);
+	}
+#endif
+
 	static bool IBinaryInteger<UInt256>.TryReadBigEndian(ReadOnlySpan<byte> source, bool isUnsigned, out UInt256 value)
 	{
 		UInt256 result = default;

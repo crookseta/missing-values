@@ -522,6 +522,47 @@ public partial struct Int512 :
 		return NumberParser.TryParseToSigned<Int512, UInt512, Utf8Char>(Utf8Char.CastFromByteSpan(utf8Text), NumberStyles.Integer, provider, out result);
 	}
 
+#if NET11_0_OR_GREATER
+	/// <inheritdoc/>
+	public static bool TryParsePartial([NotNullWhen(true)] string? s, NumberStyles style, IFormatProvider? provider, out Int512 result, out int charsConsumed)
+	{
+		if (string.IsNullOrWhiteSpace(s))
+		{
+			charsConsumed = 0;
+			result = default;
+			return false;
+		}
+		
+		return NumberParser.TryParsePartialToSigned<Int512, UInt512, Utf16Char>(Utf16Char.CastFromCharSpan(s), style, provider, out result, out charsConsumed);
+	}
+
+	/// <inheritdoc/>
+	public static bool TryParsePartial(ReadOnlySpan<char> s, NumberStyles style, IFormatProvider? provider, out Int512 result, out int charsConsumed)
+	{
+		if (s.Length == 0 || s.IsWhiteSpace())
+		{
+			charsConsumed = 0;
+			result = default;
+			return false;
+		}
+		
+		return NumberParser.TryParsePartialToSigned<Int512, UInt512, Utf16Char>(Utf16Char.CastFromCharSpan(s), style, provider, out result, out charsConsumed);
+	}
+
+	/// <inheritdoc/>
+	public static bool TryParsePartial(ReadOnlySpan<byte> utf8Text, NumberStyles style, IFormatProvider? provider, out Int512 result, out int bytesConsumed)
+	{
+		if (utf8Text.Length == 0 || !utf8Text.ContainsAnyExcept((byte)' '))
+		{
+			bytesConsumed = 0;
+			result = default;
+			return false;
+		}
+		
+		return NumberParser.TryParsePartialToSigned<Int512, UInt512, Utf8Char>(Utf8Char.CastFromByteSpan(utf8Text), style, provider, out result, out bytesConsumed);
+	}
+#endif
+
 	static bool IBinaryInteger<Int512>.TryReadBigEndian(ReadOnlySpan<byte> source, bool isUnsigned, out Int512 value)
 	{
 		Int512 result = default;

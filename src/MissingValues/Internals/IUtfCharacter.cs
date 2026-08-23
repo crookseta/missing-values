@@ -240,6 +240,12 @@ namespace MissingValues.Internals
 		{
 			return T.TryParse(CastToCharSpan(s), style, provider, out result);
 		}
+#if NET11_0_OR_GREATER
+		static bool IUtfCharacter<Utf16Char>.TryParsePartialInteger<T>(ReadOnlySpan<Utf16Char> s, NumberStyles style, IFormatProvider? provider, out T result, out int charsConsumed)
+		{
+			return T.TryParsePartial(CastToCharSpan(s), style, provider, out result, out charsConsumed);
+		}
+#endif
 
 		internal static Span<char> CastToCharSpan(Span<Utf16Char> chars)
 		{
@@ -493,6 +499,12 @@ namespace MissingValues.Internals
 		{
 			return T.TryParse(CastToByteSpan(s), style, provider, out result);
 		}
+#if NET11_0_OR_GREATER
+		static bool IUtfCharacter<Utf8Char>.TryParsePartialInteger<T>(ReadOnlySpan<Utf8Char> s, NumberStyles style, IFormatProvider? provider, out T result, out int charsConsumed)
+		{
+			return T.TryParsePartial(CastToByteSpan(s), style, provider, out result, out charsConsumed);
+		}
+#endif
 
 		static Span<char> IUtfCharacter<Utf8Char>.CastToCharSpan(Span<Utf8Char> chars)
 		{
