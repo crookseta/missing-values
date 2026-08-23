@@ -453,9 +453,9 @@ public class OctoDataSources
 	    yield return () => ("0", NumberStyles.Float, CultureInfo.InvariantCulture, Octo.Zero);
 	    yield return () => ("-0", NumberStyles.Float, CultureInfo.InvariantCulture, Octo.NegativeZero);
 	    yield return () => ("1.61132571748576047361957211845200501064402387454966951747637125049607183E+78913", NumberStyles.Float, CultureInfo.InvariantCulture, Octo.MaxValue);
-	    yield return () => (NumberFormatInfo.CurrentInfo.PositiveInfinitySymbol, NumberStyles.Float, CultureInfo.InvariantCulture, Octo.PositiveInfinity);
-	    yield return () => (NumberFormatInfo.CurrentInfo.NegativeInfinitySymbol, NumberStyles.Float, CultureInfo.InvariantCulture, Octo.NegativeInfinity);
-	    yield return () => (NumberFormatInfo.CurrentInfo.NaNSymbol, NumberStyles.Float, CultureInfo.InvariantCulture, Octo.NaN);
+	    yield return () => (NumberFormatInfo.InvariantInfo.PositiveInfinitySymbol, NumberStyles.Float, CultureInfo.InvariantCulture, Octo.PositiveInfinity);
+	    yield return () => (NumberFormatInfo.InvariantInfo.NegativeInfinitySymbol, NumberStyles.Float, CultureInfo.InvariantCulture, Octo.NegativeInfinity);
+	    yield return () => (NumberFormatInfo.InvariantInfo.NaNSymbol, NumberStyles.Float, CultureInfo.InvariantCulture, Octo.NaN);
 	    
 	    yield return () => ("2.5E-1", NumberStyles.Float, CultureInfo.InvariantCulture, Octo.Quarter);
 	    yield return () => ("0.250", NumberStyles.Float, CultureInfo.InvariantCulture, Octo.Quarter);
@@ -478,9 +478,9 @@ public class OctoDataSources
 	    yield return () => ("0".ToCharArray(), NumberStyles.Float, CultureInfo.InvariantCulture, Octo.Zero);
 	    yield return () => ("-0".ToCharArray(), NumberStyles.Float, CultureInfo.InvariantCulture, Octo.NegativeZero);
 	    yield return () => ("1.61132571748576047361957211845200501064402387454966951747637125049607183E+78913".ToCharArray(), NumberStyles.Float, CultureInfo.InvariantCulture, Octo.MaxValue);
-	    yield return () => (NumberFormatInfo.CurrentInfo.PositiveInfinitySymbol.ToCharArray(), NumberStyles.Float, CultureInfo.InvariantCulture, Octo.PositiveInfinity);
-	    yield return () => (NumberFormatInfo.CurrentInfo.NegativeInfinitySymbol.ToCharArray(), NumberStyles.Float, CultureInfo.InvariantCulture, Octo.NegativeInfinity);
-	    yield return () => (NumberFormatInfo.CurrentInfo.NaNSymbol.ToCharArray(), NumberStyles.Float, CultureInfo.InvariantCulture, Octo.NaN);
+	    yield return () => (NumberFormatInfo.InvariantInfo.PositiveInfinitySymbol.ToCharArray(), NumberStyles.Float, CultureInfo.InvariantCulture, Octo.PositiveInfinity);
+	    yield return () => (NumberFormatInfo.InvariantInfo.NegativeInfinitySymbol.ToCharArray(), NumberStyles.Float, CultureInfo.InvariantCulture, Octo.NegativeInfinity);
+	    yield return () => (NumberFormatInfo.InvariantInfo.NaNSymbol.ToCharArray(), NumberStyles.Float, CultureInfo.InvariantCulture, Octo.NaN);
 	    
 	    yield return () => ("2.5E-1".ToCharArray(), NumberStyles.Float, CultureInfo.InvariantCulture, Octo.Quarter);
 	    yield return () => ("0.250".ToCharArray(), NumberStyles.Float, CultureInfo.InvariantCulture, Octo.Quarter);
@@ -503,9 +503,9 @@ public class OctoDataSources
 	    yield return () => ("0"u8.ToArray(), NumberStyles.Float, CultureInfo.InvariantCulture, Octo.Zero);
 	    yield return () => ("-0"u8.ToArray(), NumberStyles.Float, CultureInfo.InvariantCulture, Octo.NegativeZero);
 	    yield return () => ("1.61132571748576047361957211845200501064402387454966951747637125049607183E+78913"u8.ToArray(), NumberStyles.Float, CultureInfo.InvariantCulture, Octo.MaxValue);
-	    yield return () => (Encoding.UTF8.GetBytes(NumberFormatInfo.CurrentInfo.PositiveInfinitySymbol), NumberStyles.Float, CultureInfo.InvariantCulture, Octo.PositiveInfinity);
-	    yield return () => (Encoding.UTF8.GetBytes(NumberFormatInfo.CurrentInfo.NegativeInfinitySymbol), NumberStyles.Float, CultureInfo.InvariantCulture, Octo.NegativeInfinity);
-	    yield return () => (Encoding.UTF8.GetBytes(NumberFormatInfo.CurrentInfo.NaNSymbol), NumberStyles.Float, CultureInfo.InvariantCulture, Octo.NaN);
+	    yield return () => (Encoding.UTF8.GetBytes(NumberFormatInfo.InvariantInfo.PositiveInfinitySymbol), NumberStyles.Float, CultureInfo.InvariantCulture, Octo.PositiveInfinity);
+	    yield return () => (Encoding.UTF8.GetBytes(NumberFormatInfo.InvariantInfo.NegativeInfinitySymbol), NumberStyles.Float, CultureInfo.InvariantCulture, Octo.NegativeInfinity);
+	    yield return () => (Encoding.UTF8.GetBytes(NumberFormatInfo.InvariantInfo.NaNSymbol), NumberStyles.Float, CultureInfo.InvariantCulture, Octo.NaN);
 	    
 	    yield return () => ("2.5E-1"u8.ToArray(), NumberStyles.Float, CultureInfo.InvariantCulture, Octo.Quarter);
 	    yield return () => ("0.250"u8.ToArray(), NumberStyles.Float, CultureInfo.InvariantCulture, Octo.Quarter);
@@ -528,9 +528,9 @@ public class OctoDataSources
 		yield return () => ("0", NumberStyles.Float, CultureInfo.InvariantCulture, true, Octo.Zero);
 		yield return () => ("-0", NumberStyles.Float, CultureInfo.InvariantCulture, true, Octo.NegativeZero);
 		yield return () => ("1.61132571748576047361957211845200501064402387454966951747637125049607183E+78913", NumberStyles.Float, CultureInfo.InvariantCulture, true, Octo.MaxValue);
-		yield return () => (NumberFormatInfo.CurrentInfo.PositiveInfinitySymbol, NumberStyles.Float, CultureInfo.InvariantCulture, true, Octo.PositiveInfinity);
-		yield return () => (NumberFormatInfo.CurrentInfo.NegativeInfinitySymbol, NumberStyles.Float, CultureInfo.InvariantCulture, true, Octo.NegativeInfinity);
-		yield return () => (NumberFormatInfo.CurrentInfo.NaNSymbol, NumberStyles.Float, CultureInfo.InvariantCulture, true, Octo.NaN);
+		yield return () => (NumberFormatInfo.InvariantInfo.PositiveInfinitySymbol, NumberStyles.Float, CultureInfo.InvariantCulture, true, Octo.PositiveInfinity);
+		yield return () => (NumberFormatInfo.InvariantInfo.NegativeInfinitySymbol, NumberStyles.Float, CultureInfo.InvariantCulture, true, Octo.NegativeInfinity);
+		yield return () => (NumberFormatInfo.InvariantInfo.NaNSymbol, NumberStyles.Float, CultureInfo.InvariantCulture, true, Octo.NaN);
 		
 		yield return () => ("2.5E-1", NumberStyles.Float, CultureInfo.InvariantCulture, true, Octo.Quarter);
 		yield return () => ("0.250", NumberStyles.Float, CultureInfo.InvariantCulture, true, Octo.Quarter);
@@ -553,9 +553,9 @@ public class OctoDataSources
 	    yield return () => ("0".ToCharArray(), NumberStyles.Float, CultureInfo.InvariantCulture, true, Octo.Zero);
 	    yield return () => ("-0".ToCharArray(), NumberStyles.Float, CultureInfo.InvariantCulture, true, Octo.NegativeZero);
 	    yield return () => ("1.61132571748576047361957211845200501064402387454966951747637125049607183E+78913".ToCharArray(), NumberStyles.Float, CultureInfo.InvariantCulture, true, Octo.MaxValue);
-	    yield return () => (NumberFormatInfo.CurrentInfo.PositiveInfinitySymbol.ToCharArray(), NumberStyles.Float, CultureInfo.InvariantCulture, true, Octo.PositiveInfinity);
-	    yield return () => (NumberFormatInfo.CurrentInfo.NegativeInfinitySymbol.ToCharArray(), NumberStyles.Float, CultureInfo.InvariantCulture, true, Octo.NegativeInfinity);
-	    yield return () => (NumberFormatInfo.CurrentInfo.NaNSymbol.ToCharArray(), NumberStyles.Float, CultureInfo.InvariantCulture, true, Octo.NaN);
+	    yield return () => (NumberFormatInfo.InvariantInfo.PositiveInfinitySymbol.ToCharArray(), NumberStyles.Float, CultureInfo.InvariantCulture, true, Octo.PositiveInfinity);
+	    yield return () => (NumberFormatInfo.InvariantInfo.NegativeInfinitySymbol.ToCharArray(), NumberStyles.Float, CultureInfo.InvariantCulture, true, Octo.NegativeInfinity);
+	    yield return () => (NumberFormatInfo.InvariantInfo.NaNSymbol.ToCharArray(), NumberStyles.Float, CultureInfo.InvariantCulture, true, Octo.NaN);
 	    
 	    yield return () => ("2.5E-1".ToCharArray(), NumberStyles.Float, CultureInfo.InvariantCulture, true, Octo.Quarter);
 	    yield return () => ("0.250".ToCharArray(), NumberStyles.Float, CultureInfo.InvariantCulture, true, Octo.Quarter);
@@ -578,9 +578,9 @@ public class OctoDataSources
 	    yield return () => ("0"u8.ToArray(), NumberStyles.Float, CultureInfo.InvariantCulture, true, Octo.Zero);
 	    yield return () => ("-0"u8.ToArray(), NumberStyles.Float, CultureInfo.InvariantCulture, true, Octo.NegativeZero);
 	    yield return () => ("1.61132571748576047361957211845200501064402387454966951747637125049607183E+78913"u8.ToArray(), NumberStyles.Float, CultureInfo.InvariantCulture, true, Octo.MaxValue);
-	    yield return () => (Encoding.UTF8.GetBytes(NumberFormatInfo.CurrentInfo.PositiveInfinitySymbol), NumberStyles.Float, CultureInfo.InvariantCulture, true, Octo.PositiveInfinity);
-	    yield return () => (Encoding.UTF8.GetBytes(NumberFormatInfo.CurrentInfo.NegativeInfinitySymbol), NumberStyles.Float, CultureInfo.InvariantCulture, true, Octo.NegativeInfinity);
-	    yield return () => (Encoding.UTF8.GetBytes(NumberFormatInfo.CurrentInfo.NaNSymbol), NumberStyles.Float, CultureInfo.InvariantCulture, true, Octo.NaN);
+	    yield return () => (Encoding.UTF8.GetBytes(NumberFormatInfo.InvariantInfo.PositiveInfinitySymbol), NumberStyles.Float, CultureInfo.InvariantCulture, true, Octo.PositiveInfinity);
+	    yield return () => (Encoding.UTF8.GetBytes(NumberFormatInfo.InvariantInfo.NegativeInfinitySymbol), NumberStyles.Float, CultureInfo.InvariantCulture, true, Octo.NegativeInfinity);
+	    yield return () => (Encoding.UTF8.GetBytes(NumberFormatInfo.InvariantInfo.NaNSymbol), NumberStyles.Float, CultureInfo.InvariantCulture, true, Octo.NaN);
 	    
 	    yield return () => ("2.5E-1"u8.ToArray(), NumberStyles.Float, CultureInfo.InvariantCulture, true, Octo.Quarter);
 	    yield return () => ("0.250"u8.ToArray(), NumberStyles.Float, CultureInfo.InvariantCulture, true, Octo.Quarter);
