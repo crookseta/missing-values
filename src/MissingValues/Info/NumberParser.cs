@@ -91,89 +91,110 @@ namespace MissingValues.Info
 			10000000000000000000,
 			];
 
-		public static ParsingStatus ParseDecStringToUnsigned<T, TChar>(ReadOnlySpan<TChar> s, out T output)
+		public static ParsingStatus ParseDecStringToUnsigned<T, TChar>(ReadOnlySpan<TChar> s, NumberStyles style, NumberFormatInfo formatProvider, out T output, out int charsConsumed)
 			where T : struct, IFormattableUnsignedInteger<T>
 			where TChar : unmanaged, IUtfCharacter<TChar>
 		{
-			if (s.Length > T.MaxDecimalDigits || (s.Length == T.MaxDecimalDigits && (char)s[0] > T.LastDecimalDigitOfMaxValue))
-			{
-				output = default;
-				return ParsingStatus.Overflow;
-			}
+			const int UInt64MaxSafeCharacterCount = 19;
 
-			T e19 = T.E19;
+			T e = BitHelper.GetPow10<T>(UInt64MaxSafeCharacterCount);
 			ulong r;
 
-			if (s.Length < 19 && TChar.TryParseInteger(s, NumberStyles.Integer, CultureInfo.CurrentCulture, out r))
+			if (s.Length <= UInt64MaxSafeCharacterCount)
 			{
-				output = T.CreateTruncating(r);
-				return ParsingStatus.Success;
+				if (TChar.TryParsePartialInteger(s, style, formatProvider, out r, out charsConsumed))
+				{
+					output = T.CreateTruncating(r);
+					return s.Length == charsConsumed ? ParsingStatus.Success : ParsingStatus.Partial;
+				}
+				else
+				{
+					charsConsumed = 0;
+					output = default;
+					return ParsingStatus.Failed;
+				}
 			}
-			else if (TChar.TryParseInteger(s[..19], NumberStyles.Integer, CultureInfo.CurrentCulture, out r))
+			if (TChar.TryParsePartialInteger(s[..UInt64MaxSafeCharacterCount], style, formatProvider, out r, out charsConsumed))
 			{
 				output = T.CreateTruncating(r);
+				if (charsConsumed < UInt64MaxSafeCharacterCount)
+				{
+					return ParsingStatus.Partial;
+				}
 			}
 			else
 			{
+				charsConsumed = 0;
 				output = default;
 				return ParsingStatus.Failed;
 			}
 
-			int i = 19, length = s.Length - 19;
+			int length = s.Length - charsConsumed, consumed;
 
 			do
 			{
-				if (i > length)
+				if (charsConsumed > length)
 				{
 					break;
 				}
-				output *= e19;
-				ReadOnlySpan<TChar> slice = s[i..];
-				i += 19;
-				if (TChar.TryParseInteger(slice[..19], NumberStyles.Integer, CultureInfo.CurrentCulture, out r))
+				if (TChar.TryParsePartialInteger(s.Slice(charsConsumed, UInt64MaxSafeCharacterCount), style, formatProvider, out r, out consumed))
 				{
+					if (consumed < UInt64MaxSafeCharacterCount)
+					{
+						output *= BitHelper.GetPow10<T>(consumed);
+						charsConsumed += consumed;
+						output += T.CreateTruncating(r);
+						return ParsingStatus.Partial;
+					}
+
+					output *= e;
+					charsConsumed += UInt64MaxSafeCharacterCount;
 					output += T.CreateTruncating(r);
 				}
 				else
 				{
-					output = default;
-					return ParsingStatus.Failed;
+					return ParsingStatus.Partial;
 				}
 			} while (true);
 
-			length = s.Length - i;
+			length = s.Length - charsConsumed;
 			if (length != 0)
 			{
-				if (TChar.TryParseInteger(s[^length..], NumberStyles.Integer, CultureInfo.CurrentCulture, out r))
+				if (TChar.TryParsePartialInteger(s[^length..], style, CultureInfo.CurrentCulture, out r, out consumed))
 				{
 					output *= T.CreateTruncating(E19Table[length]);
 					T addon = output + T.CreateTruncating(r);
 					if (addon < output)
 					{
+						charsConsumed = 0;
 						output = default;
 						return ParsingStatus.Overflow;
 					}
 					else
 					{
+						charsConsumed += consumed;
 						output = addon;
 					}
 				}
-				else
-				{
-					output = default;
-					return ParsingStatus.Failed;
-				}
 			}
 
-			return ParsingStatus.Success;
+			if (charsConsumed > T.MaxDecimalDigits || (charsConsumed == T.MaxDecimalDigits && (uint)s[0] > T.LastDecimalDigitOfMaxValue))
+			{
+				charsConsumed = 0;
+				output = default;
+				return ParsingStatus.Overflow;
+			}
+
+			return s.Length == charsConsumed ? ParsingStatus.Success : ParsingStatus.Partial;
 		}
-		public static ParsingStatus ParseStringToUnsigned<TInteger, TChar, TConverter>(ReadOnlySpan<TChar> s, out TInteger output)
+		public static ParsingStatus ParseStringToUnsigned<TInteger, TChar, TConverter>(ReadOnlySpan<TChar> s, out TInteger output, out int charsConsumed)
 			where TInteger : struct, IFormattableUnsignedInteger<TInteger>
 			where TChar : unmanaged, IUtfCharacter<TChar>
 			where TConverter : struct, IIntegerRadixConverter<TInteger>
 		{
 			if (s.Length > TConverter.MaxDigitCount)
 			{
+				charsConsumed = 0;
 				output = default;
 				return ParsingStatus.Overflow;
 			}
@@ -181,210 +202,317 @@ namespace MissingValues.Info
 			int count = TConverter.MaxUInt64DigitCount;
 			if (s.Length <= count)
 			{
-				if (!TChar.TryParseInteger(s, TConverter.AllowedStyles, CultureInfo.CurrentCulture, out temp))
+				if (!TChar.TryParsePartialInteger(s, TConverter.AllowedStyles, CultureInfo.CurrentCulture, out temp, out charsConsumed))
 				{
+					charsConsumed = 0;
 					output = default;
 					return ParsingStatus.Failed;
 				}
 				output = TInteger.CreateTruncating(temp);
-				return ParsingStatus.Success;
+				return s.Length == charsConsumed ? ParsingStatus.Success : ParsingStatus.Partial;
 			}
 
-			if (!TChar.TryParseInteger(s[..count], TConverter.AllowedStyles, CultureInfo.CurrentCulture, out temp))
+			if (!TChar.TryParsePartialInteger(s[..count], TConverter.AllowedStyles, CultureInfo.CurrentCulture, out temp, out charsConsumed))
 			{
 				output = default;
 				return ParsingStatus.Failed;
 			}
+			Debug.Assert(charsConsumed <= count);
 			output = TInteger.CreateTruncating(temp);
-			ReadOnlySpan<TChar> slice = s[count..];
+			if (charsConsumed < count)
+			{
+				// We got trailing invalid characters.
+				return ParsingStatus.Partial;
+			}
+			ReadOnlySpan<TChar> slice = s[charsConsumed..];
+			int consumed;
 
 			while (count <= slice.Length)
 			{
-				output <<= 64;
-				if (!TChar.TryParseInteger(slice[..count], TConverter.AllowedStyles, CultureInfo.CurrentCulture, out temp))
+				if (!TChar.TryParsePartialInteger(slice[..count], TConverter.AllowedStyles, CultureInfo.CurrentCulture, out temp, out consumed))
 				{
+					charsConsumed = 0;
 					output = default;
 					return ParsingStatus.Failed;
 				}
+				Debug.Assert(consumed <= count);
+				if (consumed < count)
+				{
+					// We got trailing invalid characters. That means the block has been interrupted and we got partial.
+					int shiftAmount = consumed * TConverter.BitsPerCharacter;
+					charsConsumed += consumed;
+					output <<= shiftAmount;
+					output |= TInteger.CreateTruncating(temp);
+					
+					return ParsingStatus.Partial;
+				}
+				output <<= 64;
+				charsConsumed += consumed;
 				output |= TInteger.CreateTruncating(temp);
-				slice = slice[count..];
+				slice = slice[consumed..];
 			}
 
 			if (slice.Length != 0)
 			{
-				if (!TChar.TryParseInteger(slice, TConverter.AllowedStyles, CultureInfo.CurrentCulture, out temp))
+				if (!TChar.TryParsePartialInteger(slice, TConverter.AllowedStyles, CultureInfo.CurrentCulture, out temp, out consumed))
 				{
 					output = default;
 					return ParsingStatus.Failed;
 				}
-				int shiftAmount = slice.Length * TConverter.BitsPerCharacter;
+				int shiftAmount = consumed * TConverter.BitsPerCharacter;
+				charsConsumed += consumed;
 				output <<= shiftAmount;
 				output |= TInteger.CreateTruncating(temp);
 			}
-			return ParsingStatus.Success;
+			return s.Length == charsConsumed ? ParsingStatus.Success : ParsingStatus.Partial;
 		}
 
-		public static ParsingStatus TryParseToUnsigned<T, TChar>(ReadOnlySpan<TChar> s, NumberStyles style, IFormatProvider? formatProvider, out T output)
+		public static T ParseToUnsigned<T, TChar>(ReadOnlySpan<TChar> s, NumberStyles style, IFormatProvider? formatProvider)
 			where T : struct, IFormattableUnsignedInteger<T>
 			where TChar : unmanaged, IUtfCharacter<TChar>
 		{
+			var status = TryParseToUnsignedCore(s, style, formatProvider, out T output, out _);
+			if (!status.IsSuccessful())
+			{
+				if (typeof(TChar) == typeof(Utf16Char))
+				{
+					status.Throw<T>(TChar.CastToCharSpan(s).ToString());
+				}
+				else
+				{
+					status.Throw<T>(TChar.CastToByteSpan(s));
+				}
+			}
+
+			return output;
+		}
+		public static bool TryParseToUnsigned<T, TChar>(ReadOnlySpan<TChar> s, NumberStyles style, IFormatProvider? formatProvider, out T output)
+			where T : struct, IFormattableUnsignedInteger<T>
+			where TChar : unmanaged, IUtfCharacter<TChar>
+		{
+			if (TryParseToUnsignedCore(s, style, formatProvider, out output, out _).IsSuccessful())
+			{
+				return true;
+			}
+			output = default;
+			return false;
+		}
+
+		public static ParsingStatus TryParseToUnsignedCore<T, TChar>(ReadOnlySpan<TChar> s, NumberStyles style, IFormatProvider? formatProvider, out T output, out int charsConsumed)
+			where T : struct, IFormattableUnsignedInteger<T>
+			where TChar : unmanaged, IUtfCharacter<TChar>
+		{
+			int index = 0;
 			if (style.HasFlag(NumberStyles.AllowLeadingWhite))
 			{
-				s = s.TrimStart(TChar.WhiteSpaceCharacter);
+				index = s.IndexOfAnyExcept(TChar.WhiteSpaceCharacter);
+				if (index < 0)
+				{
+					charsConsumed = 0;
+					output = default;
+					return ParsingStatus.Failed;
+				}
 			}
-			else if (TChar.IsWhiteSpace(s[0]))
+			else if (TChar.IsWhiteSpace(s[index]))
 			{
-				output = default;
-				return ParsingStatus.Failed;
-			}
-			if (style.HasFlag(NumberStyles.AllowTrailingWhite))
-			{
-				s = s.TrimEnd(TChar.WhiteSpaceCharacter);
-			}
-			else if (TChar.IsWhiteSpace(s[^1]))
-			{
+				charsConsumed = 0;
 				output = default;
 				return ParsingStatus.Failed;
 			}
 			NumberFormatInfo formatInfo = NumberFormatInfo.GetInstance(formatProvider);
 			Span<TChar> negativeSign = stackalloc TChar[TChar.GetLength(formatInfo.NegativeSign)];
 			TChar.Copy(formatInfo.NegativeSign, negativeSign);
-			if (TChar.StartsWith(s, negativeSign, StringComparison.OrdinalIgnoreCase))
+			if (TChar.StartsWith(s[index..], negativeSign, StringComparison.OrdinalIgnoreCase))
 			{
+				charsConsumed = 0;
 				output = default;
 				return ParsingStatus.Underflow;
 			}
 
+			ParsingStatus status;
+			
 			if ((style & SPECIAL) != 0)
 			{
 				NumberInfo number = new NumberInfo(stackalloc byte[IntBufferLength]);
 				NumberFormatInfo info = NumberFormatInfo.GetInstance(formatProvider);
-				if (!NumberInfo.TryParse(s, ref number, info, style)
+				if (!NumberInfo.TryParseCore(s[index..], ref number, info, style, out charsConsumed).IsSuccessfulOrPartial()
 					|| !NumberInfo.TryConvertToInteger(ref number, out output))
 				{
+					charsConsumed = 0;
 					output = default;
 					return ParsingStatus.Failed;
 				}
 
+				charsConsumed += index;
 				return ParsingStatus.Success;
 			}
 
-			if (ContainsInvalidCharacter(s, style))
-			{
-				output = default;
-				return ParsingStatus.Failed;
-			}
-
-			ParsingStatus status;
-
 			if (style.HasFlag(NumberStyles.AllowHexSpecifier))
 			{
-				status = ParseStringToUnsigned<T, TChar, HexConverter<T>>(s, out output);
+				status = ParseStringToUnsigned<T, TChar, HexConverter<T>>(s[index..], out output, out charsConsumed);
 			}
 			else if (style.HasFlag(NumberStyles.AllowBinarySpecifier))
 			{
-				status = ParseStringToUnsigned<T, TChar, BinConverter<T>>(s, out output);
+				status = ParseStringToUnsigned<T, TChar, BinConverter<T>>(s[index..], out output, out charsConsumed);
 			}
 			else
 			{
-				status = ParseDecStringToUnsigned(s, out output);
+				status = ParseDecStringToUnsigned(s[index..], style, formatInfo, out output, out charsConsumed);
 			}
 
+			charsConsumed += index;
+			var remaining = s[charsConsumed..];
+			if (style.HasFlag(NumberStyles.AllowTrailingWhite))
+			{
+				int trailingSpaces = remaining.IndexOfAnyExcept(TChar.WhiteSpaceCharacter, TChar.NullCharacter);
+				charsConsumed += (trailingSpaces >= 0 ? trailingSpaces : remaining.Length);
+			}
+			else if (TChar.StartsWith(remaining, [TChar.WhiteSpaceCharacter], StringComparison.OrdinalIgnoreCase))
+			{
+				charsConsumed = 0;
+				output = default;
+				return ParsingStatus.Failed;
+			}
+			else
+			{
+				int trailingSpaces = remaining.IndexOfAnyExcept(TChar.NullCharacter);
+				charsConsumed += (trailingSpaces >= 0 ? trailingSpaces : remaining.Length);
+			}
+			
 			return status;
 		}
 
-		public static ParsingStatus TryParseToSigned<TSigned, TUnsigned, TChar>(ReadOnlySpan<TChar> s, NumberStyles style, IFormatProvider? formatProvider, out TSigned output)
+		public static TSigned ParseToSigned<TSigned, TUnsigned, TChar>(ReadOnlySpan<TChar> s, NumberStyles style, IFormatProvider? formatProvider)
+			where TSigned : struct, IFormattableSignedInteger<TSigned>
+			where TUnsigned : struct, IFormattableUnsignedInteger<TUnsigned>
+			where TChar : unmanaged, IUtfCharacter<TChar>
+		{
+			var status = TryParseToSignedCore<TSigned, TUnsigned, TChar>(s, style, formatProvider, out TSigned output, out _);
+			if (!status.IsSuccessful())
+			{
+				if (typeof(TChar) == typeof(Utf16Char))
+				{
+					status.Throw<TSigned>(TChar.CastToCharSpan(s).ToString());
+				}
+				else
+				{
+					status.Throw<TSigned>(TChar.CastToByteSpan(s));
+				}
+			}
+
+			return output;
+		}
+		public static bool TryParseToSigned<TSigned, TUnsigned, TChar>(ReadOnlySpan<TChar> s, NumberStyles style, IFormatProvider? formatProvider, out TSigned output)
+			where TSigned : struct, IFormattableSignedInteger<TSigned>
+			where TUnsigned : struct, IFormattableUnsignedInteger<TUnsigned>
+			where TChar : unmanaged, IUtfCharacter<TChar>
+		{
+			if (TryParseToSignedCore<TSigned, TUnsigned, TChar>(s, style, formatProvider, out output, out _).IsSuccessful())
+			{
+				return true;
+			}
+			output = default;
+			return false;
+		}
+		public static ParsingStatus TryParseToSignedCore<TSigned, TUnsigned, TChar>(ReadOnlySpan<TChar> s, NumberStyles style, IFormatProvider? formatProvider, out TSigned output, out int charsConsumed)
 			where TSigned : struct, IFormattableSignedInteger<TSigned>
 			where TUnsigned : struct, IFormattableUnsignedInteger<TUnsigned>
 			where TChar : unmanaged, IUtfCharacter<TChar>
 		{
 			Debug.Assert(Unsafe.SizeOf<TUnsigned>() == Unsafe.SizeOf<TSigned>());
+			int index = 0;
 			if (style.HasFlag(NumberStyles.AllowLeadingWhite))
 			{
-				s = s.TrimStart(TChar.WhiteSpaceCharacter);
+				index = s.IndexOfAnyExcept(TChar.WhiteSpaceCharacter);
+				if (index < 0)
+				{
+					charsConsumed = 0;
+					output = default;
+					return ParsingStatus.Failed;
+				}
 			}
-			else if (TChar.IsWhiteSpace(s[0]))
+			else if (TChar.IsWhiteSpace(s[index]))
 			{
-				output = default;
-				return ParsingStatus.Failed;
-			}
-			if (style.HasFlag(NumberStyles.AllowTrailingWhite))
-			{
-				s = s.TrimEnd(TChar.WhiteSpaceCharacter);
-			}
-			else if (TChar.IsWhiteSpace(s[^1]))
-			{
+				charsConsumed = 0;
 				output = default;
 				return ParsingStatus.Failed;
 			}
 
 			NumberFormatInfo formatInfo = NumberFormatInfo.GetInstance(formatProvider);
-			bool isNegative;
-			ReadOnlySpan<TChar> raw;
+			bool isNegative, openParentheses = false;
 			Span<TChar> negativeSign = stackalloc TChar[TChar.GetLength(formatInfo.NegativeSign)];
 			TChar.Copy(formatInfo.NegativeSign, negativeSign);
-
-			if (style.HasFlag(NumberStyles.AllowParentheses) && s.IndexOf((TChar)'(') > -1 && s.IndexOf((TChar)')') > 1)
-			{
-				isNegative = true;
-				raw = s[1..^1];
-			}
-			else
-			{
-				isNegative = style.HasFlag(NumberStyles.AllowLeadingSign) && TChar.StartsWith(s, negativeSign, StringComparison.OrdinalIgnoreCase);
-				raw = isNegative ? s[(negativeSign.Length)..] : s;
-			}
-
+			ParsingStatus status;
+			
 			if ((style & SPECIAL) != 0)
 			{
 				NumberInfo number = new NumberInfo(stackalloc byte[IntBufferLength]);
-				NumberFormatInfo info = NumberFormatInfo.GetInstance(formatProvider);
-				if (!NumberInfo.TryParse(s, ref number, info, style)
-					|| !NumberInfo.TryConvertToInteger(ref number, out output))
+				if (!NumberInfo.TryParseCore(s[index..], ref number, formatInfo, style, out charsConsumed).IsSuccessfulOrPartial()
+				    || !NumberInfo.TryConvertToInteger(ref number, out output))
 				{
+					charsConsumed = 0;
 					output = default;
 					return ParsingStatus.Failed;
 				}
 
-				return ParsingStatus.Success;
+				charsConsumed += index;
+				return s.Length == charsConsumed ? ParsingStatus.Success : ParsingStatus.Partial;
 			}
-
-			if (ContainsInvalidCharacter(raw, style))
-			{
-				output = default;
-				return ParsingStatus.Failed;
-			}
-
-			ParsingStatus status;
+			
 			TUnsigned result;
-
+			
 			if (style.HasFlag(NumberStyles.AllowHexSpecifier))
 			{
-				status = ParseStringToUnsigned<TUnsigned, TChar, HexConverter<TUnsigned>>(raw, out result);
+				status = ParseStringToUnsigned<TUnsigned, TChar, HexConverter<TUnsigned>>(s[index..], out result, out charsConsumed);
 				output = Unsafe.BitCast<TUnsigned, TSigned>(result);
+				charsConsumed += index;
 				return status;
 			}
-			else if (style.HasFlag(NumberStyles.AllowBinarySpecifier))
+			if (style.HasFlag(NumberStyles.AllowBinarySpecifier))
 			{
-				status = ParseStringToUnsigned<TUnsigned, TChar, BinConverter<TUnsigned>>(raw, out result);
+				status = ParseStringToUnsigned<TUnsigned, TChar, BinConverter<TUnsigned>>(s[index..], out result, out charsConsumed);
 				output = Unsafe.BitCast<TUnsigned, TSigned>(result);
+				charsConsumed += index;
 				return status;
+			}
+
+			if (style.HasFlag(NumberStyles.AllowParentheses) && TChar.StartsWith(s[index..], [(TChar)'('], StringComparison.OrdinalIgnoreCase))
+			{
+				isNegative = true;
+				openParentheses = true;
+				index++;
 			}
 			else
 			{
-				status = ParseDecStringToUnsigned(raw, out result);
+				isNegative = style.HasFlag(NumberStyles.AllowLeadingSign) && TChar.StartsWith(s[index..], negativeSign, StringComparison.OrdinalIgnoreCase);
+				if (isNegative)
+				{
+					index += negativeSign.Length;
+				}
+			}
+			
+			status = ParseDecStringToUnsigned(s[index..], style, formatInfo, out result, out charsConsumed);
+			
+			charsConsumed += index;
+			if (style.HasFlag(NumberStyles.AllowParentheses) && openParentheses && TChar.StartsWith(s[charsConsumed..], [(TChar)')'], StringComparison.OrdinalIgnoreCase))
+			{
+				charsConsumed++;
 			}
 
-			if (!status.IsSuccessful())
+			if (!status.IsSuccessfulOrPartial())
 			{
+				charsConsumed = 0;
 				output = default;
 				return status;
 			}
+			
+			charsConsumed += style.HasFlag(NumberStyles.AllowTrailingWhite) ? s[charsConsumed..].IndexOfAnyExcept(TChar.WhiteSpaceCharacter, TChar.NullCharacter) : s[charsConsumed..].IndexOfAnyExcept(TChar.NullCharacter);
 
 			if (result == TUnsigned.SignedMaxMagnitude)
 			{
 				if (!isNegative)
 				{
+					charsConsumed = 0;
 					output = default;
 					return ParsingStatus.Overflow;
 				}
@@ -396,6 +524,7 @@ namespace MissingValues.Info
 
 				if (output < TSigned.Zero)
 				{
+					charsConsumed = 0;
 					output = default;
 					return ParsingStatus.Overflow;
 				}
@@ -407,30 +536,6 @@ namespace MissingValues.Info
 
 			return status;
 		}
-
-		private static bool ContainsInvalidCharacter<TChar>(ReadOnlySpan<TChar> s, NumberStyles style)
-			where TChar : unmanaged, IUtfCharacter<TChar>
-		{
-			if (style.HasFlag(NumberStyles.AllowHexSpecifier))
-			{
-				foreach (var item in s)
-				{
-					if (!TChar.IsHexDigit(item))
-					{
-						return true;
-					}
-				}
-				return false;
-			}
-			foreach (var item in s)
-			{
-				if (!TChar.IsDigit(item))
-				{
-					return true;
-				}
-			}
-			return false;
-		}
 		#endregion
 		#region Float
 		/*
@@ -439,103 +544,141 @@ namespace MissingValues.Info
 		 * Octo: 183466
 		 */
 		internal const int QuadBufferLength = 11563 + 1 + 1; // Max buffer length + 1 for rounding 
-		internal const int OctoBufferLength = 183466 + 1 + 1; // Max buffer length + 1 for rounding 
+		internal const int OctoBufferLength = 183466 + 1 + 1; // Max buffer length + 1 for rounding
 
-		public static unsafe bool TryParseFloat<TFloat, TBits, TChar>(ReadOnlySpan<TChar> s, NumberStyles styles, IFormatProvider? provider, [MaybeNullWhen(false)] out TFloat result)
+		internal static bool TryParseFloat<TFloat, TBits, TChar>(ReadOnlySpan<TChar> s, NumberStyles styles, IFormatProvider? provider, out TFloat result)
+			where TFloat : struct, IBinaryFloatingPointInfo<TFloat, TBits>
+			where TBits : unmanaged, IBinaryInteger<TBits>, IUnsignedNumber<TBits>
+			where TChar : unmanaged, IUtfCharacter<TChar>
+		{
+			if (TryParseFloatCore<TFloat, TBits, TChar>(s, styles, provider, out result, out _).IsSuccessful()) return true;
+			result = TFloat.Zero;
+			return false;
+		}
+
+		internal static ParsingStatus TryParseFloatCore<TFloat, TBits, TChar>(ReadOnlySpan<TChar> s, NumberStyles styles, IFormatProvider? provider, out TFloat result, out int charsConsumed)
 			where TFloat : struct, IBinaryFloatingPointInfo<TFloat, TBits>
 			where TBits : unmanaged, IBinaryInteger<TBits>, IUnsignedNumber<TBits>
 			where TChar : unmanaged, IUtfCharacter<TChar>
 		{
 			NumberFormatInfo info = NumberFormatInfo.GetInstance(provider);
-			// TODO: Expose Hex parsing for v3.0
-			if (false /*(styles & NumberStyles.AllowHexSpecifier) != 0*/)
+			ParsingStatus status;
+			if ((styles & NumberStyles.AllowHexSpecifier) != 0)
 			{
-				return TryParseHexFloat<TFloat, TBits, TChar>(s, styles, info, out result);
+				if ((status = TryParseHexFloat<TFloat, TBits, TChar>(s, styles, info, out result, out charsConsumed)).IsSuccessfulOrPartial())
+				{
+					return status;
+				}
+			}
+			else
+			{
+				byte[] buffer = ArrayPool<byte>.Shared.Rent(OctoBufferLength);
+				NumberInfo number = new NumberInfo(buffer, true);
+
+				if ((status = NumberInfo.TryParseCore(s, ref number, info, styles, out charsConsumed)).IsSuccessfulOrPartial())
+				{
+					result = NumberInfo.ConvertToFloat<TFloat, TBits>(ref number);
+					ArrayPool<byte>.Shared.Return(buffer);
+					return status;
+				}
 			}
 			
-			byte[] buffer = ArrayPool<byte>.Shared.Rent(OctoBufferLength);
-			NumberInfo number = new NumberInfo(buffer, true);
 
-			if (!NumberInfo.TryParse(s, ref number, info, styles))
+			ReadOnlySpan<TChar> trim = TChar.TrimStart(s);
+			charsConsumed = s.Length - trim.Length;
+
+			Span<TChar> positiveInf = stackalloc TChar[TChar.GetLength(info.PositiveInfinitySymbol)];
+			TChar.Copy(info.PositiveInfinitySymbol, positiveInf);
+
+			if (StartsWithTrim(trim, positiveInf, ref charsConsumed))
 			{
-				ReadOnlySpan<TChar> trim = s.Trim(TChar.WhiteSpaceCharacter);
+				result = TFloat.PositiveInfinity;
+				return charsConsumed == s.Length ? ParsingStatus.Success : ParsingStatus.Partial;
+			}
 
-				Span<TChar> positiveInf = stackalloc TChar[TChar.GetLength(info.PositiveInfinitySymbol)];
-				TChar.Copy(info.PositiveInfinitySymbol, positiveInf);
+			Span<TChar> negativeInf = stackalloc TChar[TChar.GetLength(info.NegativeInfinitySymbol)];
+			TChar.Copy(info.NegativeInfinitySymbol, negativeInf);
 
-				if (TChar.Equals(trim, positiveInf, StringComparison.OrdinalIgnoreCase))
+			if (StartsWithTrim(trim, negativeInf, ref charsConsumed))
+			{
+				result = TFloat.NegativeInfinity;
+				return charsConsumed == s.Length ? ParsingStatus.Success : ParsingStatus.Partial;
+			}
+
+			Span<TChar> nan = stackalloc TChar[TChar.GetLength(info.NaNSymbol)];
+			TChar.Copy(info.NaNSymbol, nan);
+
+			if (StartsWithTrim(trim, nan, ref charsConsumed))
+			{
+				result = TFloat.NaN;
+				return charsConsumed == s.Length ? ParsingStatus.Success : ParsingStatus.Partial;
+			}
+
+			Span<TChar> positiveSign = stackalloc TChar[TChar.GetLength(info.PositiveSign)];
+			TChar.Copy(info.PositiveSign, positiveSign);
+
+			if (TChar.StartsWith(trim, positiveSign, StringComparison.OrdinalIgnoreCase))
+			{
+				trim = trim[positiveSign.Length..];
+				charsConsumed = s.Length - trim.Length;
+
+				if (StartsWithTrim(trim, positiveInf, ref charsConsumed))
 				{
 					result = TFloat.PositiveInfinity;
-					return true;
+					return charsConsumed == s.Length ? ParsingStatus.Success : ParsingStatus.Partial;
 				}
-
-				Span<TChar> negativeInf = stackalloc TChar[TChar.GetLength(info.NegativeInfinitySymbol)];
-				TChar.Copy(info.NegativeInfinitySymbol, negativeInf);
-
-				if (TChar.Equals(trim, negativeInf, StringComparison.OrdinalIgnoreCase))
-				{
-					result = TFloat.NegativeInfinity;
-					return true;
-				}
-
-				Span<TChar> nan = stackalloc TChar[TChar.GetLength(info.NaNSymbol)];
-				TChar.Copy(info.NaNSymbol, nan);
-
-				if (TChar.Equals(trim, nan, StringComparison.OrdinalIgnoreCase))
+				else if (StartsWithTrim(trim, nan, ref charsConsumed))
 				{
 					result = TFloat.NaN;
-					return true;
-				}
-
-				Span<TChar> positiveSign = stackalloc TChar[TChar.GetLength(info.PositiveSign)];
-				TChar.Copy(info.PositiveSign, positiveSign);
-
-				if (TChar.StartsWith(trim, positiveSign, StringComparison.OrdinalIgnoreCase))
-				{
-					trim = trim.Slice(positiveSign.Length);
-
-					if (TChar.Equals(trim, positiveInf, StringComparison.OrdinalIgnoreCase))
-					{
-						result = TFloat.PositiveInfinity;
-						return true;
-					}
-					else if (TChar.Equals(trim, nan, StringComparison.OrdinalIgnoreCase))
-					{
-						result = TFloat.NaN;
-						return true;
-					}
-
-					result = TFloat.Zero;
-					return false;
-				}
-				Span<TChar> negativeSign = stackalloc TChar[TChar.GetLength(info.NegativeSign)];
-				TChar.Copy(info.NegativeSign, negativeSign);
-
-				if (TChar.StartsWith(trim, negativeSign, StringComparison.OrdinalIgnoreCase))
-				{
-					if (TChar.Equals(trim[negativeSign.Length..], nan, StringComparison.OrdinalIgnoreCase))
-					{
-						result = TFloat.NaN;
-						return true;
-					}
-
-					if (TChar.StartsWith(trim, negativeSign, StringComparison.OrdinalIgnoreCase))
-					{
-						result = TFloat.NaN;
-						return true;
-					}
+					return charsConsumed == s.Length ? ParsingStatus.Success : ParsingStatus.Partial;
 				}
 
 				result = TFloat.Zero;
-				return false; // We really failed
+				return charsConsumed == s.Length ? ParsingStatus.Success : ParsingStatus.Partial;
+			}
+			Span<TChar> negativeSign = stackalloc TChar[TChar.GetLength(info.NegativeSign)];
+			TChar.Copy(info.NegativeSign, negativeSign);
+
+			if (TChar.StartsWith(trim, negativeSign, StringComparison.OrdinalIgnoreCase))
+			{
+				var afterSign = trim[negativeSign.Length..];
+				charsConsumed = s.Length - afterSign.Length;
+				
+				if (StartsWithTrim(afterSign, nan, ref charsConsumed))
+				{
+					result = TFloat.NaN;
+					return charsConsumed == s.Length ? ParsingStatus.Success : ParsingStatus.Partial;
+				}
+
+				if (TChar.StartsWith(trim, [(TChar)'-'], StringComparison.OrdinalIgnoreCase))
+				{
+					var afterHyphen = trim[1..];
+					charsConsumed = s.Length - afterHyphen.Length;
+					if (StartsWithTrim(afterHyphen, nan, ref charsConsumed))
+					{
+						result = TFloat.NaN;
+						return charsConsumed == s.Length ? ParsingStatus.Success : ParsingStatus.Partial;
+					}
+				}
 			}
 
-			result = NumberInfo.ConvertToFloat<TFloat, TBits>(ref number);
-			ArrayPool<byte>.Shared.Return(buffer);
-			return true;
+			result = TFloat.Zero;
+			return ParsingStatus.Failed; // We really failed
+
+			static bool StartsWithTrim(ReadOnlySpan<TChar> v1,  ReadOnlySpan<TChar> v2, ref int charsConsumed)
+			{
+				if (!v2.IsEmpty && v2.Length <= v1.Length && TChar.StartsWith(v1, v2, StringComparison.OrdinalIgnoreCase))
+				{
+					ReadOnlySpan<TChar> trailing = TChar.TrimStart(v1[v2.Length..]);
+					charsConsumed += v1.Length - trailing.Length;
+					return true;
+				}
+
+				return false;
+			}
 		}
 
-		private static bool TryParseHexFloat<TFloat, TBits, TChar>(ReadOnlySpan<TChar> value, NumberStyles styles, NumberFormatInfo info, out TFloat result) 
+		private static ParsingStatus TryParseHexFloat<TFloat, TBits, TChar>(ReadOnlySpan<TChar> value, NumberStyles styles, NumberFormatInfo info, out TFloat result, out int charsConsumed) 
 			where TFloat : struct, IBinaryFloatingPointInfo<TFloat, TBits>
 			where TBits : unmanaged, IBinaryInteger<TBits>, IUnsignedNumber<TBits>
 			where TChar : unmanaged, IUtfCharacter<TChar>
@@ -546,7 +689,8 @@ namespace MissingValues.Info
 
 			if (value.IsEmpty)
 			{
-				return false;
+				charsConsumed = 0;
+				return ParsingStatus.Failed;
 			}
 
 			int index = 0;
@@ -562,7 +706,8 @@ namespace MissingValues.Info
 
 			if (index >= value.Length)
 			{
-				return false;
+				charsConsumed = 0;
+				return ParsingStatus.Failed;
 			}
 
 			bool isNegative = false;
@@ -588,7 +733,8 @@ namespace MissingValues.Info
 
 			if (index >= value.Length)
 			{
-				return false;
+				charsConsumed = 0;
+				return ParsingStatus.Failed;
 			}
 			
 			// Require "0x" or "0X" prefix (consistent with IEEE 754 conventions)
@@ -596,13 +742,15 @@ namespace MissingValues.Info
 			    index + 1 >= value.Length ||
 			    ((uint)value[index + 1] | 0x20) != 'x')
 			{
-				return false;
+				charsConsumed = 0;
+				return ParsingStatus.Failed;
 			}
 			index += 2;
 
 			if (index >= value.Length)
 			{
-				return false;
+				charsConsumed = 0;
+				return ParsingStatus.Failed;
 			}
 			
 			// Parse hex significand.
@@ -698,7 +846,8 @@ namespace MissingValues.Info
 			
 			if (!hasIntegerPart && !hasFractionalPart)
 			{
-				return false;
+				charsConsumed = 0;
+				return ParsingStatus.Failed;
 			}
 			
 			// Parse the exponent: 'p' or 'P' followed by optional sign and decimal digits.
@@ -711,7 +860,8 @@ namespace MissingValues.Info
 
                 if (index >= value.Length)
                 {
-                    return false;
+	                charsConsumed = 0;
+	                return ParsingStatus.Failed;
                 }
 
                 bool exponentIsNegative = false;
@@ -731,7 +881,8 @@ namespace MissingValues.Info
 
                 if (index >= value.Length)
                 {
-                    return false;
+	                charsConsumed = 0;
+	                return ParsingStatus.Failed;
                 }
 
                 int exponentStart = index;
@@ -756,7 +907,8 @@ namespace MissingValues.Info
 
                 if (index == exponentStart)
                 {
-                    return false;
+	                charsConsumed = 0;
+	                return ParsingStatus.Failed;
                 }
 
                 if (exponentIsNegative)
@@ -767,7 +919,8 @@ namespace MissingValues.Info
             else
             {
                 // Exponent indicator (p/P) is required
-                return false;
+                charsConsumed = 0;
+                return ParsingStatus.Failed;
             }
 
             // Skip trailing whitespace
@@ -782,13 +935,17 @@ namespace MissingValues.Info
             // For compatibility, allow trailing null characters (same as other number parsers).
             if (index != value.Length && !value.Slice(index).ContainsAnyExcept((TChar)'\0'))
             {
-                return false;
+	            charsConsumed = 0;
+	            return ParsingStatus.Failed;
             }
 
+            // We've successfully parsed a number, so now we just need to handle constructing the result
+			charsConsumed = index;
+			
             if (significand == TBits.Zero)
             {
                 result = isNegative ? TFloat.NegativeZero : TFloat.Zero;
-                return true;
+                return index == value.Length ? ParsingStatus.Success : ParsingStatus.Partial;
             }
 
             // Compute the effective binary exponent.
@@ -809,7 +966,7 @@ namespace MissingValues.Info
             if (actualExp > TFloat.MaximumBinaryExponent)
             {
                 result = isNegative ? TFloat.NegativeInfinity : TFloat.PositiveInfinity;
-                return true;
+                return index == value.Length ? ParsingStatus.Success : ParsingStatus.Partial;
             }
 
             int shiftRight = (Unsafe.SizeOf<TBits>() * 8 - 1) - mantissaBits;
@@ -822,7 +979,7 @@ namespace MissingValues.Info
                 {
                     // Value is too small to round to min subnormal
                     result = isNegative ? TFloat.NegativeZero : TFloat.Zero;
-                    return true;
+                    return index == value.Length ? ParsingStatus.Success : ParsingStatus.Partial;
                 }
                 shiftRight += (int)denormalShift;
                 biasedExp = 0;
@@ -852,7 +1009,7 @@ namespace MissingValues.Info
                         if (biasedExp >= TFloat.InfinityExponent)
                         {
                             result = isNegative ? TFloat.NegativeInfinity : TFloat.PositiveInfinity;
-                            return true;
+                            return index == value.Length ? ParsingStatus.Success : ParsingStatus.Partial;
                         }
                     }
                 }
@@ -884,7 +1041,7 @@ namespace MissingValues.Info
                 result = -result;
             }
 
-            return true;
+            return index == value.Length ? ParsingStatus.Success : ParsingStatus.Partial;
 
 			static int FromHexDigit(char value)
 			{

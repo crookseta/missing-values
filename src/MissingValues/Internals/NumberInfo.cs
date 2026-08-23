@@ -169,7 +169,7 @@ namespace MissingValues.Internals
 			return TryParseCore(s, ref info, formatInfo, styles, out _).IsSuccessful();
 		}
 
-		private static NumberParser.ParsingStatus TryParseCore<TChar>(ReadOnlySpan<TChar> str, ref NumberInfo number, NumberFormatInfo info, NumberStyles styles, out int charsConsumed)
+		internal static NumberParser.ParsingStatus TryParseCore<TChar>(ReadOnlySpan<TChar> str, ref NumberInfo number, NumberFormatInfo info, NumberStyles styles, out int charsConsumed)
 			where TChar : unmanaged, IUtfCharacter<TChar>
 		{
 			// Based on: https://github.com/dotnet/runtime/blob/main/src/libraries/Common/src/System/Number.NumberBuffer.cs
@@ -661,12 +661,12 @@ namespace MissingValues.Internals
 			return AssembleFloatingPointBits<TFloat, TBits>(completeMantissa, finalExponent, hasZeroTail);
 		}
 
-		private static unsafe TBits ConvertBigIntegerToFloatingPointBits<TFloat, TBits>(ref BigNumber value, uint integerBitsOfPrecision, bool hasNonZeroFractionalPart)
+		private static TBits ConvertBigIntegerToFloatingPointBits<TFloat, TBits>(ref BigNumber value, uint integerBitsOfPrecision, bool hasNonZeroFractionalPart)
 			where TFloat : struct, IBinaryFloatingPointInfo<TFloat, TBits>
 			where TBits : unmanaged, IBinaryInteger<TBits>, IUnsignedNumber<TBits>
 		{
 			int baseExponent = TFloat.DenormalMantissaBits;
-			int size = sizeof(TBits) * 8;
+			int size = Unsafe.SizeOf<TBits>() * 8;
 
 			// When we have N-bits or less of precision, we can just get the mantissa directly
 			if (integerBitsOfPrecision <= size)
@@ -881,12 +881,12 @@ namespace MissingValues.Internals
 			return shiftedExponent | mantissa;
 		}
 
-		private unsafe static T RightShiftWithRounding<T>(T value, int shift, bool hasZeroTail)
+		private static T RightShiftWithRounding<T>(T value, int shift, bool hasZeroTail)
 			where T : unmanaged, IBinaryInteger<T>, IUnsignedNumber<T>
 		{
 			// If we'd need to shift further than it is possible to shift, the answer
 			// is always zero:
-			if (shift >= (sizeof(T) * 8))
+			if (shift >= (Unsafe.SizeOf<T>() * 8))
 			{
 				return T.Zero;
 			}

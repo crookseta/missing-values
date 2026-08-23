@@ -220,28 +220,28 @@ namespace MissingValues.Internals
 			UInt256 x = value | UInt256.One;
 			int num1 = Log2(in x) + 1;
 			int num2 = (num1 * 1233) >> 12;
-			return x < new UInt256(Tables.Pow10Table[(num2 << 3)..]) ? num2 - 1 : num2;
+			return x < GetPow10<UInt256>(num2) ? num2 - 1 : num2;
 		}
 		internal static int Log10(in Int256 value)
 		{
 			Int256 x = value | Int256.One;
 			int num1 = Log2(in x) + 1;
 			int num2 = (num1 * 1233) >> 12;
-			return x < new Int256(Tables.Pow10Table[(num2 << 3)..]) ? num2 - 1 : num2;
+			return x < GetPow10<Int256>(num2) ? num2 - 1 : num2;
 		}
 		internal static int Log10(in UInt512 value)
 		{
 			UInt512 x = value | UInt512.One;
 			int num1 = Log2(in x) + 1;
 			int num2 = (num1 * 1233) >> 12;
-			return x < new UInt512(Tables.Pow10Table[(num2 << 3)..]) ? num2 - 1 : num2;
+			return x < GetPow10<UInt512>(num2) ? num2 - 1 : num2;
 		}
 		internal static int Log10(in Int512 value)
 		{
 			Int512 x = value | Int512.One;
 			int num1 = Log2(in x) + 1;
 			int num2 = (num1 * 1233) >> 12;
-			return x < new Int512(Tables.Pow10Table[(num2 << 3)..]) ? num2 - 1 : num2;
+			return x < GetPow10<Int512>(num2) ? num2 - 1 : num2;
 		}
 
 		internal static int PopCount(in UInt256 value)
@@ -533,6 +533,12 @@ namespace MissingValues.Internals
 				result |= (UInt128)bytes[offset + i] << (i * 16);
 			}
 			return result;
+		}
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		internal static T GetPow10<T>(int index)
+			where T : IBigInteger<T>
+		{
+			return T.Create(Tables.Pow10Table[(index << 3)..]);
 		}
 
 		/// <summary>
