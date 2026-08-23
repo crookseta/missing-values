@@ -283,6 +283,19 @@ public readonly partial struct Int512
 	{
 		return TryParse(s, CultureInfo.CurrentCulture, out result);
 	}
+	
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	internal Vector512<T> AsVector<T>()
+		where T : unmanaged
+	{
+		return Unsafe.BitCast<Int512, Vector512<T>>(this);
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	internal static Int512 Create<T>(Vector512<T> vector)
+	{
+		return Unsafe.BitCast<Vector512<T>, Int512>(vector);
+	}
 
 	private static Int512 ToInt512(double value)
 	{

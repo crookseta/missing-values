@@ -230,6 +230,19 @@ public readonly partial struct Int256
 	{
 		return TryParse(s, CultureInfo.CurrentCulture, out result);
 	}
+	
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	internal Vector256<T> AsVector<T>()
+		where T : unmanaged
+	{
+		return Unsafe.BitCast<Int256, Vector256<T>>(this);
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	internal static Int256 Create<T>(Vector256<T> vector)
+	{
+		return Unsafe.BitCast<Vector256<T>, Int256>(vector);
+	}
 
 	private static Int256 ToInt256(double value)
 	{

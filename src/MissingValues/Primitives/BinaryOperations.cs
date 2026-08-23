@@ -74,12 +74,16 @@ public static partial class BinaryOperations
     {
         if (Vector256.IsHardwareAccelerated)
         {
+#if NET11_0_OR_GREATER
+            return UInt256.Create(Vector256.Reverse(value.AsVector<byte>()));
+#else
             return Unsafe.BitCast<Vector256<byte>, UInt256>(
                 Vector256.Shuffle(
                     Unsafe.BitCast<UInt256, Vector256<byte>>(value),
                     Vector256.Create((byte)31, 30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0)
                 )
             );
+#endif
         }
         return new UInt256(BinaryPrimitives.ReverseEndianness(value.Part0), BinaryPrimitives.ReverseEndianness(value.Part1), BinaryPrimitives.ReverseEndianness(value.Part2), BinaryPrimitives.ReverseEndianness(value.Part3));
     }
@@ -93,12 +97,16 @@ public static partial class BinaryOperations
     {
         if (Vector256.IsHardwareAccelerated)
         {
+#if NET11_0_OR_GREATER
+            return Int256.Create(Vector256.Reverse(value.AsVector<byte>()));
+#else
             return Unsafe.BitCast<Vector256<byte>, Int256>(
                 Vector256.Shuffle(
                     Unsafe.BitCast<Int256, Vector256<byte>>(value),
                     Vector256.Create((byte)31, 30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0)
                 )
             );
+#endif
         }
         return new Int256(BinaryPrimitives.ReverseEndianness(value.Part0), BinaryPrimitives.ReverseEndianness(value.Part1), BinaryPrimitives.ReverseEndianness(value.Part2), BinaryPrimitives.ReverseEndianness(value.Part3));
     }
@@ -112,6 +120,9 @@ public static partial class BinaryOperations
     {
         if (Vector512.IsHardwareAccelerated)
         {
+#if NET11_0_OR_GREATER
+            return UInt512.Create(Vector512.Reverse(value.AsVector<byte>()));
+#else
             return Unsafe.BitCast<Vector512<byte>, UInt512>(
                 Vector512.Shuffle(
                     Unsafe.BitCast<UInt512, Vector512<byte>>(value),
@@ -121,6 +132,7 @@ public static partial class BinaryOperations
                     )
                 )
             );
+#endif
         }
         if (Vector256.IsHardwareAccelerated)
         {
@@ -141,6 +153,9 @@ public static partial class BinaryOperations
     {
         if (Vector512.IsHardwareAccelerated)
         {
+#if NET11_0_OR_GREATER
+            return Int512.Create(Vector512.Reverse(value.AsVector<byte>()));
+#else
             return Unsafe.BitCast<Vector512<byte>, Int512>(
                 Vector512.Shuffle(
                     Unsafe.BitCast<Int512, Vector512<byte>>(value),
@@ -150,6 +165,7 @@ public static partial class BinaryOperations
                     )
                 )
             );
+#endif
         }
         if (Vector256.IsHardwareAccelerated)
         {

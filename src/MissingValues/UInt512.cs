@@ -428,6 +428,19 @@ public readonly partial struct UInt512
 		return TryParse(s, CultureInfo.CurrentCulture, out result);
 	}
 
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	internal Vector512<T> AsVector<T>()
+		where T : unmanaged
+	{
+		return Unsafe.BitCast<UInt512, Vector512<T>>(this);
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	internal static UInt512 Create<T>(Vector512<T> vector)
+	{
+		return Unsafe.BitCast<Vector512<T>, UInt512>(vector);
+	}
+
 	private static UInt512 ToUInt512(double value)
 	{
 		const double TwoPow512 = 13407807929942597099574024998205846127479365820592393377723561443721764030073546976801874298166903427690031858186486050853753882811946569946433649006084096.0d;
