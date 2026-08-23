@@ -527,7 +527,7 @@ public static partial class BinaryOperations
     {
         ArgumentNullException.ThrowIfNull(value);
         ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual((uint)startIndex, (uint)value.Length);
-        ArgumentOutOfRangeException.ThrowIfGreaterThan(startIndex, value.Length - 16);
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(startIndex, value.Length - Unsafe.SizeOf<T>());
         
         return Unsafe.ReadUnaligned<T>(ref value[startIndex]);
     }
