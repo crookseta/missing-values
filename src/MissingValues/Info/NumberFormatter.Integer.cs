@@ -170,37 +170,33 @@ internal static partial class NumberFormatter
 		return T.MaxBinaryDigits - T.LeadingZeroCountInt32(in value);
 	}
 
-	private static ref TChar UInt64ToDecChars<TChar>(ulong value, ref TChar bufferEnd, int digits)
+	private static int UInt64ToDecChars<TChar>(ulong value, Span<TChar> buffer, int end, int digits)
 		where TChar : unmanaged, IUtfCharacter<TChar>
 	{
 		// Borrowed from https://github.com/dotnet/runtime/blob/main/src/libraries/System.Private.CoreLib/src/System/Number.Formatting.cs
 		uint remainder;
 		while (value >= 100)
 		{
-			bufferEnd = ref Unsafe.Subtract(ref bufferEnd, 2);
+			end -= 2;
 			digits -= 2;
 			(value, remainder) = Calculator.DivRemByUInt32(value, 100);
-			WriteTwoDigits(remainder, ref bufferEnd);
+			WriteTwoDigits(remainder, buffer[end..]);
 		}
 		while (value != 0 || digits > 0)
 		{
 			digits--;
 			(value, remainder) = Calculator.DivRemByUInt32(value, 10);
-			bufferEnd = ref Unsafe.Subtract(ref bufferEnd, 1);
-			bufferEnd = (TChar)(remainder + '0');
+			buffer[--end] = (TChar)(remainder + '0');
 		}
 
-		return ref bufferEnd;
+		return end;
 	}
 
-	private static void WriteTwoDigits<TChar>(uint value, ref TChar ptr)
+	private static void WriteTwoDigits<TChar>(uint value, Span<TChar> span)
 		where TChar : unmanaged, IUtfCharacter<TChar>
 	{
-		Unsafe.CopyBlockUnaligned(
-			ref Unsafe.As<TChar, byte>(ref ptr),
-			ref Unsafe.Add(ref MemoryMarshal.GetReference(TChar.TwoDigitsAsBytes), (uint)Unsafe.SizeOf<TChar>() * 2 * value),
-			(uint)Unsafe.SizeOf<TChar>() * 2
-			);
+		Debug.Assert(value <= 99);
+		TChar.TwoDigitsAsBytes.Slice((int)(Unsafe.SizeOf<TChar>() * 2 * value), Unsafe.SizeOf<TChar>() * 2).CopyTo(MemoryMarshal.AsBytes(span));
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -212,14 +208,14 @@ internal static partial class NumberFormatter
 	internal static void UInt256ToDecChars<TChar>(UInt256 value, Span<TChar> destination, int digits)
 		where TChar : unmanaged, IUtfCharacter<TChar>
 	{
-		ref TChar bufferEnd = ref Unsafe.Add(ref MemoryMarshal.GetReference(destination), digits);
+		int end = digits;
 
 		while (value.Part3 != 0 || value.Part2 != 0 || value.Part1 != 0)
 		{
-			bufferEnd = ref UInt64ToDecChars(UInt256DivMod1E19(ref value), ref bufferEnd, E19Digits);
+			end = UInt64ToDecChars(UInt256DivMod1E19(ref value), destination, end, E19Digits);
 			digits -= E19Digits;
 		}
-		UInt64ToDecChars(value.Part0, ref bufferEnd, digits);
+		UInt64ToDecChars(value.Part0, destination, end, digits);
 	}
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	private static ulong UInt512DivMod1E19(ref UInt512 value)
@@ -230,14 +226,14 @@ internal static partial class NumberFormatter
 	internal static void UInt512ToDecChars<TChar>(UInt512 value, Span<TChar> destination, int digits)
 		where TChar : unmanaged, IUtfCharacter<TChar>
 	{
-		ref TChar bufferEnd = ref Unsafe.Add(ref MemoryMarshal.GetReference(destination), digits);
+		int end = digits;
 
 		while (value.Part7 != 0 || value.Part6 != 0 || value.Part5 != 0 || value.Part4 != 0 || value.Part3 != 0 || value.Part2 != 0 || value.Part1 != 0)
 		{
-			bufferEnd = ref UInt64ToDecChars(UInt512DivMod1E19(ref value), ref bufferEnd, E19Digits);
+			end = UInt64ToDecChars(UInt512DivMod1E19(ref value), destination, end, E19Digits);
 			digits -= E19Digits;
 		}
-		UInt64ToDecChars(value.Part0, ref bufferEnd, digits);
+		UInt64ToDecChars(value.Part0, destination, end, digits);
 	}
 
 	internal static void UnsignedIntegerToRadixChars<T, TChar, TConverter>(in T value, char isUpper, Span<TChar> destination, int digits)

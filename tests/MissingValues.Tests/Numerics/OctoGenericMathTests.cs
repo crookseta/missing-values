@@ -173,192 +173,192 @@ public class OctoGenericMathTests
 
     #region INumberBase
     [Test]
-	[MethodDataSource<QuadDataSources>(nameof(AbsTestData))]
-	public async Task AbsTest(Quad value, Quad expected)
+	[MethodDataSource<DataSources>(nameof(AbsTestData))]
+	public async Task AbsTest(Octo value, Octo expected)
 	{
-		Quad result = Helper.Abs(value);
+		Octo result = Helper.Abs(value);
 		await Assert.That(result).IsEqualTo(expected);
 	}
 	[Test]
-	[MethodDataSource<QuadDataSources>(nameof(IsCanonicalTestData))]
-	public async Task IsCanonicalTest(Quad value, bool expected)
+	[MethodDataSource<DataSources>(nameof(IsCanonicalTestData))]
+	public async Task IsCanonicalTest(Octo value, bool expected)
 	{
 		bool result = Helper.IsCanonical(value);
 		await Assert.That(result).IsEqualTo(expected);
 	}
 	[Test]
-	[MethodDataSource<QuadDataSources>(nameof(IsComplexNumberTestData))]
-	public async Task IsComplexNumberTest(Quad value, bool expected)
+	[MethodDataSource<DataSources>(nameof(IsComplexNumberTestData))]
+	public async Task IsComplexNumberTest(Octo value, bool expected)
 	{
 		bool result = Helper.IsComplexNumber(value);
 		await Assert.That(result).IsEqualTo(expected);
 	}
 	[Test]
-	[MethodDataSource<QuadDataSources>(nameof(IsEvenIntegerTestData))]
-	public async Task IsEvenIntegerTest(Quad value, bool expected)
+	[MethodDataSource<DataSources>(nameof(IsEvenIntegerTestData))]
+	public async Task IsEvenIntegerTest(Octo value, bool expected)
 	{
 		bool result = Helper.IsEvenInteger(value);
 		await Assert.That(result).IsEqualTo(expected);
 	}
 	[Test]
-	[MethodDataSource<QuadDataSources>(nameof(IsFiniteTestData))]
-	public async Task IsFiniteTest(Quad value, bool expected)
+	[MethodDataSource<DataSources>(nameof(IsFiniteTestData))]
+	public async Task IsFiniteTest(Octo value, bool expected)
 	{
 		bool result = Helper.IsFinite(value);
 		await Assert.That(result).IsEqualTo(expected);
 	}
 	[Test]
-	[MethodDataSource<QuadDataSources>(nameof(IsImaginaryNumberTestData))]
-	public async Task IsImaginaryNumberTest(Quad value, bool expected)
+	[MethodDataSource<DataSources>(nameof(IsImaginaryNumberTestData))]
+	public async Task IsImaginaryNumberTest(Octo value, bool expected)
 	{
 		bool result = Helper.IsImaginaryNumber(value);
 		await Assert.That(result).IsEqualTo(expected);
 	}
 	[Test]
-	[MethodDataSource<QuadDataSources>(nameof(IsInfinityTestData))]
-	public async Task IsInfinityTest(Quad value, bool expected)
+	[MethodDataSource<DataSources>(nameof(IsInfinityTestData))]
+	public async Task IsInfinityTest(Octo value, bool expected)
 	{
 		bool result = Helper.IsInfinity(value);
 		await Assert.That(result).IsEqualTo(expected);
 	}
 	[Test]
-	[MethodDataSource<QuadDataSources>(nameof(IsIntegerTestData))]
-	public async Task IsIntegerTest(Quad value, bool expected)
+	[MethodDataSource<DataSources>(nameof(IsIntegerTestData))]
+	public async Task IsIntegerTest(Octo value, bool expected)
 	{
 		bool result = Helper.IsInteger(value);
 		await Assert.That(result).IsEqualTo(expected);
 	}
 	[Test]
-	[MethodDataSource<QuadDataSources>(nameof(IsNaNTestData))]
-	public async Task IsNaNTest(Quad value, bool expected)
+	[MethodDataSource<DataSources>(nameof(IsNaNTestData))]
+	public async Task IsNaNTest(Octo value, bool expected)
 	{
 		bool result = Helper.IsNaN(value);
 		await Assert.That(result).IsEqualTo(expected);
 	}
 	[Test]
-	[MethodDataSource<QuadDataSources>(nameof(IsNegativeTestData))]
-	public async Task IsNegativeTest(Quad value, bool expected)
+	[MethodDataSource<DataSources>(nameof(IsNegativeTestData))]
+	public async Task IsNegativeTest(Octo value, bool expected)
 	{
 		bool result = Helper.IsNegative(value);
 		await Assert.That(result).IsEqualTo(expected);
 	}
 	[Test]
-	[MethodDataSource<QuadDataSources>(nameof(IsNegativeInfinityTestData))]
-	public async Task IsNegativeInfinityTest(Quad value, bool expected)
+	[MethodDataSource<DataSources>(nameof(IsNegativeInfinityTestData))]
+	public async Task IsNegativeInfinityTest(Octo value, bool expected)
 	{
 		bool result = Helper.IsNegativeInfinity(value);
 		await Assert.That(result).IsEqualTo(expected);
 	}
 	[Test]
-	[MethodDataSource<QuadDataSources>(nameof(IsNormalTestData))]
-	public async Task IsNormalTest(Quad value, bool expected)
+	[MethodDataSource<DataSources>(nameof(IsNormalTestData))]
+	public async Task IsNormalTest(Octo value, bool expected)
 	{
 		bool result = Helper.IsNormal(value);
 		await Assert.That(result).IsEqualTo(expected);
 	}
 	[Test]
-	[MethodDataSource<QuadDataSources>(nameof(IsOddIntegerTestData))]
-	public async Task IsOddIntegerTest(Quad value, bool expected)
+	[MethodDataSource<DataSources>(nameof(IsOddIntegerTestData))]
+	public async Task IsOddIntegerTest(Octo value, bool expected)
 	{
 		bool result = Helper.IsOddInteger(value);
 		await Assert.That(result).IsEqualTo(expected);
 	}
 	[Test]
-	[MethodDataSource<QuadDataSources>(nameof(IsPositiveTestData))]
-	public async Task IsPositiveTest(Quad value, bool expected)
+	[MethodDataSource<DataSources>(nameof(IsPositiveTestData))]
+	public async Task IsPositiveTest(Octo value, bool expected)
 	{
 		bool result = Helper.IsPositive(value);
 		await Assert.That(result).IsEqualTo(expected);
 	}
 	[Test]
-	[MethodDataSource<QuadDataSources>(nameof(IsPositiveInfinityTestData))]
-	public async Task IsPositiveInfinityTest(Quad value, bool expected)
+	[MethodDataSource<DataSources>(nameof(IsPositiveInfinityTestData))]
+	public async Task IsPositiveInfinityTest(Octo value, bool expected)
 	{
 		bool result = Helper.IsPositiveInfinity(value);
 		await Assert.That(result).IsEqualTo(expected);
 	}
 	[Test]
-	[MethodDataSource<QuadDataSources>(nameof(IsRealNumberTestData))]
-	public async Task IsRealNumberTest(Quad value, bool expected)
+	[MethodDataSource<DataSources>(nameof(IsRealNumberTestData))]
+	public async Task IsRealNumberTest(Octo value, bool expected)
 	{
 		bool result = Helper.IsRealNumber(value);
 		await Assert.That(result).IsEqualTo(expected);
 	}
 	[Test]
-	[MethodDataSource<QuadDataSources>(nameof(IsSubnormalTestData))]
-	public async Task IsSubnormalTest(Quad value, bool expected)
+	[MethodDataSource<DataSources>(nameof(IsSubnormalTestData))]
+	public async Task IsSubnormalTest(Octo value, bool expected)
 	{
 		bool result = Helper.IsSubnormal(value);
 		await Assert.That(result).IsEqualTo(expected);
 	}
 	[Test]
-	[MethodDataSource<QuadDataSources>(nameof(IsZeroTestData))]
-	public async Task IsZeroTest(Quad value, bool expected)
+	[MethodDataSource<DataSources>(nameof(IsZeroTestData))]
+	public async Task IsZeroTest(Octo value, bool expected)
 	{
 		bool result = Helper.IsZero(value);
 		await Assert.That(result).IsEqualTo(expected);
 	}
 	[Test]
-	[MethodDataSource<QuadDataSources>(nameof(MaxMagnitudeTestData))]
-	public async Task MaxMagnitudeTest(Quad x, Quad y, Quad expected)
+	[MethodDataSource<DataSources>(nameof(MaxMagnitudeTestData))]
+	public async Task MaxMagnitudeTest(Octo x, Octo y, Octo expected)
 	{
 		var result = Helper.MaxMagnitude(x, y);
 		await Assert.That(result).IsEqualTo(expected);
 	}
 	[Test]
-	[MethodDataSource<QuadDataSources>(nameof(MaxMagnitudeNumberTestData))]
-	public async Task MaxMagnitudeNumberTest(Quad x, Quad y, Quad expected)
+	[MethodDataSource<DataSources>(nameof(MaxMagnitudeNumberTestData))]
+	public async Task MaxMagnitudeNumberTest(Octo x, Octo y, Octo expected)
 	{
 		var result = Helper.MaxMagnitudeNumber(x, y);
 		await Assert.That(result).IsEqualTo(expected);
 	}
 	[Test]
-	[MethodDataSource<QuadDataSources>(nameof(MinMagnitudeTestData))]
-	public async Task MinMagnitudeTest(Quad x, Quad y, Quad expected)
+	[MethodDataSource<DataSources>(nameof(MinMagnitudeTestData))]
+	public async Task MinMagnitudeTest(Octo x, Octo y, Octo expected)
 	{
 		var result = Helper.MinMagnitude(x, y);
 		await Assert.That(result).IsEqualTo(expected);
 	}
 	[Test]
-	[MethodDataSource<QuadDataSources>(nameof(MinMagnitudeNumberTestData))]
-	public async Task MinMagnitudeNumberTest(Quad x, Quad y, Quad expected)
+	[MethodDataSource<DataSources>(nameof(MinMagnitudeNumberTestData))]
+	public async Task MinMagnitudeNumberTest(Octo x, Octo y, Octo expected)
 	{
 		var result = Helper.MinMagnitudeNumber(x, y);
 		await Assert.That(result).IsEqualTo(expected);
 	}
 	[Test]
-	[MethodDataSource<QuadDataSources>(nameof(MultiplyAddEstimateTestData))]
-	public async Task MultiplyAddEstimateTest(Quad left, Quad right, Quad addend, Quad expected)
+	[MethodDataSource<DataSources>(nameof(MultiplyAddEstimateTestData))]
+	public async Task MultiplyAddEstimateTest(Octo left, Octo right, Octo addend, Octo expected)
 	{
 		var result = Helper.MultiplyAddEstimate(left, right, addend);
 		await Assert.That(result).IsEqualTo(expected);
 	}
 	[Test]
-	[MethodDataSource<QuadDataSources>(nameof(ParseTestData))]
-	public async Task ParseTest(string s, NumberStyles style, IFormatProvider? provider, Quad expected)
+	[MethodDataSource<DataSources>(nameof(ParseTestData))]
+	public async Task ParseTest(string s, NumberStyles style, IFormatProvider? provider, Octo expected)
 	{
-		var result = Helper.Parse<Quad>(s, style, provider);
+		var result = Helper.Parse<Octo>(s, style, provider);
 		await Assert.That(result).IsEqualTo(expected);
 	}
 	[Test]
-	[MethodDataSource<QuadDataSources>(nameof(ParseSpanTestData))]
-	public async Task ParseTest(char[] s, NumberStyles style, IFormatProvider? provider, Quad expected)
+	[MethodDataSource<DataSources>(nameof(ParseSpanTestData))]
+	public async Task ParseTest(char[] s, NumberStyles style, IFormatProvider? provider, Octo expected)
 	{
-		var result = Helper.Parse<Quad>(s, style, provider);
+		var result = Helper.Parse<Octo>(s, style, provider);
 		await Assert.That(result).IsEqualTo(expected);
 	}
 	[Test]
-	[MethodDataSource<QuadDataSources>(nameof(ParseUtf8TestData))]
-	public async Task ParseTest(byte[] utf8Text, NumberStyles style, IFormatProvider? provider, Quad expected)
+	[MethodDataSource<DataSources>(nameof(ParseUtf8TestData))]
+	public async Task ParseTest(byte[] utf8Text, NumberStyles style, IFormatProvider? provider, Octo expected)
 	{
-		var result = Helper.Parse<Quad>(utf8Text, style, provider);
+		var result = Helper.Parse<Octo>(utf8Text, style, provider);
 		await Assert.That(result).IsEqualTo(expected);
 	}
 	[Test]
-	[MethodDataSource<QuadDataSources>(nameof(TryParseTestData))]
-	public async Task TryParseTest(string s, NumberStyles style, IFormatProvider? provider, bool expected, Quad expectedValue)
+	[MethodDataSource<DataSources>(nameof(TryParseTestData))]
+	public async Task TryParseTest(string s, NumberStyles style, IFormatProvider? provider, bool expected, Octo expectedValue)
 	{
-		var success = Helper.TryParse<Quad>(s, style, provider, out var result);
+		var success = Helper.TryParse<Octo>(s, style, provider, out var result);
 		using (Assert.Multiple())
 		{
 			await Assert.That(success).IsEqualTo(expected);
@@ -366,10 +366,10 @@ public class OctoGenericMathTests
 		}
 	}
 	[Test]
-	[MethodDataSource<QuadDataSources>(nameof(TryParseSpanTestData))]
-	public async Task TryParseTest(char[] s, NumberStyles style, IFormatProvider? provider, bool expected, Quad expectedValue)
+	[MethodDataSource<DataSources>(nameof(TryParseSpanTestData))]
+	public async Task TryParseTest(char[] s, NumberStyles style, IFormatProvider? provider, bool expected, Octo expectedValue)
 	{
-		var success = Helper.TryParse<Quad>(s, style, provider, out var result);
+		var success = Helper.TryParse<Octo>(s, style, provider, out var result);
 		using (Assert.Multiple())
 		{
 			await Assert.That(success).IsEqualTo(expected);
@@ -377,10 +377,10 @@ public class OctoGenericMathTests
 		}
 	}
 	[Test]
-	[MethodDataSource<QuadDataSources>(nameof(TryParseUtf8TestData))]
-	public async Task TryParseTest(byte[] utf8Text, NumberStyles style, IFormatProvider? provider, bool expected, Quad expectedValue)
+	[MethodDataSource<DataSources>(nameof(TryParseUtf8TestData))]
+	public async Task TryParseTest(byte[] utf8Text, NumberStyles style, IFormatProvider? provider, bool expected, Octo expectedValue)
 	{
-		var success = Helper.TryParse<Quad>(utf8Text, style, provider, out var result);
+		var success = Helper.TryParse<Octo>(utf8Text, style, provider, out var result);
 		using (Assert.Multiple())
 		{
 			await Assert.That(success).IsEqualTo(expected);
@@ -610,9 +610,9 @@ public class OctoGenericMathTests
 	[Test, MethodDataSource<DataSources>(nameof(ConvertToSaturatingIntPtrTestData))] public async Task ConvertToSaturatingIntPtrTest(Float input, nint expected) => await Assert.That(nint.CreateSaturating(input)).IsEqualTo(expected);
 	[Test, MethodDataSource<DataSources>(nameof(ConvertToTruncatingIntPtrTestData))] public async Task ConvertToTruncatingIntPtrTest(Float input, nint expected) => await Assert.That(nint.CreateTruncating(input)).IsEqualTo(expected);
 	
-	[Test, MethodDataSource<QuadDataSources>(nameof(ConvertToCheckedBigIntegerTestData))] public async Task ConvertToCheckedBigIntegerTest(Quad input, BigInteger expected) => await Assert.That(BigInteger.CreateChecked(input)).IsEqualTo(expected);
-	[Test, MethodDataSource<QuadDataSources>(nameof(ConvertToSaturatingBigIntegerTestData))] public async Task ConvertToSaturatingBigIntegerTest(Quad input, BigInteger expected) => await Assert.That(BigInteger.CreateSaturating(input)).IsEqualTo(expected);
-	[Test, MethodDataSource<QuadDataSources>(nameof(ConvertToTruncatingBigIntegerTestData))] public async Task ConvertToTruncatingBigIntegerTest(Quad input, BigInteger expected) => await Assert.That(BigInteger.CreateTruncating(input)).IsEqualTo(expected);
+	[Test, MethodDataSource<DataSources>(nameof(ConvertToCheckedBigIntegerTestData))] public async Task ConvertToCheckedBigIntegerTest(Float input, BigInteger expected) => await Assert.That(BigInteger.CreateChecked(input)).IsEqualTo(expected);
+	[Test, MethodDataSource<DataSources>(nameof(ConvertToSaturatingBigIntegerTestData))] public async Task ConvertToSaturatingBigIntegerTest(Float input, BigInteger expected) => await Assert.That(BigInteger.CreateSaturating(input)).IsEqualTo(expected);
+	[Test, MethodDataSource<DataSources>(nameof(ConvertToTruncatingBigIntegerTestData))] public async Task ConvertToTruncatingBigIntegerTest(Float input, BigInteger expected) => await Assert.That(BigInteger.CreateTruncating(input)).IsEqualTo(expected);
 	
 	[Test, MethodDataSource<DataSources>(nameof(ConvertToCheckedHalfTestData))] public async Task ConvertToCheckedHalfTest(Float input, Half expected) => await Assert.That(Half.CreateChecked(input)).IsEqualTo(expected);
 	[Test, MethodDataSource<DataSources>(nameof(ConvertToSaturatingHalfTestData))] public async Task ConvertToSaturatingHalfTest(Float input, Half expected) => await Assert.That(Half.CreateSaturating(input)).IsEqualTo(expected);
