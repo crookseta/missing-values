@@ -1096,6 +1096,105 @@ public class Int512DataSources
 		yield return () => ("-6,703,903,964,971,298,549,787,012,499,102,923,063,739,682,910,296,196,688,861,780,721,860,882,015,036,773,488,400,937,149,083,451,713,845,015,929,093,243,025,426,876,941,405,973,284,973,216,824,503,042,048"u8.ToArray(), NumberStyles.Number, NumberFormatInfo.InvariantInfo, true, Int512.MinValue);
 		yield return () => ("$-6,703,903,964,971,298,549,787,012,499,102,923,063,739,682,910,296,196,688,861,780,721,860,882,015,036,773,488,400,937,149,083,451,713,845,015,929,093,243,025,426,876,941,405,973,284,973,216,824,503,042,048.00"u8.ToArray(), NumberStyles.Currency, Helper.CustomInfo, true, Int512.MinValue);
 	}
+	
+	public static IEnumerable<Func<(string, NumberStyles, IFormatProvider?, bool, Int512, int)>> TryParsePartialTestData()
+	{
+		yield return () => ("-6703903964971298549787012499102923063739682910296196688861780721860882015036773488400937149083451713845015929093243025426876941405973284973216824503042049", NumberStyles.Integer, CultureInfo.InvariantCulture, false, default, 0);
+		yield return () => ("-6703903964971298549787012499102923063739682910296196688861780721860882015036773488400937149083451713845015929093243025426876941405973284973216824503042048", NumberStyles.Integer, CultureInfo.InvariantCulture, true, Int512.MinValue, 155);
+		yield return () => ("-57896044618658097711785492504343953926634992332820282019728792003956564819968", NumberStyles.Integer, CultureInfo.InvariantCulture, true, Int512.Int256MinValue, 78);
+		yield return () => ("-170141183460469231731687303715884105728", NumberStyles.Integer, CultureInfo.InvariantCulture, true, Int128.MinValue, 40);
+		yield return () => ("-9223372036854775808", NumberStyles.Integer, CultureInfo.InvariantCulture, true, long.MinValue, 20);
+		yield return () => ("-1", NumberStyles.Integer, CultureInfo.InvariantCulture, true, Int512.NegativeOne, 2);
+		yield return () => ("0", NumberStyles.Integer, CultureInfo.InvariantCulture, true, Int512.Zero, 1);
+		yield return () => ("1", NumberStyles.Integer, CultureInfo.InvariantCulture, true, Int512.One, 1);
+		yield return () => ("4294967296", NumberStyles.Integer, CultureInfo.InvariantCulture, true, new Int512(0, 0, 0, 0, 0, 0, 0, 4294967296), 10);
+		yield return () => ("18446744073709551616", NumberStyles.Integer, CultureInfo.InvariantCulture, true, new Int512(0, 0, 0, 0, 0, 0, 1, 0), 20);
+		yield return () => ("340282366920938463463374607431768211456", NumberStyles.Integer, CultureInfo.InvariantCulture, true, new Int512(0, 0, 0, 0, 0, 1, 0, 0), 39);
+		yield return () => ("6277101735386680763835789423207666416102355444464034512896", NumberStyles.Integer, CultureInfo.InvariantCulture, true, new Int512(0, 0, 0, 0, 1, 0, 0, 0), 58);
+		yield return () => ("115792089237316195423570985008687907853269984665640564039457584007913129639936", NumberStyles.Integer, CultureInfo.InvariantCulture, true, new Int512(0, 0, 0, 1, 0, 0, 0, 0), 78);
+		yield return () => ("2135987035920910082395021706169552114602704522356652769947041607822219725780640550022962086936576", NumberStyles.Integer, CultureInfo.InvariantCulture, true, new Int512(0, 0, 1, 0, 0, 0, 0, 0), 97);
+		yield return () => ("39402006196394479212279040100143613805079739270465446667948293404245721771497210611414266254884915640806627990306816", NumberStyles.Integer, CultureInfo.InvariantCulture, true, new Int512(0, 1, 0, 0, 0, 0, 0, 0), 116);
+		yield return () => ("726838724295606890549323807888004534353641360687318060281490199180639288113397923326191050713763565560762521606266177933534601628614656", NumberStyles.Integer, CultureInfo.InvariantCulture, true, new Int512(1, 0, 0, 0, 0, 0, 0, 0), 135);
+		yield return () => ("6703903964971298549787012499102923063739682910296196688861780721860882015036773488400937149083451713845015929093243025426876941405973284973216824503042047", NumberStyles.Integer, CultureInfo.InvariantCulture, true, Int512.MaxValue, 154);
+		yield return () => ("6703903964971298549787012499102923063739682910296196688861780721860882015036773488400937149083451713845015929093243025426876941405973284973216824503042048", NumberStyles.Integer, CultureInfo.InvariantCulture, false, default, 0);
+		
+		yield return () => ("1E200", NumberStyles.Number | NumberStyles.AllowExponent, CultureInfo.InvariantCulture, false, default, 0);
+		yield return () => ("2.5E10", NumberStyles.Number | NumberStyles.AllowExponent, CultureInfo.InvariantCulture, true, 25_000_000_000, 6);
+		yield return () => ("1E10", NumberStyles.Number | NumberStyles.AllowExponent, CultureInfo.InvariantCulture, true, 10_000_000_000, 4);
+		yield return () => ("1.000", NumberStyles.Number, CultureInfo.InvariantCulture, true, Int512.One, 5);
+		yield return () => ("1,000.0", NumberStyles.Number, CultureInfo.InvariantCulture, true, 1_000, 7);
+		yield return () => ("1,000,000", NumberStyles.Number, CultureInfo.InvariantCulture, true, 1_000_000, 9);
+		yield return () => ("1,000,000,000.00", NumberStyles.Number, CultureInfo.InvariantCulture, true, 1_000_000_000, 16);
+		yield return () => ("-6703903964971298549787012499102923063739682910296196688861780721860882015036773488400937149083451713845015929093243025426876941405973284973216824503042048.000", NumberStyles.Number, NumberFormatInfo.InvariantInfo, true, Int512.MinValue, 159);
+		yield return () => ("-6,703,903,964,971,298,549,787,012,499,102,923,063,739,682,910,296,196,688,861,780,721,860,882,015,036,773,488,400,937,149,083,451,713,845,015,929,093,243,025,426,876,941,405,973,284,973,216,824,503,042,048", NumberStyles.Number, NumberFormatInfo.InvariantInfo, true, Int512.MinValue, 206);
+		yield return () => ("$-6,703,903,964,971,298,549,787,012,499,102,923,063,739,682,910,296,196,688,861,780,721,860,882,015,036,773,488,400,937,149,083,451,713,845,015,929,093,243,025,426,876,941,405,973,284,973,216,824,503,042,048.00", NumberStyles.Currency, Helper.CustomInfo, true, Int512.MinValue, 210);
+	}
+	
+	public static IEnumerable<Func<(char[], NumberStyles, IFormatProvider?, bool, Int512, int)>> TryParsePartialSpanTestData()
+	{
+		yield return () => ("-6703903964971298549787012499102923063739682910296196688861780721860882015036773488400937149083451713845015929093243025426876941405973284973216824503042049".ToCharArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, false, default, 0);
+		yield return () => ("-6703903964971298549787012499102923063739682910296196688861780721860882015036773488400937149083451713845015929093243025426876941405973284973216824503042048".ToCharArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, true, Int512.MinValue, 155);
+		yield return () => ("-57896044618658097711785492504343953926634992332820282019728792003956564819968".ToCharArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, true, Int512.Int256MinValue, 78);
+		yield return () => ("-170141183460469231731687303715884105728".ToCharArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, true, Int128.MinValue, 40);
+		yield return () => ("-9223372036854775808".ToCharArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, true, long.MinValue, 20);
+		yield return () => ("-1".ToCharArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, true, Int512.NegativeOne, 2);
+		yield return () => ("0".ToCharArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, true, Int512.Zero, 1);
+		yield return () => ("1".ToCharArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, true, Int512.One, 1);
+		yield return () => ("4294967296".ToCharArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, true, new Int512(0, 0, 0, 0, 0, 0, 0, 4294967296), 10);
+		yield return () => ("18446744073709551616".ToCharArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, true, new Int512(0, 0, 0, 0, 0, 0, 1, 0), 20);
+		yield return () => ("340282366920938463463374607431768211456".ToCharArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, true, new Int512(0, 0, 0, 0, 0, 1, 0, 0), 39);
+		yield return () => ("6277101735386680763835789423207666416102355444464034512896".ToCharArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, true, new Int512(0, 0, 0, 0, 1, 0, 0, 0), 58);
+		yield return () => ("115792089237316195423570985008687907853269984665640564039457584007913129639936".ToCharArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, true, new Int512(0, 0, 0, 1, 0, 0, 0, 0), 78);
+		yield return () => ("2135987035920910082395021706169552114602704522356652769947041607822219725780640550022962086936576".ToCharArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, true, new Int512(0, 0, 1, 0, 0, 0, 0, 0), 97);
+		yield return () => ("39402006196394479212279040100143613805079739270465446667948293404245721771497210611414266254884915640806627990306816".ToCharArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, true, new Int512(0, 1, 0, 0, 0, 0, 0, 0), 116);
+		yield return () => ("726838724295606890549323807888004534353641360687318060281490199180639288113397923326191050713763565560762521606266177933534601628614656".ToCharArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, true, new Int512(1, 0, 0, 0, 0, 0, 0, 0), 135);
+		yield return () => ("6703903964971298549787012499102923063739682910296196688861780721860882015036773488400937149083451713845015929093243025426876941405973284973216824503042047".ToCharArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, true, Int512.MaxValue, 154);
+		yield return () => ("6703903964971298549787012499102923063739682910296196688861780721860882015036773488400937149083451713845015929093243025426876941405973284973216824503042048".ToCharArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, false, default, 0);
+		
+		yield return () => ("1E200".ToCharArray(), NumberStyles.Number | NumberStyles.AllowExponent, CultureInfo.InvariantCulture, false, default, 0);
+		yield return () => ("2.5E10".ToCharArray(), NumberStyles.Number | NumberStyles.AllowExponent, CultureInfo.InvariantCulture, true, 25_000_000_000, 6);
+		yield return () => ("1E10".ToCharArray(), NumberStyles.Number | NumberStyles.AllowExponent, CultureInfo.InvariantCulture, true, 10_000_000_000, 4);
+		yield return () => ("1.000".ToCharArray(), NumberStyles.Number, CultureInfo.InvariantCulture, true, Int512.One, 5);
+		yield return () => ("1,000.0".ToCharArray(), NumberStyles.Number, CultureInfo.InvariantCulture, true, 1_000, 7);
+		yield return () => ("1,000,000".ToCharArray(), NumberStyles.Number, CultureInfo.InvariantCulture, true, 1_000_000, 9);
+		yield return () => ("1,000,000,000.00".ToCharArray(), NumberStyles.Number, CultureInfo.InvariantCulture, true, 1_000_000_000, 16);
+		yield return () => ("-6703903964971298549787012499102923063739682910296196688861780721860882015036773488400937149083451713845015929093243025426876941405973284973216824503042048.000".ToCharArray(), NumberStyles.Number, NumberFormatInfo.InvariantInfo, true, Int512.MinValue, 159);
+		yield return () => ("-6,703,903,964,971,298,549,787,012,499,102,923,063,739,682,910,296,196,688,861,780,721,860,882,015,036,773,488,400,937,149,083,451,713,845,015,929,093,243,025,426,876,941,405,973,284,973,216,824,503,042,048".ToCharArray(), NumberStyles.Number, NumberFormatInfo.InvariantInfo, true, Int512.MinValue, 206);
+		yield return () => ("$-6,703,903,964,971,298,549,787,012,499,102,923,063,739,682,910,296,196,688,861,780,721,860,882,015,036,773,488,400,937,149,083,451,713,845,015,929,093,243,025,426,876,941,405,973,284,973,216,824,503,042,048.00".ToCharArray(), NumberStyles.Currency, Helper.CustomInfo, true, Int512.MinValue, 210);
+	}
+	
+	public static IEnumerable<Func<(byte[], NumberStyles, IFormatProvider?, bool, Int512, int)>> TryParsePartialUtf8TestData()
+	{
+		yield return () => ("-6703903964971298549787012499102923063739682910296196688861780721860882015036773488400937149083451713845015929093243025426876941405973284973216824503042049"u8.ToArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, false, default, 0);
+		yield return () => ("-6703903964971298549787012499102923063739682910296196688861780721860882015036773488400937149083451713845015929093243025426876941405973284973216824503042048"u8.ToArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, true, Int512.MinValue, 155);
+		yield return () => ("-57896044618658097711785492504343953926634992332820282019728792003956564819968"u8.ToArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, true, Int512.Int256MinValue, 78);
+		yield return () => ("-170141183460469231731687303715884105728"u8.ToArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, true, Int128.MinValue, 40);
+		yield return () => ("-9223372036854775808"u8.ToArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, true, long.MinValue, 20);
+		yield return () => ("-1"u8.ToArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, true, Int512.NegativeOne, 2);
+		yield return () => ("0"u8.ToArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, true, Int512.Zero, 1);
+		yield return () => ("1"u8.ToArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, true, Int512.One, 1);
+		yield return () => ("4294967296"u8.ToArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, true, new Int512(0, 0, 0, 0, 0, 0, 0, 4294967296), 10);
+		yield return () => ("18446744073709551616"u8.ToArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, true, new Int512(0, 0, 0, 0, 0, 0, 1, 0), 20);
+		yield return () => ("340282366920938463463374607431768211456"u8.ToArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, true, new Int512(0, 0, 0, 0, 0, 1, 0, 0), 39);
+		yield return () => ("6277101735386680763835789423207666416102355444464034512896"u8.ToArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, true, new Int512(0, 0, 0, 0, 1, 0, 0, 0), 58);
+		yield return () => ("115792089237316195423570985008687907853269984665640564039457584007913129639936"u8.ToArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, true, new Int512(0, 0, 0, 1, 0, 0, 0, 0), 78);
+		yield return () => ("2135987035920910082395021706169552114602704522356652769947041607822219725780640550022962086936576"u8.ToArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, true, new Int512(0, 0, 1, 0, 0, 0, 0, 0), 97);
+		yield return () => ("39402006196394479212279040100143613805079739270465446667948293404245721771497210611414266254884915640806627990306816"u8.ToArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, true, new Int512(0, 1, 0, 0, 0, 0, 0, 0), 116);
+		yield return () => ("726838724295606890549323807888004534353641360687318060281490199180639288113397923326191050713763565560762521606266177933534601628614656"u8.ToArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, true, new Int512(1, 0, 0, 0, 0, 0, 0, 0), 135);
+		yield return () => ("6703903964971298549787012499102923063739682910296196688861780721860882015036773488400937149083451713845015929093243025426876941405973284973216824503042047"u8.ToArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, true, Int512.MaxValue, 154);
+		yield return () => ("6703903964971298549787012499102923063739682910296196688861780721860882015036773488400937149083451713845015929093243025426876941405973284973216824503042048"u8.ToArray(), NumberStyles.Integer, CultureInfo.InvariantCulture, false, default, 0);
+		
+		yield return () => ("1E200"u8.ToArray(), NumberStyles.Number | NumberStyles.AllowExponent, CultureInfo.InvariantCulture, false, default, 0);
+		yield return () => ("2.5E10"u8.ToArray(), NumberStyles.Number | NumberStyles.AllowExponent, CultureInfo.InvariantCulture, true, 25_000_000_000, 6);
+		yield return () => ("1E10"u8.ToArray(), NumberStyles.Number | NumberStyles.AllowExponent, CultureInfo.InvariantCulture, true, 10_000_000_000, 4);
+		yield return () => ("1.000"u8.ToArray(), NumberStyles.Number, CultureInfo.InvariantCulture, true, Int512.One, 5);
+		yield return () => ("1,000.0"u8.ToArray(), NumberStyles.Number, CultureInfo.InvariantCulture, true, 1_000, 7);
+		yield return () => ("1,000,000"u8.ToArray(), NumberStyles.Number, CultureInfo.InvariantCulture, true, 1_000_000, 9);
+		yield return () => ("1,000,000,000.00"u8.ToArray(), NumberStyles.Number, CultureInfo.InvariantCulture, true, 1_000_000_000, 16);
+		yield return () => ("-6703903964971298549787012499102923063739682910296196688861780721860882015036773488400937149083451713845015929093243025426876941405973284973216824503042048.000"u8.ToArray(), NumberStyles.Number, NumberFormatInfo.InvariantInfo, true, Int512.MinValue, 159);
+		yield return () => ("-6,703,903,964,971,298,549,787,012,499,102,923,063,739,682,910,296,196,688,861,780,721,860,882,015,036,773,488,400,937,149,083,451,713,845,015,929,093,243,025,426,876,941,405,973,284,973,216,824,503,042,048"u8.ToArray(), NumberStyles.Number, NumberFormatInfo.InvariantInfo, true, Int512.MinValue, 206);
+		yield return () => ("$-6,703,903,964,971,298,549,787,012,499,102,923,063,739,682,910,296,196,688,861,780,721,860,882,015,036,773,488,400,937,149,083,451,713,845,015,929,093,243,025,426,876,941,405,973,284,973,216,824,503,042,048.00"u8.ToArray(), NumberStyles.Currency, Helper.CustomInfo, true, Int512.MinValue, 210);
+	}
 
 	public static IEnumerable<Func<(Int512, string, IFormatProvider?, string)>> ToStringTestData()
 	{

@@ -491,6 +491,42 @@ public class UInt512GenericMathTests
 		}
 	}
 	[Test]
+	[MethodDataSource<DataSources>(nameof(TryParsePartialTestData))]
+	public async Task TryParsePartialTest(string s, NumberStyles style, IFormatProvider? provider, bool expected, UInt512 expectedValue, int expectedConsumed)
+	{
+		var success = Helper.TryParsePartial<UInt512>(s, style, provider, out var result, out int consumed);
+		using (Assert.Multiple())
+		{
+			await Assert.That(success).IsEqualTo(expected);
+			await Assert.That(result).IsEqualTo(expectedValue);
+			await Assert.That(consumed).IsEqualTo(expectedConsumed);
+		}
+	}
+	[Test]
+	[MethodDataSource<DataSources>(nameof(TryParsePartialSpanTestData))]
+	public async Task TryParsePartialTest(char[] s, NumberStyles style, IFormatProvider? provider, bool expected, UInt512 expectedValue, int expectedConsumed)
+	{
+		var success = Helper.TryParsePartial<UInt512>(s, style, provider, out var result, out int consumed);
+		using (Assert.Multiple())
+		{
+			await Assert.That(success).IsEqualTo(expected);
+			await Assert.That(result).IsEqualTo(expectedValue);
+			await Assert.That(consumed).IsEqualTo(expectedConsumed);
+		}
+	}
+	[Test]
+	[MethodDataSource<DataSources>(nameof(TryParsePartialUtf8TestData))]
+	public async Task TryParsePartialTest(byte[] s, NumberStyles style, IFormatProvider? provider, bool expected, UInt512 expectedValue, int expectedConsumed)
+	{
+		var success = Helper.TryParsePartial<UInt512>(s, style, provider, out var result, out int consumed);
+		using (Assert.Multiple())
+		{
+			await Assert.That(success).IsEqualTo(expected);
+			await Assert.That(result).IsEqualTo(expectedValue);
+			await Assert.That(consumed).IsEqualTo(expectedConsumed);
+		}
+	}
+	[Test]
 	[MethodDataSource<DataSources>(nameof(ToStringTestData))]
 	public async Task ToStringTest(UInt512 value, string fmt, IFormatProvider? provider, string expected)
 	{

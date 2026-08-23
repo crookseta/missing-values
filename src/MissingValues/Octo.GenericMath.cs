@@ -1302,6 +1302,26 @@ public partial struct Octo :
 		return NumberParser.TryParseFloat<Octo, UInt256, Utf8Char>(Utf8Char.CastFromByteSpan(utf8Text), NumberStyles.Float, provider, out result);
 	}
 
+#if NET11_0_OR_GREATER
+	/// <inheritdoc/>
+	public static bool TryParsePartial([NotNullWhen(true)] string? s, NumberStyles style, IFormatProvider? provider, out Octo result, out int charsConsumed)
+	{
+		return NumberParser.TryParsePartialFloat<Octo, UInt256, Utf16Char>(Utf16Char.CastFromCharSpan(s), style, provider, out result, out charsConsumed);
+	}
+
+	/// <inheritdoc/>
+	public static bool TryParsePartial(ReadOnlySpan<char> s, NumberStyles style, IFormatProvider? provider, out Octo result, out int charsConsumed)
+	{
+		return NumberParser.TryParsePartialFloat<Octo, UInt256, Utf16Char>(Utf16Char.CastFromCharSpan(s), style, provider, out result, out charsConsumed);
+	}
+
+	/// <inheritdoc/>
+	public static bool TryParsePartial(ReadOnlySpan<byte> utf8Text, NumberStyles style, IFormatProvider? provider, out Octo result, out int bytesConsumed)
+	{
+		return NumberParser.TryParsePartialFloat<Octo, UInt256, Utf8Char>(Utf8Char.CastFromByteSpan(utf8Text), style, provider, out result, out bytesConsumed);
+	}
+#endif
+
 	static Octo IBinaryFloatingPointInfo<Octo, UInt256>.BitsToFloat(UInt256 bits) => BinaryOperations.UInt256BitsToOcto(bits);
 
 	static UInt256 IBinaryFloatingPointInfo<Octo, UInt256>.FloatToBits(Octo value) => BinaryOperations.OctoToUInt256Bits(value);
