@@ -78,15 +78,16 @@ namespace MissingValues.Internals
 
 			int i = number.Scale;
 
-			if ((i > TInteger.MaxDecimalDigits) || (i < number.DigitsCount) || (TInteger.IsUnsignedInteger && number.IsNegative) || number.HasNonZeroTail)
+			if (i > TInteger.MaxDecimalDigits || i < number.DigitsCount || (TInteger.IsUnsignedInteger && number.IsNegative) || number.HasNonZeroTail)
 			{
 				value = default;
 				return false;
 			}
 
-			ref byte p = ref number.GetDigitsReference();
+			Span<byte> span = number.Digits;
+			int pIndex = 0;
 
-			Debug.Assert(!Unsafe.IsNullRef(ref p));
+			Debug.Assert(pIndex != span.Length);
 			TInteger n = TInteger.Zero;
 			TInteger ten = TInteger.Ten;
 			TInteger maxValueDiv10 = TInteger.MaxValue / ten;
@@ -101,10 +102,10 @@ namespace MissingValues.Internals
 
 				n *= ten;
 
-				if (p != '\0')
+				if (pIndex < span.Length && span[pIndex] != '\0')
 				{
-					TInteger newN = n + TInteger.GetDecimalValue((char)p);
-					p = ref Unsafe.Add(ref p, 1);
+					TInteger newN = n + TInteger.GetDecimalValue((char)span[pIndex]);
+					pIndex++;
 
 					if (TInteger.IsUnsignedInteger && (newN < n))
 					{
@@ -160,13 +161,6 @@ namespace MissingValues.Internals
 			}
 
 			return number.IsNegative ? -result : result;
-		}
-
-		[MethodImpl(MethodImplOptions.AggressiveInlining)]
-		internal static bool TryParse<TChar>(ReadOnlySpan<TChar> s, ref NumberInfo info, NumberFormatInfo formatInfo, NumberStyles styles)
-			where TChar : unmanaged, IUtfCharacter<TChar>
-		{
-			return TryParseCore(s, ref info, formatInfo, styles, out _).IsSuccessful();
 		}
 
 		internal static NumberParser.ParsingStatus TryParseCore<TChar>(ReadOnlySpan<TChar> str, ref NumberInfo number, NumberFormatInfo info, NumberStyles styles, out int charsConsumed)
@@ -915,51 +909,51 @@ namespace MissingValues.Internals
 			return roundBit && (hasTailBits || lsbBit);
 		}
 
-		private static unsafe void AccumulateDecimalDigitsIntoBigNumber(scoped ref NumberInfo number, uint firstIndex, uint lastIndex, out BigNumber result)
+		private static void AccumulateDecimalDigitsIntoBigNumber(scoped ref NumberInfo number, uint firstIndex, uint lastIndex, out BigNumber result)
 		{
 			BigNumber.SetZero(out result);
 
-			byte* src = number.GetDigitsPointer() + firstIndex;
+			Span<byte> buffer = number.Digits[(int)firstIndex..];
 			uint remaining = lastIndex - firstIndex;
 
 			while (remaining != 0)
 			{
 				uint count = Math.Min(remaining, 19);
-				ulong value = DigitsToUInt64(src, (int)(count));
+				ulong value = DigitsToUInt64(buffer, (int)(count));
 
 				result.MultiplyPow10(count);
 				result.Add(value);
 
-				src += count;
+				buffer = buffer[(int)count..];
 				remaining -= count;
 			}
 		}
 
 		// get 64-bit integer from at most 19 digits
-		private static unsafe ulong DigitsToUInt64(byte* p, int count)
+		private static ulong DigitsToUInt64(Span<byte> p, int count)
 		{
 			Debug.Assert((1 <= count) && (count <= 19));
 
-			byte* end = (p + count);
+			int index = 0;
 			ulong res = 0;
 
 			// parse batches of 8 digits with SWAR
-			while (end - p >= 8)
+			while (count - index >= 8)
 			{
-				res = (res * 100000000) + ParseEightDigitsUnrolled(p);
-				p += 8;
+				res = (res * 100000000) + ParseEightDigitsUnrolled(p.Slice(index, 8));
+				index += 8;
 			}
 
-			while (p != end)
+			while (count != index)
 			{
-				res = (10 * res) + p[0] - '0';
-				++p;
+				res = (10 * res) + p[index] - '0';
+				++index;
 			}
 
 			return res;
 		}
 
-		private static unsafe uint ParseEightDigitsUnrolled(byte* chars)
+		private static uint ParseEightDigitsUnrolled(ReadOnlySpan<byte> chars)
 		{
 			// let's take the following value (byte*) 12345678 and read it unaligned :
 			// we get a ulong value of 0x3837363534333231
@@ -968,7 +962,7 @@ namespace MissingValues.Internals
 			// we need to transform it to b1b2b3b4b5b6b7b8 by computing :
 			// 10000 * (100 * (10*b1+b2) + 10*b3+b4) + 100*(10*b5+b6) + 10*b7+b8
 			// this is achieved by masking and shifting values
-			ulong val = Unsafe.ReadUnaligned<ulong>(chars);
+			ulong val = BitConverter.ToUInt64(chars);
 
 			// With BigEndian system an endianness swap has to be performed
 			// before the following operations as if it has been read with LittleEndian system
@@ -984,15 +978,6 @@ namespace MissingValues.Internals
 			val = (val * 10) + (val >> 8); // val = (val * 2561) >> 8;
 			val = (((val & mask) * mul1) + (((val >> 16) & mask) * mul2)) >> 32;
 			return (uint)val;
-		}
-
-		internal unsafe byte* GetDigitsPointer()
-		{
-			return (byte*)Unsafe.AsPointer(ref MemoryMarshal.GetReference(Digits));
-		}
-		internal ref byte GetDigitsReference()
-		{
-			return ref MemoryMarshal.GetReference(Digits);
 		}
 
 		private static bool IsWhite(uint ch) => (ch == 0x20) || ((ch - 0x09) <= (0x0D - 0x09));

@@ -268,7 +268,8 @@ namespace MissingValues.Info
 			where TChar : unmanaged, IUtfCharacter<TChar>
 		{
 			int digPos = number.Scale;
-			ref byte dig = ref number.GetDigitsReference();
+			int index = 0;
+			Span<byte> digits = number.Digits;
 
 			if (digPos > 0)
 			{
@@ -308,13 +309,12 @@ namespace MissingValues.Info
 					int digLength = number.DigitsCount;
 					int digStart = (digPos < digLength) ? digPos : digLength;
 
-					ref TChar spanPtr = ref MemoryMarshal.GetReference(vlb.AppendSpan(bufferSize));
-					ref TChar p = ref Unsafe.Add(ref spanPtr, bufferSize - 1);
+					Span<TChar> span = vlb.AppendSpan(bufferSize);
+					int pIndex = (bufferSize - 1);
 
 					for (int i = digPos - 1; i >= 0; i--)
 					{
-						p = ((i < digStart) ? (TChar)Unsafe.Add(ref dig, i) : (TChar)'0');
-						p = ref Unsafe.Subtract(ref p, 1);
+						span[pIndex--] = i < digStart ? (TChar)digits[i] : (TChar)'0';
 
 						if (groupSize > 0)
 						{
@@ -323,8 +323,7 @@ namespace MissingValues.Info
 							{
 								for (int j = sGroup.Length - 1; j >= 0; j--)
 								{
-									p = sGroup[j];
-									p = ref Unsafe.Subtract(ref p, 1);
+									span[pIndex--] = sGroup[j];
 								}
 
 								if (groupSizeIndex < groupDigits.Length - 1)
@@ -337,14 +336,14 @@ namespace MissingValues.Info
 						}
 					}
 
-					dig = ref Unsafe.Add(ref dig, digStart);
+					index += digStart;
 				}
 				else
 				{
 					do
 					{
-						vlb.Append((TChar)(dig != 0 ? (char)dig : '0'));
-						dig = ref Unsafe.Add(ref dig, 1);
+						vlb.Append((TChar)(digits[index] != 0 ? (char)digits[index] : '0'));
+						index++;
 					} while (--digPos > 0);
 				}
 			}
@@ -369,8 +368,8 @@ namespace MissingValues.Info
 
 				while (nMaxDigits > 0)
 				{
-					vlb.Append((TChar)((dig != 0) ? (char)(dig) : '0'));
-					dig = ref Unsafe.Add(ref dig, 1);
+					vlb.Append((TChar)(index < digits.Length && digits[index] != 0 ? (char)digits[index] : '0'));
+					index++;
 					nMaxDigits--;
 				}
 			}
@@ -406,35 +405,35 @@ namespace MissingValues.Info
 
 		private static void RoundNumber(ref NumberInfo number, int pos)
 		{
-			ref byte dig = ref number.GetDigitsReference();
+			Span<byte> digits = number.Digits;
 
 			int i = 0;
-			while (i < pos && Unsafe.Add(ref dig, i) != '\0')
+			while (i < pos && digits[i] != '\0')
 			{
 				i++;
 			}
 
-			if ((i == pos) && ShouldRoundUp(ref dig, i))
+			if ((i == pos) && ShouldRoundUp(digits[i]))
 			{
-				while (i > 0 && Unsafe.Add(ref dig, i - 1) == '9')
+				while (i > 0 && digits[i - 1] ==  '9')
 				{
 					i--;
 				}
 
 				if (i > 0)
 				{
-					Unsafe.Add(ref dig, i - 1) = (byte)(Unsafe.Add(ref dig, i - 1) + 1);
+					digits[i - 1]++;
 				}
 				else
 				{
 					number.Scale++;
-					dig = (byte)('1');
+					digits[0] = (byte)('1');
 					i = 1;
 				}
 			}
 			else
 			{
-				while (i > 0 && Unsafe.Add(ref dig, i - 1) == '0')
+				while (i > 0 && digits[i - 1] == '0')
 				{
 					i--;
 				}
@@ -445,13 +444,12 @@ namespace MissingValues.Info
 				number.Scale = 0; // Decimals with scale ('0.00') should be rounded.
 			}
 
-			Unsafe.Add(ref dig, i) = (byte)'\0';
+			digits[i] = (byte)'\0';
 			number.DigitsCount = i;
+			return;
 
-			static bool ShouldRoundUp(ref byte dig, int i)
+			static bool ShouldRoundUp(byte digit)
 			{
-				byte digit = Unsafe.Add(ref dig, i);
-
 				if (digit == '\0')
 				{
 					return false;
