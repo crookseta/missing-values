@@ -153,7 +153,7 @@ namespace MissingValues.Internals
 
 			sign = 1 - ((int)(bits.Part3 >> 62) & 2);
 			man = bits & Octo.TrailingSignificandMask;
-			exp = (int)(bits.Part3 >> 44) & Octo.MaxBiasedExponent;
+			exp = (int)(bits.Part3 >> (Octo.BiasedExponentShift - 192)) & Octo.MaxBiasedExponent;
 			if (exp == 0)
 			{
 				// Denormalized number.
