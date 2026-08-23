@@ -216,18 +216,7 @@ namespace MissingValues.Info
 		{
 			int charsWritten = number.DigitsCount = TUnsigned.CountDigits(in value);
 
-			if (typeof(TUnsigned) == typeof(UInt256))
-			{
-				UInt256ToDecChars((UInt256)(object)value, MemoryMarshal.Cast<byte, Utf8Char>(number.Digits), charsWritten);
-			}
-			else if (typeof(TUnsigned) == typeof(UInt512))
-			{
-				UInt512ToDecChars((UInt512)(object)value, MemoryMarshal.Cast<byte, Utf8Char>(number.Digits), charsWritten);
-			}
-			else
-			{
-				Thrower.NotSupported();
-			}
+			TUnsigned.ToDecChars(in value, MemoryMarshal.Cast<byte, Utf8Char>(number.Digits), charsWritten);
 
 			number.Scale = charsWritten;
 			number.Digits[charsWritten] = (byte)'\0';
