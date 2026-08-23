@@ -368,7 +368,7 @@ internal static partial class NumberFormatter
 		Debug.Assert(actualExponent >= 0);
 		int digitCount = CountDigits((ulong)actualExponent);
 		Span<TChar> digits = stackalloc TChar[digitCount + 1];
-		UInt64ToDecChars((ulong)actualExponent, ref digits[digitCount], digitCount);
+		UInt64ToDecChars((ulong)actualExponent, digits, digitCount, digitCount);
 		builder.Append(digits[..digitCount]);
 
 		bool success = builder.TryCopyTo(destination, out charsWritten);

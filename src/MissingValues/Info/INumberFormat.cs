@@ -112,10 +112,11 @@ internal readonly struct EngineeringFormat : INumberFormat
 			vlb.Append(negativeSign);
 		}
 
-		ref byte dig = ref number.GetDigitsReference();
+		int index = 0;
+		Span<byte> digits = number.Digits;
 
-		vlb.Append((TChar)((dig != 0) ? (char)(dig) : '0'));
-		dig = ref Unsafe.Add(ref dig, 1);
+		vlb.Append((TChar)(digits[index] != 0 ? (char)digits[index] : '0'));
+		index++;
 
 		if (nMaxDigits != 1)
 		{
@@ -124,11 +125,11 @@ internal readonly struct EngineeringFormat : INumberFormat
 
 		while (--nMaxDigits > 0)
 		{
-			vlb.Append((TChar)((dig != 0) ? (char)(dig) : '0'));
-			dig = ref Unsafe.Add(ref dig, 1);
+			vlb.Append((TChar)(digits[index] != 0 ? (char)digits[index] : '0'));
+			index++;
 		}
 
-		int e = number.Digits[0] == 0 ? 0 : number.Scale - 1;
+		int e = digits[0] == 0 ? 0 : number.Scale - 1;
 		NumberFormatter.FormatExponent(ref vlb, info, e, isUpper ? 'E' : 'e', 3, true);
 	}
 
