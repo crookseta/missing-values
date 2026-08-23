@@ -32,6 +32,19 @@ namespace MissingValues.Internals
 
 		static abstract bool TryParseInteger<T>(ReadOnlySpan<TSelf> s, NumberStyles style, IFormatProvider? provider, out T result) where T : struct, IBinaryInteger<T>;
 
+		static virtual bool TryParsePartialInteger<T>(ReadOnlySpan<TSelf> s, NumberStyles style, IFormatProvider? provider, out T result, out int charsConsumed) 
+			where T : struct, IBinaryInteger<T>
+		{
+			if (TSelf.TryParseInteger(s, style, provider, out result))
+			{
+				charsConsumed = s.Length;
+				return true;
+			}
+
+			charsConsumed = 0;
+			return false;
+		}
+
 		static abstract int GetLength(ReadOnlySpan<char> s);
 		static abstract int GetLength(ReadOnlySpan<byte> utf8Text);
 
@@ -71,6 +84,13 @@ namespace MissingValues.Internals
 		static abstract bool EndsWith(ReadOnlySpan<TSelf> v1, ReadOnlySpan<TSelf> v2, StringComparison comparisonType);
 		static abstract bool StartsWith(ReadOnlySpan<TSelf> v1, ReadOnlySpan<TSelf> v2, StringComparison comparisonType);
 		static abstract bool Equals(ReadOnlySpan<TSelf> v1, ReadOnlySpan<TSelf> v2, StringComparison comparisonType);
+
+		static virtual ReadOnlySpan<TSelf> Trim(ReadOnlySpan<TSelf> s)
+		{
+			return TSelf.TrimEnd(TSelf.TrimStart(s));
+		}
+		static abstract ReadOnlySpan<TSelf> TrimStart(ReadOnlySpan<TSelf> s);
+		static abstract ReadOnlySpan<TSelf> TrimEnd(ReadOnlySpan<TSelf> s);
 
 		static abstract explicit operator TSelf(uint value);
 		static abstract explicit operator TSelf(char value);
@@ -169,6 +189,16 @@ namespace MissingValues.Internals
 		static bool IUtfCharacter<Utf16Char>.Equals(ReadOnlySpan<Utf16Char> v1, ReadOnlySpan<Utf16Char> v2, StringComparison comparisonType)
 		{
 			return CastToCharSpan(v1).Equals(CastToCharSpan(v2), comparisonType);
+		}
+
+		public static ReadOnlySpan<Utf16Char> TrimStart(ReadOnlySpan<Utf16Char> s)
+		{
+			return CastFromCharSpan(CastToCharSpan(s).TrimStart());
+		}
+
+		public static ReadOnlySpan<Utf16Char> TrimEnd(ReadOnlySpan<Utf16Char> s)
+		{
+			return CastFromCharSpan(CastToCharSpan(s).TrimEnd());
 		}
 
 		static bool IUtfCharacter<Utf16Char>.IsWhiteSpace(Utf16Char value)
@@ -389,6 +419,34 @@ namespace MissingValues.Internals
 			Utf8.ToUtf16(CastToByteSpan(v2), right, out _, out _);
 
 			return ((ReadOnlySpan<char>)left).Equals(right, comparisonType);
+		}
+
+		public static ReadOnlySpan<Utf8Char> TrimStart(ReadOnlySpan<Utf8Char> s)
+		{
+			while (s.Length != 0)
+			{
+				_ = Rune.DecodeFromUtf8(CastToByteSpan(s), out Rune current, out int bytesConsumed);
+				if (!Rune.IsWhiteSpace(current))
+				{
+					break;
+				}
+				s = s[bytesConsumed..];
+			}
+			return s;
+		}
+
+		public static ReadOnlySpan<Utf8Char> TrimEnd(ReadOnlySpan<Utf8Char> s)
+		{
+			while (s.Length != 0)
+			{
+				_ = Rune.DecodeLastFromUtf8(CastToByteSpan(s), out Rune current, out int bytesConsumed);
+				if (!Rune.IsWhiteSpace(current))
+				{
+					break;
+				}
+				s = s[..^bytesConsumed];
+			}
+			return s;
 		}
 
 		static bool IUtfCharacter<Utf8Char>.IsDigit(Utf8Char value)
