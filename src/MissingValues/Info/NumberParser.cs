@@ -372,6 +372,8 @@ namespace MissingValues.Info
 			}
 
 			charsConsumed += index;
+			if (charsConsumed == s.Length) return status;
+			
 			var remaining = s[charsConsumed..];
 			if (style.HasFlag(NumberStyles.AllowTrailingWhite))
 			{
@@ -389,7 +391,7 @@ namespace MissingValues.Info
 				int trailingSpaces = remaining.IndexOfAnyExcept(TChar.NullCharacter);
 				charsConsumed += (trailingSpaces >= 0 ? trailingSpaces : remaining.Length);
 			}
-			
+
 			return status;
 		}
 
@@ -528,8 +530,14 @@ namespace MissingValues.Info
 				output = default;
 				return status;
 			}
-			
-			charsConsumed += style.HasFlag(NumberStyles.AllowTrailingWhite) ? s[charsConsumed..].IndexOfAnyExcept(TChar.WhiteSpaceCharacter, TChar.NullCharacter) : s[charsConsumed..].IndexOfAnyExcept(TChar.NullCharacter);
+
+			if (s.Length > charsConsumed)
+			{
+				int trailingWhites = style.HasFlag(NumberStyles.AllowTrailingWhite)
+					? s[charsConsumed..].IndexOfAnyExcept(TChar.WhiteSpaceCharacter, TChar.NullCharacter)
+					: s[charsConsumed..].IndexOfAnyExcept(TChar.NullCharacter);
+				charsConsumed += trailingWhites < 0 ? 0 : trailingWhites;
+			}
 
 			if (result == TUnsigned.SignedMaxMagnitude)
 			{
