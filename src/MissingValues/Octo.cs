@@ -189,7 +189,7 @@ public readonly partial struct Octo
 	/// <summary>
 	/// Represents the number of radians in one turn, specified by the constant, <c>tau</c>.
 	/// </summary>
-	public static readonly Octo Tau = new Octo(0x4000_05BF_0A8B_1457, 0x6953_55FB_8AC4_04E7, 0xA79E_3B17_38B0_79C5, 0xA6D2_B53C_26C8_228D);
+	public static readonly Octo Tau = new Octo(0x4000_1921_FB54_442D, 0x1846_9898_CC51_701B, 0x839A_2520_49C1_114C, 0xF98E_8041_77D4_C762);
 	/// <summary>
 	/// Represents the value <c>0</c> of the type.
 	/// </summary>
