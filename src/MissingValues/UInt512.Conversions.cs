@@ -618,6 +618,34 @@ public partial struct UInt512
 
 		return (decimal)value.Lower;
 	}
+	
+#if NET11_0_OR_GREATER
+	/// <summary>
+	/// Explicitly converts a <see cref="UInt512" /> value to a <see cref="Decimal32"/>.
+	/// </summary>
+	/// <param name="value">The value to convert.</param>
+	public static explicit operator Decimal32(in UInt512 value)
+	{
+		return BitHelper.ConvertToDecimalN<Decimal32, UInt512>(in value);
+	}
+	/// <summary>
+	/// Explicitly converts a <see cref="UInt512" /> value to a <see cref="Decimal64"/>.
+	/// </summary>
+	/// <param name="value">The value to convert.</param>
+	public static explicit operator Decimal64(in UInt512 value)
+	{
+		return BitHelper.ConvertToDecimalN<Decimal64, UInt512>(in value);
+	}
+	/// <summary>
+	/// Explicitly converts a <see cref="UInt512" /> value to a <see cref="Decimal128"/>.
+	/// </summary>
+	/// <param name="value">The value to convert.</param>
+	public static explicit operator Decimal128(in UInt512 value)
+	{
+		return BitHelper.ConvertToDecimalN<Decimal128, UInt512>(in value);
+	}
+#endif
+	
 	/// <summary>
 	/// Explicitly converts a <see cref="UInt512" /> value to a <see cref="Octo"/>.
 	/// </summary>
@@ -1104,6 +1132,63 @@ public partial struct UInt512
 
 		return ToUInt512(value);
 	}
+	
+#if NET11_0_OR_GREATER
+	/// <summary>
+	/// Explicitly converts a <see cref="Decimal32" /> value to a <see cref="UInt512"/>.
+	/// </summary>
+	/// <param name="value">The value to convert.</param>
+	public static explicit operator UInt512(Decimal32 value)
+	{
+		return BitHelper.ConvertFromDecimalN<UInt512, Decimal32>(value);
+	}
+	/// <summary>
+	/// Explicitly converts a <see cref="Decimal32" /> value to a <see cref="UInt512"/>.
+	/// </summary>
+	/// <param name="value">The value to convert.</param>
+	/// <exception cref="OverflowException"><paramref name="value"/> is outside the range of <see cref="UInt512"/>.</exception>
+	public static explicit operator checked UInt512(Decimal32 value)
+	{
+		return BitHelper.ConvertFromDecimalN<UInt512, Decimal32>(value, true);
+	}
+	
+	/// <summary>
+	/// Explicitly converts a <see cref="Decimal64" /> value to a <see cref="UInt512"/>.
+	/// </summary>
+	/// <param name="value">The value to convert.</param>
+	public static explicit operator UInt512(Decimal64 value)
+	{
+		return BitHelper.ConvertFromDecimalN<UInt512, Decimal64>(value);
+	}
+	/// <summary>
+	/// Explicitly converts a <see cref="Decimal64" /> value to a <see cref="UInt512"/>.
+	/// </summary>
+	/// <param name="value">The value to convert.</param>
+	/// <exception cref="OverflowException"><paramref name="value"/> is outside the range of <see cref="UInt512"/>.</exception>
+	public static explicit operator checked UInt512(Decimal64 value)
+	{
+		return BitHelper.ConvertFromDecimalN<UInt512, Decimal64>(value, true);
+	}
+	
+	/// <summary>
+	/// Explicitly converts a <see cref="Decimal128" /> value to a <see cref="UInt512"/>.
+	/// </summary>
+	/// <param name="value">The value to convert.</param>
+	public static explicit operator UInt512(Decimal128 value)
+	{
+		return BitHelper.ConvertFromDecimalN<UInt512, Decimal128>(value);
+	}
+	/// <summary>
+	/// Explicitly converts a <see cref="Decimal128" /> value to a <see cref="UInt512"/>.
+	/// </summary>
+	/// <param name="value">The value to convert.</param>
+	/// <exception cref="OverflowException"><paramref name="value"/> is outside the range of <see cref="UInt512"/>.</exception>
+	public static explicit operator checked UInt512(Decimal128 value)
+	{
+		return BitHelper.ConvertFromDecimalN<UInt512, Decimal128>(value, true);
+	}
+#endif
+	
 	/// <summary>
 	/// Explicitly converts a <see cref="decimal" /> value to a <see cref="UInt512"/>.
 	/// </summary>
