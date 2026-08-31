@@ -5,6 +5,9 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Numerics;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+using System.Runtime.Intrinsics;
+using System.Runtime.Intrinsics.X86;
 using System.Text;
 
 namespace MissingValues.Info
@@ -91,19 +94,30 @@ namespace MissingValues.Info
 			10000000000000000000,
 			];
 
-		public static ParsingStatus ParseDecStringToUnsigned<T, TChar>(ReadOnlySpan<TChar> s, NumberStyles style, NumberFormatInfo formatProvider, out T output, out int charsConsumed)
+		internal static ParsingStatus ParseDecStringToInteger<T, TChar>(ReadOnlySpan<TChar> s, NumberStyles styles, NumberFormatInfo formatProvider, out T output, out int charsConsumed)
 			where T : struct, IFormattableUnsignedInteger<T>
 			where TChar : unmanaged, IUtfCharacter<TChar>
 		{
+			// By this point there should not be leading whitespaces.
+			styles &= ~(NumberStyles.AllowLeadingSign | NumberStyles.AllowLeadingWhite);
 			const int UInt64MaxSafeCharacterCount = 19;
-
-			T e = BitHelper.GetPow10<T>(UInt64MaxSafeCharacterCount);
-			ulong r;
-
-			if (s.Length <= UInt64MaxSafeCharacterCount)
+			
+			bool allowTrailingWhite = styles.HasFlag(NumberStyles.AllowTrailingWhite);
+			int leadingZeroes = s.IndexOfAnyExcept((TChar)'0');
+			if (leadingZeroes < 0)
 			{
-				if (TChar.TryParsePartialInteger(s, style, formatProvider, out r, out charsConsumed))
+				charsConsumed = s.Length;
+				output = T.Zero;
+				return ParsingStatus.Success;
+			}
+			charsConsumed = leadingZeroes;
+
+			// Fast path for when it can surely be parsed as ulong.
+			if (s.Length - charsConsumed <= UInt64MaxSafeCharacterCount)
+			{
+				if (TChar.TryParsePartialInteger(s[charsConsumed..], styles, formatProvider, out ulong r, out int consumed))
 				{
+					charsConsumed += consumed;
 					output = T.CreateTruncating(r);
 					return s.Length == charsConsumed ? ParsingStatus.Success : ParsingStatus.Partial;
 				}
@@ -114,79 +128,141 @@ namespace MissingValues.Info
 					return ParsingStatus.Failed;
 				}
 			}
-			if (TChar.TryParsePartialInteger(s[..UInt64MaxSafeCharacterCount], style, formatProvider, out r, out charsConsumed))
+
+			output = T.Zero;
+			
+			// Explanation for the Vector128 version of the algorithm here: https://kholdstare.github.io/technical/2020/05/26/faster-integer-parsing.html
+			while (Avx512BW.IsSupported && Vector512.IsHardwareAccelerated && s.Length - charsConsumed >= Vector512<byte>.Count && (charsConsumed - leadingZeroes) < T.MaxDecimalDigits - 2)
 			{
-				output = T.CreateTruncating(r);
-				if (charsConsumed < UInt64MaxSafeCharacterCount)
-				{
-					return ParsingStatus.Partial;
-				}
+				Vector512<byte> v = typeof(TChar) == typeof(Utf8Char) 
+					? Vector512.Create(TChar.CastToByteSpan(s[charsConsumed..])) 
+					: FromChar512(TChar.CastToCharSpan(s[charsConsumed..]));
+				
+				if (!TryParse64Chars(v, out ulong high, out ulong mid, out ulong midLow, out ulong low)) break;
+				
+				output *= T.E64;
+				output += (T.MultiplyByUInt64(T.CreateTruncating(high), 10_000_000_000_000_000UL) + T.CreateTruncating(mid)) * T.E32;
+				output += T.MultiplyByUInt64(T.CreateTruncating(midLow), 10_000_000_000_000_000UL) + T.CreateTruncating(low);
+				charsConsumed += 64;
 			}
-			else
+			
+			while (Avx2.IsSupported && Vector256.IsHardwareAccelerated && s.Length - charsConsumed >= Vector256<byte>.Count && (charsConsumed - leadingZeroes) < T.MaxDecimalDigits - 2)
 			{
-				charsConsumed = 0;
-				output = default;
-				return ParsingStatus.Failed;
+				Vector256<byte> v = typeof(TChar) == typeof(Utf8Char) 
+					? Vector256.Create(TChar.CastToByteSpan(s[charsConsumed..])) 
+					: FromChar256(TChar.CastToCharSpan(s[charsConsumed..]));
+				
+				if (!TryParse32Chars(v, out ulong high, out ulong low)) break;
+				
+				output *= T.E32;
+				output += T.MultiplyByUInt64(T.CreateTruncating(high), 10_000_000_000_000_000UL) + T.CreateTruncating(low);
+				charsConsumed += 32;
 			}
-
-			int length = s.Length - charsConsumed, consumed;
-
-			do
+			
+			while (Sse41.IsSupported && Vector128.IsHardwareAccelerated && s.Length - charsConsumed >= Vector128<byte>.Count && (charsConsumed - leadingZeroes) < T.MaxDecimalDigits - 2)
 			{
-				if (charsConsumed > length)
+				Vector128<byte> v = typeof(TChar) == typeof(Utf8Char) 
+					? Vector128.Create(TChar.CastToByteSpan(s[charsConsumed..])) 
+					: FromChar128(TChar.CastToCharSpan(s[charsConsumed..]));
+				
+				if (!TryParse16Chars(v, out ulong low)) break;
+				
+				output = T.MultiplyByUInt64(in output, 10_000_000_000_000_000UL) + T.CreateTruncating(low);
+				charsConsumed += 16;
+			}
+			
+			while (s.Length - charsConsumed >= 8 && (charsConsumed - leadingZeroes) < T.MaxDecimalDigits - 2)
+			{
+				ulong chunk;
+				if (typeof(TChar) == typeof(Utf8Char))
 				{
-					break;
-				}
-				if (TChar.TryParsePartialInteger(s.Slice(charsConsumed, UInt64MaxSafeCharacterCount), style, formatProvider, out r, out consumed))
-				{
-					if (consumed < UInt64MaxSafeCharacterCount)
-					{
-						output *= BitHelper.GetPow10<T>(consumed);
-						charsConsumed += consumed;
-						output += T.CreateTruncating(r);
-						return ParsingStatus.Partial;
-					}
-
-					output *= e;
-					charsConsumed += UInt64MaxSafeCharacterCount;
-					output += T.CreateTruncating(r);
+					chunk = BitConverter.ToUInt64(TChar.CastToByteSpan(s[charsConsumed..]));
 				}
 				else
 				{
-					return ParsingStatus.Partial;
-				}
-			} while (true);
+					var slice = s.Slice(charsConsumed, 8);
+					chunk = 0;
 
-			length = s.Length - charsConsumed;
-			if (length != 0)
-			{
-				if (TChar.TryParsePartialInteger(s[^length..], style, CultureInfo.CurrentCulture, out r, out consumed))
-				{
-					output *= T.CreateTruncating(E19Table[length]);
-					T addon = output + T.CreateTruncating(r);
-					if (addon < output)
+					for (int i = 7; i >= 0; i--)
 					{
-						charsConsumed = 0;
-						output = default;
-						return ParsingStatus.Overflow;
-					}
-					else
-					{
-						charsConsumed += consumed;
-						output = addon;
+						chunk <<= 8;
+						chunk |= (byte)slice[i];
 					}
 				}
+				if (!TryParse8Chars(chunk, out ulong low)) break;
+				
+				output = T.MultiplyByUInt64(in output, 100_000_000UL) + T.CreateTruncating(low);
+				charsConsumed += 8;
 			}
-
-			if (charsConsumed > T.MaxDecimalDigits || (charsConsumed == T.MaxDecimalDigits && (uint)s[0] > T.LastDecimalDigitOfMaxValue))
+			
+			int maxDigitsLeft = T.MaxDecimalDigits - (charsConsumed -  leadingZeroes);
+			if (maxDigitsLeft < 0) 
 			{
+				// We've already overflowed.
 				charsConsumed = 0;
 				output = default;
 				return ParsingStatus.Overflow;
 			}
 
+			for (int i = 0; i < maxDigitsLeft - 1; i++)
+			{
+				if (charsConsumed >= s.Length)
+				{
+					break;
+				}
+
+				if (!TChar.IsDigit(s[charsConsumed]))
+				{
+					if (allowTrailingWhite && TChar.IsWhiteSpace(s[charsConsumed]))
+					{
+						break;
+					}
+					if (s[charsConsumed] == TChar.NullCharacter)
+					{
+						break;
+					}
+					return ParsingStatus.Partial;
+				}
+
+				output = T.MultiplyByUInt64(in output, 10);
+				output += T.CreateTruncating((uint)s[charsConsumed++] - '0');
+			}
+			
+			if (charsConsumed >= s.Length)
+			{
+				return ParsingStatus.Success;
+			}
+			
+			if (!TChar.IsDigit(s[charsConsumed]))
+			{
+				if ((allowTrailingWhite && TChar.IsWhiteSpace(s[charsConsumed])) || s[charsConsumed] == TChar.NullCharacter)
+				{
+					charsConsumed = ConsumeTrailingNulls(s, charsConsumed);
+					return s.Length == charsConsumed ? ParsingStatus.Success : ParsingStatus.Partial;
+				}
+				else
+				{
+					return ParsingStatus.Partial;
+				}
+			}
+
+			if (!T.TryCheckedMultiplyAdd(output, 10, (uint)s[charsConsumed++] - '0', out output))
+			{
+				charsConsumed = 0;
+				output = default;
+				return ParsingStatus.Overflow;
+			}
+			
+			if (charsConsumed < s.Length && TChar.IsDigit(s[charsConsumed]))
+			{
+				charsConsumed = 0;
+				output = default;
+				return ParsingStatus.Overflow;
+			}
+			
 			return s.Length == charsConsumed ? ParsingStatus.Success : ParsingStatus.Partial;
 		}
+
 		public static ParsingStatus ParseStringToUnsigned<TInteger, TChar, TConverter>(ReadOnlySpan<TChar> s, out TInteger output, out int charsConsumed)
 			where TInteger : struct, IFormattableUnsignedInteger<TInteger>
 			where TChar : unmanaged, IUtfCharacter<TChar>
@@ -368,7 +444,7 @@ namespace MissingValues.Info
 			}
 			else
 			{
-				status = ParseDecStringToUnsigned(s[index..], style, formatInfo, out output, out charsConsumed);
+				status = ParseDecStringToInteger(s[index..], style, formatInfo, out output, out charsConsumed);
 			}
 
 			charsConsumed += index;
@@ -516,7 +592,7 @@ namespace MissingValues.Info
 				}
 			}
 			
-			status = ParseDecStringToUnsigned(s[index..], style, formatInfo, out result, out charsConsumed);
+			status = ParseDecStringToInteger(s[index..], style, formatInfo, out result, out charsConsumed);
 			
 			charsConsumed += index;
 			if (style.HasFlag(NumberStyles.AllowParentheses) && openParentheses && TChar.StartsWith(s[charsConsumed..], [(TChar)')'], StringComparison.OrdinalIgnoreCase))
@@ -1098,5 +1174,177 @@ namespace MissingValues.Info
 			}
 		}
 		#endregion
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		private static Vector512<byte> FromChar512(ReadOnlySpan<char> span)
+		{
+			var shortSpan = MemoryMarshal.Cast<char, ushort>(span);
+			return Vector512.NarrowWithSaturation(Vector512.Create(shortSpan), Vector512.Create(shortSpan[Vector512<ushort>.Count..]));
+		}
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		private static Vector256<byte> FromChar256(ReadOnlySpan<char> span)
+		{
+			var shortSpan = MemoryMarshal.Cast<char, ushort>(span);
+			return Vector256.NarrowWithSaturation(Vector256.Create(shortSpan), Vector256.Create(shortSpan[Vector256<ushort>.Count..]));
+		}
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		private static Vector128<byte> FromChar128(ReadOnlySpan<char> span)
+		{
+			var shortSpan = MemoryMarshal.Cast<char, ushort>(span);
+			return Vector128.NarrowWithSaturation(Vector128.Create(shortSpan), Vector128.Create(shortSpan[Vector128<ushort>.Count..]));
+		}
+
+		private static bool TryParse8Chars(ulong chunk, out ulong result)
+		{
+			if ((((chunk + 0x4646_4646_4646_4646UL) | ~(chunk + 0x7676_7676_7676_7676UL)) & 0x8080_8080_8080_8080UL) != 0)
+			{
+				result = 0;
+				return false;
+			}
+
+			ulong lower = (chunk & 0x0F00_0F00_0F00_0F00) >> 8;
+			ulong upper = (chunk & 0x000F_000F_000F_000F) * 10;
+			result = lower + upper;
+			
+			lower = (result & 0x00FF_0000_00FF_0000) >> 16;
+			upper = (result & 0x0000_00FF_0000_00FF) * 100;
+			result = lower + upper;
+			
+			lower = (result & 0x0000_FFFF_0000_0000) >> 32;
+			upper = (result & 0x0000_0000_0000_FFFF) * 10000;
+			result = lower + upper;
+			
+			return true;
+		}
+		
+		private static bool TryParse16Chars(Vector128<byte> chunk, out ulong value)
+		{
+			// explanation for this algorithm: https://kholdstare.github.io/technical/2020/05/26/faster-integer-parsing.html
+			var zeroes = Vector128.Create((byte)'0');
+
+			if (Vector128.GreaterThanAny(chunk, Vector128.Create((byte)'9')) ||
+			    Vector128.LessThanAny(chunk, zeroes))
+			{
+				value = 0;
+				return false;
+			}
+
+			chunk -= zeroes;
+			var mult = Vector128.Create((sbyte)10, 1, 10, 1, 10, 1, 10, 1, 10, 1, 10, 1, 10, 1, 10, 1);
+
+			var chunk16 = Ssse3.MultiplyAddAdjacent(chunk, mult);
+			var mult16 = Vector128.Create((short)100, 1, 100, 1, 100, 1, 100, 1);
+
+			var chunk32 = Sse2.MultiplyAddAdjacent(chunk16, mult16);
+
+			chunk16 = Sse41.PackUnsignedSaturate(chunk32, chunk32).AsInt16();
+			mult16 = Vector128.Create((short)10000, 1, 10000, 1, 0, 0, 0, 0);
+		
+			chunk32 = Sse2.MultiplyAddAdjacent(chunk16, mult16);
+		
+			var chunk64 = chunk32.AsUInt64();
+			ulong scalar = chunk64.ToScalar();
+		
+			value = ((scalar & 0xffffffff) * 100_000_000) + (scalar >> 32);
+			return true;
+		}
+		
+		private static bool TryParse32Chars(Vector256<byte> chunk, out ulong first, out ulong second)
+		{
+			var zeroes = Vector256.Create((byte)'0');
+
+			if (Vector256.GreaterThanAny(chunk, Vector256.Create((byte)'9')) ||
+			    Vector256.LessThanAny(chunk, zeroes))
+			{
+				first = 0;
+				second = 0;
+				return false;
+			}
+		
+			chunk -= zeroes;
+			var mult = Vector256.Create(
+				(sbyte)10, 1, 10, 1, 10, 1, 10, 1, 10, 1, 10, 1, 10, 1, 10, 1, 
+				10, 1, 10, 1, 10, 1, 10, 1, 10, 1, 10, 1, 10, 1, 10, 1);
+
+			Vector256<short> chunk16 = Avx2.MultiplyAddAdjacent(chunk, mult);
+			var mult16 = Vector256.Create(
+				(short)100, 1, 100, 1, 100, 1, 100, 1, 
+				100, 1, 100, 1, 100, 1, 100, 1);
+		
+			Vector256<int> chunk32 = Avx2.MultiplyAddAdjacent(chunk16, mult16);
+
+			chunk16 = Avx2.PackUnsignedSaturate(chunk32, chunk32).AsInt16();
+			mult16 = Vector256.Create(
+				(short)10000, 1, 10000, 1, 0, 0, 0, 0
+				, 10000, 1, 10000, 1, 0, 0, 0, 0);
+			
+			Vector256<int> result = Avx2.MultiplyAddAdjacent(chunk16, mult16);
+			Vector256<ulong> result64 = result.AsUInt64();
+
+			ulong lane0 = result64.GetElement(0);
+			first = ((lane0 & 0xFFFF_FFFF) * 100_000_000) + (lane0 >> 32);
+
+			ulong lane1 = result64.GetElement(2);
+			second = ((lane1 & 0xFFFF_FFFF) * 100_000_000) + (lane1 >> 32);
+
+			return true;
+		}
+		
+		private static bool TryParse64Chars(Vector512<byte> chunk, out ulong first, out ulong second, out ulong third, out ulong fourth)
+		{
+			var zeroes = Vector512.Create((byte)'0');
+
+			if (Vector512.GreaterThanAny(chunk, Vector512.Create((byte)'9')) ||
+			    Vector512.LessThanAny(chunk, zeroes))
+			{
+				first = 0;
+				second = 0;
+				third = 0;
+				fourth = 0;
+				return false;
+			}
+		
+			chunk -= zeroes;
+			var mult = Vector512.Create(
+				(sbyte)10, 1, 10, 1, 10, 1, 10, 1, 10, 1, 10, 1, 10, 1, 10, 1, 
+				10, 1, 10, 1, 10, 1, 10, 1, 10, 1, 10, 1, 10, 1, 10, 1,
+				10, 1, 10, 1, 10, 1, 10, 1, 10, 1, 10, 1, 10, 1, 10, 1, 
+				10, 1, 10, 1, 10, 1, 10, 1, 10, 1, 10, 1, 10, 1, 10, 1
+				);
+
+			Vector512<short> chunk16 = Avx512BW.MultiplyAddAdjacent(chunk, mult);
+			var mult16 = Vector512.Create(
+				(short)100, 1, 100, 1, 100, 1, 100, 1, 
+				100, 1, 100, 1, 100, 1, 100, 1,
+				100, 1, 100, 1, 100, 1, 100, 1, 
+				100, 1, 100, 1, 100, 1, 100, 1
+				);
+		
+			Vector512<int> chunk32 = Avx512BW.MultiplyAddAdjacent(chunk16, mult16);
+
+			chunk16 = Avx512BW.PackUnsignedSaturate(chunk32, chunk32).AsInt16();
+			mult16 = Vector512.Create(
+				(short)10000, 1, 10000, 1, 0, 0, 0, 0, 
+				10000, 1, 10000, 1, 0, 0, 0, 0,
+				10000, 1, 10000, 1, 0, 0, 0, 0, 
+				10000, 1, 10000, 1, 0, 0, 0, 0
+				);
+			Vector512<int> result = Avx512BW.MultiplyAddAdjacent(chunk16, mult16);
+			Vector512<ulong> result64 = result.AsUInt64();
+
+			ulong lane = result64.GetElement(0);
+			first = ((lane & 0xFFFF_FFFF) * 100_000_000) + (lane >> 32);
+
+			lane = result64.GetElement(2);
+			second = ((lane & 0xFFFF_FFFF) * 100_000_000) + (lane >> 32);
+
+			lane = result64.GetElement(4);
+			third = ((lane & 0xFFFF_FFFF) * 100_000_000) + (lane >> 32);
+
+			lane = result64.GetElement(6);
+			fourth = ((lane & 0xFFFF_FFFF) * 100_000_000) + (lane >> 32);
+
+			return true;
+		}
 	}
 }

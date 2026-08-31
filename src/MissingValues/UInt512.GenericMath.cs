@@ -53,6 +53,9 @@ namespace MissingValues
 		static UInt512 IFormattableInteger<UInt512>.TenPow3 => new UInt512(0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x3E8);
 
 		static UInt512 IFormattableInteger<UInt512>.E19 => new UInt512(0, 0, 0, 0, 0, 0, 0, 10000000000000000000UL);
+		
+		static UInt512 IFormattableUnsignedInteger<UInt512>.E32 => new UInt512(0, 0, 0, 0, 0, 0, 0x000004EE2D6D415B, 0x85ACEF8100000000);
+		static UInt512 IFormattableUnsignedInteger<UInt512>.E64 => new UInt512(0, 0, 0, 0, 0x0000000000184F03, 0xE93FF9F4DAA797ED, 0x6E38ED64BF6A1F01, 0x0000000000000000);
 
 		static char IFormattableInteger<UInt512>.LastDecimalDigitOfMaxValue => '1';
 
@@ -607,5 +610,49 @@ namespace MissingValues
 		static int IFormattableInteger<UInt512>.Log2Int32(in UInt512 value) => BitHelper.Log2(in value);
 		static int IFormattableInteger<UInt512>.LeadingZeroCountInt32(in UInt512 value) => BitHelper.LeadingZeroCount(in value);
 		static void IFormattableUnsignedInteger<UInt512>.ToDecChars<TChar>(in UInt512 number, Span<TChar> destination, int digits) => NumberFormatter.UInt512ToDecChars(number, destination, digits);
+		
+		static UInt512 IFormattableUnsignedInteger<UInt512>.MultiplyByUInt64(in UInt512 left, ulong right)
+		{
+			return Calculator.Multiply(in left, right, out _);
+		}
+		static bool IFormattableUnsignedInteger<UInt512>.TryCheckedMultiplyAdd(UInt512 left, ulong right, ulong addend, out UInt512 result)
+		{
+			result = Calculator.Multiply(in left, right, out ulong carry);
+			if (carry > 0)
+			{
+				return false;
+			}
+		
+			ulong part0 = result._p0 + addend;
+			carry = (part0 < result._p0) ? 1UL : 0UL;
+
+			ulong part1 = result._p1 + carry;
+			carry = (part1 < result._p1 || (carry == 1 && part1 == result._p1)) ? 1UL : 0UL;
+
+			ulong part2 = result._p2 + carry;
+			carry = (part2 < result._p2 || (carry == 1 && part2 == result._p2)) ? 1UL : 0UL;
+
+			ulong part3 = result._p3 + carry;
+			carry = (part3 < result._p3 || (carry == 1 && part3 == result._p3)) ? 1UL : 0UL;
+
+			ulong part4 = result._p4 + carry;
+			carry = (part4 < result._p4 || (carry == 1 && part4 == result._p4)) ? 1UL : 0UL;
+
+			ulong part5 = result._p5 + carry;
+			carry = (part5 < result._p5 || (carry == 1 && part5 == result._p5)) ? 1UL : 0UL;
+
+			ulong part6 = result._p6 + carry;
+			carry = (part6 < result._p6 || (carry == 1 && part6 == result._p6)) ? 1UL : 0UL;
+
+			if (result._p7 == ulong.MaxValue && carry == 1UL)
+			{
+				return false;
+			}
+
+			ulong part7 = result._p7 + carry;
+
+			result = new UInt512(part7, part6, part5, part4, part3, part2, part1, part0);
+			return true;
+		}
 	}
 }
