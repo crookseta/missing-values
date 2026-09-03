@@ -75,6 +75,18 @@ internal static class Calculator
             
 		return (upper, lower);
 	}
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	internal static (UInt128 hi, UInt128 lo) BigMulAdd(UInt128 a, UInt128 b, UInt128 c)
+	{
+		UInt128 highProd = UInt128.BigMul(a, b, out UInt128 lowProd);
+		
+		UInt128 lower = lowProd + c;
+		UInt128 carry = (lower < lowProd) ? UInt128.One : UInt128.Zero;
+
+		UInt128 upper = highProd + carry;
+            
+		return (upper, lower);
+	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	internal static (ulong Quotient, uint Remainder) DivRemByUInt32(ulong left, uint right)
@@ -221,6 +233,22 @@ internal static class Calculator
 
 		return new UInt256(p3, p2, p1, p0);
 	}
+	internal static UInt256 Multiply(in UInt256 left, UInt128 right, out UInt128 carry)
+	{
+		// Based on: https://github.com/dotnet/runtime/blob/main/src/libraries/System.Runtime.Numerics/src/System/Numerics/BigIntegerCalculator.SquMul.cs
+
+		// Executes the multiplication for one big and one 64-bit integer.
+		// Since every step holds the already slightly familiar equation
+		// a_i * b + c <= 2^64 - 1 + (2^64 - 1)^2 < 2^128 - 1,
+		// we are safe regarding to overflows.
+
+		UInt128 p1, p0;
+
+		carry = UInt128.BigMul(new UInt128(left.Part1, left.Part0), right, out p0);
+		(carry, p1) = BigMulAdd(new UInt128(left.Part3, left.Part2), right, carry);
+
+		return new UInt256(p1, p0);
+	}
 	internal static UInt512 Multiply(in UInt512 left, ulong right, out ulong carry)
 	{
 		ulong p7, p6, p5, p4, p3, p2, p1, p0;
@@ -239,7 +267,20 @@ internal static class Calculator
 			p3, p2, p1, p0
 			);
 	}
-	internal static void Multiply(ReadOnlySpan<ulong> left, ReadOnlySpan<ulong> right, Span<ulong> bits)
+	internal static UInt512 Multiply(in UInt512 left, UInt128 right, out UInt128 carry)
+	{
+		UInt128 p3, p2, p1, p0;
+		
+		carry = UInt128.BigMul(new UInt128(left.Part1, left.Part0), right, out p0);
+		(carry, p1) = BigMulAdd(new UInt128(left.Part3, left.Part2), right, carry);
+		(carry, p2) = BigMulAdd(new UInt128(left.Part5, left.Part4), right, carry);
+		(carry, p3) = BigMulAdd(new UInt128(left.Part7, left.Part6), right, carry);
+		
+		return new UInt512(
+			p3, p2, p1, p0
+			);
+	}
+	private static void Multiply(ReadOnlySpan<ulong> left, ReadOnlySpan<ulong> right, Span<ulong> bits)
 	{
 		// Based on: https://github.com/dotnet/runtime/blob/main/src/libraries/System.Runtime.Numerics/src/System/Numerics/BigIntegerCalculator.SquMul.cs
 		Debug.Assert(left.Length < 32);

@@ -119,50 +119,74 @@ public partial struct UInt256
 	public static UInt256 operator *(in UInt256 left, in UInt256 right)
 	{
 		ulong up, low;
-			
-		if (right._p3 == 0 && right._p2 == 0 && right._p1 == 0)
+		if (BitHelper.PopCount(in right) == 1)
 		{
-			if (left._p3 == 0 && left._p2 == 0 && left._p1 == 0)
+			return left << BitHelper.TrailingZeroCount(in right);
+		}
+		if (right._p3 == 0 && right._p2 == 0)
+		{
+			if (right._p1 == 0)
 			{
-				up = Calculator.BigMul(left._p0, right._p0, out low);
-				return new UInt256(0, 0, up, low);
+				if (left._p3 == 0 && left._p2 == 0 && left._p1 == 0)
+				{
+					up = Calculator.BigMul(left._p0, right._p0, out low);
+					return new UInt256(0, 0, up, low);
+				}
+
+				return Calculator.Multiply(in left, right._p0, out _);
 			}
 
-			return Calculator.Multiply(in left, right._p0, out _);
+			if (left._p3 == 0 && left._p2 == 0)
+			{
+				UInt128 higher = UInt128.BigMul(new UInt128(left._p1, left._p0), new UInt128(right._p1, right._p0), out UInt128 lower);
+				return new UInt256(higher.Upper, higher.Lower, lower.Upper, lower.Lower);
+			}
+			return Calculator.Multiply(in left, new UInt128(right._p1, right._p0), out _);
 		}
-		else if (left._p3 == 0 && left._p2 == 0 && left._p1 == 0)
+		if (left._p3 == 0 && left._p2 == 0 && left._p1 == 0)
 		{
 			return Calculator.Multiply(in right, left._p0, out _);
 		}
+		if (BitHelper.PopCount(in left) == 1)
+		{
+			return right << BitHelper.TrailingZeroCount(in left);
+		}
 
-		(up, low) = Calculator.BigMulAdd(left._p0, right._p0, 0);
-		ulong p0 = low;
-		(up, low) = Calculator.BigMulAdd(left._p1, right._p0, up);
-		ulong p1 = low;
-		(up, low) = Calculator.BigMulAdd(left._p2, right._p0, up);
-		ulong p2 = low;
-		(_, low) = Calculator.BigMulAdd(left._p3, right._p0, up);
-		ulong p3 = low;
+		return MultiplySlow(left, right);
+		
+		static UInt256 MultiplySlow(UInt256 left, UInt256 right)
+		{
+			ulong up;
+			ulong low;
+			(up, low) = Calculator.BigMulAdd(left._p0, right._p0, 0);
+			ulong p0 = low;
+			(up, low) = Calculator.BigMulAdd(left._p1, right._p0, up);
+			ulong p1 = low;
+			(up, low) = Calculator.BigMulAdd(left._p2, right._p0, up);
+			ulong p2 = low;
+			(_, low) = Calculator.BigMulAdd(left._p3, right._p0, up);
+			ulong p3 = low;
         
-		(up, low) = Calculator.BigMulAdd(left._p0, right._p1, 0);
-		p1 = Calculator.AddWithCarry(p1, low, out ulong carry);
-		up += carry;
-		(up, low) = Calculator.BigMulAdd(left._p1, right._p1, up);
-		p2 = Calculator.AddWithCarry(p2, low, out carry);
-		up += carry;
-		(_, low) = Calculator.BigMulAdd(left._p2, right._p1, up);
-		p3 += low;
+			(up, low) = Calculator.BigMulAdd(left._p0, right._p1, 0);
+			p1 = Calculator.AddWithCarry(p1, low, out ulong carry);
+			up += carry;
+			(up, low) = Calculator.BigMulAdd(left._p1, right._p1, up);
+			p2 = Calculator.AddWithCarry(p2, low, out carry);
+			up += carry;
+			(_, low) = Calculator.BigMulAdd(left._p2, right._p1, up);
+			p3 += low;
 
-		(up, low) = Calculator.BigMulAdd(left._p0, right._p2, 0);
-		p2 = Calculator.AddWithCarry(p2, low, out carry);
-		up += carry;
-		(_, low) = Calculator.BigMulAdd(left._p1, right._p2, up);
-		p3 += low;
+			(up, low) = Calculator.BigMulAdd(left._p0, right._p2, 0);
+			p2 = Calculator.AddWithCarry(p2, low, out carry);
+			up += carry;
+			(_, low) = Calculator.BigMulAdd(left._p1, right._p2, up);
+			p3 += low;
         
-		(_, low) = Calculator.BigMulAdd(left._p0, right._p3, 0);
-		p3 += low;
+			(_, low) = Calculator.BigMulAdd(left._p0, right._p3, 0);
+			p3 += low;
         
-		return new UInt256(p3, p2, p1, p0);
+			return new UInt256(p3, p2, p1, p0);
+		}
 	}
 	/// <inheritdoc/>
 	public static UInt256 operator checked *(in UInt256 left, in UInt256 right)

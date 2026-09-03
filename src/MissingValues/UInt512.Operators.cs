@@ -170,138 +170,264 @@ public partial struct UInt512
 	/// <inheritdoc/>
 	public static UInt512 operator *(in UInt512 left, in UInt512 right)
 	{
-		ulong up, low;
-
+		if (BitHelper.PopCount(in right) == 1)
+		{
+			return left << BitHelper.TrailingZeroCount(in right);
+		}
 		if (right._p7 == 0 && right._p6 == 0 && right._p5 == 0 && right._p4 == 0)
 		{
-			if (right._p3 == 0 && right._p2 == 0 && right._p1 == 0)
-			{
-				if (left._p7 == 0 && left._p6 == 0 && left._p5 == 0 && left._p4 == 0 && left._p3 == 0 && left._p2 == 0 && left._p1 == 0)
-				{
-					up = Calculator.BigMul(left._p0, right._p0, out low);
-					return new UInt512(0, 0, 0, 0, 0, 0, up, low);
-				}
+			return Multiply512X256(in left, in right);
+		}
+		if (left._p7 == 0 && left._p6 == 0 && left._p5 == 0 && left._p4 == 0)
+		{
+			return Multiply512X256(in right, in left);
+		}
+		if (BitHelper.PopCount(in left) == 1)
+		{
+			return right << BitHelper.TrailingZeroCount(in left);
+		}
+		return MultiplySlow(in left, in right);
 
-				return Calculator.Multiply(in left, right._p0, out _);
+		static UInt512 MultiplySlow(in UInt512 left, in UInt512 right)
+		{
+			(ulong up, ulong low) = Calculator.BigMulAdd(left._p0, right._p0, 0);
+			ulong p0 = low;
+			(up, low) = Calculator.BigMulAdd(left._p1, right._p0, up);
+			ulong p1 = low;
+			(up, low) = Calculator.BigMulAdd(left._p2, right._p0, up);
+			ulong p2 = low;
+			(up, low) = Calculator.BigMulAdd(left._p3, right._p0, up);
+			ulong p3 = low;
+			(up, low) = Calculator.BigMulAdd(left._p4, right._p0, up);
+			ulong p4 = low;
+			(up, low) = Calculator.BigMulAdd(left._p5, right._p0, up);
+			ulong p5 = low;
+			(up, low) = Calculator.BigMulAdd(left._p6, right._p0, up);
+			ulong p6 = low;
+			(_, low) = Calculator.BigMulAdd(left._p7, right._p0, up);
+			ulong p7 = low;
+
+			(up, low) = Calculator.BigMulAdd(left._p0, right._p1, 0);
+			p1 = Calculator.AddWithCarry(p1, low, out ulong carry);
+			up += carry;
+			(up, low) = Calculator.BigMulAdd(left._p1, right._p1, up);
+			p2 = Calculator.AddWithCarry(p2, low, out carry);
+			up += carry;
+			(up, low) = Calculator.BigMulAdd(left._p2, right._p1, up);
+			p3 = Calculator.AddWithCarry(p3, low, out carry);
+			up += carry;
+			(up, low) = Calculator.BigMulAdd(left._p3, right._p1, up);
+			p4 = Calculator.AddWithCarry(p4, low, out carry);
+			up += carry;
+			(up, low) = Calculator.BigMulAdd(left._p4, right._p1, up);
+			p5 = Calculator.AddWithCarry(p5, low, out carry);
+			up += carry;
+			(up, low) = Calculator.BigMulAdd(left._p5, right._p1, up);
+			p6 = Calculator.AddWithCarry(p6, low, out carry);
+			up += carry;
+			(_, low) = Calculator.BigMulAdd(left._p6, right._p1, up);
+			p7 += low;
+
+			(up, low) = Calculator.BigMulAdd(left._p0, right._p2, 0);
+			p2 = Calculator.AddWithCarry(p2, low, out carry);
+			up += carry;
+			(up, low) = Calculator.BigMulAdd(left._p1, right._p2, up);
+			p3 = Calculator.AddWithCarry(p3, low, out carry);
+			up += carry;
+			(up, low) = Calculator.BigMulAdd(left._p2, right._p2, up);
+			p4 = Calculator.AddWithCarry(p4, low, out carry);
+			up += carry;
+			(up, low) = Calculator.BigMulAdd(left._p3, right._p2, up);
+			p5 = Calculator.AddWithCarry(p5, low, out carry);
+			up += carry;
+			(up, low) = Calculator.BigMulAdd(left._p4, right._p2, up);
+			p6 = Calculator.AddWithCarry(p6, low, out carry);
+			up += carry;
+			(_, low) = Calculator.BigMulAdd(left._p5, right._p2, up);
+			p7 += low;
+
+			(up, low) = Calculator.BigMulAdd(left._p0, right._p3, 0);
+			p3 = Calculator.AddWithCarry(p3, low, out carry);
+			up += carry;
+			(up, low) = Calculator.BigMulAdd(left._p1, right._p3, up);
+			p4 = Calculator.AddWithCarry(p4, low, out carry);
+			up += carry;
+			(up, low) = Calculator.BigMulAdd(left._p2, right._p3, up);
+			p5 = Calculator.AddWithCarry(p5, low, out carry);
+			up += carry;
+			(up, low) = Calculator.BigMulAdd(left._p3, right._p3, up);
+			p6 = Calculator.AddWithCarry(p6, low, out carry);
+			up += carry;
+			(_, low) = Calculator.BigMulAdd(left._p4, right._p3, up);
+			p7 += low;
+
+			(up, low) = Calculator.BigMulAdd(left._p0, right._p4, 0);
+			p4 = Calculator.AddWithCarry(p4, low, out carry);
+			up += carry;
+			(up, low) = Calculator.BigMulAdd(left._p1, right._p4, up);
+			p5 = Calculator.AddWithCarry(p5, low, out carry);
+			up += carry;
+			(up, low) = Calculator.BigMulAdd(left._p2, right._p4, up);
+			p6 = Calculator.AddWithCarry(p6, low, out carry);
+			up += carry;
+			(_, low) = Calculator.BigMulAdd(left._p3, right._p4, up);
+			p7 += low;
+
+			(up, low) = Calculator.BigMulAdd(left._p0, right._p5, 0);
+			p5 = Calculator.AddWithCarry(p5, low, out carry);
+			up += carry;
+			(up, low) = Calculator.BigMulAdd(left._p1, right._p5, up);
+			p6 = Calculator.AddWithCarry(p6, low, out carry);
+			up += carry;
+			(_, low) = Calculator.BigMulAdd(left._p2, right._p5, up);
+			p7 += low;
+
+			(up, low) = Calculator.BigMulAdd(left._p0, right._p6, 0);
+			p6 = Calculator.AddWithCarry(p6, low, out carry);
+			up += carry;
+			(_, low) = Calculator.BigMulAdd(left._p1, right._p6, up);
+			p7 += low;
+
+			(_, low) = Calculator.BigMulAdd(left._p0, right._p7, 0);
+			p7 += low;
+
+			return new UInt512(p7, p6, p5, p4, p3, p2, p1, p0);
+		}
+
+		static UInt512 Multiply512X256(in UInt512 left, in UInt512 right)
+		{
+			if (right._p3 == 0 && right._p2 == 0)
+			{
+				if (right._p1 == 0)
+				{
+					if (right._p0 == 0)
+					{
+						return Zero;
+					}
+					if (left._p7 == 0 && left._p6 == 0 && left._p5 == 0 && left._p4 == 0 && left._p3 == 0 && left._p2 == 0 && left._p1 == 0)
+					{
+						if (left._p0 == 0)
+						{
+							return Zero;
+						}
+						ulong up = Calculator.BigMul(left._p0, right._p0, out ulong low);
+						return new UInt512(0, 0, 0, 0, 0, 0, up, low);
+					}
+
+					return Calculator.Multiply(in left, right._p0, out _);
+				}
+				if (left._p7 == 0 && left._p6 == 0 && left._p5 == 0 && left._p4 == 0)
+				{
+					UInt256 temp;
+					
+					if (left._p3 == 0 && left._p2 == 0)
+					{
+						if (left._p1 == 0 && left._p0 == 0)
+						{
+							return Zero;
+						}
+						temp = MathQ.BigMul(new UInt128(left._p1, left._p0), new UInt128(right._p1, right._p0));
+						return new UInt512(0, 0, 0, 0, temp.Part3, temp.Part2, temp.Part1, temp.Part0);
+					}
+
+					temp = Calculator.Multiply(left.Lower, new UInt128(right._p1, right._p0), out UInt128 carry);
+					return new UInt512(0, 0, carry.Upper, carry.Lower, temp.Part3, temp.Part2, temp.Part1, temp.Part0);
+				}
+				return Calculator.Multiply(in left, new UInt128(right._p1, right._p0), out _);
 			}
 			if (left._p7 == 0 && left._p6 == 0 && left._p5 == 0 && left._p4 == 0)
 			{
 				if (left._p3 == 0 && left._p2 == 0 && left._p1 == 0)
 				{
-					var temp = Calculator.Multiply(right.Lower, left._p0, out low);
+					if (left._p0 == 0)
+					{
+						return Zero;
+					}
+					var temp = Calculator.Multiply(right.Lower, left._p0, out ulong low);
 					return new UInt512(0, 0, 0, low, temp.Part3, temp.Part2, temp.Part1, temp.Part0);
 				}
 
 				return MathQ.BigMul(left.Lower, right.Lower);
 			}
+
+			return MultiplySlow512X256(in left, in right);
 		}
-		else if (left._p7 == 0 && left._p6 == 0 && left._p5 == 0 && left._p4 == 0 && left._p3 == 0 && left._p2 == 0 && left._p1 == 0)
+
+		static UInt512 MultiplySlow512X256(in UInt512 left, in UInt512 right)
 		{
-			return Calculator.Multiply(in right, left._p0, out _);
+			(ulong up, ulong low) = Calculator.BigMulAdd(left._p0, right._p0, 0);
+			ulong p0 = low;
+			(up, low) = Calculator.BigMulAdd(left._p1, right._p0, up);
+			ulong p1 = low;
+			(up, low) = Calculator.BigMulAdd(left._p2, right._p0, up);
+			ulong p2 = low;
+			(up, low) = Calculator.BigMulAdd(left._p3, right._p0, up);
+			ulong p3 = low;
+			(up, low) = Calculator.BigMulAdd(left._p4, right._p0, up);
+			ulong p4 = low;
+			(up, low) = Calculator.BigMulAdd(left._p5, right._p0, up);
+			ulong p5 = low;
+			(up, low) = Calculator.BigMulAdd(left._p6, right._p0, up);
+			ulong p6 = low;
+			(_, low) = Calculator.BigMulAdd(left._p7, right._p0, up);
+			ulong p7 = low;
+
+			(up, low) = Calculator.BigMulAdd(left._p0, right._p1, 0);
+			p1 = Calculator.AddWithCarry(p1, low, out ulong carry);
+			up += carry;
+			(up, low) = Calculator.BigMulAdd(left._p1, right._p1, up);
+			p2 = Calculator.AddWithCarry(p2, low, out carry);
+			up += carry;
+			(up, low) = Calculator.BigMulAdd(left._p2, right._p1, up);
+			p3 = Calculator.AddWithCarry(p3, low, out carry);
+			up += carry;
+			(up, low) = Calculator.BigMulAdd(left._p3, right._p1, up);
+			p4 = Calculator.AddWithCarry(p4, low, out carry);
+			up += carry;
+			(up, low) = Calculator.BigMulAdd(left._p4, right._p1, up);
+			p5 = Calculator.AddWithCarry(p5, low, out carry);
+			up += carry;
+			(up, low) = Calculator.BigMulAdd(left._p5, right._p1, up);
+			p6 = Calculator.AddWithCarry(p6, low, out carry);
+			up += carry;
+			(_, low) = Calculator.BigMulAdd(left._p6, right._p1, up);
+			p7 += low;
+
+			(up, low) = Calculator.BigMulAdd(left._p0, right._p2, 0);
+			p2 = Calculator.AddWithCarry(p2, low, out carry);
+			up += carry;
+			(up, low) = Calculator.BigMulAdd(left._p1, right._p2, up);
+			p3 = Calculator.AddWithCarry(p3, low, out carry);
+			up += carry;
+			(up, low) = Calculator.BigMulAdd(left._p2, right._p2, up);
+			p4 = Calculator.AddWithCarry(p4, low, out carry);
+			up += carry;
+			(up, low) = Calculator.BigMulAdd(left._p3, right._p2, up);
+			p5 = Calculator.AddWithCarry(p5, low, out carry);
+			up += carry;
+			(up, low) = Calculator.BigMulAdd(left._p4, right._p2, up);
+			p6 = Calculator.AddWithCarry(p6, low, out carry);
+			up += carry;
+			(_, low) = Calculator.BigMulAdd(left._p5, right._p2, up);
+			p7 += low;
+
+			(up, low) = Calculator.BigMulAdd(left._p0, right._p3, 0);
+			p3 = Calculator.AddWithCarry(p3, low, out carry);
+			up += carry;
+			(up, low) = Calculator.BigMulAdd(left._p1, right._p3, up);
+			p4 = Calculator.AddWithCarry(p4, low, out carry);
+			up += carry;
+			(up, low) = Calculator.BigMulAdd(left._p2, right._p3, up);
+			p5 = Calculator.AddWithCarry(p5, low, out carry);
+			up += carry;
+			(up, low) = Calculator.BigMulAdd(left._p3, right._p3, up);
+			p6 = Calculator.AddWithCarry(p6, low, out carry);
+			up += carry;
+			(_, low) = Calculator.BigMulAdd(left._p4, right._p3, up);
+			p7 += low;
+			
+			return new UInt512(p7, p6, p5, p4, p3, p2, p1, p0);
 		}
-
-		(up, low) = Calculator.BigMulAdd(left._p0, right._p0, 0);
-		ulong p0 = low;
-		(up, low) = Calculator.BigMulAdd(left._p1, right._p0, up);
-		ulong p1 = low;
-		(up, low) = Calculator.BigMulAdd(left._p2, right._p0, up);
-		ulong p2 = low;
-		(up, low) = Calculator.BigMulAdd(left._p3, right._p0, up);
-		ulong p3 = low;
-		(up, low) = Calculator.BigMulAdd(left._p4, right._p0, up);
-		ulong p4 = low;
-		(up, low) = Calculator.BigMulAdd(left._p5, right._p0, up);
-		ulong p5 = low;
-		(up, low) = Calculator.BigMulAdd(left._p6, right._p0, up);
-		ulong p6 = low;
-		(_, low) = Calculator.BigMulAdd(left._p7, right._p0, up);
-		ulong p7 = low;
-
-    	(up, low) = Calculator.BigMulAdd(left._p0, right._p1, 0);
-	    p1 = Calculator.AddWithCarry(p1, low, out ulong carry);
-	    up += carry;
-    	(up, low) = Calculator.BigMulAdd(left._p1, right._p1, up);
-	    p2 = Calculator.AddWithCarry(p2, low, out carry);
-	    up += carry;
-    	(up, low) = Calculator.BigMulAdd(left._p2, right._p1, up);
-    	p3 = Calculator.AddWithCarry(p3, low, out carry);
-		up += carry;
-    	(up, low) = Calculator.BigMulAdd(left._p3, right._p1, up);
-    	p4 = Calculator.AddWithCarry(p4, low, out carry);
-	    up += carry;
-    	(up, low) = Calculator.BigMulAdd(left._p4, right._p1, up);
-    	p5 = Calculator.AddWithCarry(p5, low, out carry);
-	    up += carry;
-    	(up, low) = Calculator.BigMulAdd(left._p5, right._p1, up);
-    	p6 = Calculator.AddWithCarry(p6, low, out carry);
-	    up += carry;
-    	(_, low) = Calculator.BigMulAdd(left._p6, right._p1, up);
-    	p7 += low;
-
-		(up, low) = Calculator.BigMulAdd(left._p0, right._p2, 0);
-		p2 = Calculator.AddWithCarry(p2, low, out carry);
-		up += carry;
-		(up, low) = Calculator.BigMulAdd(left._p1, right._p2, up);
-		p3 = Calculator.AddWithCarry(p3, low, out carry);
-		up += carry;
-		(up, low) = Calculator.BigMulAdd(left._p2, right._p2, up);
-		p4 = Calculator.AddWithCarry(p4, low, out carry);
-		up += carry;
-		(up, low) = Calculator.BigMulAdd(left._p3, right._p2, up);
-		p5 = Calculator.AddWithCarry(p5, low, out carry);
-		up += carry;
-		(up, low) = Calculator.BigMulAdd(left._p4, right._p2, up);
-		p6 = Calculator.AddWithCarry(p6, low, out carry);
-		up += carry;
-		(_, low) = Calculator.BigMulAdd(left._p5, right._p2, up);
-		p7 += low;
-
-		(up, low) = Calculator.BigMulAdd(left._p0, right._p3, 0);
-		p3 = Calculator.AddWithCarry(p3, low, out carry);
-		up += carry;
-		(up, low) = Calculator.BigMulAdd(left._p1, right._p3, up);
-		p4 = Calculator.AddWithCarry(p4, low, out carry);
-		up += carry;
-		(up, low) = Calculator.BigMulAdd(left._p2, right._p3, up);
-		p5 = Calculator.AddWithCarry(p5, low, out carry);
-		up += carry;
-		(up, low) = Calculator.BigMulAdd(left._p3, right._p3, up);
-		p6 = Calculator.AddWithCarry(p6, low, out carry);
-		up += carry;
-		(_, low) = Calculator.BigMulAdd(left._p4, right._p3, up);
-		p7 += low;
-
-		(up, low) = Calculator.BigMulAdd(left._p0, right._p4, 0);
-		p4 = Calculator.AddWithCarry(p4, low, out carry);
-		up += carry;
-		(up, low) = Calculator.BigMulAdd(left._p1, right._p4, up);
-		p5 = Calculator.AddWithCarry(p5, low, out carry);
-		up += carry;
-		(up, low) = Calculator.BigMulAdd(left._p2, right._p4, up);
-		p6 = Calculator.AddWithCarry(p6, low, out carry);
-		up += carry;
-		(_, low) = Calculator.BigMulAdd(left._p3, right._p4, up);
-		p7 += low;
-
-		(up, low) = Calculator.BigMulAdd(left._p0, right._p5, 0);
-		p5 = Calculator.AddWithCarry(p5, low, out carry);
-		up += carry;
-		(up, low) = Calculator.BigMulAdd(left._p1, right._p5, up);
-		p6 = Calculator.AddWithCarry(p6, low, out carry);
-		up += carry;
-		(_, low) = Calculator.BigMulAdd(left._p2, right._p5, up);
-		p7 += low;
-
-		(up, low) = Calculator.BigMulAdd(left._p0, right._p6, 0);
-		p6 = Calculator.AddWithCarry(p6, low, out carry);
-		up += carry;
-		(_, low) = Calculator.BigMulAdd(left._p1, right._p6, up);
-		p7 += low;
-
-		(_, low) = Calculator.BigMulAdd(left._p0, right._p7, 0);
-		p7 += low;
-
-		return new UInt512(p7, p6, p5, p4, p3, p2, p1, p0);
 	}
 
 	/// <inheritdoc/>
