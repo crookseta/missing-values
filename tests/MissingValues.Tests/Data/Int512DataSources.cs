@@ -1172,6 +1172,9 @@ public class Int512DataSources
 		yield return () => ("-6703903964971298549787012499102923063739682910296196688861780721860882015036773488400937149083451713845015929093243025426876941405973284973216824503042048.000", NumberStyles.Number, NumberFormatInfo.InvariantInfo, true, Int512.MinValue, 159);
 		yield return () => ("-6,703,903,964,971,298,549,787,012,499,102,923,063,739,682,910,296,196,688,861,780,721,860,882,015,036,773,488,400,937,149,083,451,713,845,015,929,093,243,025,426,876,941,405,973,284,973,216,824,503,042,048", NumberStyles.Number, NumberFormatInfo.InvariantInfo, true, Int512.MinValue, 206);
 		yield return () => ("$-6,703,903,964,971,298,549,787,012,499,102,923,063,739,682,910,296,196,688,861,780,721,860,882,015,036,773,488,400,937,149,083,451,713,845,015,929,093,243,025,426,876,941,405,973,284,973,216,824,503,042,048.00", NumberStyles.Currency, Helper.CustomInfo, true, Int512.MinValue, 210);
+		
+		yield return () => ("123456789ABCDEF0;", NumberStyles.HexNumber, CultureInfo.InvariantCulture, true, new Int512(0, 0, 0, 0, 0, 0, 0, 0x123456789ABCDEF0), 16);
+		yield return () => ("1010101010101010;", NumberStyles.BinaryNumber, CultureInfo.InvariantCulture, true, new Int512(0, 0, 0, 0, 0, 0, 0, 0b1010101010101010), 16);
 	}
 	
 	public static IEnumerable<Func<(char[], NumberStyles, IFormatProvider?, bool, Int512, int)>> TryParsePartialSpanTestData()
@@ -1213,6 +1216,9 @@ public class Int512DataSources
 		yield return () => ("-6703903964971298549787012499102923063739682910296196688861780721860882015036773488400937149083451713845015929093243025426876941405973284973216824503042048.000".ToCharArray(), NumberStyles.Number, NumberFormatInfo.InvariantInfo, true, Int512.MinValue, 159);
 		yield return () => ("-6,703,903,964,971,298,549,787,012,499,102,923,063,739,682,910,296,196,688,861,780,721,860,882,015,036,773,488,400,937,149,083,451,713,845,015,929,093,243,025,426,876,941,405,973,284,973,216,824,503,042,048".ToCharArray(), NumberStyles.Number, NumberFormatInfo.InvariantInfo, true, Int512.MinValue, 206);
 		yield return () => ("$-6,703,903,964,971,298,549,787,012,499,102,923,063,739,682,910,296,196,688,861,780,721,860,882,015,036,773,488,400,937,149,083,451,713,845,015,929,093,243,025,426,876,941,405,973,284,973,216,824,503,042,048.00".ToCharArray(), NumberStyles.Currency, Helper.CustomInfo, true, Int512.MinValue, 210);
+		
+		yield return () => ("123456789ABCDEF0;".ToCharArray(), NumberStyles.HexNumber, CultureInfo.InvariantCulture, true, new Int512(0, 0, 0, 0, 0, 0, 0, 0x123456789ABCDEF0), 16);
+		yield return () => ("1010101010101010;".ToCharArray(), NumberStyles.BinaryNumber, CultureInfo.InvariantCulture, true, new Int512(0, 0, 0, 0, 0, 0, 0, 0b1010101010101010), 16);
 	}
 	
 	public static IEnumerable<Func<(byte[], NumberStyles, IFormatProvider?, bool, Int512, int)>> TryParsePartialUtf8TestData()
@@ -1254,6 +1260,9 @@ public class Int512DataSources
 		yield return () => ("-6703903964971298549787012499102923063739682910296196688861780721860882015036773488400937149083451713845015929093243025426876941405973284973216824503042048.000"u8.ToArray(), NumberStyles.Number, NumberFormatInfo.InvariantInfo, true, Int512.MinValue, 159);
 		yield return () => ("-6,703,903,964,971,298,549,787,012,499,102,923,063,739,682,910,296,196,688,861,780,721,860,882,015,036,773,488,400,937,149,083,451,713,845,015,929,093,243,025,426,876,941,405,973,284,973,216,824,503,042,048"u8.ToArray(), NumberStyles.Number, NumberFormatInfo.InvariantInfo, true, Int512.MinValue, 206);
 		yield return () => ("$-6,703,903,964,971,298,549,787,012,499,102,923,063,739,682,910,296,196,688,861,780,721,860,882,015,036,773,488,400,937,149,083,451,713,845,015,929,093,243,025,426,876,941,405,973,284,973,216,824,503,042,048.00"u8.ToArray(), NumberStyles.Currency, Helper.CustomInfo, true, Int512.MinValue, 210);
+		
+		yield return () => ("123456789ABCDEF0;"u8.ToArray(), NumberStyles.HexNumber, CultureInfo.InvariantCulture, true, new Int512(0, 0, 0, 0, 0, 0, 0, 0x123456789ABCDEF0), 16);
+		yield return () => ("1010101010101010;"u8.ToArray(), NumberStyles.BinaryNumber, CultureInfo.InvariantCulture, true, new Int512(0, 0, 0, 0, 0, 0, 0, 0b1010101010101010), 16);
 	}
 
 	public static IEnumerable<Func<(Int512, string, IFormatProvider?, string)>> ToStringTestData()

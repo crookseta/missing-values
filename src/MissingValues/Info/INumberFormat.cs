@@ -1,7 +1,11 @@
-﻿using MissingValues.Internals;
+﻿using System.Buffers.Binary;
+using MissingValues.Internals;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
+using System.Numerics;
 using System.Runtime.CompilerServices;
+using System.Runtime.Intrinsics;
+using System.Runtime.Intrinsics.X86;
 
 namespace MissingValues.Info;
 
@@ -243,12 +247,17 @@ internal interface IIntegerRadixConverter<TInteger>
 	static abstract int MaxDigitCount { get; }
 	static abstract int MaxUInt64DigitCount { get; }
 	static abstract int BitsPerCharacter { get; }
-	static abstract TInteger ShiftLeftForNextDigit(in TInteger value);
+	static abstract bool TryParse16Chars(Vector128<byte> chunk, ref TInteger value);
+	static abstract bool TryParse32Chars(Vector256<byte> chunk, ref TInteger value);
+	static abstract bool TryParse64Chars(Vector512<byte> chunk, ref TInteger value);
 }
 internal readonly struct HexConverter<TInteger> : IIntegerRadixConverter<TInteger>
 	where TInteger : struct, IFormattableInteger<TInteger>
 {
 	static NumberStyles IIntegerRadixConverter<TInteger>.AllowedStyles => NumberStyles.HexNumber;
+	static bool IIntegerRadixConverter<TInteger>.IsValidChar<TChar>(TChar ch) => TChar.IsHexDigit(ch);
+
+	static TInteger IIntegerRadixConverter<TInteger>.FromChar<TChar>(TChar ch) => TInteger.GetHexValue((char)ch);
 
 	static uint IIntegerRadixConverter<TInteger>.MaxDigitValue => 0xF;
 
@@ -258,25 +267,129 @@ internal readonly struct HexConverter<TInteger> : IIntegerRadixConverter<TIntege
 
 	static int IIntegerRadixConverter<TInteger>.BitsPerCharacter => 4;
 
-	static TInteger IIntegerRadixConverter<TInteger>.FromChar<TChar>(TChar ch)
+	static bool IIntegerRadixConverter<TInteger>.TryParse16Chars(Vector128<byte> chunk, ref TInteger value)
 	{
-		return TInteger.GetHexValue((char)ch);
+		// Fast vector validation and ASCII -> nibble conversion:
+	    // Nibbles: '0'-'9' (0x30-0x39) -> 0-9
+	    //          'A'-'F' (0x41-0x46) -> 10-15
+	    //          'a'-'f' (0x61-0x66) -> 10-15
+	    
+	    var lowerChunk = chunk | Vector128.Create((byte)0x20);
+	    
+	    var isDigit = Vector128.GreaterThan(chunk, Vector128.Create((byte)('0' - 1))) &
+	                  Vector128.LessThan(chunk, Vector128.Create((byte)('9' + 1)));
+	                  
+	    var isAlpha = Vector128.GreaterThan(lowerChunk, Vector128.Create((byte)('a' - 1))) &
+	                  Vector128.LessThan(lowerChunk, Vector128.Create((byte)('f' + 1)));
+
+	    if (!Vector128.AllWhereAllBitsSet(isDigit | isAlpha))
+	    {
+	        return false;
+	    }
+
+	    var digitOffset = Vector128.Create((byte)'0');
+	    var alphaOffset = Vector128.Create((byte)('a' - 10));
+	    var offset = Vector128.ConditionalSelect(isDigit, digitOffset, alphaOffset);
+	    
+	    var nibbles = (lowerChunk - offset);
+
+	    var mult = Vector128.Create((sbyte)16, 1, 16, 1, 16, 1, 16, 1, 16, 1, 16, 1, 16, 1, 16, 1);
+	    var bytes16 = Ssse3.MultiplyAddAdjacent(nibbles, mult); 
+
+	    var packed = Sse2.PackUnsignedSaturate(bytes16, bytes16);
+
+	    ulong scalar = packed.AsUInt64().ToScalar();
+	    
+	    value <<= 64;
+	    value |= TInteger.CreateTruncating(BinaryPrimitives.ReverseEndianness(scalar));
+	    return true;
 	}
 
-	static bool IIntegerRadixConverter<TInteger>.IsValidChar<TChar>(TChar ch)
+	static bool IIntegerRadixConverter<TInteger>.TryParse32Chars(Vector256<byte> chunk, ref TInteger value)
 	{
-		return TChar.IsHexDigit(ch);
+		var lowerChunk = chunk | Vector256.Create((byte)0x20);
+	    
+		var isDigit = Vector256.GreaterThan(chunk, Vector256.Create((byte)('0' - 1))) &
+		              Vector256.LessThan(chunk, Vector256.Create((byte)('9' + 1)));
+	                  
+		var isAlpha = Vector256.GreaterThan(lowerChunk, Vector256.Create((byte)('a' - 1))) &
+		              Vector256.LessThan(lowerChunk, Vector256.Create((byte)('f' + 1)));
+
+		if (!Vector256.AllWhereAllBitsSet(isDigit | isAlpha))
+		{
+			return false;
+		}
+
+		var digitOffset = Vector256.Create((byte)'0');
+		var alphaOffset = Vector256.Create((byte)('a' - 10));
+		var offset = Vector256.ConditionalSelect(isDigit, digitOffset, alphaOffset);
+	    
+		var nibbles = (lowerChunk - offset);
+
+		var mult = Vector256.Create(
+			(sbyte)16, 1, 16, 1, 16, 1, 16, 1, 16, 1, 16, 1, 16, 1, 16, 1,
+			16, 1, 16, 1, 16, 1, 16, 1, 16, 1, 16, 1, 16, 1, 16, 1
+			);
+		var bytes16 = Avx2.MultiplyAddAdjacent(nibbles, mult); 
+
+		var packed = Avx2.PackUnsignedSaturate(bytes16, bytes16);
+		Vector256<ulong> result64 = packed.AsUInt64();
+		
+		value <<= 128;
+		value |= TInteger.CreateTruncating(BinaryPrimitives.ReverseEndianness(result64.GetElement(0))) << 64;
+		value |= TInteger.CreateTruncating(BinaryPrimitives.ReverseEndianness(result64.GetElement(2)));
+		
+		return true;
 	}
 
-	static TInteger IIntegerRadixConverter<TInteger>.ShiftLeftForNextDigit(in TInteger value)
+	static bool IIntegerRadixConverter<TInteger>.TryParse64Chars(Vector512<byte> chunk, ref TInteger value)
 	{
-		return value << 4;
+		var lowerChunk = chunk | Vector512.Create((byte)0x20);
+	    
+		var isDigit = Vector512.GreaterThan(chunk, Vector512.Create((byte)('0' - 1))) &
+		              Vector512.LessThan(chunk, Vector512.Create((byte)('9' + 1)));
+	                  
+		var isAlpha = Vector512.GreaterThan(lowerChunk, Vector512.Create((byte)('a' - 1))) &
+		              Vector512.LessThan(lowerChunk, Vector512.Create((byte)('f' + 1)));
+
+		if (!Vector512.AllWhereAllBitsSet(isDigit | isAlpha))
+		{
+			return false;
+		}
+
+		var digitOffset = Vector512.Create((byte)'0');
+		var alphaOffset = Vector512.Create((byte)('a' - 10));
+		var offset = Vector512.ConditionalSelect(isDigit, digitOffset, alphaOffset);
+	    
+		var nibbles = (lowerChunk - offset);
+
+		var mult = Vector512.Create(
+			(sbyte)16, 1, 16, 1, 16, 1, 16, 1, 16, 1, 16, 1, 16, 1, 16, 1,
+			16, 1, 16, 1, 16, 1, 16, 1, 16, 1, 16, 1, 16, 1, 16, 1,
+			16, 1, 16, 1, 16, 1, 16, 1, 16, 1, 16, 1, 16, 1, 16, 1,
+			16, 1, 16, 1, 16, 1, 16, 1, 16, 1, 16, 1, 16, 1, 16, 1
+		);
+		var bytes16 = Avx512BW.MultiplyAddAdjacent(nibbles, mult); 
+
+		var packed = Avx512BW.PackUnsignedSaturate(bytes16, bytes16);
+		Vector512<ulong> result64 = packed.AsUInt64();
+		
+		value <<= 256;
+		value |= TInteger.CreateTruncating(BinaryPrimitives.ReverseEndianness(result64.GetElement(0))) << 192;
+		value |= TInteger.CreateTruncating(BinaryPrimitives.ReverseEndianness(result64.GetElement(2))) << 128;
+		value |= TInteger.CreateTruncating(BinaryPrimitives.ReverseEndianness(result64.GetElement(4))) << 64;
+		value |= TInteger.CreateTruncating(BinaryPrimitives.ReverseEndianness(result64.GetElement(6)));
+		
+		return true;
 	}
 }
 internal readonly struct BinConverter<TInteger> : IIntegerRadixConverter<TInteger>
 	where TInteger : struct, IFormattableInteger<TInteger>
 {
 	static NumberStyles IIntegerRadixConverter<TInteger>.AllowedStyles => NumberStyles.BinaryNumber;
+	static bool IIntegerRadixConverter<TInteger>.IsValidChar<TChar>(TChar ch) => ch == (TChar)'1' || ch == (TChar)'0';
+
+	static TInteger IIntegerRadixConverter<TInteger>.FromChar<TChar>(TChar ch) => TInteger.GetDecimalValue((char)ch);
 
 	static uint IIntegerRadixConverter<TInteger>.MaxDigitValue => 0b1;
 
@@ -286,18 +399,59 @@ internal readonly struct BinConverter<TInteger> : IIntegerRadixConverter<TIntege
 
 	static int IIntegerRadixConverter<TInteger>.BitsPerCharacter => 1;
 
-	static TInteger IIntegerRadixConverter<TInteger>.FromChar<TChar>(TChar ch)
+	static bool IIntegerRadixConverter<TInteger>.TryParse16Chars(Vector128<byte> chunk, ref TInteger value)
 	{
-		return TInteger.GetDecimalValue((char)ch);
+		var zeroes = Vector128.Create((byte)'0');
+
+		if (Vector128.GreaterThanAny(chunk, Vector128.Create((byte)'1')) ||
+		    Vector128.LessThanAny(chunk, zeroes))
+		{
+			return false;
+		}
+
+		var shifted = Vector128.ShiftLeft(chunk.AsInt16(), 7).AsByte();
+		uint bitMask = shifted.ExtractMostSignificantBits();
+
+		value <<= 16;
+		value |= TInteger.CreateTruncating((ushort)(uint.ReverseBits(bitMask) >> 16));
+		return true;
 	}
 
-	static bool IIntegerRadixConverter<TInteger>.IsValidChar<TChar>(TChar ch)
+	static bool IIntegerRadixConverter<TInteger>.TryParse32Chars(Vector256<byte> chunk, ref TInteger value)
 	{
-		return ch == (TChar)'1' || ch == (TChar)'0';
+		var zeroes = Vector256.Create((byte)'0');
+
+		if (Vector256.GreaterThanAny(chunk, Vector256.Create((byte)'1')) ||
+		    Vector256.LessThanAny(chunk, zeroes))
+		{
+			return false;
+		}
+
+		var shifted = Vector256.ShiftLeft(chunk.AsInt16(), 7).AsByte();
+		uint bitMask = shifted.ExtractMostSignificantBits();
+
+		value <<= 32;
+		value |= TInteger.CreateTruncating(uint.ReverseBits(bitMask));
+		
+		return true;
 	}
 
-	static TInteger IIntegerRadixConverter<TInteger>.ShiftLeftForNextDigit(in TInteger value)
+	static bool IIntegerRadixConverter<TInteger>.TryParse64Chars(Vector512<byte> chunk, ref TInteger value)
 	{
-		return value << 1;
+		var zeroes = Vector512.Create((byte)'0');
+
+		if (Vector512.GreaterThanAny(chunk, Vector512.Create((byte)'1')) ||
+		    Vector512.LessThanAny(chunk, zeroes))
+		{
+			return false;
+		}
+
+		var shifted = Vector512.ShiftLeft(chunk.AsInt16(), 7).AsByte();
+		ulong bitMask = shifted.ExtractMostSignificantBits();
+		
+		value <<= 64;
+		value |= TInteger.CreateTruncating(ulong.ReverseBits(bitMask));
+		
+		return true;
 	}
 }

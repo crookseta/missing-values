@@ -250,38 +250,38 @@ namespace MissingValues
 		/// <inheritdoc/>
 		public static UInt512 Parse(ReadOnlySpan<char> s, NumberStyles style, IFormatProvider? provider)
 		{
-			return NumberParser.ParseToUnsigned<UInt512, Utf16Char>(Utf16Char.CastFromCharSpan(s), style, provider);
+			return NumberParser.ParseToInteger<UInt512, Utf16Char>(Utf16Char.CastFromCharSpan(s), style, provider);
 		}
 
 		/// <inheritdoc/>
 		public static UInt512 Parse(string s, NumberStyles style, IFormatProvider? provider)
 		{
 			ArgumentNullException.ThrowIfNull(s);
-			return NumberParser.ParseToUnsigned<UInt512, Utf16Char>(Utf16Char.CastFromCharSpan(s), style, provider);
+			return NumberParser.ParseToInteger<UInt512, Utf16Char>(Utf16Char.CastFromCharSpan(s), style, provider);
 		}
 
 		/// <inheritdoc/>
 		public static UInt512 Parse(ReadOnlySpan<char> s, IFormatProvider? provider)
 		{
-			return NumberParser.ParseToUnsigned<UInt512, Utf16Char>(Utf16Char.CastFromCharSpan(s), NumberStyles.Integer, provider);
+			return NumberParser.ParseToInteger<UInt512, Utf16Char>(Utf16Char.CastFromCharSpan(s), NumberStyles.Integer, provider);
 		}
 
 		/// <inheritdoc/>
 		public static UInt512 Parse(string s, IFormatProvider? provider)
 		{
 			ArgumentNullException.ThrowIfNull(s);
-			return NumberParser.ParseToUnsigned<UInt512, Utf16Char>(Utf16Char.CastFromCharSpan(s), NumberStyles.Integer, provider);
+			return NumberParser.ParseToInteger<UInt512, Utf16Char>(Utf16Char.CastFromCharSpan(s), NumberStyles.Integer, provider);
 		}
 
 		/// <inheritdoc/>
 		public static UInt512 Parse(ReadOnlySpan<byte> utf8Text, NumberStyles style, IFormatProvider? provider)
 		{
-			return NumberParser.ParseToUnsigned<UInt512, Utf8Char>(Utf8Char.CastFromByteSpan(utf8Text), style, provider);
+			return NumberParser.ParseToInteger<UInt512, Utf8Char>(Utf8Char.CastFromByteSpan(utf8Text), style, provider);
 		}
 		/// <inheritdoc/>
 		public static UInt512 Parse(ReadOnlySpan<byte> utf8Text, IFormatProvider? provider)
 		{
-			return NumberParser.ParseToUnsigned<UInt512, Utf8Char>(Utf8Char.CastFromByteSpan(utf8Text), NumberStyles.Integer, provider);
+			return NumberParser.ParseToInteger<UInt512, Utf8Char>(Utf8Char.CastFromByteSpan(utf8Text), NumberStyles.Integer, provider);
 		}
 
 		/// <inheritdoc/>
@@ -326,7 +326,7 @@ namespace MissingValues
 				return false;
 			}
 
-			return NumberParser.TryParseToUnsigned(Utf16Char.CastFromCharSpan(s), style, provider, out result);
+			return NumberParser.TryParseToInteger(Utf16Char.CastFromCharSpan(s), style, provider, false, out result, out _);
 		}
 
 		/// <inheritdoc/>
@@ -338,7 +338,7 @@ namespace MissingValues
 				return false;
 			}
 
-			return NumberParser.TryParseToUnsigned(Utf16Char.CastFromCharSpan(s), style, provider, out result);
+			return NumberParser.TryParseToInteger(Utf16Char.CastFromCharSpan(s), style, provider, false, out result, out _);
 		}
 
 		/// <inheritdoc/>
@@ -350,7 +350,7 @@ namespace MissingValues
 				return false;
 			}
 
-			return NumberParser.TryParseToUnsigned(Utf16Char.CastFromCharSpan(s), NumberStyles.Integer, provider, out result);
+			return NumberParser.TryParseToInteger(Utf16Char.CastFromCharSpan(s), NumberStyles.Integer, provider, false, out result, out _);
 		}
 
 		/// <inheritdoc/>
@@ -362,7 +362,7 @@ namespace MissingValues
 				return false;
 			}
 
-			return NumberParser.TryParseToUnsigned(Utf16Char.CastFromCharSpan(s), NumberStyles.Integer, provider, out result);
+			return NumberParser.TryParseToInteger(Utf16Char.CastFromCharSpan(s), NumberStyles.Integer, provider, false, out result, out _);
 		}
 
 		/// <inheritdoc/>
@@ -374,7 +374,7 @@ namespace MissingValues
 				return false;
 			}
 
-			return NumberParser.TryParseToUnsigned(Utf8Char.CastFromByteSpan(utf8Text), style, provider, out result);
+			return NumberParser.TryParseToInteger(Utf8Char.CastFromByteSpan(utf8Text), style, provider, false, out result, out _);
 		}
 		/// <inheritdoc/>
 		public static bool TryParse(ReadOnlySpan<byte> utf8Text, IFormatProvider? provider, [MaybeNullWhen(false)] out UInt512 result)
@@ -385,7 +385,7 @@ namespace MissingValues
 				return false;
 			}
 
-			return NumberParser.TryParseToUnsigned(Utf8Char.CastFromByteSpan(utf8Text), NumberStyles.Integer, provider, out result);
+			return NumberParser.TryParseToInteger(Utf8Char.CastFromByteSpan(utf8Text), NumberStyles.Integer, provider, false, out result, out _);
 		}
 
 #if NET11_0_OR_GREATER
@@ -399,7 +399,7 @@ namespace MissingValues
 				return false;
 			}
 		
-			return NumberParser.TryParsePartialToUnsigned(Utf16Char.CastFromCharSpan(s), style, provider, out result, out charsConsumed);
+			return NumberParser.TryParseToInteger(Utf16Char.CastFromCharSpan(s), style, provider, true, out result, out charsConsumed);
 		}
 
 		/// <inheritdoc/>
@@ -412,7 +412,7 @@ namespace MissingValues
 				return false;
 			}
 		
-			return NumberParser.TryParsePartialToUnsigned(Utf16Char.CastFromCharSpan(s), style, provider, out result, out charsConsumed);
+			return NumberParser.TryParseToInteger(Utf16Char.CastFromCharSpan(s), style, provider, true, out result, out charsConsumed);
 		}
 
 		/// <inheritdoc/>
@@ -425,7 +425,7 @@ namespace MissingValues
 				return false;
 			}
 		
-			return NumberParser.TryParsePartialToUnsigned(Utf8Char.CastFromByteSpan(utf8Text), style, provider, out result, out bytesConsumed);
+			return NumberParser.TryParseToInteger(Utf8Char.CastFromByteSpan(utf8Text), style, provider, true, out result, out bytesConsumed);
 		}
 #endif
 

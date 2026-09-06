@@ -948,6 +948,9 @@ public class Int256DataSources
 		yield return () => ("1,000,000", NumberStyles.Number, CultureInfo.InvariantCulture, true, 1_000_000, 9);
 		yield return () => ("1,000,000,000.00", NumberStyles.Number, CultureInfo.InvariantCulture, true, 1_000_000_000, 16);
 		yield return () => ("-57896044618658097711785492504343953926634992332820282019728792003956564819968.000", NumberStyles.Number, CultureInfo.InvariantCulture, true, Int256.MinValue, 82);
+		
+		yield return () => ("123456789ABCDEF0;", NumberStyles.HexNumber, CultureInfo.InvariantCulture, true, new Int256(0, 0, 0, 0x123456789ABCDEF0), 16);
+		yield return () => ("1010101010101010;", NumberStyles.BinaryNumber, CultureInfo.InvariantCulture, true, new Int256(0, 0, 0, 0b1010101010101010), 16);
 	}
 	
 	public static IEnumerable<Func<(char[], NumberStyles, IFormatProvider?, bool, Int256, int)>> TryParsePartialSpanTestData()
@@ -980,6 +983,9 @@ public class Int256DataSources
 		yield return () => ("1,000,000".ToCharArray(), NumberStyles.Number, CultureInfo.InvariantCulture, true, 1_000_000, 9);
 		yield return () => ("1,000,000,000.00".ToCharArray(), NumberStyles.Number, CultureInfo.InvariantCulture, true, 1_000_000_000, 16);
 		yield return () => ("-57896044618658097711785492504343953926634992332820282019728792003956564819968.000".ToCharArray(), NumberStyles.Number, CultureInfo.InvariantCulture, true, Int256.MinValue, 82);
+		
+		yield return () => ("123456789ABCDEF0;".ToCharArray(), NumberStyles.HexNumber, CultureInfo.InvariantCulture, true, new Int256(0, 0, 0, 0x123456789ABCDEF0), 16);
+		yield return () => ("1010101010101010;".ToCharArray(), NumberStyles.BinaryNumber, CultureInfo.InvariantCulture, true, new Int256(0, 0, 0, 0b1010101010101010), 16);
 	}
 	
 	public static IEnumerable<Func<(byte[], NumberStyles, IFormatProvider?, bool, Int256, int)>> TryParsePartialUtf8TestData()
@@ -1012,6 +1018,9 @@ public class Int256DataSources
 		yield return () => ("1,000,000"u8.ToArray(), NumberStyles.Number, CultureInfo.InvariantCulture, true, 1_000_000, 9);
 		yield return () => ("1,000,000,000.00"u8.ToArray(), NumberStyles.Number, CultureInfo.InvariantCulture, true, 1_000_000_000, 16);
 		yield return () => ("-57896044618658097711785492504343953926634992332820282019728792003956564819968.000"u8.ToArray(), NumberStyles.Number, CultureInfo.InvariantCulture, true, Int256.MinValue, 82);
+		
+		yield return () => ("123456789ABCDEF0;"u8.ToArray(), NumberStyles.HexNumber, CultureInfo.InvariantCulture, true, new Int256(0, 0, 0, 0x123456789ABCDEF0), 16);
+		yield return () => ("1010101010101010;"u8.ToArray(), NumberStyles.BinaryNumber, CultureInfo.InvariantCulture, true, new Int256(0, 0, 0, 0b1010101010101010), 16);
 	}
 
 	public static IEnumerable<Func<(Int256, string, IFormatProvider?, string)>> ToStringTestData()
