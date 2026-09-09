@@ -109,7 +109,7 @@ BinaryOperations.WriteUInt256BigEndian(buffer, in UInt256.One);
 ```csharp
 using MissingValues.Primitives;
 
-// If you need to get the bytes of an integer
+// If you need to read the bytes for an integer
 UInt256 maxValue = BinaryOperations.ToUInt256(bytes);
 // Or if you want them at a certain endianness
 UInt256 one = BinaryOperations.ReadUInt256BigEndian(buffer); // Use the spans you have!
