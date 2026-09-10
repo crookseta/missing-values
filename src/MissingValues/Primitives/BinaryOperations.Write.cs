@@ -22,10 +22,10 @@ public static partial class BinaryOperations
     /// Returns the specified octuple-precision floating-point value as an array of bytes.
     /// </summary>
     /// <param name="value">The number to convert.</param>
-    /// <returns>An array of bytes with length 16.</returns>
+    /// <returns>An array of bytes with length 32.</returns>
     public static byte[] GetBytes(in Octo value)
     {
-        byte[] destination = new byte[16];
+        byte[] destination = new byte[32];
         TryWriteBytes<Octo>((Span<byte>) destination, in value);
         return destination;
     }
