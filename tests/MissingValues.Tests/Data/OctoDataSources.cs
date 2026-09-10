@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Numerics;
+using System.Runtime.InteropServices;
 using System.Text;
 using MissingValues.Tests.Data.Sources;
 using MissingValues.Tests.Extensions;
@@ -452,9 +453,9 @@ public class OctoDataSources
 	    yield return () => ("0", NumberStyles.Float, CultureInfo.InvariantCulture, Octo.Zero);
 	    yield return () => ("-0", NumberStyles.Float, CultureInfo.InvariantCulture, Octo.NegativeZero);
 	    yield return () => ("1.61132571748576047361957211845200501064402387454966951747637125049607183E+78913", NumberStyles.Float, CultureInfo.InvariantCulture, Octo.MaxValue);
-	    yield return () => (NumberFormatInfo.CurrentInfo.PositiveInfinitySymbol, NumberStyles.Float, CultureInfo.InvariantCulture, Octo.PositiveInfinity);
-	    yield return () => (NumberFormatInfo.CurrentInfo.NegativeInfinitySymbol, NumberStyles.Float, CultureInfo.InvariantCulture, Octo.NegativeInfinity);
-	    yield return () => (NumberFormatInfo.CurrentInfo.NaNSymbol, NumberStyles.Float, CultureInfo.InvariantCulture, Octo.NaN);
+	    yield return () => (NumberFormatInfo.InvariantInfo.PositiveInfinitySymbol, NumberStyles.Float, CultureInfo.InvariantCulture, Octo.PositiveInfinity);
+	    yield return () => (NumberFormatInfo.InvariantInfo.NegativeInfinitySymbol, NumberStyles.Float, CultureInfo.InvariantCulture, Octo.NegativeInfinity);
+	    yield return () => (NumberFormatInfo.InvariantInfo.NaNSymbol, NumberStyles.Float, CultureInfo.InvariantCulture, Octo.NaN);
 	    
 	    yield return () => ("2.5E-1", NumberStyles.Float, CultureInfo.InvariantCulture, Octo.Quarter);
 	    yield return () => ("0.250", NumberStyles.Float, CultureInfo.InvariantCulture, Octo.Quarter);
@@ -462,6 +463,9 @@ public class OctoDataSources
 	    yield return () => ("1.000", NumberStyles.Float, CultureInfo.InvariantCulture, Octo.One);
 	    yield return () => ("1,000.00", NumberStyles.Float | NumberStyles.AllowThousands, CultureInfo.InvariantCulture, Octo.Thousand);
 	    yield return () => ("-1,000.00", NumberStyles.Float | NumberStyles.AllowThousands, CultureInfo.InvariantCulture, Octo.NegativeThousand);
+	    
+	    yield return () => ("9.99999E80000", NumberStyles.Float, CultureInfo.InvariantCulture, Octo.PositiveInfinity);
+	    yield return () => ("1E-80000", NumberStyles.Float, CultureInfo.InvariantCulture, Octo.Zero);
     }
 
     public static IEnumerable<Func<(char[], NumberStyles, IFormatProvider?, Octo)>> ParseSpanTestData()
@@ -474,9 +478,9 @@ public class OctoDataSources
 	    yield return () => ("0".ToCharArray(), NumberStyles.Float, CultureInfo.InvariantCulture, Octo.Zero);
 	    yield return () => ("-0".ToCharArray(), NumberStyles.Float, CultureInfo.InvariantCulture, Octo.NegativeZero);
 	    yield return () => ("1.61132571748576047361957211845200501064402387454966951747637125049607183E+78913".ToCharArray(), NumberStyles.Float, CultureInfo.InvariantCulture, Octo.MaxValue);
-	    yield return () => (NumberFormatInfo.CurrentInfo.PositiveInfinitySymbol.ToCharArray(), NumberStyles.Float, CultureInfo.InvariantCulture, Octo.PositiveInfinity);
-	    yield return () => (NumberFormatInfo.CurrentInfo.NegativeInfinitySymbol.ToCharArray(), NumberStyles.Float, CultureInfo.InvariantCulture, Octo.NegativeInfinity);
-	    yield return () => (NumberFormatInfo.CurrentInfo.NaNSymbol.ToCharArray(), NumberStyles.Float, CultureInfo.InvariantCulture, Octo.NaN);
+	    yield return () => (NumberFormatInfo.InvariantInfo.PositiveInfinitySymbol.ToCharArray(), NumberStyles.Float, CultureInfo.InvariantCulture, Octo.PositiveInfinity);
+	    yield return () => (NumberFormatInfo.InvariantInfo.NegativeInfinitySymbol.ToCharArray(), NumberStyles.Float, CultureInfo.InvariantCulture, Octo.NegativeInfinity);
+	    yield return () => (NumberFormatInfo.InvariantInfo.NaNSymbol.ToCharArray(), NumberStyles.Float, CultureInfo.InvariantCulture, Octo.NaN);
 	    
 	    yield return () => ("2.5E-1".ToCharArray(), NumberStyles.Float, CultureInfo.InvariantCulture, Octo.Quarter);
 	    yield return () => ("0.250".ToCharArray(), NumberStyles.Float, CultureInfo.InvariantCulture, Octo.Quarter);
@@ -484,6 +488,9 @@ public class OctoDataSources
 	    yield return () => ("1.000".ToCharArray(), NumberStyles.Float, CultureInfo.InvariantCulture, Octo.One);
 	    yield return () => ("1,000.00".ToCharArray(), NumberStyles.Float | NumberStyles.AllowThousands, CultureInfo.InvariantCulture, Octo.Thousand);
 	    yield return () => ("-1,000.00".ToCharArray(), NumberStyles.Float | NumberStyles.AllowThousands, CultureInfo.InvariantCulture, Octo.NegativeThousand);
+	    
+	    yield return () => ("9.99999E80000".ToCharArray(), NumberStyles.Float, CultureInfo.InvariantCulture, Octo.PositiveInfinity);
+	    yield return () => ("1E-80000".ToCharArray(), NumberStyles.Float, CultureInfo.InvariantCulture, Octo.Zero);
     }
 
     public static IEnumerable<Func<(byte[], NumberStyles, IFormatProvider?, Octo)>> ParseUtf8TestData()
@@ -496,9 +503,9 @@ public class OctoDataSources
 	    yield return () => ("0"u8.ToArray(), NumberStyles.Float, CultureInfo.InvariantCulture, Octo.Zero);
 	    yield return () => ("-0"u8.ToArray(), NumberStyles.Float, CultureInfo.InvariantCulture, Octo.NegativeZero);
 	    yield return () => ("1.61132571748576047361957211845200501064402387454966951747637125049607183E+78913"u8.ToArray(), NumberStyles.Float, CultureInfo.InvariantCulture, Octo.MaxValue);
-	    yield return () => (Encoding.UTF8.GetBytes(NumberFormatInfo.CurrentInfo.PositiveInfinitySymbol), NumberStyles.Float, CultureInfo.InvariantCulture, Octo.PositiveInfinity);
-	    yield return () => (Encoding.UTF8.GetBytes(NumberFormatInfo.CurrentInfo.NegativeInfinitySymbol), NumberStyles.Float, CultureInfo.InvariantCulture, Octo.NegativeInfinity);
-	    yield return () => (Encoding.UTF8.GetBytes(NumberFormatInfo.CurrentInfo.NaNSymbol), NumberStyles.Float, CultureInfo.InvariantCulture, Octo.NaN);
+	    yield return () => (Encoding.UTF8.GetBytes(NumberFormatInfo.InvariantInfo.PositiveInfinitySymbol), NumberStyles.Float, CultureInfo.InvariantCulture, Octo.PositiveInfinity);
+	    yield return () => (Encoding.UTF8.GetBytes(NumberFormatInfo.InvariantInfo.NegativeInfinitySymbol), NumberStyles.Float, CultureInfo.InvariantCulture, Octo.NegativeInfinity);
+	    yield return () => (Encoding.UTF8.GetBytes(NumberFormatInfo.InvariantInfo.NaNSymbol), NumberStyles.Float, CultureInfo.InvariantCulture, Octo.NaN);
 	    
 	    yield return () => ("2.5E-1"u8.ToArray(), NumberStyles.Float, CultureInfo.InvariantCulture, Octo.Quarter);
 	    yield return () => ("0.250"u8.ToArray(), NumberStyles.Float, CultureInfo.InvariantCulture, Octo.Quarter);
@@ -506,6 +513,9 @@ public class OctoDataSources
 	    yield return () => ("1.000"u8.ToArray(), NumberStyles.Float, CultureInfo.InvariantCulture, Octo.One);
 	    yield return () => ("1,000.00"u8.ToArray(), NumberStyles.Float | NumberStyles.AllowThousands, CultureInfo.InvariantCulture, Octo.Thousand);
 	    yield return () => ("-1,000.00"u8.ToArray(), NumberStyles.Float | NumberStyles.AllowThousands, CultureInfo.InvariantCulture, Octo.NegativeThousand);
+	    
+	    yield return () => ("9.99999E80000"u8.ToArray(), NumberStyles.Float, CultureInfo.InvariantCulture, Octo.PositiveInfinity);
+	    yield return () => ("1E-80000"u8.ToArray(), NumberStyles.Float, CultureInfo.InvariantCulture, Octo.Zero);
     }
 
     public static IEnumerable<Func<(string, NumberStyles, IFormatProvider?, bool, Octo)>> TryParseTestData()
@@ -518,9 +528,9 @@ public class OctoDataSources
 		yield return () => ("0", NumberStyles.Float, CultureInfo.InvariantCulture, true, Octo.Zero);
 		yield return () => ("-0", NumberStyles.Float, CultureInfo.InvariantCulture, true, Octo.NegativeZero);
 		yield return () => ("1.61132571748576047361957211845200501064402387454966951747637125049607183E+78913", NumberStyles.Float, CultureInfo.InvariantCulture, true, Octo.MaxValue);
-		yield return () => (NumberFormatInfo.CurrentInfo.PositiveInfinitySymbol, NumberStyles.Float, CultureInfo.InvariantCulture, true, Octo.PositiveInfinity);
-		yield return () => (NumberFormatInfo.CurrentInfo.NegativeInfinitySymbol, NumberStyles.Float, CultureInfo.InvariantCulture, true, Octo.NegativeInfinity);
-		yield return () => (NumberFormatInfo.CurrentInfo.NaNSymbol, NumberStyles.Float, CultureInfo.InvariantCulture, true, Octo.NaN);
+		yield return () => (NumberFormatInfo.InvariantInfo.PositiveInfinitySymbol, NumberStyles.Float, CultureInfo.InvariantCulture, true, Octo.PositiveInfinity);
+		yield return () => (NumberFormatInfo.InvariantInfo.NegativeInfinitySymbol, NumberStyles.Float, CultureInfo.InvariantCulture, true, Octo.NegativeInfinity);
+		yield return () => (NumberFormatInfo.InvariantInfo.NaNSymbol, NumberStyles.Float, CultureInfo.InvariantCulture, true, Octo.NaN);
 		
 		yield return () => ("2.5E-1", NumberStyles.Float, CultureInfo.InvariantCulture, true, Octo.Quarter);
 		yield return () => ("0.250", NumberStyles.Float, CultureInfo.InvariantCulture, true, Octo.Quarter);
@@ -528,6 +538,9 @@ public class OctoDataSources
 		yield return () => ("1.000", NumberStyles.Float, CultureInfo.InvariantCulture, true, Octo.One);
 		yield return () => ("1,000.00", NumberStyles.Float | NumberStyles.AllowThousands, CultureInfo.InvariantCulture, true, Octo.Thousand);
 		yield return () => ("-1,000.00", NumberStyles.Float | NumberStyles.AllowThousands, CultureInfo.InvariantCulture, true, Octo.NegativeThousand);
+		
+		yield return () => ("9.99999E80000", NumberStyles.Float, CultureInfo.InvariantCulture, true, Octo.PositiveInfinity);
+		yield return () => ("1E-80000", NumberStyles.Float, CultureInfo.InvariantCulture, true, Octo.Zero);
     }
 
     public static IEnumerable<Func<(char[], NumberStyles, IFormatProvider?, bool, Octo)>> TryParseSpanTestData()
@@ -540,9 +553,9 @@ public class OctoDataSources
 	    yield return () => ("0".ToCharArray(), NumberStyles.Float, CultureInfo.InvariantCulture, true, Octo.Zero);
 	    yield return () => ("-0".ToCharArray(), NumberStyles.Float, CultureInfo.InvariantCulture, true, Octo.NegativeZero);
 	    yield return () => ("1.61132571748576047361957211845200501064402387454966951747637125049607183E+78913".ToCharArray(), NumberStyles.Float, CultureInfo.InvariantCulture, true, Octo.MaxValue);
-	    yield return () => (NumberFormatInfo.CurrentInfo.PositiveInfinitySymbol.ToCharArray(), NumberStyles.Float, CultureInfo.InvariantCulture, true, Octo.PositiveInfinity);
-	    yield return () => (NumberFormatInfo.CurrentInfo.NegativeInfinitySymbol.ToCharArray(), NumberStyles.Float, CultureInfo.InvariantCulture, true, Octo.NegativeInfinity);
-	    yield return () => (NumberFormatInfo.CurrentInfo.NaNSymbol.ToCharArray(), NumberStyles.Float, CultureInfo.InvariantCulture, true, Octo.NaN);
+	    yield return () => (NumberFormatInfo.InvariantInfo.PositiveInfinitySymbol.ToCharArray(), NumberStyles.Float, CultureInfo.InvariantCulture, true, Octo.PositiveInfinity);
+	    yield return () => (NumberFormatInfo.InvariantInfo.NegativeInfinitySymbol.ToCharArray(), NumberStyles.Float, CultureInfo.InvariantCulture, true, Octo.NegativeInfinity);
+	    yield return () => (NumberFormatInfo.InvariantInfo.NaNSymbol.ToCharArray(), NumberStyles.Float, CultureInfo.InvariantCulture, true, Octo.NaN);
 	    
 	    yield return () => ("2.5E-1".ToCharArray(), NumberStyles.Float, CultureInfo.InvariantCulture, true, Octo.Quarter);
 	    yield return () => ("0.250".ToCharArray(), NumberStyles.Float, CultureInfo.InvariantCulture, true, Octo.Quarter);
@@ -550,6 +563,9 @@ public class OctoDataSources
 	    yield return () => ("1.000".ToCharArray(), NumberStyles.Float, CultureInfo.InvariantCulture, true, Octo.One);
 	    yield return () => ("1,000.00".ToCharArray(), NumberStyles.Float | NumberStyles.AllowThousands, CultureInfo.InvariantCulture, true, Octo.Thousand);
 	    yield return () => ("-1,000.00".ToCharArray(), NumberStyles.Float | NumberStyles.AllowThousands, CultureInfo.InvariantCulture, true, Octo.NegativeThousand);
+	    
+	    yield return () => ("9.99999E80000".ToCharArray(), NumberStyles.Float, CultureInfo.InvariantCulture, true, Octo.PositiveInfinity);
+	    yield return () => ("1E-80000".ToCharArray(), NumberStyles.Float, CultureInfo.InvariantCulture, true, Octo.Zero);
     }
 
     public static IEnumerable<Func<(byte[], NumberStyles, IFormatProvider?, bool, Octo)>> TryParseUtf8TestData()
@@ -562,9 +578,9 @@ public class OctoDataSources
 	    yield return () => ("0"u8.ToArray(), NumberStyles.Float, CultureInfo.InvariantCulture, true, Octo.Zero);
 	    yield return () => ("-0"u8.ToArray(), NumberStyles.Float, CultureInfo.InvariantCulture, true, Octo.NegativeZero);
 	    yield return () => ("1.61132571748576047361957211845200501064402387454966951747637125049607183E+78913"u8.ToArray(), NumberStyles.Float, CultureInfo.InvariantCulture, true, Octo.MaxValue);
-	    yield return () => (Encoding.UTF8.GetBytes(NumberFormatInfo.CurrentInfo.PositiveInfinitySymbol), NumberStyles.Float, CultureInfo.InvariantCulture, true, Octo.PositiveInfinity);
-	    yield return () => (Encoding.UTF8.GetBytes(NumberFormatInfo.CurrentInfo.NegativeInfinitySymbol), NumberStyles.Float, CultureInfo.InvariantCulture, true, Octo.NegativeInfinity);
-	    yield return () => (Encoding.UTF8.GetBytes(NumberFormatInfo.CurrentInfo.NaNSymbol), NumberStyles.Float, CultureInfo.InvariantCulture, true, Octo.NaN);
+	    yield return () => (Encoding.UTF8.GetBytes(NumberFormatInfo.InvariantInfo.PositiveInfinitySymbol), NumberStyles.Float, CultureInfo.InvariantCulture, true, Octo.PositiveInfinity);
+	    yield return () => (Encoding.UTF8.GetBytes(NumberFormatInfo.InvariantInfo.NegativeInfinitySymbol), NumberStyles.Float, CultureInfo.InvariantCulture, true, Octo.NegativeInfinity);
+	    yield return () => (Encoding.UTF8.GetBytes(NumberFormatInfo.InvariantInfo.NaNSymbol), NumberStyles.Float, CultureInfo.InvariantCulture, true, Octo.NaN);
 	    
 	    yield return () => ("2.5E-1"u8.ToArray(), NumberStyles.Float, CultureInfo.InvariantCulture, true, Octo.Quarter);
 	    yield return () => ("0.250"u8.ToArray(), NumberStyles.Float, CultureInfo.InvariantCulture, true, Octo.Quarter);
@@ -572,6 +588,9 @@ public class OctoDataSources
 	    yield return () => ("1.000"u8.ToArray(), NumberStyles.Float, CultureInfo.InvariantCulture, true, Octo.One);
 	    yield return () => ("1,000.00"u8.ToArray(), NumberStyles.Float | NumberStyles.AllowThousands, CultureInfo.InvariantCulture, true, Octo.Thousand);
 	    yield return () => ("-1,000.00"u8.ToArray(), NumberStyles.Float | NumberStyles.AllowThousands, CultureInfo.InvariantCulture, true, Octo.NegativeThousand);
+	    
+	    yield return () => ("9.99999E80000"u8.ToArray(), NumberStyles.Float, CultureInfo.InvariantCulture, true, Octo.PositiveInfinity);
+	    yield return () => ("1E-80000"u8.ToArray(), NumberStyles.Float, CultureInfo.InvariantCulture, true, Octo.Zero);
     }
 
     public static IEnumerable<Func<(Octo, string, IFormatProvider?, string)>> ToStringTestData()
@@ -1111,6 +1130,40 @@ public class OctoDataSources
 		yield return () => (Octo.TwoOver512, UInt512.MaxValue);
 		yield return () => (Octo.MaxValue, UInt512.MaxValue);
 	}
+	
+	public static IEnumerable<Func<(Octo, nuint)>> ConvertToCheckedUIntPtrTestData()
+	{
+		yield return () => (Octo.Half, 0);
+		yield return () => (Octo.One, 1);
+		yield return () => (Octo.ByteMaxValue, byte.MaxValue);
+		yield return () => (Octo.UInt16MaxValue, ushort.MaxValue);
+		yield return () => (Octo.UInt32MaxValue, uint.MaxValue);
+		yield return () => (Octo.UIntPtrMaxValue, nuint.MaxValue);
+	}
+	
+	public static IEnumerable<Func<(Octo, nuint)>> ConvertToSaturatingUIntPtrTestData()
+	{
+		yield return () => (Octo.NegativeOne, 0);
+		yield return () => (Octo.Half, 0);
+		yield return () => (Octo.One, 1);
+		yield return () => (Octo.ByteMaxValue, byte.MaxValue);
+		yield return () => (Octo.UInt16MaxValue, ushort.MaxValue);
+		yield return () => (Octo.UInt32MaxValue, uint.MaxValue);
+		yield return () => (Octo.UIntPtrMaxValue, nuint.MaxValue);
+		yield return () => (Octo.MaxValue, nuint.MaxValue);
+	}
+	
+	public static IEnumerable<Func<(Octo, nuint)>> ConvertToTruncatingUIntPtrTestData()
+	{
+		yield return () => (Octo.NegativeOne, 0);
+		yield return () => (Octo.Half, 0);
+		yield return () => (Octo.One, 1);
+		yield return () => (Octo.ByteMaxValue, byte.MaxValue);
+		yield return () => (Octo.UInt16MaxValue, ushort.MaxValue);
+		yield return () => (Octo.UInt32MaxValue, uint.MaxValue);
+		yield return () => (Octo.UIntPtrMaxValue, nuint.MaxValue);
+		yield return () => (Octo.MaxValue, nuint.MaxValue);
+	}
 
 	public static IEnumerable<Func<(Octo, sbyte)>> ConvertToCheckedSByteTestData()
 	{
@@ -1441,9 +1494,58 @@ public class OctoDataSources
 		yield return () => (Octo.TwoOver511, Int512.MaxValue);
 	}
 	
+	public static IEnumerable<Func<(Octo, nint)>> ConvertToCheckedIntPtrTestData()
+	{
+		yield return () => (Octo.IntPtrMinValue, nint.MinValue);
+		yield return () => (Octo.Int32MinValue, int.MinValue);
+		yield return () => (Octo.Int16MinValue, short.MinValue);
+		yield return () => (Octo.SByteMinValue, sbyte.MinValue);
+		yield return () => (Octo.NegativeOne, -1);
+		yield return () => (Octo.Half, 0);
+		yield return () => (Octo.One, 1);
+		yield return () => (Octo.SByteMaxValue, sbyte.MaxValue);
+		yield return () => (Octo.Int16MaxValue, short.MaxValue);
+		yield return () => (Octo.Int32MaxValue, int.MaxValue);
+		yield return () => (Octo.IntPtrMaxValue, nint.MaxValue);
+	}
+	
+	public static IEnumerable<Func<(Octo, nint)>> ConvertToSaturatingIntPtrTestData()
+	{
+		yield return () => (Octo.MinValue, nint.MinValue);
+		yield return () => (Octo.IntPtrMinValue, nint.MinValue);
+		yield return () => (Octo.Int32MinValue, int.MinValue);
+		yield return () => (Octo.Int16MinValue, short.MinValue);
+		yield return () => (Octo.SByteMinValue, sbyte.MinValue);
+		yield return () => (Octo.NegativeOne, -1);
+		yield return () => (Octo.Half, 0);
+		yield return () => (Octo.One, 1);
+		yield return () => (Octo.SByteMaxValue, sbyte.MaxValue);
+		yield return () => (Octo.Int16MaxValue, short.MaxValue);
+		yield return () => (Octo.Int32MaxValue, int.MaxValue);
+		yield return () => (Octo.IntPtrMaxValue, nint.MaxValue);
+		yield return () => (Octo.MaxValue, nint.MaxValue);
+	}
+	
+	public static IEnumerable<Func<(Octo, nint)>> ConvertToTruncatingIntPtrTestData()
+	{
+		yield return () => (Octo.MinValue, nint.MinValue);
+		yield return () => (Octo.IntPtrMinValue, nint.MinValue);
+		yield return () => (Octo.Int32MinValue, int.MinValue);
+		yield return () => (Octo.Int16MinValue, short.MinValue);
+		yield return () => (Octo.SByteMinValue, sbyte.MinValue);
+		yield return () => (Octo.NegativeOne, -1);
+		yield return () => (Octo.Half, 0);
+		yield return () => (Octo.One, 1);
+		yield return () => (Octo.SByteMaxValue, sbyte.MaxValue);
+		yield return () => (Octo.Int16MaxValue, short.MaxValue);
+		yield return () => (Octo.Int32MaxValue, int.MaxValue);
+		yield return () => (Octo.IntPtrMaxValue, nint.MaxValue);
+		yield return () => (Octo.MaxValue, nint.MaxValue);
+	}
+	
 	public static IEnumerable<Func<(Octo, BigInteger)>> ConvertToCheckedBigIntegerTestData()
 	{
-		yield return () => (Octo.QuadMinValue, (BigInteger)Quad.MinValue);
+		yield return () => (Octo.QuadMinValue, Values.QuadMinValue);
 		yield return () => (Octo.DoubleMinValue, (BigInteger)double.MinValue);
 		yield return () => (Octo.SingleMinValue, (BigInteger)float.MinValue);
 		yield return () => (Octo.HalfMinValue, (BigInteger)Half.MinValue);
@@ -1461,12 +1563,12 @@ public class OctoDataSources
 		yield return () => (Octo.HalfMaxValue, (BigInteger)Half.MaxValue);
 		yield return () => (Octo.SingleMaxValue, (BigInteger)float.MaxValue);
 		yield return () => (Octo.DoubleMaxValue, (BigInteger)double.MaxValue);
-		yield return () => (Octo.QuadMaxValue, (BigInteger)Quad.MaxValue);
+		yield return () => (Octo.QuadMaxValue, Values.QuadMaxValue);
 	}
 
 	public static IEnumerable<Func<(Octo, BigInteger)>> ConvertToSaturatingBigIntegerTestData()
 	{
-		yield return () => (Octo.QuadMinValue, (BigInteger)Quad.MinValue);
+		yield return () => (Octo.QuadMinValue, Values.QuadMinValue);
 		yield return () => (Octo.DoubleMinValue, (BigInteger)double.MinValue);
 		yield return () => (Octo.SingleMinValue, (BigInteger)float.MinValue);
 		yield return () => (Octo.HalfMinValue, (BigInteger)Half.MinValue);
@@ -1484,12 +1586,12 @@ public class OctoDataSources
 		yield return () => (Octo.HalfMaxValue, (BigInteger)Half.MaxValue);
 		yield return () => (Octo.SingleMaxValue, (BigInteger)float.MaxValue);
 		yield return () => (Octo.DoubleMaxValue, (BigInteger)double.MaxValue);
-		yield return () => (Octo.QuadMaxValue, (BigInteger)Quad.MaxValue);
+		yield return () => (Octo.QuadMaxValue, Values.QuadMaxValue);
 	}
 
 	public static IEnumerable<Func<(Octo, BigInteger)>> ConvertToTruncatingBigIntegerTestData()
 	{
-		yield return () => (Octo.QuadMinValue, (BigInteger)Quad.MinValue);
+		yield return () => (Octo.QuadMinValue, Values.QuadMinValue);
 		yield return () => (Octo.DoubleMinValue, (BigInteger)double.MinValue);
 		yield return () => (Octo.SingleMinValue, (BigInteger)float.MinValue);
 		yield return () => (Octo.HalfMinValue, (BigInteger)Half.MinValue);
@@ -1507,7 +1609,7 @@ public class OctoDataSources
 		yield return () => (Octo.HalfMaxValue, (BigInteger)Half.MaxValue);
 		yield return () => (Octo.SingleMaxValue, (BigInteger)float.MaxValue);
 		yield return () => (Octo.DoubleMaxValue, (BigInteger)double.MaxValue);
-		yield return () => (Octo.QuadMaxValue, (BigInteger)Quad.MaxValue);
+		yield return () => (Octo.QuadMaxValue, Values.QuadMaxValue);
 	}
 
 	public static IEnumerable<Func<(Octo, Half)>> ConvertToCheckedHalfTestData()
@@ -1640,6 +1742,39 @@ public class OctoDataSources
 		yield return () => (Octo.One, Quad.One);
 		yield return () => (Octo.QuadMaxValue, Quad.MaxValue);
 		yield return () => (Octo.PositiveInfinity, Quad.PositiveInfinity);
+	}
+	
+	public static IEnumerable<Func<(Octo, NFloat)>> ConvertToCheckedNFloatTestData()
+	{
+		yield return () => (Octo.NegativeInfinity, NFloat.NegativeInfinity);
+		yield return () => (Octo.NFloatMinValue, NFloat.MinValue);
+		yield return () => (Octo.NegativeOne, -1f);
+		yield return () => (Octo.Half, 0.5f);
+		yield return () => (Octo.One, 1f);
+		yield return () => (Octo.NFloatMaxValue, NFloat.MaxValue);
+		yield return () => (Octo.PositiveInfinity, NFloat.PositiveInfinity);
+	}
+	
+	public static IEnumerable<Func<(Octo, NFloat)>> ConvertToSaturatingNFloatTestData()
+	{
+		yield return () => (Octo.NegativeInfinity, NFloat.NegativeInfinity);
+		yield return () => (Octo.NFloatMinValue, NFloat.MinValue);
+		yield return () => (Octo.NegativeOne, -1f);
+		yield return () => (Octo.Half, 0.5f);
+		yield return () => (Octo.One, 1f);
+		yield return () => (Octo.NFloatMaxValue, NFloat.MaxValue);
+		yield return () => (Octo.PositiveInfinity, NFloat.PositiveInfinity);
+	}
+	
+	public static IEnumerable<Func<(Octo, NFloat)>> ConvertToTruncatingNFloatTestData()
+	{
+		yield return () => (Octo.NegativeInfinity, NFloat.NegativeInfinity);
+		yield return () => (Octo.NFloatMinValue, NFloat.MinValue);
+		yield return () => (Octo.NegativeOne, -1f);
+		yield return () => (Octo.Half, 0.5f);
+		yield return () => (Octo.One, 1f);
+		yield return () => (Octo.NFloatMaxValue, NFloat.MaxValue);
+		yield return () => (Octo.PositiveInfinity, NFloat.PositiveInfinity);
 	}
 
 	public static IEnumerable<Func<(byte, Octo)>> ConvertFromCheckedByteTestData()
@@ -1775,6 +1910,36 @@ public class OctoDataSources
 		yield return () => (uint.MaxValue, Octo.UInt32MaxValue);
 		yield return () => (ulong.MaxValue, Octo.UInt64MaxValue);
 		yield return () => (UInt128.MaxValue, Octo.UInt128MaxValue);
+	}
+	
+	public static IEnumerable<Func<(nuint, Octo)>> ConvertFromCheckedUIntPtrTestData()
+	{
+		yield return () => (0, Octo.Zero);
+		yield return () => (1, Octo.One);
+		yield return () => (byte.MaxValue, Octo.ByteMaxValue);
+		yield return () => (ushort.MaxValue, Octo.UInt16MaxValue);
+		yield return () => (uint.MaxValue, Octo.UInt32MaxValue);
+		yield return () => (nuint.MaxValue, Octo.UIntPtrMaxValue);
+	}
+	
+	public static IEnumerable<Func<(nuint, Octo)>> ConvertFromSaturatingUIntPtrTestData()
+	{
+		yield return () => (0, Octo.Zero);
+		yield return () => (1, Octo.One);
+		yield return () => (byte.MaxValue, Octo.ByteMaxValue);
+		yield return () => (ushort.MaxValue, Octo.UInt16MaxValue);
+		yield return () => (uint.MaxValue, Octo.UInt32MaxValue);
+		yield return () => (nuint.MaxValue, Octo.UIntPtrMaxValue);
+	}
+	
+	public static IEnumerable<Func<(nuint, Octo)>> ConvertFromTruncatingUIntPtrTestData()
+	{
+		yield return () => (0, Octo.Zero);
+		yield return () => (1, Octo.One);
+		yield return () => (byte.MaxValue, Octo.ByteMaxValue);
+		yield return () => (ushort.MaxValue, Octo.UInt16MaxValue);
+		yield return () => (uint.MaxValue, Octo.UInt32MaxValue);
+		yield return () => (nuint.MaxValue, Octo.UIntPtrMaxValue);
 	}
 
 	public static IEnumerable<Func<(sbyte, Octo)>> ConvertFromCheckedSByteTestData()
@@ -1970,6 +2135,51 @@ public class OctoDataSources
 		yield return () => (int.MaxValue, Octo.Int32MaxValue);
 		yield return () => (long.MaxValue, Octo.Int64MaxValue);
 		yield return () => (Int128.MaxValue, Octo.Int128MaxValue);
+	}
+	
+	public static IEnumerable<Func<(nint, Octo)>> ConvertFromCheckedIntPtrTestData()
+	{
+		yield return () => (nint.MinValue, Octo.IntPtrMinValue);
+		yield return () => (int.MinValue, Octo.Int32MinValue);
+		yield return () => (short.MinValue, Octo.Int16MinValue);
+		yield return () => (sbyte.MinValue, Octo.SByteMinValue);
+		yield return () => (-1, Octo.NegativeOne);
+		yield return () => (0, Octo.Zero);
+		yield return () => (1, Octo.One);
+		yield return () => (sbyte.MaxValue, Octo.SByteMaxValue);
+		yield return () => (short.MaxValue, Octo.Int16MaxValue);
+		yield return () => (int.MaxValue, Octo.Int32MaxValue);
+		yield return () => (nint.MaxValue, Octo.IntPtrMaxValue);
+	}
+	
+	public static IEnumerable<Func<(nint, Octo)>> ConvertFromSaturatingIntPtrTestData()
+	{
+		yield return () => (nint.MinValue, Octo.IntPtrMinValue);
+		yield return () => (int.MinValue, Octo.Int32MinValue);
+		yield return () => (short.MinValue, Octo.Int16MinValue);
+		yield return () => (sbyte.MinValue, Octo.SByteMinValue);
+		yield return () => (-1, Octo.NegativeOne);
+		yield return () => (0, Octo.Zero);
+		yield return () => (1, Octo.One);
+		yield return () => (sbyte.MaxValue, Octo.SByteMaxValue);
+		yield return () => (short.MaxValue, Octo.Int16MaxValue);
+		yield return () => (int.MaxValue, Octo.Int32MaxValue);
+		yield return () => (nint.MaxValue, Octo.IntPtrMaxValue);
+	}
+	
+	public static IEnumerable<Func<(nint, Octo)>> ConvertFromTruncatingIntPtrTestData()
+	{
+		yield return () => (nint.MinValue, Octo.IntPtrMinValue);
+		yield return () => (int.MinValue, Octo.Int32MinValue);
+		yield return () => (short.MinValue, Octo.Int16MinValue);
+		yield return () => (sbyte.MinValue, Octo.SByteMinValue);
+		yield return () => (-1, Octo.NegativeOne);
+		yield return () => (0, Octo.Zero);
+		yield return () => (1, Octo.One);
+		yield return () => (sbyte.MaxValue, Octo.SByteMaxValue);
+		yield return () => (short.MaxValue, Octo.Int16MaxValue);
+		yield return () => (int.MaxValue, Octo.Int32MaxValue);
+		yield return () => (nint.MaxValue, Octo.IntPtrMaxValue);
 	}
 	
 	public static IEnumerable<Func<(BigInteger, Octo)>> ConvertFromCheckedBigIntegerTestData()
@@ -2168,5 +2378,44 @@ public class OctoDataSources
 		yield return () => (1d, Octo.One);
 		yield return () => (double.MaxValue, Octo.DoubleMaxValue);
 		yield return () => (double.PositiveInfinity, Octo.PositiveInfinity);
+	}
+	
+	public static IEnumerable<Func<(NFloat, Octo)>> ConvertFromCheckedNFloatTestData()
+	{
+		yield return () => (NFloat.NegativeInfinity, Octo.NegativeInfinity);
+		yield return () => (NFloat.MinValue, Octo.NFloatMinValue);
+		yield return () => (-1f, Octo.NegativeOne);
+		yield return () => (-0.5f, Octo.NegativeHalf);
+		yield return () => (0f, Octo.Zero);
+		yield return () => (0.5f, Octo.Half);
+		yield return () => (1f, Octo.One);
+		yield return () => (NFloat.MaxValue, Octo.NFloatMaxValue);
+		yield return () => (NFloat.PositiveInfinity, Octo.PositiveInfinity);
+	}
+	
+	public static IEnumerable<Func<(NFloat, Octo)>> ConvertFromSaturatingNFloatTestData()
+	{
+		yield return () => (NFloat.NegativeInfinity, Octo.NegativeInfinity);
+		yield return () => (NFloat.MinValue, Octo.NFloatMinValue);
+		yield return () => (-1f, Octo.NegativeOne);
+		yield return () => (-0.5f, Octo.NegativeHalf);
+		yield return () => (0f, Octo.Zero);
+		yield return () => (0.5f, Octo.Half);
+		yield return () => (1f, Octo.One);
+		yield return () => (NFloat.MaxValue, Octo.NFloatMaxValue);
+		yield return () => (NFloat.PositiveInfinity, Octo.PositiveInfinity);
+	}
+	
+	public static IEnumerable<Func<(NFloat, Octo)>> ConvertFromTruncatingNFloatTestData()
+	{
+		yield return () => (NFloat.NegativeInfinity, Octo.NegativeInfinity);
+		yield return () => (NFloat.MinValue, Octo.NFloatMinValue);
+		yield return () => (-1f, Octo.NegativeOne);
+		yield return () => (-0.5f, Octo.NegativeHalf);
+		yield return () => (0f, Octo.Zero);
+		yield return () => (0.5f, Octo.Half);
+		yield return () => (1f, Octo.One);
+		yield return () => (NFloat.MaxValue, Octo.NFloatMaxValue);
+		yield return () => (NFloat.PositiveInfinity, Octo.PositiveInfinity);
 	}
 }

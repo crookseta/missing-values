@@ -1,5 +1,6 @@
 using System.Numerics;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
 using MissingValues.Internals;
 using MissingValues.Primitives;
 
@@ -75,6 +76,7 @@ public partial struct Int512
 				Half actual => (Int512)actual,
 				float actual => (Int512)actual,
 				double actual => (Int512)actual,
+				NFloat actual => (Int512)actual,
 				Quad actual => (Int512)actual,
 				decimal actual => (Int512)actual,
 				byte actual => (Int512)actual,
@@ -114,6 +116,7 @@ public partial struct Int512
 			Half actual => (Half.IsPositiveInfinity(actual)) ? MaxValue : (Half.IsNegativeInfinity(actual)) ? MinValue : (Int512)actual,
 			float actual => (float.IsPositiveInfinity(actual)) ? MaxValue : (float.IsNegativeInfinity(actual)) ? MinValue : (Int512)actual,
 			double actual => (actual <= -TwoPow511) ? MinValue : (actual > +TwoPow511) ? MaxValue : (Int512)actual,
+			NFloat actual => (actual <= -TwoPow511) ? MinValue : (actual > +TwoPow511) ? MaxValue : (Int512)actual,
 			Quad actual => (actual <= (new Quad(0xC1FE_0000_0000_0000, 0x0000_0000_0000_0000))) ? MinValue : (actual > (new Quad(0x41FE_0000_0000_0000, 0x0000_0000_0000_0000))) ? MaxValue : (Int512)actual,
 			decimal actual => (Int512)actual,
 			byte actual => (Int512)actual,
@@ -152,6 +155,7 @@ public partial struct Int512
 			Half actual => (Half.IsPositiveInfinity(actual)) ? MaxValue : (Half.IsNegativeInfinity(actual)) ? MinValue : (Int512)actual,
 			float actual => (float.IsPositiveInfinity(actual)) ? MaxValue : (float.IsNegativeInfinity(actual)) ? MinValue : (Int512)actual,
 			double actual => (actual <= -TwoPow511) ? MinValue : (actual > +TwoPow511) ? MaxValue : (Int512)actual,
+			NFloat actual => (actual <= -TwoPow511) ? MinValue : (actual > +TwoPow511) ? MaxValue : (Int512)actual,
 			Quad actual => (actual <= (new Quad(0xC1FE_0000_0000_0000, 0x0000_0000_0000_0000))) ? MinValue : (actual > (new Quad(0x41FE_0000_0000_0000, 0x0000_0000_0000_0000))) ? MaxValue : (Int512)actual,
 			decimal actual => (Int512)actual,
 			byte actual => (Int512)actual,
@@ -189,6 +193,7 @@ public partial struct Int512
 				Half => (TOther)(object)(Half)value,
 				float => (TOther)(object)(float)value,
 				double => (TOther)(object)(double)value,
+				NFloat => (TOther)(object)(NFloat)value,
 				Quad => (TOther)(object)(Quad)value,
 				decimal => (TOther)(object)(decimal)value,
 				byte => (TOther)(object)(byte)value,
@@ -226,6 +231,7 @@ public partial struct Int512
 			Half => (TOther)(object)(Half)value,
 			float => (TOther)(object)(float)value,
 			double => (TOther)(object)(double)value,
+			NFloat => (TOther)(object)(NFloat)value,
 			Quad => (TOther)(object)(Quad)value,
 			decimal => (TOther)(object)(decimal)value,
 			byte => (TOther)(object)((value >= (Int512)byte.MaxValue) ? byte.MaxValue : (value <= (Int512)byte.MinValue) ? byte.MinValue : (byte)value),
@@ -261,6 +267,7 @@ public partial struct Int512
 			Half => (TOther)(object)(Half)value,
 			float => (TOther)(object)(float)value,
 			double => (TOther)(object)(double)value,
+			NFloat => (TOther)(object)(NFloat)value,
 			Quad => (TOther)(object)(Quad)value,
 			decimal => (TOther)(object)(decimal)value,
 			byte => (TOther)(object)(byte)value,
@@ -716,6 +723,19 @@ public partial struct Int512
 		}
 		return (Half)(UInt512)(value);
 	}
+	/// <summary>
+	/// Explicitly converts a <see cref="Int512" /> value to a <see cref="NFloat"/>.
+	/// </summary>
+	/// <param name="value">The value to convert.</param>
+	public static explicit operator NFloat(in Int512 value)
+	{
+		if ((long)value._p7 < 0)
+		{
+			Int512 abs = -value;
+			return -(NFloat)(UInt512)(abs);
+		}
+		return (NFloat)(UInt512)(value);
+	}
 	
 	//Unsigned
 	/// <summary>
@@ -939,4 +959,21 @@ public partial struct Int512
 	/// <param name="value">The value to convert.</param>
 	/// <exception cref="OverflowException"><paramref name="value"/> is outside the range of <see cref="Int512"/>.</exception>
 	public static explicit operator checked Int512(Half value) => checked((Int512)(double)value);
+	/// <summary>
+	/// Explicitly converts a <see cref="NFloat" /> value to a <see cref="Int512"/>.
+	/// </summary>
+	/// <param name="value">The value to convert.</param>
+	public static explicit operator Int512(NFloat value)
+	{
+		return NFloat.Size == 8 ? (Int512)(double)value : (Int512)(float)value;
+	}
+	/// <summary>
+	/// Explicitly converts a <see cref="NFloat" /> value to a <see cref="Int512"/>.
+	/// </summary>
+	/// <param name="value">The value to convert.</param>
+	/// <exception cref="OverflowException"><paramref name="value"/> is outside the range of <see cref="Int512"/>.</exception>
+	public static explicit operator checked Int512(NFloat value)
+	{
+		return NFloat.Size == 8 ? checked((Int512)(double)value) : checked((Int512)(float)value);
+	}
 }

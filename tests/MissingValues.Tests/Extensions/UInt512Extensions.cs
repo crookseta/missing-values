@@ -28,6 +28,8 @@ public static class UInt512Extensions
 		public static UInt512 UInt64MaxValue => new(
 			0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 
 			0x0000_0000_0000_0000, 0x0000_0000_0000_0000,  0x0000_0000_0000_0000, 0xFFFF_FFFF_FFFF_FFFF);
+		public static UInt512 IntPtrMaxValue => nint.Size == 8 ? UInt512.Int64MaxValue : UInt512.Int32MaxValue;
+		public static UInt512 UIntPtrMaxValue => nuint.Size == 8 ? UInt512.UInt64MaxValue : UInt512.UInt32MaxValue;
 		public static UInt512 Int128MaxValue => new(
 			0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 
 			0x0000_0000_0000_0000, 0x0000_0000_0000_0000,  0x7FFF_FFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF);

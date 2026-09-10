@@ -63,7 +63,7 @@ public partial struct Octo :
 
 	static int IBinaryFloatingPointInfo<Octo, UInt256>.MinimumDecimalExponent => -78984;
 
-	static int IBinaryFloatingPointInfo<Octo, UInt256>.MaximumDecimalExponent => 78913;
+	static int IBinaryFloatingPointInfo<Octo, UInt256>.MaximumDecimalExponent => 78913 + 1;
 
 	static int IBinaryFloatingPointInfo<Octo, UInt256>.MinBiasedExponent => MinBiasedExponent;
 
@@ -75,7 +75,7 @@ public partial struct Octo :
 
 	static int IBinaryFloatingPointInfo<Octo, UInt256>.ExponentBias => ExponentBias;
 
-	static int IBinaryFloatingPointInfo<Octo, UInt256>.OverflowDecimalExponent => (ExponentBias + (2 * 237) / 3);
+	static int IBinaryFloatingPointInfo<Octo, UInt256>.OverflowDecimalExponent => (ExponentBias + (2 * 237)) / 3;
 		
 	static int IBinaryFloatingPointInfo<Octo, UInt256>.InfinityExponent => 0x7FFFF;
 

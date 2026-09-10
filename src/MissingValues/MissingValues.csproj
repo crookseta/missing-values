@@ -18,7 +18,7 @@
     <PackageReleaseNotes>https://github.com/crookseta/missing-values/releases</PackageReleaseNotes>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-    <Version>2.3.0</Version>
+    <Version>2.3.1</Version>
     
     <IncludeSymbols>True</IncludeSymbols>
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
