@@ -604,6 +604,34 @@ public partial struct UInt256
 
 		return (decimal)value.Lower;
 	}
+
+#if NET11_0_OR_GREATER
+	/// <summary>
+	/// Explicitly converts a <see cref="UInt256" /> value to a <see cref="Decimal32"/>.
+	/// </summary>
+	/// <param name="value">The value to convert.</param>
+	public static explicit operator Decimal32(in UInt256 value)
+	{
+		return BitHelper.ConvertToDecimalN<Decimal32, UInt256>(in value);
+	}
+	/// <summary>
+	/// Explicitly converts a <see cref="UInt256" /> value to a <see cref="Decimal64"/>.
+	/// </summary>
+	/// <param name="value">The value to convert.</param>
+	public static explicit operator Decimal64(in UInt256 value)
+	{
+		return BitHelper.ConvertToDecimalN<Decimal64, UInt256>(in value);
+	}
+	/// <summary>
+	/// Explicitly converts a <see cref="UInt256" /> value to a <see cref="Decimal128"/>.
+	/// </summary>
+	/// <param name="value">The value to convert.</param>
+	public static explicit operator Decimal128(in UInt256 value)
+	{
+		return BitHelper.ConvertToDecimalN<Decimal128, UInt256>(in value);
+	}
+#endif
+	
 	/// <summary>
 	/// Explicitly converts a <see cref="UInt256" /> value to a <see cref="Octo"/>.
 	/// </summary>
@@ -781,6 +809,63 @@ public partial struct UInt256
 
 		return ToUInt256(value);
 	}
+	
+#if NET11_0_OR_GREATER
+	/// <summary>
+	/// Explicitly converts a <see cref="Decimal32" /> value to a <see cref="UInt256"/>.
+	/// </summary>
+	/// <param name="value">The value to convert.</param>
+	public static explicit operator UInt256(Decimal32 value)
+	{
+		return BitHelper.ConvertFromDecimalN<UInt256, Decimal32>(value);
+	}
+	/// <summary>
+	/// Explicitly converts a <see cref="Decimal32" /> value to a <see cref="UInt256"/>.
+	/// </summary>
+	/// <param name="value">The value to convert.</param>
+	/// <exception cref="OverflowException"><paramref name="value"/> is outside the range of <see cref="UInt256"/>.</exception>
+	public static explicit operator checked UInt256(Decimal32 value)
+	{
+		return BitHelper.ConvertFromDecimalN<UInt256, Decimal32>(value, true);
+	}
+	
+	/// <summary>
+	/// Explicitly converts a <see cref="Decimal64" /> value to a <see cref="UInt256"/>.
+	/// </summary>
+	/// <param name="value">The value to convert.</param>
+	public static explicit operator UInt256(Decimal64 value)
+	{
+		return BitHelper.ConvertFromDecimalN<UInt256, Decimal64>(value);
+	}
+	/// <summary>
+	/// Explicitly converts a <see cref="Decimal64" /> value to a <see cref="UInt256"/>.
+	/// </summary>
+	/// <param name="value">The value to convert.</param>
+	/// <exception cref="OverflowException"><paramref name="value"/> is outside the range of <see cref="UInt256"/>.</exception>
+	public static explicit operator checked UInt256(Decimal64 value)
+	{
+		return BitHelper.ConvertFromDecimalN<UInt256, Decimal64>(value, true);
+	}
+	
+	/// <summary>
+	/// Explicitly converts a <see cref="Decimal128" /> value to a <see cref="UInt256"/>.
+	/// </summary>
+	/// <param name="value">The value to convert.</param>
+	public static explicit operator UInt256(Decimal128 value)
+	{
+		return BitHelper.ConvertFromDecimalN<UInt256, Decimal128>(value);
+	}
+	/// <summary>
+	/// Explicitly converts a <see cref="Decimal128" /> value to a <see cref="UInt256"/>.
+	/// </summary>
+	/// <param name="value">The value to convert.</param>
+	/// <exception cref="OverflowException"><paramref name="value"/> is outside the range of <see cref="UInt256"/>.</exception>
+	public static explicit operator checked UInt256(Decimal128 value)
+	{
+		return BitHelper.ConvertFromDecimalN<UInt256, Decimal128>(value, true);
+	}
+#endif
+	
 	/// <summary>
 	/// Explicitly converts a <see cref="NFloat" /> value to a <see cref="UInt512"/>.
 	/// </summary>
