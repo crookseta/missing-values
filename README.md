@@ -1,4 +1,4 @@
-﻿# MissingValues numeric library for .Net 8+
+﻿# MissingValues numeric library for .NET 8+
 
 MissingValues is a C# numeric library for C# that introduces support for large integers and higher precision floating-point numbers. It supports generic math.
 
@@ -10,22 +10,22 @@ The library implements 256-bit and 512-bit integers, for both signed (`Int256`/`
 
 Here is a chart comparing the existing binary integers to the MissingValues integers:
 
-| Name    	| Size     	| Max Value                                                                                                                                                                                                      	| Min Value                                                                                                                                                                                                      	|
-|---------	|----------	|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------	|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------	|
-| `sbyte` 	| 8 bits   	| 127                                                                                                                                                                                                            	| -128                                                                                                                                                                                                           	|
-| `byte`  	| 8 bits   	| 255                                                                                                                                                                                                            	| 0                                                                                                                                                                                                              	|
-| `short`  	| 16 bits  	| 32,767                                                                                                                                                                                                         	| -32,768                                                                                                                                                                                                        	|
-| `ushort`	| 16 bits  	| 65,535                                                                                                                                                                                                         	| 0                                                                                                                                                                                                              	|
-| `int`		| 32 bits  	| 2,147,483,647                                                                                                                                                                                                  	| -2,147,483,648                                                                                                                                                                                                 	|
-| `uint`	| 32 bits  	| 4,294,967,295                                                                                                                                                                                                  	| 0                                                                                                                                                                                                              	|
-| `long`	| 64 bits  	| 9,223,372,036,854,775,807                                                                                                                                                                                      	| -9,223,372,036,854,775,808                                                                                                                                                                                     	|
-| `ulong`	| 64 bits  	| 18,446,744,073,709,551,615                                                                                                                                                                                     	| 0                                                                                                                                                                                                              	|
-| `Int128`	| 128 bits 	| 170,141,183,460,469,231,731,687,303,715,884,105,727                                                                                                                                                            	| −170,141,183,460,469,231,731,687,303,715,884,105,728                                                                                                                                                           	|
-| `UInt128`	| 128 bits 	| 340,282,366,920,938,463,463,374,607,431,768,211,455                                                                                                                                                            	| 0                                                                                                                                                                                                              	|
-| `Int256`	| 256 bits 	| 57,896,044,618,658,097,711,785,492,504,343,953,926,634,992,332,820,282,019,728,792,003,956,564,819,967                                                                                                         	| -57,896,044,618,658,097,711,785,492,504,343,953,926,634,992,332,820,282,019,728,792,003,956,564,819,968                                                                                                        	|
-| `UInt256`	| 256 bits 	| 115,792,089,237,316,195,423,570,985,008,687,907,853,269,984,665,640,564,039,457,584,007,913,129,639,935                                                                                                        	| 0                                                                                                                                                                                                              	|
-| `Int512`	| 512 bits 	| 6,703,903,964,971,298,549,787,012,499,102,923,063,739,682,910,296,196,688,861,780,721,860,882,015,036,773,488,400,937,149,083,451,713,845,015,929,093,243,025,426,876,941,405,973,284,973,216,824,503,042,047  	| -6,703,903,964,971,298,549,787,012,499,102,923,063,739,682,910,296,196,688,861,780,721,860,882,015,036,773,488,400,937,149,083,451,713,845,015,929,093,243,025,426,876,941,405,973,284,973,216,824,503,042,048 	|
-| `UInt512`	| 512 bits 	| 13,407,807,929,942,597,099,574,024,998,205,846,127,479,365,820,592,393,377,723,561,443,721,764,030,073,546,976,801,874,298,166,903,427,690,031,858,186,486,050,853,753,882,811,946,569,946,433,649,006,084,095 	| 0                                                                                                                                                                                                              	|
+| Name    	  | Size     	 | Max Value                                                                                                                                                                                                      	 | Min Value                                                                                                                                                                                                      	 |
+|-----------|-----------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| `sbyte` 	  | 8 bits   	 | 127                                                                                                                                                                                                            	 | -128                                                                                                                                                                                                           	 |
+| `byte`  	  | 8 bits   	 | 255                                                                                                                                                                                                            	 | 0                                                                                                                                                                                                              	 |
+| `short`  	 | 16 bits  	 | 32,767                                                                                                                                                                                                         	 | -32,768                                                                                                                                                                                                        	 |
+| `ushort`	  | 16 bits  	 | 65,535                                                                                                                                                                                                         	 | 0                                                                                                                                                                                                              	 |
+| `int`		     | 32 bits  	 | 2,147,483,647                                                                                                                                                                                                  	 | -2,147,483,648                                                                                                                                                                                                 	 |
+| `uint`	    | 32 bits  	 | 4,294,967,295                                                                                                                                                                                                  	 | 0                                                                                                                                                                                                              	 |
+| `long`	    | 64 bits  	 | 9,223,372,036,854,775,807                                                                                                                                                                                      	 | -9,223,372,036,854,775,808                                                                                                                                                                                     	 |
+| `ulong`	   | 64 bits  	 | 18,446,744,073,709,551,615                                                                                                                                                                                     	 | 0                                                                                                                                                                                                              	 |
+| `Int128`	  | 128 bits 	 | 170,141,183,460,469,231,731,687,303,715,884,105,727                                                                                                                                                            	 | −170,141,183,460,469,231,731,687,303,715,884,105,728                                                                                                                                                           	 |
+| `UInt128`	 | 128 bits 	 | 340,282,366,920,938,463,463,374,607,431,768,211,455                                                                                                                                                            	 | 0                                                                                                                                                                                                              	 |
+| `Int256`	  | 256 bits 	 | 57,896,044,618,658,097,711,785,492,504,343,953,926,634,992,332,820,282,019,728,792,003,956,564,819,967                                                                                                         	 | -57,896,044,618,658,097,711,785,492,504,343,953,926,634,992,332,820,282,019,728,792,003,956,564,819,968                                                                                                        	 |
+| `UInt256`	 | 256 bits 	 | 115,792,089,237,316,195,423,570,985,008,687,907,853,269,984,665,640,564,039,457,584,007,913,129,639,935                                                                                                        	 | 0                                                                                                                                                                                                              	 |
+| `Int512`	  | 512 bits 	 | 6,703,903,964,971,298,549,787,012,499,102,923,063,739,682,910,296,196,688,861,780,721,860,882,015,036,773,488,400,937,149,083,451,713,845,015,929,093,243,025,426,876,941,405,973,284,973,216,824,503,042,047  	 | -6,703,903,964,971,298,549,787,012,499,102,923,063,739,682,910,296,196,688,861,780,721,860,882,015,036,773,488,400,937,149,083,451,713,845,015,929,093,243,025,426,876,941,405,973,284,973,216,824,503,042,048 	 |
+| `UInt512`	 | 512 bits 	 | 13,407,807,929,942,597,099,574,024,998,205,846,127,479,365,820,592,393,377,723,561,443,721,764,030,073,546,976,801,874,298,166,903,427,690,031,858,186,486,050,853,753,882,811,946,569,946,433,649,006,084,095 	 | 0                                                                                                                                                                                                              	 |
 
 **Example Usage**
 
@@ -48,18 +48,18 @@ Console.WriteLine($"Sum: {sum}");
 ```
 ### Quadruple-Precision and Octuple-Precision Floating-Point Number
 
-The library introduces the `Quad` and `Octo` struct, representing a quadruple-precision floating-point and a octuple-precision floating-point number respectively. 
+The library introduces the `Quad` and `Octo` struct, representing a quadruple-precision floating-point and an octuple-precision floating-point number respectively. 
 Quadruple-precision offers higher precision than standard `double` or `float` types, making it suitable for applications requiring extensive precision in numerical calculations.
 
 Here is a chart comparing the existing IEEE floating point numbers to `Quad` and `Octo`:
 
-| Name   	| Size 		| Significand Digits 	| Decimal Digits 	| Max Exponent 	| Min Exponent 	| Max Value 	| Min Value  	|
-|--------	|--------	|--------------------	|----------------	|--------------	|--------------	|-----------	|------------	|
-| Half   	| 16 bits  	| 11                 	| 3.31           	| 15           	| -14          	| ~65504     	| ~-65500     	|
-| Single 	| 32 bits  	| 24                 	| 7.22           	| 127          	| -126         	| ~3.40e38   	| ~-3.40e38   	|
-| Double 	| 64 bits  	| 53                 	| 15.95          	| 1023         	| -1022        	| ~1.80e308  	| ~-1.79e308  	|
-| Quad   	| 128 bits 	| 113                	| 34.02          	| 16383        	| -16382       	| ~1.19e4932 	| ~-1.18e4932 	|
-| Octo   	| 256 bits 	| 237                	| 71.34          	| 262143        | −262142       | ~1.61e78913 	| ~-1.61e78913 	|
+| Name   	 | Size 		     | Significand Digits 	 | Decimal Digits 	 | Max Exponent 	 | Min Exponent 	 | Max Value 	   | Min Value  	   |
+|---------|-----------|---------------------|-----------------|---------------|---------------|--------------|---------------|
+| Half   	 | 16 bits  	 | 11                 	 | 3.31           	 | 15           	 | -14          	 | ~65504     	  | ~-65500     	  |
+| Single 	 | 32 bits  	 | 24                 	 | 7.22           	 | 127          	 | -126         	 | ~3.40e38   	  | ~-3.40e38   	  |
+| Double 	 | 64 bits  	 | 53                 	 | 15.95          	 | 1023         	 | -1022        	 | ~1.80e308  	  | ~-1.79e308  	  |
+| Quad   	 | 128 bits 	 | 113                	 | 34.02          	 | 16383        	 | -16382       	 | ~1.19e4932 	  | ~-1.18e4932 	  |
+| Octo   	 | 256 bits 	 | 237                	 | 71.34          	 | 262143        | −262142       | ~1.61e78913 	 | ~-1.61e78913 	 |
 
 **Example Usage**
 ```csharp
@@ -79,5 +79,40 @@ Console.WriteLine($"Sum: {sum}");
 
 // Prints 2000000000000000000000062,75
 ```
+### Primitive and Bit Operations
+The library introduces a static class with methods for reading and writing bytes as the library's own types called `BinaryOperations`.
+
+#### Features
+
+`BinaryOperations` provides methods for bit-casting between the floating point types and the integer types:
+```csharp
+using MissingValues.Primitives; // namespace
+
+UInt128 bits = BinaryOperations.QuadToUInt128Bits(Quad.One);
+Quad floating = BinaryOperations.UInt128BitsToQuad(Quad.One);
+
+Console.WriteLine(floating);
+
+// Prints 1
+```
+`BinaryOperations` also provides methods for writing bytes:
+```csharp
+using MissingValues.Primitives;
+
+// If you need to get the bytes of an integer
+byte[] bytes = BinaryOperations.GetBytes(UInt256.MaxValue);
+// Or if you want them at a certain endianness
+Span<byte> buffer = new byte[32]; // You can use spans!
+BinaryOperations.WriteUInt256BigEndian(buffer, in UInt256.One);
+```
+`BinaryOperations` even provides methods for reading them:
+```csharp
+using MissingValues.Primitives;
+
+// If you need to read the bytes for an integer
+UInt256 maxValue = BinaryOperations.ToUInt256(bytes);
+// Or if you want them at a certain endianness
+UInt256 one = BinaryOperations.ReadUInt256BigEndian(buffer); // Use the spans you have!
+```
 ## References
-Access the documentation [here](./docs/README.md)
+Access the documentation for more information on the types introduced [here](./docs/README.md).
