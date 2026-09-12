@@ -2,6 +2,85 @@ namespace MissingValues.Tests.Data;
 
 public class BinaryOperationsDataSources
 {
+    public static IEnumerable<Func<(UInt256, byte[])>> UInt256GetBytesTest()
+    {
+        yield return () => (UInt256.Zero, new byte[32]);
+        yield return () =>
+        {
+            var buffer = new byte[32];
+			
+            for (int i = 0; i < 32; i++)
+                buffer[i] = 0xFF;
+			
+            return (new UInt256(ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue), buffer);
+        };
+    }
+    public static IEnumerable<Func<(Int256, byte[])>> Int256GetBytesTest()
+    {
+        yield return () => (Int256.Zero, new byte[32]);
+        yield return () =>
+        {
+            var buffer = new byte[32];
+			
+            for (int i = 0; i < 32; i++)
+                buffer[i] = 0xFF;
+			
+            return (new Int256(ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue), buffer);
+        };
+    }
+    public static IEnumerable<Func<(UInt512, byte[])>> UInt512GetBytesTest()
+    {
+        yield return () => (UInt512.Zero, new byte[64]);
+        yield return () =>
+        {
+            var buffer = new byte[64];
+			
+            for (int i = 0; i < 64; i++)
+                buffer[i] = 0xFF;
+			
+            return (new UInt512(ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue), buffer);
+        };
+    }
+    public static IEnumerable<Func<(Int512, byte[])>> Int512GetBytesTest()
+    {
+        yield return () => (Int512.Zero, new byte[64]);
+        yield return () =>
+        {
+            var buffer = new byte[64];
+			
+            for (int i = 0; i < 64; i++)
+                buffer[i] = 0xFF;
+			
+            return (new Int512(ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue), buffer);
+        };
+    }
+    public static IEnumerable<Func<(Quad, byte[])>> QuadGetBytesTest()
+    {
+        yield return () => (Quad.Zero, new byte[16]);
+        yield return () =>
+        {
+            var buffer = new byte[16];
+			
+            for (int i = 0; i < 16; i++)
+                buffer[i] = 0xFF;
+			
+            return (new Quad(ulong.MaxValue, ulong.MaxValue), buffer);
+        };
+    }
+    public static IEnumerable<Func<(Octo, byte[])>> OctoGetBytesTest()
+    {
+        yield return () => (Octo.Zero, new byte[32]);
+        yield return () =>
+        {
+            var buffer = new byte[32];
+			
+            for (int i = 0; i < 32; i++)
+                buffer[i] = 0xFF;
+			
+            return (new Octo(ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue), buffer);
+        };
+    }
+    
     public static IEnumerable<Func<(UInt256, byte[])>> UInt256WriteBigEndianTest()
     {
         yield return () => (new UInt256(0, 0, 0, 0), new byte[32]);
@@ -286,6 +365,169 @@ public class BinaryOperationsDataSources
         };
     }
 
+    public static IEnumerable<Func<(byte[], int, UInt256)>> ToUInt256Test()
+    {
+        yield return () =>
+        {
+            byte[] array = new byte[32];
+            Array.Fill(array, byte.MaxValue);
+            return (array, 0, new UInt256(ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue));
+        };
+        yield return () =>
+        {
+            byte[] array = new byte[33];
+            Array.Fill(array, byte.MaxValue, 1, 32);
+            return (array, 1, new UInt256(ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue));
+        };
+        yield return () =>
+        {
+            byte[] array = new byte[64];
+            Array.Fill(array, byte.MaxValue, 32, 32);
+            return (array, 0, UInt256.Zero);
+        };
+        yield return () =>
+        {
+            byte[] array = new byte[64];
+            Array.Fill(array, byte.MaxValue, 32, 32);
+            return (array, 32, new UInt256(ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue));
+        };
+    }
+    public static IEnumerable<Func<(byte[], int, Int256)>> ToInt256Test()
+    {
+        yield return () =>
+        {
+            byte[] array = new byte[32];
+            Array.Fill(array, byte.MaxValue);
+            return (array, 0, new Int256(ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue));
+        };
+        yield return () =>
+        {
+            byte[] array = new byte[33];
+            Array.Fill(array, byte.MaxValue, 1, 32);
+            return (array, 1, new Int256(ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue));
+        };
+        yield return () =>
+        {
+            byte[] array = new byte[64];
+            Array.Fill(array, byte.MaxValue, 32, 32);
+            return (array, 0, Int256.Zero);
+        };
+        yield return () =>
+        {
+            byte[] array = new byte[64];
+            Array.Fill(array, byte.MaxValue, 32, 32);
+            return (array, 32, new Int256(ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue));
+        };
+    }
+    public static IEnumerable<Func<(byte[], int, UInt512)>> ToUInt512Test()
+    {
+        yield return () =>
+        {
+            byte[] array = new byte[64];
+            Array.Fill(array, byte.MaxValue);
+            return (array, 0, new UInt512(ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue));
+        };
+        yield return () =>
+        {
+            byte[] array = new byte[65];
+            Array.Fill(array, byte.MaxValue, 1, 64);
+            return (array, 1, new UInt512(ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue));
+        };
+        yield return () =>
+        {
+            byte[] array = new byte[128];
+            Array.Fill(array, byte.MaxValue, 64, 64);
+            return (array, 0, UInt512.Zero);
+        };
+        yield return () =>
+        {
+            byte[] array = new byte[128];
+            Array.Fill(array, byte.MaxValue, 64, 64);
+            return (array, 64, new UInt512(ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue));
+        };
+    }
+    public static IEnumerable<Func<(byte[], int, Int512)>> ToInt512Test()
+    {
+        yield return () =>
+        {
+            byte[] array = new byte[64];
+            Array.Fill(array, byte.MaxValue);
+            return (array, 0, new Int512(ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue));
+        };
+        yield return () =>
+        {
+            byte[] array = new byte[65];
+            Array.Fill(array, byte.MaxValue, 1, 64);
+            return (array, 1, new Int512(ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue));
+        };
+        yield return () =>
+        {
+            byte[] array = new byte[128];
+            Array.Fill(array, byte.MaxValue, 64, 64);
+            return (array, 0, Int512.Zero);
+        };
+        yield return () =>
+        {
+            byte[] array = new byte[128];
+            Array.Fill(array, byte.MaxValue, 64, 64);
+            return (array, 64, new Int512(ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue));
+        };
+    }
+    public static IEnumerable<Func<(byte[], int, Quad)>> ToQuadTest()
+    {
+        yield return () =>
+        {
+            byte[] array = new byte[16];
+            Array.Fill(array, byte.MaxValue);
+            return (array, 0, new Quad(ulong.MaxValue, ulong.MaxValue));
+        };
+        yield return () =>
+        {
+            byte[] array = new byte[17];
+            Array.Fill(array, byte.MaxValue, 1, 16);
+            return (array, 1, new Quad(ulong.MaxValue, ulong.MaxValue));
+        };
+        yield return () =>
+        {
+            byte[] array = new byte[32];
+            Array.Fill(array, byte.MaxValue, 16, 16);
+            return (array, 0, Quad.Zero);
+        };
+        yield return () =>
+        {
+            byte[] array = new byte[32];
+            Array.Fill(array, byte.MaxValue, 16, 16);
+            return (array, 16, new Quad(ulong.MaxValue, ulong.MaxValue));
+        };
+    }
+    public static IEnumerable<Func<(byte[], int, Octo)>> ToOctoTest()
+    {
+        yield return () =>
+        {
+            byte[] array = new byte[32];
+            Array.Fill(array, byte.MaxValue);
+            return (array, 0, new Octo(ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue));
+        };
+        yield return () =>
+        {
+            byte[] array = new byte[33];
+            Array.Fill(array, byte.MaxValue, 1, 32);
+            return (array, 1, new Octo(ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue));
+        };
+        yield return () =>
+        {
+            byte[] array = new byte[64];
+            Array.Fill(array, byte.MaxValue, 32, 32);
+            return (array, 0, Octo.Zero);
+        };
+        yield return () =>
+        {
+            byte[] array = new byte[64];
+            Array.Fill(array, byte.MaxValue, 32, 32);
+            return (array, 32, new Octo(ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue));
+        };
+    }
+
     public static IEnumerable<Func<(byte[], UInt256)>> UInt256ReadBigEndianTest()
     {
         yield return () =>
@@ -549,6 +791,91 @@ public class BinaryOperationsDataSources
             byte[] array = new byte[32];
             array[31] = 0x80;
             return (array, Values.CreateFloat<Octo>(1UL << 63, 0, 0, 0));
+        };
+    }
+    
+    public static IEnumerable<Func<(UInt256, byte[], bool)>> UInt256TryWriteBytesTest()
+    {
+        yield return () => (UInt256.Zero, new byte[32], true);
+        yield return () => (UInt256.Zero, new byte[31], false);
+        yield return () =>
+        {
+            var buffer = new byte[32];
+			
+            for (int i = 0; i < 32; i++)
+                buffer[i] = 0xFF;
+			
+            return (new UInt256(ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue), buffer, true);
+        };
+    }
+    public static IEnumerable<Func<(Int256, byte[], bool)>> Int256TryWriteBytesTest()
+    {
+        yield return () => (Int256.Zero, new byte[32], true);
+        yield return () => (Int256.Zero, new byte[31], false);
+        yield return () =>
+        {
+            var buffer = new byte[32];
+			
+            for (int i = 0; i < 32; i++)
+                buffer[i] = 0xFF;
+			
+            return (new Int256(ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue), buffer, true);
+        };
+    }
+    public static IEnumerable<Func<(UInt512, byte[], bool)>> UInt512TryWriteBytesTest()
+    {
+        yield return () => (UInt512.Zero, new byte[64], true);
+        yield return () => (UInt512.Zero, new byte[63], false);
+        yield return () =>
+        {
+            var buffer = new byte[64];
+			
+            for (int i = 0; i < 64; i++)
+                buffer[i] = 0xFF;
+			
+            return (new UInt512(ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue), buffer, true);
+        };
+    }
+    public static IEnumerable<Func<(Int512, byte[], bool)>> Int512TryWriteBytesTest()
+    {
+        yield return () => (Int512.Zero, new byte[64], true);
+        yield return () => (Int512.Zero, new byte[63], false);
+        yield return () =>
+        {
+            var buffer = new byte[64];
+			
+            for (int i = 0; i < 64; i++)
+                buffer[i] = 0xFF;
+			
+            return (new Int512(ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue), buffer, true);
+        };
+    }
+    public static IEnumerable<Func<(Quad, byte[], bool)>> QuadTryWriteBytesTest()
+    {
+        yield return () => (Quad.Zero, new byte[16], true);
+        yield return () => (Quad.Zero, new byte[15], false);
+        yield return () =>
+        {
+            var buffer = new byte[16];
+			
+            for (int i = 0; i < 16; i++)
+                buffer[i] = 0xFF;
+			
+            return (new Quad(ulong.MaxValue, ulong.MaxValue), buffer, true);
+        };
+    }
+    public static IEnumerable<Func<(Octo, byte[], bool)>> OctoTryWriteBytesTest()
+    {
+        yield return () => (Octo.Zero, new byte[32], true);
+        yield return () => (Octo.Zero, new byte[31], false);
+        yield return () =>
+        {
+            var buffer = new byte[32];
+			
+            for (int i = 0; i < 32; i++)
+                buffer[i] = 0xFF;
+			
+            return (new Octo(ulong.MaxValue, ulong.MaxValue, ulong.MaxValue, ulong.MaxValue), buffer, true);
         };
     }
     
