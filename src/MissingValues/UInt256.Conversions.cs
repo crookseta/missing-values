@@ -631,7 +631,7 @@ public partial struct UInt256
 		{
 			return value._p1 != 0 ? (Quad)value.Lower : (Quad)value._p0;
 		}
-		else if ((value.Part3 == 0) && ((value.Part2 >> 32) == UInt128.Zero)) // value < (2^224)
+		else if ((value._p3 == 0) && ((value._p2 >> 32) == 0)) // value < (2^224)
 		{
 			// For values greater than MaxValue but less than 2^224 this takes advantage
 			// that we can represent both "halves" of the uint256 within the 112-bit mantissa of
