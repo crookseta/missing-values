@@ -8,12 +8,16 @@ namespace MissingValues.Internals;
 internal static class NumberFormatInfoExtensions
 {
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	private static ReadOnlySpan<TChar> FromString<TChar>(string value)
+	private static ReadOnlySpan<TChar> FromString<TChar>(string value, Span<TChar> storage)
 		where TChar : unmanaged, IUtfCharacter<TChar>
 	{
 		if (typeof(TChar) == typeof(Utf8Char))
 		{
-			return Unsafe.BitCast<ReadOnlySpan<byte>, ReadOnlySpan<TChar>>(Encoding.UTF8.GetBytes(value));
+			if (!Encoding.UTF8.TryGetBytes(value, TChar.CastToByteSpan(storage), out int written))
+			{
+				return Unsafe.BitCast<ReadOnlySpan<byte>, ReadOnlySpan<TChar>>(Encoding.UTF8.GetBytes(value));
+			}
+			return storage[..written];
 		}
 
 		Debug.Assert(typeof(TChar) == typeof(Utf16Char));
@@ -39,15 +43,15 @@ internal static class NumberFormatInfoExtensions
 			       };
 		}
 
-		internal ReadOnlySpan<TChar> PositiveSignTChar<TChar>()
+		internal ReadOnlySpan<TChar> PositiveSignTChar<TChar>(Span<TChar> storage)
 			where TChar : unmanaged, IUtfCharacter<TChar>
 		{
-			return FromString<TChar>(info.PositiveSign);
+			return FromString(info.PositiveSign, storage);
 		}
-		internal ReadOnlySpan<TChar> NegativeSignTChar<TChar>()
+		internal ReadOnlySpan<TChar> NegativeSignTChar<TChar>(Span<TChar> storage)
 			where TChar : unmanaged, IUtfCharacter<TChar>
 		{
-			return FromString<TChar>(info.NegativeSign);
+			return FromString(info.NegativeSign, storage);
 		}
 	}
 }

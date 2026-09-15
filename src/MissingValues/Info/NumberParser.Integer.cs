@@ -104,7 +104,7 @@ internal static partial class NumberParser
 			}
 			else
 			{
-				ReadOnlySpan<TChar> negativeSign = formatInfo.NegativeSignTChar<TChar>();
+				ReadOnlySpan<TChar> negativeSign = formatInfo.NegativeSignTChar(stackalloc TChar[16]);
 				if (TChar.StartsWith(s[charsConsumed..], negativeSign, StringComparison.OrdinalIgnoreCase))
 				{
 					if (T.IsUnsignedInteger)
@@ -119,7 +119,7 @@ internal static partial class NumberParser
 				}
 				else
 				{
-					ReadOnlySpan<TChar> positiveSign = formatInfo.PositiveSignTChar<TChar>();
+					ReadOnlySpan<TChar> positiveSign = formatInfo.PositiveSignTChar(stackalloc TChar[16]);
 					if (TChar.StartsWith(s[charsConsumed..], positiveSign, StringComparison.OrdinalIgnoreCase))
 					{
 						charsConsumed += positiveSign.Length;
@@ -204,7 +204,7 @@ internal static partial class NumberParser
 			}
 			else
 			{
-				ReadOnlySpan<TChar> negativeSign = formatInfo.NegativeSignTChar<TChar>();
+				ReadOnlySpan<TChar> negativeSign = formatInfo.NegativeSignTChar(stackalloc TChar[16]);
 				if (TChar.StartsWith(s[charsConsumed..], negativeSign, StringComparison.OrdinalIgnoreCase))
 				{
 					if (T.IsUnsignedInteger)
@@ -219,7 +219,7 @@ internal static partial class NumberParser
 				}
 				else
 				{
-					ReadOnlySpan<TChar> positiveSign = formatInfo.PositiveSignTChar<TChar>();
+					ReadOnlySpan<TChar> positiveSign = formatInfo.PositiveSignTChar(stackalloc TChar[16]);
 					if (TChar.StartsWith(s[charsConsumed..], positiveSign, StringComparison.OrdinalIgnoreCase))
 					{
 						charsConsumed += positiveSign.Length;
@@ -303,7 +303,7 @@ internal static partial class NumberParser
 			{
 				if (allowWhite)
 				{
-					consumed = s.IndexOfAnyExcept(TChar.CastFromByteSpan([(byte)' ', (byte)'\0']));
+					consumed = s.Length - TChar.TrimStart(s).Length;
 				}
 				else
 				{

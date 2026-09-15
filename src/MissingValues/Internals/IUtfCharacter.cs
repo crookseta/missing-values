@@ -191,12 +191,12 @@ namespace MissingValues.Internals
 			return CastToCharSpan(v1).Equals(CastToCharSpan(v2), comparisonType);
 		}
 
-		public static ReadOnlySpan<Utf16Char> TrimStart(ReadOnlySpan<Utf16Char> s)
+		static ReadOnlySpan<Utf16Char> IUtfCharacter<Utf16Char>.TrimStart(ReadOnlySpan<Utf16Char> s)
 		{
 			return CastFromCharSpan(CastToCharSpan(s).TrimStart());
 		}
 
-		public static ReadOnlySpan<Utf16Char> TrimEnd(ReadOnlySpan<Utf16Char> s)
+		static ReadOnlySpan<Utf16Char> IUtfCharacter<Utf16Char>.TrimEnd(ReadOnlySpan<Utf16Char> s)
 		{
 			return CastFromCharSpan(CastToCharSpan(s).TrimEnd());
 		}
@@ -277,11 +277,13 @@ namespace MissingValues.Internals
 			throw new NotImplementedException();
 		}
 
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		static int IUtfCharacter<Utf16Char>.GetLength(ReadOnlySpan<char> s)
 		{
 			return s.Length;
 		}
 
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		static int IUtfCharacter<Utf16Char>.GetLength(ReadOnlySpan<byte> utf8Text)
 		{
 			return Encoding.UTF8.GetCharCount(utf8Text);
@@ -536,11 +538,13 @@ namespace MissingValues.Internals
 			return CastFromByteSpan(chars);
 		}
 
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		static int IUtfCharacter<Utf8Char>.GetLength(ReadOnlySpan<char> s)
 		{
 			return Encoding.UTF8.GetByteCount(s);
 		}
 
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		static int IUtfCharacter<Utf8Char>.GetLength(ReadOnlySpan<byte> utf8Text)
 		{
 			return utf8Text.Length;
