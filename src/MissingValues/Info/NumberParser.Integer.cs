@@ -90,9 +90,7 @@ internal static partial class NumberParser
 		bool isNegative;
 		if ((styles & NumberStyles.AllowLeadingSign) != 0)
 		{
-			Span<TChar> negativeSign = stackalloc TChar[TChar.GetLength(formatInfo.NegativeSign)];
-			TChar.Copy(formatInfo.NegativeSign, negativeSign);
-			if (TChar.StartsWith(s[charsConsumed..], negativeSign, StringComparison.OrdinalIgnoreCase))
+			if (formatInfo.AllowHyphenDuringParsing() && s[charsConsumed] == (TChar)'-')
 			{
 				if (T.IsUnsignedInteger)
 				{
@@ -100,19 +98,34 @@ internal static partial class NumberParser
 					output = default;
 					return ParsingStatus.Underflow;
 				}
-
+				
 				isNegative = true;
-				charsConsumed += negativeSign.Length;
+				charsConsumed++;
 			}
 			else
 			{
-				Span<TChar> positiveSign = stackalloc TChar[TChar.GetLength(formatInfo.PositiveSign)];
-				TChar.Copy(formatInfo.PositiveSign, positiveSign);
-				if (TChar.StartsWith(s[charsConsumed..], positiveSign, StringComparison.OrdinalIgnoreCase))
+				ReadOnlySpan<TChar> negativeSign = formatInfo.NegativeSignTChar<TChar>();
+				if (TChar.StartsWith(s[charsConsumed..], negativeSign, StringComparison.OrdinalIgnoreCase))
 				{
-					charsConsumed += positiveSign.Length;
+					if (T.IsUnsignedInteger)
+					{
+						charsConsumed = 0;
+						output = default;
+						return ParsingStatus.Underflow;
+					}
+
+					isNegative = true;
+					charsConsumed += negativeSign.Length;
 				}
-				isNegative = false;
+				else
+				{
+					ReadOnlySpan<TChar> positiveSign = formatInfo.PositiveSignTChar<TChar>();
+					if (TChar.StartsWith(s[charsConsumed..], positiveSign, StringComparison.OrdinalIgnoreCase))
+					{
+						charsConsumed += positiveSign.Length;
+					}
+					isNegative = false;
+				}
 			}
 		}
 		else
@@ -145,12 +158,12 @@ internal static partial class NumberParser
 		}
 		else if ((styles & NumberStyles.AllowHexSpecifier) != 0)
 		{
-			status = ParseStringToInteger<T, TChar, HexConverter<T>>(s[charsConsumed..], out output, out int elementsConsumed);
+			status = ParseStringToInteger<T, TChar, HexConverter<T>>(s[charsConsumed..], styles, formatInfo, out output, out int elementsConsumed);
 			charsConsumed += elementsConsumed;
 		}
 		else if ((styles & NumberStyles.AllowBinarySpecifier) != 0)
 		{
-			status = ParseStringToInteger<T, TChar, BinConverter<T>>(s[charsConsumed..], out output, out int elementsConsumed);
+			status = ParseStringToInteger<T, TChar, BinConverter<T>>(s[charsConsumed..], styles, formatInfo, out output, out int elementsConsumed);
 			charsConsumed += elementsConsumed;
 		}
 		else
@@ -177,9 +190,7 @@ internal static partial class NumberParser
 		// Consume trailing signs, whitespaces and nulls
 		if (status.IsSuccessfulOrPartial() && (styles & NumberStyles.AllowTrailingSign) != 0)
 		{
-			Span<TChar> negativeSign = stackalloc TChar[TChar.GetLength(formatInfo.NegativeSign)];
-			TChar.Copy(formatInfo.NegativeSign, negativeSign);
-			if (TChar.StartsWith(s[charsConsumed..], negativeSign, StringComparison.OrdinalIgnoreCase))
+			if (formatInfo.AllowHyphenDuringParsing() && s[charsConsumed] == (TChar)'-')
 			{
 				if (T.IsUnsignedInteger)
 				{
@@ -187,17 +198,32 @@ internal static partial class NumberParser
 					output = default;
 					return ParsingStatus.Underflow;
 				}
-
-				charsConsumed += negativeSign.Length;
+				
 				isNegative = true;
+				charsConsumed++;
 			}
 			else
 			{
-				Span<TChar> positiveSign = stackalloc TChar[TChar.GetLength(formatInfo.PositiveSign)];
-				TChar.Copy(formatInfo.PositiveSign, positiveSign);
-				if (TChar.StartsWith(s[charsConsumed..], positiveSign, StringComparison.OrdinalIgnoreCase))
+				ReadOnlySpan<TChar> negativeSign = formatInfo.NegativeSignTChar<TChar>();
+				if (TChar.StartsWith(s[charsConsumed..], negativeSign, StringComparison.OrdinalIgnoreCase))
 				{
-					charsConsumed += positiveSign.Length;
+					if (T.IsUnsignedInteger)
+					{
+						charsConsumed = 0;
+						output = default;
+						return ParsingStatus.Underflow;
+					}
+
+					charsConsumed += negativeSign.Length;
+					isNegative = true;
+				}
+				else
+				{
+					ReadOnlySpan<TChar> positiveSign = formatInfo.PositiveSignTChar<TChar>();
+					if (TChar.StartsWith(s[charsConsumed..], positiveSign, StringComparison.OrdinalIgnoreCase))
+					{
+						charsConsumed += positiveSign.Length;
+					}
 				}
 			}
 			status = s.Length == charsConsumed ? ParsingStatus.Success : ParsingStatus.Partial;
@@ -465,15 +491,21 @@ internal static partial class NumberParser
 		return s.Length == charsConsumed ? ParsingStatus.Success : ParsingStatus.Partial;
 	}
 
-	private static ParsingStatus ParseStringToInteger<TInteger, TChar, TConverter>(ReadOnlySpan<TChar> s, out TInteger output, out int charsConsumed)
+	private static ParsingStatus ParseStringToInteger<TInteger, TChar, TConverter>(ReadOnlySpan<TChar> s, NumberStyles styles, NumberFormatInfo formatProvider, out TInteger output, out int charsConsumed)
 		where TInteger : struct, IFormattableInteger<TInteger>
 		where TChar : unmanaged, IUtfCharacter<TChar>
 		where TConverter : struct, IIntegerRadixConverter<TInteger>
 	{
+		if ((styles & ~TConverter.AllowedStyles) != 0)
+		{
+			charsConsumed = 0;
+			output = default;
+			return ParsingStatus.Failed;
+		}
 		int count = TConverter.MaxUInt64DigitCount;
 		if (s.Length <= count)
 		{
-			if (!TChar.TryParsePartialInteger(s, TConverter.AllowedStyles, CultureInfo.CurrentCulture, out ulong temp, out charsConsumed))
+			if (!TChar.TryParsePartialInteger(s, styles, formatProvider, out ulong temp, out charsConsumed))
 			{
 				charsConsumed = 0;
 				output = default;
