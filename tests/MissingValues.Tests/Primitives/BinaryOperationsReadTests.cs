@@ -7,6 +7,49 @@ namespace MissingValues.Tests.Primitives;
 public class BinaryOperationsReadTests
 {
 	[Test]
+	[MethodDataSource<BinaryOperationsDataSources>(nameof(ToUInt256Test))]
+	public async Task ToUInt256Test(byte[] source, int startIndex, UInt256 expected)
+	{
+		await Assert.That(BinaryOperations.ToUInt256(source, startIndex)).IsEqualTo(expected);
+		await Assert.That(BinaryOperations.ToUInt256(source.AsSpan(startIndex))).IsEqualTo(expected);
+	}
+	[Test]
+	[MethodDataSource<BinaryOperationsDataSources>(nameof(ToInt256Test))]
+	public async Task ToInt256Test(byte[] source, int startIndex, Int256 expected)
+	{
+		await Assert.That(BinaryOperations.ToInt256(source, startIndex)).IsEqualTo(expected);
+		await Assert.That(BinaryOperations.ToInt256(source.AsSpan(startIndex))).IsEqualTo(expected);
+	}
+	[Test]
+	[MethodDataSource<BinaryOperationsDataSources>(nameof(ToUInt512Test))]
+	public async Task ToUInt512Test(byte[] source, int startIndex, UInt512 expected)
+	{
+		await Assert.That(BinaryOperations.ToUInt512(source, startIndex)).IsEqualTo(expected);
+		await Assert.That(BinaryOperations.ToUInt512(source.AsSpan(startIndex))).IsEqualTo(expected);
+	}
+	[Test]
+	[MethodDataSource<BinaryOperationsDataSources>(nameof(ToInt512Test))]
+	public async Task ToInt512Test(byte[] source, int startIndex, Int512 expected)
+	{
+		await Assert.That(BinaryOperations.ToInt512(source, startIndex)).IsEqualTo(expected);
+		await Assert.That(BinaryOperations.ToInt512(source.AsSpan(startIndex))).IsEqualTo(expected);
+	}
+	[Test]
+	[MethodDataSource<BinaryOperationsDataSources>(nameof(ToQuadTest))]
+	public async Task ToQuadTest(byte[] source, int startIndex, Quad expected)
+	{
+		await Assert.That(BinaryOperations.ToQuad(source, startIndex)).IsEqualTo(expected);
+		await Assert.That(BinaryOperations.ToQuad(source.AsSpan(startIndex))).IsEqualTo(expected);
+	}
+	[Test]
+	[MethodDataSource<BinaryOperationsDataSources>(nameof(ToOctoTest))]
+	public async Task ToOctoTest(byte[] source, int startIndex, Octo expected)
+	{
+		await Assert.That(BinaryOperations.ToOcto(source, startIndex)).IsEqualTo(expected);
+		await Assert.That(BinaryOperations.ToOcto(source.AsSpan(startIndex))).IsEqualTo(expected);
+	}
+	
+	[Test]
 	[MethodDataSource<BinaryOperationsDataSources>(nameof(UInt256ReadBigEndianTest))]
 	public async Task UInt256_Read_BigEndianTest(byte[] source, UInt256 expected)
 	{
