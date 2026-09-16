@@ -98,14 +98,21 @@ internal interface IFormattableSignedInteger<TSigned> : IFormattableInteger<TSig
 internal interface IFormattableUnsignedInteger<TUnsigned> : IFormattableInteger<TUnsigned>, IUnsignedNumber<TUnsigned>
 	where TUnsigned : IFormattableUnsignedInteger<TUnsigned>
 {
+	static abstract TUnsigned E32 { get; }
+	static abstract TUnsigned E64 { get; }
+	
 	/// <summary>
-	/// Gets the absolute representation of the maximum representable value of <typeparamref name="TSigned"/>(Abs(TSigned.MinValue)).
+	/// Gets the absolute representation of the maximum representable value of <typeparamref name="TUnsigned"/>(Abs(TSigned.MinValue)).
 	/// </summary>
 	static abstract TUnsigned SignedMaxMagnitude { get; }
 
 	static abstract int CountDigits(in TUnsigned value);
 
 	static abstract void ToDecChars<TChar>(in TUnsigned number, Span<TChar> destination, int digits) where TChar : unmanaged, IUtfCharacter<TChar>;
+
+	static abstract TUnsigned MultiplyByUInt64(in TUnsigned left, ulong right);
+	
+	static abstract bool TryCheckedMultiplyAdd(TUnsigned left, ulong right, ulong addend, out TUnsigned result);
 
 	static bool IFormattableInteger<TUnsigned>.IsUnsignedInteger => true;
 }

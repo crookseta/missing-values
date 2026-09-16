@@ -1,5 +1,7 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System.Buffers.Binary;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Runtime.Intrinsics.Arm;
 
 namespace MissingValues.Internals
 {
@@ -19,6 +21,37 @@ namespace MissingValues.Internals
 			{
 				Span<TChar> span = builder.AppendSpan(TChar.GetLength(source));
 				TChar.Copy(source, span);
+			}
+		}
+
+		extension(uint)
+		{
+			internal static uint ReverseBits(uint value)
+			{
+				if (ArmBase.IsSupported)
+				{
+					return ArmBase.ReverseElementBits(value);
+				}
+				
+				value = ((value & 0xF0F0F0F0) >>> 4) | ((value & 0x0F0F0F0F) << 4);
+				value = ((value & 0xCCCCCCCC) >>> 2) | ((value & 0x33333333) << 2);
+				value = ((value & 0xAAAAAAAA) >>> 1) | ((value & 0x55555555) << 1);
+				return BinaryPrimitives.ReverseEndianness(value);
+			}
+		}
+		extension(ulong)
+		{
+			internal static ulong ReverseBits(ulong value)
+			{
+				if (ArmBase.IsSupported)
+				{
+					return ArmBase.Arm64.ReverseElementBits(value);
+				}
+				
+				value = ((value & 0xF0F0F0F0F0F0F0F0) >>> 4) | ((value & 0x0F0F0F0F0F0F0F0F) << 4);
+				value = ((value & 0xCCCCCCCCCCCCCCCC) >>> 2) | ((value & 0x3333333333333333) << 2);
+				value = ((value & 0xAAAAAAAAAAAAAAAA) >>> 1) | ((value & 0x5555555555555555) << 1);
+				return BinaryPrimitives.ReverseEndianness(value);
 			}
 		}
 		extension(UInt128 uInt128)
