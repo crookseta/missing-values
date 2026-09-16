@@ -66,8 +66,7 @@ internal static partial class NumberParser
 		ReadOnlySpan<TChar> trim = TChar.TrimStart(s);
 		charsConsumed = s.Length - trim.Length;
 
-		Span<TChar> positiveInf = stackalloc TChar[TChar.GetLength(info.PositiveInfinitySymbol)];
-		TChar.Copy(info.PositiveInfinitySymbol, positiveInf);
+		ReadOnlySpan<TChar> positiveInf = info.PositiveInfinitySymbolTChar(stackalloc TChar[16]);
 
 		if (StartsWithTrim(trim, positiveInf, ref charsConsumed))
 		{
@@ -75,8 +74,7 @@ internal static partial class NumberParser
 			return charsConsumed == s.Length ? ParsingStatus.Success : ParsingStatus.Partial;
 		}
 
-		Span<TChar> negativeInf = stackalloc TChar[TChar.GetLength(info.NegativeInfinitySymbol)];
-		TChar.Copy(info.NegativeInfinitySymbol, negativeInf);
+		ReadOnlySpan<TChar> negativeInf = info.NegativeInfinitySymbolTChar(stackalloc TChar[16]);
 
 		if (StartsWithTrim(trim, negativeInf, ref charsConsumed))
 		{
@@ -84,8 +82,7 @@ internal static partial class NumberParser
 			return charsConsumed == s.Length ? ParsingStatus.Success : ParsingStatus.Partial;
 		}
 
-		Span<TChar> nan = stackalloc TChar[TChar.GetLength(info.NaNSymbol)];
-		TChar.Copy(info.NaNSymbol, nan);
+		ReadOnlySpan<TChar> nan = info.NaNSymbolTChar(stackalloc TChar[16]);
 
 		if (StartsWithTrim(trim, nan, ref charsConsumed))
 		{
@@ -93,8 +90,7 @@ internal static partial class NumberParser
 			return charsConsumed == s.Length ? ParsingStatus.Success : ParsingStatus.Partial;
 		}
 
-		Span<TChar> positiveSign = stackalloc TChar[TChar.GetLength(info.PositiveSign)];
-		TChar.Copy(info.PositiveSign, positiveSign);
+		ReadOnlySpan<TChar> positiveSign = info.PositiveSignTChar(stackalloc TChar[16]);
 
 		if (TChar.StartsWith(trim, positiveSign, StringComparison.OrdinalIgnoreCase))
 		{
@@ -115,8 +111,8 @@ internal static partial class NumberParser
 			result = TFloat.Zero;
 			return charsConsumed == s.Length ? ParsingStatus.Success : ParsingStatus.Partial;
 		}
-		Span<TChar> negativeSign = stackalloc TChar[TChar.GetLength(info.NegativeSign)];
-		TChar.Copy(info.NegativeSign, negativeSign);
+		
+		ReadOnlySpan<TChar> negativeSign = info.NegativeSignTChar(stackalloc TChar[16]);
 
 		if (TChar.StartsWith(trim, negativeSign, StringComparison.OrdinalIgnoreCase))
 		{
@@ -192,8 +188,7 @@ internal static partial class NumberParser
 		bool isNegative = false;
 		if ((styles & NumberStyles.AllowLeadingSign) != 0)
 		{
-			Span<TChar> negativeSign = stackalloc TChar[TChar.GetLength(info.NegativeSign)];
-			TChar.Copy(info.NegativeSign, negativeSign);
+			ReadOnlySpan<TChar> negativeSign = info.NegativeSignTChar(stackalloc TChar[16]);
 			if (!negativeSign.IsEmpty && TChar.StartsWith(value.Slice(index), negativeSign, StringComparison.OrdinalIgnoreCase))
 			{
 				isNegative = true;
@@ -201,8 +196,7 @@ internal static partial class NumberParser
 			}
 			else
 			{
-				Span<TChar> positiveSign = stackalloc TChar[TChar.GetLength(info.PositiveSign)];
-				TChar.Copy(info.PositiveSign, positiveSign);
+				ReadOnlySpan<TChar> positiveSign = info.PositiveSignTChar(stackalloc TChar[16]);
 				if (!positiveSign.IsEmpty && TChar.StartsWith(value.Slice(index), positiveSign, StringComparison.OrdinalIgnoreCase))
 				{
 					index += positiveSign.Length;
@@ -281,8 +275,7 @@ internal static partial class NumberParser
 
 		if ((styles & NumberStyles.AllowDecimalPoint) != 0 && index < value.Length)
 		{
-			Span<TChar> decimalSeparator = stackalloc TChar[TChar.GetLength(info.NumberDecimalSeparator)];
-			TChar.Copy(info.NumberDecimalSeparator, decimalSeparator);
+			ReadOnlySpan<TChar> decimalSeparator = info.NumberDecimalSeparatorTChar(stackalloc TChar[16]);
 			if (TChar.StartsWith(value.Slice(index), decimalSeparator, StringComparison.OrdinalIgnoreCase))
 			{
 				index += decimalSeparator.Length;
@@ -344,10 +337,8 @@ internal static partial class NumberParser
             }
 
             bool exponentIsNegative = false;
-            Span<TChar> negSign = stackalloc TChar[TChar.GetLength(info.NegativeSign)];
-            TChar.Copy(info.NegativeSign, negSign);
-            Span<TChar> posSign = stackalloc TChar[TChar.GetLength(info.PositiveSign)];
-            TChar.Copy(info.PositiveSign, posSign);
+            ReadOnlySpan<TChar> negSign = info.NegativeSignTChar(stackalloc TChar[16]);
+            ReadOnlySpan<TChar> posSign = info.PositiveSignTChar(stackalloc TChar[16]);
             if (!negSign.IsEmpty && TChar.StartsWith(value.Slice(index), negSign, StringComparison.OrdinalIgnoreCase))
             {
                 exponentIsNegative = true;

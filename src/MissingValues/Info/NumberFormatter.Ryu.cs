@@ -355,8 +355,7 @@ internal static partial class NumberFormatter
 			isExceptional = false;
 
 			// Step 5: Print the decimal representation.
-			Span<TChar> negativeSign = stackalloc TChar[TChar.GetLength(info.NegativeSign)];
-			TChar.Copy(info.NegativeSign, negativeSign);
+			ReadOnlySpan<TChar> negativeSign = info.NegativeSignTChar(stackalloc TChar[16]);
 
 			int index = 0;
 			if (v.Sign)

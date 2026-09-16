@@ -181,48 +181,37 @@ namespace MissingValues.Internals
 			Debug.Assert(!number.IsNegative);
 			Debug.Assert(!number.HasNonZeroTail);
 
-			scoped Span<TChar> decSep;
-			scoped Span<TChar> numberDecSep;
-			scoped Span<TChar> groupSep;
-			scoped Span<TChar> numberGroupSep;
-			scoped Span<TChar> currSymbol;
-			Span<TChar> positiveSign = stackalloc TChar[TChar.GetLength(info.PositiveSign)];
-			Span<TChar> negativeSign = stackalloc TChar[TChar.GetLength(info.NegativeSign)];
+			scoped ReadOnlySpan<TChar> decSep;
+			scoped ReadOnlySpan<TChar> numberDecSep;
+			scoped ReadOnlySpan<TChar> groupSep;
+			scoped ReadOnlySpan<TChar> numberGroupSep;
+			scoped ReadOnlySpan<TChar> currSymbol;
+			ReadOnlySpan<TChar> positiveSign = info.PositiveSignTChar(stackalloc TChar[16]);
+			ReadOnlySpan<TChar> negativeSign = info.NegativeSignTChar(stackalloc TChar[16]);
 
 			bool parsingCurrency;
 
 			if ((styles & NumberStyles.AllowCurrencySymbol) != 0)
 			{
-				numberDecSep = stackalloc TChar[TChar.GetLength(info.NumberDecimalSeparator)];
-				numberGroupSep = stackalloc TChar[TChar.GetLength(info.NumberGroupSeparator)];
-				decSep = stackalloc TChar[TChar.GetLength(info.CurrencyDecimalSeparator)];
-				groupSep = stackalloc TChar[TChar.GetLength(info.CurrencyGroupSeparator)];
-				currSymbol = stackalloc TChar[TChar.GetLength(info.CurrencySymbol)];
-
-				TChar.Copy(info.NumberDecimalSeparator, numberDecSep);
-				TChar.Copy(info.NumberGroupSeparator, numberGroupSep);
-				TChar.Copy(info.CurrencyDecimalSeparator, decSep);
-				TChar.Copy(info.CurrencyGroupSeparator, groupSep);
-				TChar.Copy(info.CurrencySymbol, currSymbol);
+				numberDecSep = info.NumberDecimalSeparatorTChar(stackalloc TChar[16]);
+				numberGroupSep = info.NumberGroupSeparatorTChar(stackalloc TChar[16]);
+				decSep = info.CurrencyDecimalSeparatorTChar(stackalloc TChar[16]);
+				groupSep = info.CurrencyGroupSeparatorTChar(stackalloc TChar[16]);
+				currSymbol = info.CurrencySymbolTChar(stackalloc TChar[16]);
 
 				parsingCurrency = true;
 			}
 			else
 			{
-				decSep = stackalloc TChar[TChar.GetLength(info.NumberDecimalSeparator)];
-				groupSep = stackalloc TChar[TChar.GetLength(info.NumberGroupSeparator)];
+				decSep = info.NumberDecimalSeparatorTChar(stackalloc TChar[16]);
+				groupSep = info.NumberGroupSeparatorTChar(stackalloc TChar[16]);
 				currSymbol = [];
-
-				TChar.Copy(info.NumberDecimalSeparator, decSep);
-				TChar.Copy(info.NumberGroupSeparator, groupSep);
 
 				numberDecSep = decSep;
 				numberGroupSep = groupSep;
 
 				parsingCurrency = false;
 			}
-			TChar.Copy(info.PositiveSign, positiveSign);
-			TChar.Copy(info.NegativeSign, negativeSign);
 
 			State<int> state = default;
 			int pIndex = 0;

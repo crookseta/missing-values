@@ -53,15 +53,10 @@ internal readonly struct CurrencyFormat : INumberFormat
 			NegCurrencyFormats[(info.CurrencyNegativePattern)] :
 			PosCurrencyFormats[(info.CurrencyPositivePattern)];
 
-		Span<TChar> currencyDecimalSeparator = stackalloc TChar[TChar.GetLength(info.CurrencyDecimalSeparator)];
-		Span<TChar> currencyGroupSeparator = stackalloc TChar[TChar.GetLength(info.CurrencyGroupSeparator)];
-		Span<TChar> negativeSign = stackalloc TChar[TChar.GetLength(info.NegativeSign)];
-		Span<TChar> currencySymbol = stackalloc TChar[TChar.GetLength(info.CurrencySymbol)];
-
-		TChar.Copy(info.CurrencyDecimalSeparator, currencyDecimalSeparator);
-		TChar.Copy(info.CurrencyGroupSeparator, currencyGroupSeparator);
-		TChar.Copy(info.NegativeSign, negativeSign);
-		TChar.Copy(info.CurrencySymbol, currencySymbol);
+		ReadOnlySpan<TChar> currencyDecimalSeparator = info.CurrencyDecimalSeparatorTChar(stackalloc TChar[16]);
+		ReadOnlySpan<TChar> currencyGroupSeparator = info.CurrencyGroupSeparatorTChar(stackalloc TChar[16]);
+		ReadOnlySpan<TChar> negativeSign = info.NegativeSignTChar(stackalloc TChar[16]);
+		ReadOnlySpan<TChar> currencySymbol = info.CurrencySymbolTChar(stackalloc TChar[16]);
 
 		foreach (var ch in fmt)
 		{
@@ -104,16 +99,11 @@ internal readonly struct EngineeringFormat : INumberFormat
 
 	static void INumberFormat.Format<TChar>(ref ValueListBuilder<TChar> vlb, ref NumberInfo number, int nMaxDigits, bool isUpper, NumberFormatInfo info)
 	{
-		Span<TChar> numberDecimalSeparator = stackalloc TChar[TChar.GetLength(info.NumberDecimalSeparator)];
-
-		TChar.Copy(info.NumberDecimalSeparator, numberDecimalSeparator);
+		ReadOnlySpan<TChar> numberDecimalSeparator = info.NumberDecimalSeparatorTChar(stackalloc TChar[16]);
 
 		if (number.IsNegative)
 		{
-			Span<TChar> negativeSign = stackalloc TChar[TChar.GetLength(info.NegativeSign)];
-			TChar.Copy(info.NegativeSign, negativeSign);
-
-			vlb.Append(negativeSign);
+			vlb.Append(info.NegativeSignTChar(stackalloc TChar[16]));
 		}
 
 		int index = 0;
@@ -160,17 +150,11 @@ internal readonly struct FixedFormat : INumberFormat
 	{
 		if (number.IsNegative)
 		{
-			Span<TChar> negativeSign = stackalloc TChar[TChar.GetLength(info.NegativeSign)];
-			TChar.Copy(info.NegativeSign, negativeSign);
-
-			vlb.Append(negativeSign);
+			vlb.Append(info.NegativeSignTChar(stackalloc TChar[16]));
 		}
 
-		Span<TChar> numberDecimalSeparator = stackalloc TChar[TChar.GetLength(info.NumberDecimalSeparator)];
-		Span<TChar> numberGroupSeparator = stackalloc TChar[TChar.GetLength(info.NumberGroupSeparator)];
-
-		TChar.Copy(info.NumberDecimalSeparator, numberDecimalSeparator);
-		TChar.Copy(info.NumberGroupSeparator, numberGroupSeparator);
+		ReadOnlySpan<TChar> numberDecimalSeparator = info.NumberDecimalSeparatorTChar(stackalloc TChar[16]);
+		ReadOnlySpan<TChar> numberGroupSeparator = info.NumberGroupSeparatorTChar(stackalloc TChar[16]);
 
 		NumberFormatter.FormatGroupedNumeric(ref vlb, ref number, nMaxDigits, null, numberDecimalSeparator, numberGroupSeparator);
 	}
@@ -206,13 +190,9 @@ internal readonly struct NumericFormat : INumberFormat
 			['#'];
 
 
-		Span<TChar> numberDecimalSeparator = stackalloc TChar[TChar.GetLength(info.NumberDecimalSeparator)];
-		Span<TChar> numberGroupSeparator = stackalloc TChar[TChar.GetLength(info.NumberGroupSeparator)];
-		Span<TChar> negativeSign = stackalloc TChar[TChar.GetLength(info.NegativeSign)];
-
-		TChar.Copy(info.NumberDecimalSeparator, numberDecimalSeparator);
-		TChar.Copy(info.NumberGroupSeparator, numberGroupSeparator);
-		TChar.Copy(info.NegativeSign, negativeSign);
+		ReadOnlySpan<TChar> numberDecimalSeparator = info.NumberDecimalSeparatorTChar(stackalloc TChar[16]);
+		ReadOnlySpan<TChar> numberGroupSeparator = info.NumberGroupSeparatorTChar(stackalloc TChar[16]);
+		ReadOnlySpan<TChar> negativeSign = info.NegativeSignTChar(stackalloc TChar[16]);
 
 		foreach (var ch in fmt)
 		{

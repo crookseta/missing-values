@@ -43,15 +43,65 @@ internal static class NumberFormatInfoExtensions
 			       };
 		}
 
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		internal ReadOnlySpan<TChar> PositiveSignTChar<TChar>(Span<TChar> storage)
 			where TChar : unmanaged, IUtfCharacter<TChar>
 		{
 			return FromString(info.PositiveSign, storage);
 		}
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		internal ReadOnlySpan<TChar> NegativeSignTChar<TChar>(Span<TChar> storage)
 			where TChar : unmanaged, IUtfCharacter<TChar>
 		{
 			return FromString(info.NegativeSign, storage);
+		}
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		internal ReadOnlySpan<TChar> PositiveInfinitySymbolTChar<TChar>(Span<TChar> storage)
+			where TChar : unmanaged, IUtfCharacter<TChar>
+		{
+			return FromString(info.PositiveInfinitySymbol, storage);
+		}
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		internal ReadOnlySpan<TChar> NegativeInfinitySymbolTChar<TChar>(Span<TChar> storage)
+			where TChar : unmanaged, IUtfCharacter<TChar>
+		{
+			return FromString(info.NegativeInfinitySymbol, storage);
+		}
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		internal ReadOnlySpan<TChar> NaNSymbolTChar<TChar>(Span<TChar> storage)
+			where TChar : unmanaged, IUtfCharacter<TChar>
+		{
+			return FromString(info.NaNSymbol, storage);
+		}
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		internal ReadOnlySpan<TChar> NumberDecimalSeparatorTChar<TChar>(Span<TChar> storage)
+			where TChar : unmanaged, IUtfCharacter<TChar>
+		{
+			return FromString(info.NumberDecimalSeparator, storage);
+		}
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		internal ReadOnlySpan<TChar> NumberGroupSeparatorTChar<TChar>(Span<TChar> storage)
+			where TChar : unmanaged, IUtfCharacter<TChar>
+		{
+			return FromString(info.NumberGroupSeparator, storage);
+		}
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		internal ReadOnlySpan<TChar> CurrencyDecimalSeparatorTChar<TChar>(Span<TChar> storage)
+			where TChar : unmanaged, IUtfCharacter<TChar>
+		{
+			return FromString(info.CurrencyDecimalSeparator, storage);
+		}
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		internal ReadOnlySpan<TChar> CurrencyGroupSeparatorTChar<TChar>(Span<TChar> storage)
+			where TChar : unmanaged, IUtfCharacter<TChar>
+		{
+			return FromString(info.CurrencyGroupSeparator, storage);
+		}
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		internal ReadOnlySpan<TChar> CurrencySymbolTChar<TChar>(Span<TChar> storage)
+			where TChar : unmanaged, IUtfCharacter<TChar>
+		{
+			return FromString(info.CurrencySymbol, storage);
 		}
 	}
 }

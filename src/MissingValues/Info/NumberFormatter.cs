@@ -118,21 +118,18 @@ namespace MissingValues.Info
 
 				if (exceptional)
 				{
-					scoped Span<TChar> sign;
+					scoped ReadOnlySpan<TChar> sign;
 					if (number.DigitsCount > 1) // NaN
 					{
-						sign = stackalloc TChar[TChar.GetLength(provider.NaNSymbol)];
-						TChar.Copy(provider.NaNSymbol, sign);
+						sign = provider.NaNSymbolTChar(stackalloc TChar[16]);
 					}
 					else if (number.IsNegative) // Negative Infinity
 					{
-						sign = stackalloc TChar[TChar.GetLength(provider.NegativeInfinitySymbol)];
-						TChar.Copy(provider.NegativeInfinitySymbol, sign);
+						sign = provider.NegativeInfinitySymbolTChar(stackalloc TChar[16]);
 					}
 					else // Positive Infinity
 					{
-						sign = stackalloc TChar[TChar.GetLength(provider.PositiveInfinitySymbol)];
-						TChar.Copy(provider.PositiveInfinitySymbol, sign);
+						sign = provider.PositiveInfinitySymbolTChar(stackalloc TChar[16]);
 					}
 					bool res;
 					if (res = sign.TryCopyTo(destination))
@@ -371,8 +368,7 @@ namespace MissingValues.Info
 
 			if (value < 0)
 			{
-				Span<TChar> negativeSign = stackalloc TChar[TChar.GetLength(info.NegativeSign)];
-				TChar.Copy(info.NegativeSign, negativeSign);
+				ReadOnlySpan<TChar> negativeSign = info.NegativeSignTChar(stackalloc TChar[16]);
 				vlb.Append(negativeSign);
 				value = -value;
 			}
@@ -380,8 +376,7 @@ namespace MissingValues.Info
 			{
 				if (positiveSign)
 				{
-					Span<TChar> posSign = stackalloc TChar[TChar.GetLength(info.PositiveSign)];
-					TChar.Copy(info.PositiveSign, posSign);
+					ReadOnlySpan<TChar> posSign = info.PositiveSignTChar(stackalloc TChar[16]);
 					vlb.Append(posSign);
 				}
 			}

@@ -366,7 +366,7 @@ internal static partial class NumberFormatter
 		where TChar : unmanaged, IUtfCharacter<TChar>
 	{
 		int digits;
-		scoped Span<TChar> negativeSign;
+		scoped ReadOnlySpan<TChar> negativeSign;
 		NumberFormatInfo info;
 
 		if (format.IsEmpty)
@@ -386,8 +386,7 @@ internal static partial class NumberFormatter
 			else
 			{
 				info = NumberFormatInfo.GetInstance(provider);
-				negativeSign = stackalloc TChar[TChar.GetLength(info.NegativeSign)];
-				TChar.Copy(info.NegativeSign, negativeSign);
+				negativeSign = info.NegativeSignTChar(stackalloc TChar[16]);
 
 				TSigned abs = -value;
 				TUnsigned ui = abs >= TSigned.Zero ? TUnsigned.CreateTruncating(abs) : TUnsigned.SignedMaxMagnitude;
@@ -449,8 +448,7 @@ internal static partial class NumberFormatter
 				if (isNegative)
 				{
 					info = NumberFormatInfo.GetInstance(provider);
-					negativeSign = stackalloc TChar[TChar.GetLength(info.NegativeSign)];
-					TChar.Copy(info.NegativeSign, negativeSign);
+					negativeSign = info.NegativeSignTChar(stackalloc TChar[16]);
 
 					charsWritten = precision + negativeSign.Length;
 					if (destination.Length < charsWritten)
