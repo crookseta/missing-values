@@ -77,6 +77,11 @@ public partial struct UInt256
 				Half actual => (UInt256)actual,
 				float actual => (UInt256)actual,
 				double actual => (UInt256)actual,
+#if NET11_0_OR_GREATER
+				Decimal32 actual => (UInt256)actual,
+				Decimal64 actual => (UInt256)actual,
+				Decimal128 actual => (UInt256)actual,
+#endif
 				decimal actual => (UInt256)actual,
 				byte actual => (UInt256)actual,
 				ushort actual => (UInt256)actual,
@@ -119,6 +124,11 @@ public partial struct UInt256
 			Half actual => (actual < Half.Zero) ? MinValue : (UInt256)actual,
 			float actual => (actual < 0) ? MinValue : (UInt256)actual,
 			double actual => (actual < 0) ? MinValue : (actual > TwoPow256) ? MaxValue : (UInt256)actual,
+#if NET11_0_OR_GREATER
+			Decimal32 actual => (actual < Decimal32.Zero) ? MinValue : (actual > Decimal32.DecodeBinary(1443998497)) ? MaxValue : (UInt256)actual,
+			Decimal64 actual => (actual < Decimal64.Zero) ? MinValue : (actual > Decimal64.DecodeBinary(4144469578073229482)) ? MaxValue : (UInt256)actual,
+			Decimal128 actual => (actual < Decimal128.Zero) ? MinValue : (actual > Decimal128.DecodeBinary(new UInt128(0x3098_3917_0431_0A8A, 0xCEC1_632E_269F_6DDF))) ? MaxValue : (UInt256)actual,
+#endif
 			decimal actual => (actual < 0) ? MinValue : (UInt128)actual,
 			byte actual => actual,
 			ushort actual => actual,
@@ -154,6 +164,11 @@ public partial struct UInt256
 			Half actual => (actual < Half.Zero) ? MinValue : (UInt256)actual,
 			float actual => (actual < 0) ? MinValue : (UInt256)actual,
 			double actual => (actual < 0) ? MinValue : (UInt256)actual,
+#if NET11_0_OR_GREATER
+			Decimal32 actual => (actual < Decimal32.Zero) ? MinValue : (actual > Decimal32.DecodeBinary(1443998497)) ? MaxValue : (UInt256)actual,
+			Decimal64 actual => (actual < Decimal64.Zero) ? MinValue : (actual > Decimal64.DecodeBinary(4144469578073229482)) ? MaxValue : (UInt256)actual,
+			Decimal128 actual => (actual < Decimal128.Zero) ? MinValue : (actual > Decimal128.DecodeBinary(new UInt128(0x3098_3917_0431_0A8A, 0xCEC1_632E_269F_6DDF))) ? MaxValue : (UInt256)actual,
+#endif
 			decimal actual => (actual < 0) ? MinValue : (UInt256)actual,
 			byte actual => actual,
 			ushort actual => actual,
@@ -190,6 +205,11 @@ public partial struct UInt256
 				Half => (TOther)(object)(Half)value,
 				float => (TOther)(object)(float)value,
 				double => (TOther)(object)(double)value,
+#if NET11_0_OR_GREATER
+				Decimal32 => (TOther)(object)(Decimal32)value,
+				Decimal64 => (TOther)(object)(Decimal64)value,
+				Decimal128 => (TOther)(object)(Decimal128)value,
+#endif
 				decimal => (TOther)(object)(decimal)value,
 				byte => (TOther)(object)(byte)value,
 				ushort => (TOther)(object)(ushort)value,
@@ -226,6 +246,11 @@ public partial struct UInt256
 			Half => (TOther)(object)(Half)value,
 			float => (TOther)(object)(float)value,
 			double => (TOther)(object)(double)value,
+#if NET11_0_OR_GREATER
+			Decimal32 => (TOther)(object)(Decimal32)value,
+			Decimal64 => (TOther)(object)(Decimal64)value,
+			Decimal128 => (TOther)(object)(Decimal128)value,
+#endif
 			decimal => (TOther)(object)(decimal)value,
 			byte => (TOther)(object)((value >= 0xFF) ? byte.MaxValue : (byte)value),
 			ushort => (TOther)(object)((value >= 0xFFFF) ? ushort.MaxValue : (ushort)value),
@@ -271,6 +296,11 @@ public partial struct UInt256
 				float => (TOther)(object)(float)value,
 				double => (TOther)(object)(double)value,
 				NFloat => (TOther)(object)(NFloat)value,
+#if NET11_0_OR_GREATER
+				Decimal32 => (TOther)(object)(Decimal32)value,
+				Decimal64 => (TOther)(object)(Decimal64)value,
+				Decimal128 => (TOther)(object)(Decimal128)value,
+#endif
 				decimal => (TOther)(object)(decimal)value,
 				byte => (TOther)(object)(byte)value,
 				ushort => (TOther)(object)(ushort)value,
@@ -604,6 +634,34 @@ public partial struct UInt256
 
 		return (decimal)value.Lower;
 	}
+
+#if NET11_0_OR_GREATER
+	/// <summary>
+	/// Explicitly converts a <see cref="UInt256" /> value to a <see cref="Decimal32"/>.
+	/// </summary>
+	/// <param name="value">The value to convert.</param>
+	public static explicit operator Decimal32(in UInt256 value)
+	{
+		return BitHelper.ConvertToDecimalN<Decimal32, UInt256>(in value);
+	}
+	/// <summary>
+	/// Explicitly converts a <see cref="UInt256" /> value to a <see cref="Decimal64"/>.
+	/// </summary>
+	/// <param name="value">The value to convert.</param>
+	public static explicit operator Decimal64(in UInt256 value)
+	{
+		return BitHelper.ConvertToDecimalN<Decimal64, UInt256>(in value);
+	}
+	/// <summary>
+	/// Explicitly converts a <see cref="UInt256" /> value to a <see cref="Decimal128"/>.
+	/// </summary>
+	/// <param name="value">The value to convert.</param>
+	public static explicit operator Decimal128(in UInt256 value)
+	{
+		return BitHelper.ConvertToDecimalN<Decimal128, UInt256>(in value);
+	}
+#endif
+	
 	/// <summary>
 	/// Explicitly converts a <see cref="UInt256" /> value to a <see cref="Octo"/>.
 	/// </summary>
@@ -781,6 +839,63 @@ public partial struct UInt256
 
 		return ToUInt256(value);
 	}
+	
+#if NET11_0_OR_GREATER
+	/// <summary>
+	/// Explicitly converts a <see cref="Decimal32" /> value to a <see cref="UInt256"/>.
+	/// </summary>
+	/// <param name="value">The value to convert.</param>
+	public static explicit operator UInt256(Decimal32 value)
+	{
+		return BitHelper.ConvertFromDecimalN<UInt256, Decimal32>(value);
+	}
+	/// <summary>
+	/// Explicitly converts a <see cref="Decimal32" /> value to a <see cref="UInt256"/>.
+	/// </summary>
+	/// <param name="value">The value to convert.</param>
+	/// <exception cref="OverflowException"><paramref name="value"/> is outside the range of <see cref="UInt256"/>.</exception>
+	public static explicit operator checked UInt256(Decimal32 value)
+	{
+		return BitHelper.ConvertFromDecimalN<UInt256, Decimal32>(value, true);
+	}
+	
+	/// <summary>
+	/// Explicitly converts a <see cref="Decimal64" /> value to a <see cref="UInt256"/>.
+	/// </summary>
+	/// <param name="value">The value to convert.</param>
+	public static explicit operator UInt256(Decimal64 value)
+	{
+		return BitHelper.ConvertFromDecimalN<UInt256, Decimal64>(value);
+	}
+	/// <summary>
+	/// Explicitly converts a <see cref="Decimal64" /> value to a <see cref="UInt256"/>.
+	/// </summary>
+	/// <param name="value">The value to convert.</param>
+	/// <exception cref="OverflowException"><paramref name="value"/> is outside the range of <see cref="UInt256"/>.</exception>
+	public static explicit operator checked UInt256(Decimal64 value)
+	{
+		return BitHelper.ConvertFromDecimalN<UInt256, Decimal64>(value, true);
+	}
+	
+	/// <summary>
+	/// Explicitly converts a <see cref="Decimal128" /> value to a <see cref="UInt256"/>.
+	/// </summary>
+	/// <param name="value">The value to convert.</param>
+	public static explicit operator UInt256(Decimal128 value)
+	{
+		return BitHelper.ConvertFromDecimalN<UInt256, Decimal128>(value);
+	}
+	/// <summary>
+	/// Explicitly converts a <see cref="Decimal128" /> value to a <see cref="UInt256"/>.
+	/// </summary>
+	/// <param name="value">The value to convert.</param>
+	/// <exception cref="OverflowException"><paramref name="value"/> is outside the range of <see cref="UInt256"/>.</exception>
+	public static explicit operator checked UInt256(Decimal128 value)
+	{
+		return BitHelper.ConvertFromDecimalN<UInt256, Decimal128>(value, true);
+	}
+#endif
+	
 	/// <summary>
 	/// Explicitly converts a <see cref="NFloat" /> value to a <see cref="UInt512"/>.
 	/// </summary>

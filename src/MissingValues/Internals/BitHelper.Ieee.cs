@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System.Buffers.Binary;
+using System.Diagnostics;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using MissingValues.Primitives;
@@ -766,6 +767,141 @@ namespace MissingValues.Internals
 			}
 			ar = x - ai;
 		}
+
+#if NET11_0_OR_GREATER
+		private static void GetExponentAndSignificand<T>(T value, out int exponent, out UInt512 significand)
+			where T : IDecimalFloatingPointIeee754<T>
+		{
+			Span<byte> exponentBuffer = stackalloc byte[8];
+			Span<byte> significandBuffer = stackalloc byte[64];
+
+			value.TryWriteExponentLittleEndian(exponentBuffer, out int written);
+			Debug.Assert(written <= 8);
+			value.TryWriteSignificandLittleEndian(significandBuffer, out written);
+			Debug.Assert(written <= 64);
+			
+			exponent = BinaryPrimitives.ReadInt32LittleEndian(exponentBuffer);
+			significand = BinaryOperations.ReadUInt512LittleEndian(significandBuffer);
+		}
+
+		internal static TInteger ConvertFromDecimalN<TInteger, TDecimal>(TDecimal value, bool isChecked = false)
+			where TInteger : IBigInteger<TInteger>, IMinMaxValue<TInteger>
+			where TDecimal : IDecimalFloatingPointIeee754<TDecimal>
+		{
+			if (TDecimal.IsNaN(value))
+			{
+				if (isChecked)
+				{
+					Thrower.IntegerOverflow();
+				}
+				return TInteger.Zero;
+			}
+		
+			bool isNegative = TDecimal.IsNegative(value);
+
+			if (TDecimal.IsInfinity(value))
+			{
+				if (isChecked)
+				{
+					Thrower.IntegerOverflow();
+				}
+				return isNegative ? TInteger.MinValue : TInteger.MaxValue;
+			}
+		
+			GetExponentAndSignificand(value, out var exponent, out var significand);
+			
+			if (significand == UInt512.Zero)
+			{
+				return TInteger.Zero;
+			}
+			
+			UInt512 magnitude;
+			bool exceedsUInt512 = false;
+			if (exponent >= 0)
+			{
+				// magnitude = significand * 10^exponent. UInt512 holds at most 155 digits, so any exponent that
+				// would push the product past that bound overflows every integer type and saturates/throws.
+				UInt512 maxValueBy10 = UInt512.MaxValue / 10;
+				for (int i = 0; i < exponent && !exceedsUInt512; i++)
+				{
+					if (significand > maxValueBy10)
+					{
+						exceedsUInt512 = true;
+						break;
+					}
+					significand *= 10;
+				}
+
+				magnitude = exceedsUInt512 ? UInt512.Zero : significand;
+			}
+			else
+			{
+				// magnitude = significand / 10^(-exponent), truncated toward zero. Once the divisor has more
+				// digits than the significand the quotient is zero.
+				int drop = -exponent;
+
+				for (int i = 0; i < drop && significand != UInt512.Zero; i++)
+				{
+					significand /= 10;
+				}
+
+				magnitude = significand;
+			}
+			
+			bool isUnsigned = TInteger.IsZero(TInteger.MinValue);
+			UInt512 maxMagnitude = UInt512.CreateTruncating(TInteger.MaxValue);
+			
+			UInt512 minMagnitude = isUnsigned ? UInt512.Zero : maxMagnitude + UInt512.One;
+			
+			if (!isNegative)
+			{
+				if (exceedsUInt512 || (magnitude > maxMagnitude))
+				{
+					if (isChecked)
+					{
+						Thrower.IntegerOverflow();
+					}
+					return TInteger.MaxValue;
+				}
+
+				return TInteger.CreateTruncating(magnitude);
+			}
+
+			// Negative magnitude.
+			if (isUnsigned)
+			{
+				if (isChecked && (magnitude != UInt512.Zero))
+				{
+					Thrower.IntegerOverflow();
+				}
+				return TInteger.Zero;
+			}
+
+			if (exceedsUInt512 || (magnitude > minMagnitude))
+			{
+				if (isChecked)
+				{
+					Thrower.IntegerOverflow();
+				}
+				return TInteger.MinValue;
+			}
+
+			if (magnitude == minMagnitude)
+			{
+				return TInteger.MinValue;
+			}
+
+			return TInteger.Zero - TInteger.CreateTruncating(magnitude);
+		}
+
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		internal static TDecimal ConvertToDecimalN<TDecimal, TInteger>(in TInteger value)
+			where TDecimal : IDecimalFloatingPointIeee754<TDecimal>
+			where TInteger : IBigInteger<TInteger>, IMinMaxValue<TInteger>
+		{
+			throw new NotImplementedException();
+		}
+#endif
 
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		internal static UInt128 AddQuadBits(UInt128 uiA, UInt128 uiB, bool signZ)

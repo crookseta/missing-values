@@ -65,6 +65,13 @@ public static class OctoExtensions
 		public static Octo NFloatMinValue => NFloat.Size == 8 ? Octo.DoubleMinValue : Octo.SingleMinValue;
 		public static Octo QuadMaxValue => Values.CreateFloat<Octo>(0x43FF_EFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xF000_0000_0000_0000, 0x0000_0000_0000_0000);
 		public static Octo QuadMinValue => Values.CreateFloat<Octo>(0xC3FF_EFFF_FFFF_FFFF, 0xFFFF_FFFF_FFFF_FFFF, 0xF000_0000_0000_0000, 0x0000_0000_0000_0000);
+		
+		public static Octo Decimal32MaxValue => Values.CreateFloat<Octo>(0x4017_65C0_1040_09E0, 0x12E0_0300_08A0_0380, 0x1AED_6792_CCAD_29A9, 0xD27D_9160_3B50_BF5D);
+		public static Octo Decimal32MinValue => Values.CreateFloat<Octo>(0xC017_65C0_1040_09E0, 0x12E0_0300_08A0_0380, 0x1AED_6792_CCAD_29A9, 0xD27D_9160_3B50_BF5D);
+		public static Octo Decimal64MaxValue => Values.CreateFloat<Octo>(0x404F_DEBE_EB7A_9B56, 0xD9B6_0E91_DC03_AB30, 0xAFC7_EA72_4341_EA33, 0x2994_DBDE_1B58_8CA4);
+		public static Octo Decimal64MinValue => Values.CreateFloat<Octo>(0xC04F_DEBE_EB7A_9B56, 0xD9B6_0E91_DC03_AB30, 0xAFC7_EA72_4341_EA33, 0x2994_DBDE_1B58_8CA4);
+		public static Octo Decimal128MaxValue => Values.CreateFloat<Octo>(0x44FF_4300_0080_3A00, 0x1200_2900_0880_6B80, 0x4490_2FF5_3A96_BC5, 0xC2D6A_4594_3117_1A7);
+		public static Octo Decimal128MinValue => Values.CreateFloat<Octo>(0xC4FF_4300_0080_3A00, 0x1200_2900_0880_6B80, 0x4490_2FF5_3A96_BC5, 0xC2D6A_4594_3117_1A7);
 
 		public static Octo Delta => Values.CreateFloat<Octo>(0x400E_B000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
 	}

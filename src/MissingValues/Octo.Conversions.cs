@@ -80,6 +80,11 @@ public partial struct Octo
 			NFloat actual => (Octo)actual,
 			Quad actual => (Octo)actual,
 			Octo actual => actual,
+#if NET11_0_OR_GREATER
+			Decimal32 actual => (Octo)actual,
+			Decimal64 actual => (Octo)actual,
+			Decimal128 actual => (Octo)actual,
+#endif
 			decimal actual => (Octo)actual,
 			byte actual => (Octo)actual,
 			ushort actual => (Octo)actual,
@@ -118,6 +123,11 @@ public partial struct Octo
 				NFloat => (TOther)(object)(NFloat)value,
 				Quad => (TOther)(object)(Quad)value,
 				Octo => (TOther)(object)value,
+#if NET11_0_OR_GREATER
+				Decimal32 => (TOther)(object)(Decimal32)value,
+				Decimal64 => (TOther)(object)(Decimal64)value,
+				Decimal128 => (TOther)(object)(Decimal128)value,
+#endif
 				decimal => (TOther)(object)(decimal)value,
 				byte => (TOther)(object)(byte)value,
 				ushort => (TOther)(object)(ushort)value,
@@ -160,6 +170,11 @@ public partial struct Octo
 			NFloat => (TOther)(object)(NFloat)value,
 			Quad => (TOther)(object)(Quad)value,
 			Octo => (TOther)(object)value,
+#if NET11_0_OR_GREATER
+			Decimal32 => (TOther)(object)(Decimal32)value,
+			Decimal64 => (TOther)(object)(Decimal64)value,
+			Decimal128 => (TOther)(object)(Decimal128)value,
+#endif
 			decimal => (TOther)(object)(decimal)value,
 			byte => (TOther)(object)((value >= byte.MaxValue) ? byte.MaxValue : (value <= Octo.Zero) ? byte.MinValue : (byte)value),
 			ushort => (TOther)(object)((value >= ushort.MaxValue) ? ushort.MaxValue : (value <= Octo.Zero) ? ushort.MinValue : (ushort)value),
@@ -1310,6 +1325,33 @@ public partial struct Octo
 	{
 		return (decimal)(double)value;
 	}
+#if NET11_0_OR_GREATER
+	/// <summary>
+	/// Explicitly converts a <see cref="Octo" /> value to a <see cref="Decimal128"/>.
+	/// </summary>
+	/// <param name="value">The value to convert.</param>
+	public static explicit operator Decimal128(in Octo value)
+	{
+		return (Decimal128)(double)value;
+	}
+	/// <summary>
+	/// Explicitly converts a <see cref="Octo" /> value to a <see cref="Decimal64"/>.
+	/// </summary>
+	/// <param name="value">The value to convert.</param>
+	public static explicit operator Decimal64(in Octo value)
+	{
+		return (Decimal64)(double)value;
+	}
+	/// <summary>
+	/// Explicitly converts a <see cref="Octo" /> value to a <see cref="Decimal32"/>.
+	/// </summary>
+	/// <param name="value">The value to convert.</param>
+	public static explicit operator Decimal32(in Octo value)
+	{
+		return (Decimal32)(double)value;
+	}
+#endif
+	
 	/// <summary>
 	/// Explicitly converts a <see cref="Octo" /> value to a <see cref="Quad"/>.
 	/// </summary>
@@ -1686,6 +1728,33 @@ public partial struct Octo
 	{
 		return (Octo)(double)value;
 	}
+#if NET11_0_OR_GREATER
+	/// <summary>
+	/// Implicitly converts a <see cref="Decimal128" /> value to a <see cref="Octo"/>.
+	/// </summary>
+	/// <param name="value">The value to convert.</param>
+	public static implicit operator Octo(Decimal128 value)
+	{
+		return (Octo)(double)value;
+	}
+	/// <summary>
+	/// Implicitly converts a <see cref="Decimal64" /> value to a <see cref="Octo"/>.
+	/// </summary>
+	/// <param name="value">The value to convert.</param>
+	public static implicit operator Octo(Decimal64 value)
+	{
+		return (Octo)(double)value;
+	}
+	/// <summary>
+	/// Implicitly converts a <see cref="Decimal32" /> value to a <see cref="Octo"/>.
+	/// </summary>
+	/// <param name="value">The value to convert.</param>
+	public static implicit operator Octo(Decimal32 value)
+	{
+		return (Octo)(double)value;
+	}
+#endif
+	
 	/// <summary>
 	/// Implicitly converts a <see cref="double" /> value to a <see cref="Octo"/>.
 	/// </summary>
