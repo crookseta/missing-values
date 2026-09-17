@@ -321,68 +321,38 @@ public partial struct Int256 :
 	/// <inheritdoc/>
 	public static Int256 Parse(ReadOnlySpan<char> s, NumberStyles style, IFormatProvider? provider)
 	{
-		var status = NumberParser.TryParseToSigned<Int256, UInt256, Utf16Char>(Utf16Char.CastFromCharSpan(s), style, provider, out Int256 output);
-		if (!status.IsSuccessful())
-		{
-			status.Throw<Int256>(s.ToString());
-		}
-		return output;
+		return NumberParser.ParseToInteger<Int256, Utf16Char>(Utf16Char.CastFromCharSpan(s), style, provider);
 	}
 
 	/// <inheritdoc/>
 	public static Int256 Parse(string? s, NumberStyles style, IFormatProvider? provider)
 	{
 		ArgumentNullException.ThrowIfNull(s);
-		var status = NumberParser.TryParseToSigned<Int256, UInt256, Utf16Char>(Utf16Char.CastFromCharSpan(s), style, provider, out Int256 output);
-		if (!status.IsSuccessful())
-		{
-			status.Throw<Int256>(s.ToString());
-		}
-		return output;
+		return NumberParser.ParseToInteger<Int256, Utf16Char>(Utf16Char.CastFromCharSpan(s), style, provider);
 	}
 
 	/// <inheritdoc/>
 	public static Int256 Parse(ReadOnlySpan<char> s, IFormatProvider? provider)
 	{
-		var status = NumberParser.TryParseToSigned<Int256, UInt256, Utf16Char>(Utf16Char.CastFromCharSpan(s), NumberStyles.Integer, provider, out Int256 output);
-		if (!status.IsSuccessful())
-		{
-			status.Throw<Int256>(s.ToString());
-		}
-		return output;
+		return NumberParser.ParseToInteger<Int256, Utf16Char>(Utf16Char.CastFromCharSpan(s), NumberStyles.Integer, provider);
 	}
 
 	/// <inheritdoc/>
 	public static Int256 Parse(string? s, IFormatProvider? provider)
 	{
 		ArgumentNullException.ThrowIfNull(s);
-		var status = NumberParser.TryParseToSigned<Int256, UInt256, Utf16Char>(Utf16Char.CastFromCharSpan(s), NumberStyles.Integer, provider, out Int256 output);
-		if (!status.IsSuccessful())
-		{
-			status.Throw<Int256>(s.ToString());
-		}
-		return output;
+		return NumberParser.ParseToInteger<Int256, Utf16Char>(Utf16Char.CastFromCharSpan(s), NumberStyles.Integer, provider);
 	}
 
 	/// <inheritdoc/>
 	public static Int256 Parse(ReadOnlySpan<byte> utf8Text, NumberStyles style, IFormatProvider? provider)
 	{
-		var status = NumberParser.TryParseToSigned<Int256, UInt256, Utf8Char>(Utf8Char.CastFromByteSpan(utf8Text), style, provider, out Int256 output);
-		if (!status.IsSuccessful())
-		{
-			status.Throw<Int256>(utf8Text);
-		}
-		return output;
+		return NumberParser.ParseToInteger<Int256, Utf8Char>(Utf8Char.CastFromByteSpan(utf8Text), style, provider);
 	}
 	/// <inheritdoc/>
 	public static Int256 Parse(ReadOnlySpan<byte> utf8Text, IFormatProvider? provider)
 	{
-		var status = NumberParser.TryParseToSigned<Int256, UInt256, Utf8Char>(Utf8Char.CastFromByteSpan(utf8Text), NumberStyles.Integer, provider, out Int256 output);
-		if (!status.IsSuccessful())
-		{
-			status.Throw<Int256>(utf8Text);
-		}
-		return output;
+		return NumberParser.ParseToInteger<Int256, Utf8Char>(Utf8Char.CastFromByteSpan(utf8Text), NumberStyles.Integer, provider);
 	}
 
 	/// <inheritdoc/>
@@ -423,7 +393,7 @@ public partial struct Int256 :
 			return false;
 		}
 
-		return NumberParser.TryParseToSigned<Int256, UInt256, Utf16Char>(Utf16Char.CastFromCharSpan(s), style, provider, out result).IsSuccessful();
+		return NumberParser.TryParseToInteger(Utf16Char.CastFromCharSpan(s), style, provider, false, out result, out _);
 	}
 
 	/// <inheritdoc/>
@@ -435,7 +405,7 @@ public partial struct Int256 :
 			return false;
 		}
 
-		return NumberParser.TryParseToSigned<Int256, UInt256, Utf16Char>(Utf16Char.CastFromCharSpan(s), style, provider, out result).IsSuccessful();
+		return NumberParser.TryParseToInteger(Utf16Char.CastFromCharSpan(s), style, provider, false, out result, out _);
 	}
 
 	/// <inheritdoc/>
@@ -447,7 +417,7 @@ public partial struct Int256 :
 			return false;
 		}
 
-		return NumberParser.TryParseToSigned<Int256, UInt256, Utf16Char>(Utf16Char.CastFromCharSpan(s), NumberStyles.Integer, provider, out result).IsSuccessful();
+		return NumberParser.TryParseToInteger(Utf16Char.CastFromCharSpan(s), NumberStyles.Integer, provider, false, out result, out _);
 	}
 
 	/// <inheritdoc/>
@@ -459,7 +429,7 @@ public partial struct Int256 :
 			return false;
 		}
 
-		return NumberParser.TryParseToSigned<Int256, UInt256, Utf16Char>(Utf16Char.CastFromCharSpan(s), NumberStyles.Integer, provider, out result).IsSuccessful();
+		return NumberParser.TryParseToInteger(Utf16Char.CastFromCharSpan(s), NumberStyles.Integer, provider, false, out result, out _);
 	}
 
 	/// <inheritdoc/>
@@ -471,7 +441,7 @@ public partial struct Int256 :
 			return false;
 		}
 
-		return NumberParser.TryParseToSigned<Int256, UInt256, Utf8Char>(Utf8Char.CastFromByteSpan(utf8Text), style, provider, out result).IsSuccessful();
+		return NumberParser.TryParseToInteger(Utf8Char.CastFromByteSpan(utf8Text), style, provider, false, out result, out _);
 	}
 	/// <inheritdoc/>
 	public static bool TryParse(ReadOnlySpan<byte> utf8Text, IFormatProvider? provider, [MaybeNullWhen(false)] out Int256 result)
@@ -482,8 +452,49 @@ public partial struct Int256 :
 			return false;
 		}
 
-		return NumberParser.TryParseToSigned<Int256, UInt256, Utf8Char>(Utf8Char.CastFromByteSpan(utf8Text), NumberStyles.Integer, provider, out result).IsSuccessful();
+		return NumberParser.TryParseToInteger(Utf8Char.CastFromByteSpan(utf8Text), NumberStyles.Integer, provider, false, out result, out _);
 	}
+
+#if NET11_0_OR_GREATER
+	/// <inheritdoc/>
+	public static bool TryParsePartial([NotNullWhen(true)] string? s, NumberStyles style, IFormatProvider? provider, out Int256 result, out int charsConsumed)
+	{
+		if (string.IsNullOrWhiteSpace(s))
+		{
+			charsConsumed = 0;
+			result = default;
+			return false;
+		}
+		
+		return NumberParser.TryParseToInteger(Utf16Char.CastFromCharSpan(s), style, provider, true, out result, out charsConsumed);
+	}
+
+	/// <inheritdoc/>
+	public static bool TryParsePartial(ReadOnlySpan<char> s, NumberStyles style, IFormatProvider? provider, out Int256 result, out int charsConsumed)
+	{
+		if (s.Length == 0 || s.IsWhiteSpace())
+		{
+			charsConsumed = 0;
+			result = default;
+			return false;
+		}
+		
+		return NumberParser.TryParseToInteger(Utf16Char.CastFromCharSpan(s), style, provider, true, out result, out charsConsumed);
+	}
+
+	/// <inheritdoc/>
+	public static bool TryParsePartial(ReadOnlySpan<byte> utf8Text, NumberStyles style, IFormatProvider? provider, out Int256 result, out int bytesConsumed)
+	{
+		if (utf8Text.Length == 0 || !utf8Text.ContainsAnyExcept((byte)' '))
+		{
+			bytesConsumed = 0;
+			result = default;
+			return false;
+		}
+		
+		return NumberParser.TryParseToInteger(Utf8Char.CastFromByteSpan(utf8Text), style, provider, true, out result, out bytesConsumed);
+	}
+#endif
 
 	static bool IBinaryInteger<Int256>.TryReadBigEndian(ReadOnlySpan<byte> source, bool isUnsigned, out Int256 value)
 	{

@@ -11,7 +11,7 @@ namespace MissingValues.Internals;
  * https://github.com/dotnet/runtime/blob/main/src/libraries/System.Private.CoreLib/src/System/Number.BigInteger.cs
  */
 [StructLayout(LayoutKind.Sequential, Pack = 1)]
-internal unsafe ref partial struct BigNumber
+internal ref partial struct BigNumber
 {
 	// The longest binary mantissa requires: explicit mantissa bits + abs(min exponent)
 	// * Half:     10 +    14 =    24
@@ -36,7 +36,7 @@ internal unsafe ref partial struct BigNumber
 	private const int MaxBlockCount = (MaxBits + (BitsPerBlock - 1)) / BitsPerBlock; // 13624
 	private const int MaxUInt64Pow10 = 19;
 	private long _length;
-	private fixed ulong _blocks[MaxBlockCount];
+	private InlineArray _blocks;
 
 	internal void Add(ulong value)
 	{
@@ -79,6 +79,7 @@ internal unsafe ref partial struct BigNumber
 		int smallLength = (int)small._length;
 
 		// The output will be at least as long as the largest input
+		Unsafe.SkipInit(out result);
 		result._length = largeLength;
 
 		// Add each block and add carry the overflow to the next block
@@ -178,7 +179,7 @@ internal unsafe ref partial struct BigNumber
 	internal static uint CountSignificantBits<T>(T value)
 		where T : unmanaged, IBinaryInteger<T>, IUnsignedNumber<T>
 	{
-		return (uint)(sizeof(T) * 8) - uint.CreateChecked(T.LeadingZeroCount(value));
+		return (uint)(Unsafe.SizeOf<T>() * 8) - uint.CreateChecked(T.LeadingZeroCount(value));
 	}
 
 	internal static uint CountSignificantBits(ref BigNumber value)
@@ -192,7 +193,7 @@ internal unsafe ref partial struct BigNumber
 		// last index and add that to the number of bits we skipped.
 
 		uint lastIndex = (uint)(value._length - 1);
-		return (lastIndex * BitsPerBlock) + CountSignificantBits(value._blocks[lastIndex]);
+		return (lastIndex * BitsPerBlock) + CountSignificantBits(value._blocks[(int)lastIndex]);
 	}
 
 	internal static void DivRem(scoped ref BigNumber lhs, scoped ref BigNumber rhs, out BigNumber quo, out BigNumber rem)
@@ -219,6 +220,9 @@ internal unsafe ref partial struct BigNumber
 			SetUInt64(out rem, remainder);
 			return;
 		}
+		
+		Unsafe.SkipInit(out quo);
+		Unsafe.SkipInit(out rem);
 
 		if (rhsLength == 1)
 		{
@@ -333,19 +337,21 @@ internal unsafe ref partial struct BigNumber
 					// https://github.com/dotnet/roslyn/issues/64393
 
 					// Now it's time to subtract our current quotient
-					ulong carry = SubtractDivisor(ref rem, n, ref rhs, digit);
-
-					if (carry != t)
+					unsafe
 					{
-						Debug.Assert(carry == t + 1);
+						ulong carry = SubtractDivisor(ref rem, n, ref rhs, digit);
 
-						// Our guess was still exactly one too high
-						carry = AddDivisor(ref rem, n, ref rhs);
-						digit--;
+						if (carry != t)
+						{
+							Debug.Assert(carry == t + 1);
 
-						Debug.Assert(carry == 1);
+							// Our guess was still exactly one too high
+							carry = AddDivisor(ref rem, n, ref rhs);
+							digit--;
+
+							Debug.Assert(carry == 1);
+						}
 					}
-
 				}
 
 				// We have the digit!
@@ -488,6 +494,7 @@ internal unsafe ref partial struct BigNumber
 			return;
 		}
 
+		Unsafe.SkipInit(out result);
 		int lhsLength = (int)lhs._length;
 		int index = 0;
 		ulong carry = 0;
@@ -546,6 +553,7 @@ internal unsafe ref partial struct BigNumber
 		Debug.Assert(unchecked((uint)(maxResultLength)) <= MaxBlockCount);
 
 		// Zero out result internal blocks.
+		Unsafe.SkipInit(out result);
 		result._length = maxResultLength;
 		result.Clear((uint)maxResultLength);
 
@@ -588,12 +596,13 @@ internal unsafe ref partial struct BigNumber
 
 	internal static void Pow2(uint exponent, out BigNumber result)
 	{
-		uint blocksToShift = DivRem64(exponent, out uint remainingBitsToShift);
-		result._length = (int)blocksToShift + 1;
+		Unsafe.SkipInit(out result);
+		int blocksToShift = (int)DivRem64(exponent, out uint remainingBitsToShift);
+		result._length = blocksToShift + 1;
 		Debug.Assert(unchecked((uint)result._length) <= MaxBlockCount);
 		if (blocksToShift > 0)
 		{
-			result.Clear(blocksToShift);
+			result.Clear((uint)blocksToShift);
 		}
 		result._blocks[blocksToShift] = 1UL << (int)(remainingBitsToShift);
 	}
@@ -645,11 +654,9 @@ internal unsafe ref partial struct BigNumber
 			if ((exponent & 1) != 0)
 			{
 				// Multiply into the next temporary
-				fixed (ulong* pBigNumEntry = &Pow10BigNumTable[Pow10BigNumTableIndices[(int)index]])
-				{
-					ref BigNumber rhs = ref *(BigNumber*)(pBigNumEntry);
-					Multiply(ref lhs, ref rhs, out product);
-				}
+				var pow10BigNumTable = Pow10BigNumTable;
+				ref BigNumber rhs = ref Unsafe.As<ulong, BigNumber>(ref Unsafe.Add(ref MemoryMarshal.GetReference(pow10BigNumTable), Pow10BigNumTableIndices[(int)index]));
+				Multiply(ref lhs, ref rhs, out product);
 
 				// Swap to the next temporary
 				ref BigNumber temp = ref product;
@@ -757,12 +764,12 @@ internal unsafe ref partial struct BigNumber
 	internal ulong GetBlock(uint index)
 	{
 		Debug.Assert(index < _length);
-		return _blocks[index];
+		return _blocks[(int)index];
 	}
 	internal ulong GetBlockOrZero(uint index)
 	{
 		Debug.Assert(index < MaxBlockCount);
-		return index >= _length ? 0 : _blocks[index];
+		return index >= _length ? 0 : _blocks[(int)index];
 	}
 
 	internal readonly int GetLength()
@@ -843,6 +850,7 @@ internal unsafe ref partial struct BigNumber
 		}
 		else
 		{
+			Unsafe.SkipInit(out result);
 			result._blocks[0] = value;
 			result._length = 1;
 		}
@@ -856,6 +864,7 @@ internal unsafe ref partial struct BigNumber
 		}
 		else
 		{
+			Unsafe.SkipInit(out result);
 			result._blocks[0] = value;
 			result._length = 1;
 		}
@@ -869,6 +878,7 @@ internal unsafe ref partial struct BigNumber
 		}
 		else
 		{
+			Unsafe.SkipInit(out result);
 			result._blocks[0] = value.Lower;
 			result._blocks[1] =value.Upper;
 
@@ -891,6 +901,7 @@ internal unsafe ref partial struct BigNumber
 		}
 		else
 		{
+			Unsafe.SkipInit(out result);
 			result._blocks[0] = value.Part0;
 			result._blocks[1] = value.Part1;
 			result._blocks[2] = value.Part2;
@@ -927,6 +938,7 @@ internal unsafe ref partial struct BigNumber
 
 	internal static void SetValue(out BigNumber result, scoped ref BigNumber value)
 	{
+		Unsafe.SkipInit(out result);
 		int rhsLength = (int)value._length;
 		result._length = rhsLength;
 
@@ -938,6 +950,7 @@ internal unsafe ref partial struct BigNumber
 
 	internal static void SetZero(out BigNumber result)
 	{
+		Unsafe.SkipInit(out result);
 		result._length = 0;
 	}
 
@@ -1008,7 +1021,7 @@ internal unsafe ref partial struct BigNumber
 			Clear(blocksToShift);
 
 			// Check if the terminating block has no set bits
-			if (_blocks[_length - 1] == 0)
+			if (_blocks[(int)_length - 1] == 0)
 			{
 				_length--;
 			}
@@ -1109,10 +1122,7 @@ internal unsafe ref partial struct BigNumber
 		return stringBuilder.ToString();
 	}
 
-	private void Clear(uint length) =>
-		NativeMemory.Clear(
-			(byte*)Unsafe.AsPointer(ref _blocks[0]), // This is safe to do since we are a ref struct
-			length * sizeof(ulong));
+	private void Clear(uint length) => _blocks[..((int)length)].Clear();
 
 	private static uint DivRem32(uint value, out uint remainder)
 	{
@@ -1123,5 +1133,11 @@ internal unsafe ref partial struct BigNumber
 	{
 		remainder = value & 63;
 		return value >> 6;
+	}
+	
+	[InlineArray(MaxBlockCount)]
+	private struct InlineArray
+	{
+		private ulong _0;
 	}
 }

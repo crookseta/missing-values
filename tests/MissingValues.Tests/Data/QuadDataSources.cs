@@ -464,6 +464,9 @@ public class QuadDataSources
 		yield return () => ("1.000", NumberStyles.Float, CultureInfo.InvariantCulture, Quad.One);
 		yield return () => ("1,000.00", NumberStyles.Float | NumberStyles.AllowThousands, CultureInfo.InvariantCulture, Quad.Thousand);
 		yield return () => ("-1,000.00", NumberStyles.Float | NumberStyles.AllowThousands, CultureInfo.InvariantCulture, Quad.NegativeThousand);
+
+		yield return () => ("9.99999E6000", NumberStyles.Float, CultureInfo.InvariantCulture, Quad.PositiveInfinity);
+		yield return () => ("1E-6000", NumberStyles.Float, CultureInfo.InvariantCulture, Quad.Zero);
     }
 
     public static IEnumerable<Func<(char[], NumberStyles, IFormatProvider?, Quad)>> ParseSpanTestData()
@@ -490,6 +493,9 @@ public class QuadDataSources
 	    yield return () => ("1.000".ToCharArray(), NumberStyles.Float, CultureInfo.InvariantCulture, Quad.One);
 	    yield return () => ("1,000.00".ToCharArray(), NumberStyles.Float | NumberStyles.AllowThousands, CultureInfo.InvariantCulture, Quad.Thousand);
 	    yield return () => ("-1,000.00".ToCharArray(), NumberStyles.Float | NumberStyles.AllowThousands, CultureInfo.InvariantCulture, Quad.NegativeThousand);
+	    
+	    yield return () => ("9.99999E6000".ToCharArray(), NumberStyles.Float, CultureInfo.InvariantCulture, Quad.PositiveInfinity);
+	    yield return () => ("1E-6000".ToCharArray(), NumberStyles.Float, CultureInfo.InvariantCulture, Quad.Zero);
     }
 
     public static IEnumerable<Func<(byte[], NumberStyles, IFormatProvider?, Quad)>> ParseUtf8TestData()
@@ -516,6 +522,9 @@ public class QuadDataSources
 	    yield return () => ("1.000"u8.ToArray(), NumberStyles.Float, CultureInfo.InvariantCulture, Quad.One);
 	    yield return () => ("1,000.00"u8.ToArray(), NumberStyles.Float | NumberStyles.AllowThousands, CultureInfo.InvariantCulture, Quad.Thousand);
 	    yield return () => ("-1,000.00"u8.ToArray(), NumberStyles.Float | NumberStyles.AllowThousands, CultureInfo.InvariantCulture, Quad.NegativeThousand);
+	    
+	    yield return () => ("9.99999E6000"u8.ToArray(), NumberStyles.Float, CultureInfo.InvariantCulture, Quad.PositiveInfinity);
+	    yield return () => ("1E-6000"u8.ToArray(), NumberStyles.Float, CultureInfo.InvariantCulture, Quad.Zero);
     }
 
     public static IEnumerable<Func<(string, NumberStyles, IFormatProvider?, bool, Quad)>> TryParseTestData()
@@ -543,6 +552,9 @@ public class QuadDataSources
 		yield return () => ("1.000", NumberStyles.Float, CultureInfo.InvariantCulture, true, Quad.One);
 		yield return () => ("1,000.00", NumberStyles.Float | NumberStyles.AllowThousands, CultureInfo.InvariantCulture, true, Quad.Thousand);
 		yield return () => ("-1,000.00", NumberStyles.Float | NumberStyles.AllowThousands, CultureInfo.InvariantCulture, true, Quad.NegativeThousand);
+		
+		yield return () => ("9.99999E6000", NumberStyles.Float, CultureInfo.InvariantCulture, true, Quad.PositiveInfinity);
+		yield return () => ("1E-6000", NumberStyles.Float, CultureInfo.InvariantCulture, true, Quad.Zero);
     }
 
     public static IEnumerable<Func<(char[], NumberStyles, IFormatProvider?, bool, Quad)>> TryParseSpanTestData()
@@ -570,6 +582,9 @@ public class QuadDataSources
 		yield return () => ("1.000".ToCharArray(), NumberStyles.Float, CultureInfo.InvariantCulture, true, Quad.One);
 		yield return () => ("1,000.00".ToCharArray(), NumberStyles.Float | NumberStyles.AllowThousands, CultureInfo.InvariantCulture, true, Quad.Thousand);
 		yield return () => ("-1,000.00".ToCharArray(), NumberStyles.Float | NumberStyles.AllowThousands, CultureInfo.InvariantCulture, true, Quad.NegativeThousand);
+		
+		yield return () => ("9.99999E6000".ToCharArray(), NumberStyles.Float, CultureInfo.InvariantCulture, true, Quad.PositiveInfinity);
+		yield return () => ("1E-6000".ToCharArray(), NumberStyles.Float, CultureInfo.InvariantCulture, true, Quad.Zero);
     }
 
     public static IEnumerable<Func<(byte[], NumberStyles, IFormatProvider?, bool, Quad)>> TryParseUtf8TestData()
@@ -597,6 +612,57 @@ public class QuadDataSources
 		yield return () => ("1.000"u8.ToArray(), NumberStyles.Float, CultureInfo.InvariantCulture, true, Quad.One);
 		yield return () => ("1,000.00"u8.ToArray(), NumberStyles.Float | NumberStyles.AllowThousands, CultureInfo.InvariantCulture, true, Quad.Thousand);
 		yield return () => ("-1,000.00"u8.ToArray(), NumberStyles.Float | NumberStyles.AllowThousands, CultureInfo.InvariantCulture, true, Quad.NegativeThousand);
+		
+		yield return () => ("9.99999E6000"u8.ToArray(), NumberStyles.Float, CultureInfo.InvariantCulture, true, Quad.PositiveInfinity);
+		yield return () => ("1E-6000"u8.ToArray(), NumberStyles.Float, CultureInfo.InvariantCulture, true, Quad.Zero);
+    }
+    
+    public static IEnumerable<Func<(string, NumberStyles, IFormatProvider?, bool, Quad, int)>> TryParsePartialTestData()
+    {
+	    yield return () => (NumberFormatInfo.InvariantInfo.PositiveInfinitySymbol, NumberStyles.Float, CultureInfo.InvariantCulture, true, Quad.PositiveInfinity, NumberFormatInfo.InvariantInfo.PositiveInfinitySymbol.Length);
+	    yield return () => (NumberFormatInfo.InvariantInfo.NegativeInfinitySymbol, NumberStyles.Float, CultureInfo.InvariantCulture, true, Quad.NegativeInfinity, NumberFormatInfo.InvariantInfo.NegativeInfinitySymbol.Length);
+	    yield return () => (NumberFormatInfo.InvariantInfo.NaNSymbol, NumberStyles.Float, CultureInfo.InvariantCulture, true, Quad.NaN, NumberFormatInfo.InvariantInfo.NaNSymbol.Length);
+		yield return () => ("1A", NumberStyles.Float, CultureInfo.InvariantCulture, true, Quad.One, 1);
+		yield return () => ("2.5E-1", NumberStyles.Float, CultureInfo.InvariantCulture, true, Quad.Quarter, 6);
+		yield return () => ("0.250", NumberStyles.Float, CultureInfo.InvariantCulture, true, Quad.Quarter, 5);
+		yield return () => ("$-0.25", NumberStyles.Currency, Helper.CustomInfo, true, Quad.NegativeQuarter, 6);
+		yield return () => ("1.000", NumberStyles.Float, CultureInfo.InvariantCulture, true, Quad.One, 5);
+		yield return () => ("1,000.00", NumberStyles.Float | NumberStyles.AllowThousands, CultureInfo.InvariantCulture, true, Quad.Thousand, 8);
+		yield return () => ("-1,000.00", NumberStyles.Float | NumberStyles.AllowThousands, CultureInfo.InvariantCulture, true, Quad.NegativeThousand, 9);
+		yield return () => ("9.99999E6000", NumberStyles.Float, CultureInfo.InvariantCulture, true, Quad.PositiveInfinity, 12);
+		yield return () => ("1E-6000", NumberStyles.Float, CultureInfo.InvariantCulture, true, Quad.Zero, 7);
+    }
+    
+    public static IEnumerable<Func<(char[], NumberStyles, IFormatProvider?, bool, Quad, int)>> TryParsePartialSpanTestData()
+    {
+	    yield return () => (NumberFormatInfo.InvariantInfo.PositiveInfinitySymbol.ToCharArray(), NumberStyles.Float, CultureInfo.InvariantCulture, true, Quad.PositiveInfinity, NumberFormatInfo.InvariantInfo.PositiveInfinitySymbol.Length);
+	    yield return () => (NumberFormatInfo.InvariantInfo.NegativeInfinitySymbol.ToCharArray(), NumberStyles.Float, CultureInfo.InvariantCulture, true, Quad.NegativeInfinity, NumberFormatInfo.InvariantInfo.NegativeInfinitySymbol.Length);
+	    yield return () => (NumberFormatInfo.InvariantInfo.NaNSymbol.ToCharArray(), NumberStyles.Float, CultureInfo.InvariantCulture, true, Quad.NaN, NumberFormatInfo.InvariantInfo.NaNSymbol.Length);
+		yield return () => ("1A".ToCharArray(), NumberStyles.Float, CultureInfo.InvariantCulture, true, Quad.One, 1);
+		yield return () => ("2.5E-1".ToCharArray(), NumberStyles.Float, CultureInfo.InvariantCulture, true, Quad.Quarter, 6);
+		yield return () => ("0.250".ToCharArray(), NumberStyles.Float, CultureInfo.InvariantCulture, true, Quad.Quarter, 5);
+		yield return () => ("$-0.25".ToCharArray(), NumberStyles.Currency, Helper.CustomInfo, true, Quad.NegativeQuarter, 6);
+		yield return () => ("1.000".ToCharArray(), NumberStyles.Float, CultureInfo.InvariantCulture, true, Quad.One, 5);
+		yield return () => ("1,000.00".ToCharArray(), NumberStyles.Float | NumberStyles.AllowThousands, CultureInfo.InvariantCulture, true, Quad.Thousand, 8);
+		yield return () => ("-1,000.00".ToCharArray(), NumberStyles.Float | NumberStyles.AllowThousands, CultureInfo.InvariantCulture, true, Quad.NegativeThousand, 9);
+		yield return () => ("9.99999E6000".ToCharArray(), NumberStyles.Float, CultureInfo.InvariantCulture, true, Quad.PositiveInfinity, 12);
+		yield return () => ("1E-6000".ToCharArray(), NumberStyles.Float, CultureInfo.InvariantCulture, true, Quad.Zero, 7);
+    }
+    
+    public static IEnumerable<Func<(byte[], NumberStyles, IFormatProvider?, bool, Quad, int)>> TryParsePartialUtf8TestData()
+    {
+	    yield return () => (Encoding.UTF8.GetBytes(NumberFormatInfo.InvariantInfo.PositiveInfinitySymbol), NumberStyles.Float, CultureInfo.InvariantCulture, true, Quad.PositiveInfinity, Encoding.UTF8.GetBytes(NumberFormatInfo.InvariantInfo.PositiveInfinitySymbol).Length);
+	    yield return () => (Encoding.UTF8.GetBytes(NumberFormatInfo.InvariantInfo.NegativeInfinitySymbol), NumberStyles.Float, CultureInfo.InvariantCulture, true, Quad.NegativeInfinity, Encoding.UTF8.GetBytes(NumberFormatInfo.InvariantInfo.NegativeInfinitySymbol).Length);
+	    yield return () => (Encoding.UTF8.GetBytes(NumberFormatInfo.InvariantInfo.NaNSymbol), NumberStyles.Float, CultureInfo.InvariantCulture, true, Quad.NaN, Encoding.UTF8.GetBytes(NumberFormatInfo.InvariantInfo.NaNSymbol).Length);
+		yield return () => ("1A"u8.ToArray(), NumberStyles.Float, CultureInfo.InvariantCulture, true, Quad.One, 1);
+		yield return () => ("2.5E-1"u8.ToArray(), NumberStyles.Float, CultureInfo.InvariantCulture, true, Quad.Quarter, 6);
+		yield return () => ("0.250"u8.ToArray(), NumberStyles.Float, CultureInfo.InvariantCulture, true, Quad.Quarter, 5);
+		yield return () => ("$-0.25"u8.ToArray(), NumberStyles.Currency, Helper.CustomInfo, true, Quad.NegativeQuarter, 6);
+		yield return () => ("1.000"u8.ToArray(), NumberStyles.Float, CultureInfo.InvariantCulture, true, Quad.One, 5);
+		yield return () => ("1,000.00"u8.ToArray(), NumberStyles.Float | NumberStyles.AllowThousands, CultureInfo.InvariantCulture, true, Quad.Thousand, 8);
+		yield return () => ("-1,000.00"u8.ToArray(), NumberStyles.Float | NumberStyles.AllowThousands, CultureInfo.InvariantCulture, true, Quad.NegativeThousand, 9);
+		yield return () => ("9.99999E6000"u8.ToArray(), NumberStyles.Float, CultureInfo.InvariantCulture, true, Quad.PositiveInfinity, 12);
+		yield return () => ("1E-6000"u8.ToArray(), NumberStyles.Float, CultureInfo.InvariantCulture, true, Quad.Zero, 7);
     }
 
     public static IEnumerable<Func<(Quad, string, IFormatProvider?, string)>> ToStringTestData()

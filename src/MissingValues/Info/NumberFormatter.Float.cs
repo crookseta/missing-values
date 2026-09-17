@@ -368,7 +368,7 @@ internal static partial class NumberFormatter
 		Debug.Assert(actualExponent >= 0);
 		int digitCount = CountDigits((ulong)actualExponent);
 		Span<TChar> digits = stackalloc TChar[digitCount + 1];
-		UInt64ToDecChars((ulong)actualExponent, ref digits[digitCount], digitCount);
+		UInt64ToDecChars((ulong)actualExponent, digits, digitCount, digitCount);
 		builder.Append(digits[..digitCount]);
 
 		bool success = builder.TryCopyTo(destination, out charsWritten);
@@ -417,10 +417,8 @@ internal static partial class NumberFormatter
 			exponent = 0;
 		}
 
-		Span<TChar> numberDecimalSeparator = stackalloc TChar[TChar.GetLength(info.NumberDecimalSeparator)];
-		TChar.Copy(info.NumberDecimalSeparator, numberDecimalSeparator);
-		Span<TChar> negativeSign = stackalloc TChar[TChar.GetLength(info.NegativeSign)];
-		TChar.Copy(info.NegativeSign, negativeSign);
+		ReadOnlySpan<TChar> numberDecimalSeparator = info.NumberDecimalSeparatorTChar(stackalloc TChar[16]);
+		ReadOnlySpan<TChar> negativeSign = info.NegativeSignTChar(stackalloc TChar[16]);
 
 		bool isNegativeExponent = exponent < 0;
 		bool isNegative = buffer.IndexOf(negativeSign) == 0;

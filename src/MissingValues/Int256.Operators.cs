@@ -92,9 +92,9 @@ public partial struct Int256
 	{
 		if (Vector256.IsHardwareAccelerated)
 		{
-			var v = Unsafe.BitCast<Int256, Vector256<ulong>>(value);
+			var v = value.AsVector<ulong>();
 			var result = ~v;
-			return Unsafe.BitCast<Vector256<ulong>, Int256>(result);
+			return Create(result);
 		}
 		else
 		{
@@ -162,17 +162,17 @@ public partial struct Int256
 	{
 		if (Vector256.IsHardwareAccelerated)
 		{
-			var v1 = Unsafe.BitCast<Int256, Vector256<ulong>>(left);
-			var v2 = Unsafe.BitCast<Int256, Vector256<ulong>>(right);
+			var v1 = left.AsVector<ulong>();
+			var v2 = right.AsVector<ulong>();
 			var result = v1 & v2;
-			return Unsafe.BitCast<Vector256<ulong>, Int256>(result);
+			return Create(result);
 		}
 		else if (Avx2.IsSupported)
 		{
-			var v1 = Unsafe.BitCast<Int256, Vector256<ulong>>(left);
-			var v2 = Unsafe.BitCast<Int256, Vector256<ulong>>(right);
+			var v1 = left.AsVector<ulong>();
+			var v2 = right.AsVector<ulong>();
 			var result = Avx2.And(v1, v2);
-			return Unsafe.BitCast<Vector256<ulong>, Int256>(result);
+			return Create(result);
 		}
 		else
 		{
@@ -185,17 +185,17 @@ public partial struct Int256
 	{
 		if (Vector256.IsHardwareAccelerated)
 		{
-			var v1 = Unsafe.BitCast<Int256, Vector256<ulong>>(left);
-			var v2 = Unsafe.BitCast<Int256, Vector256<ulong>>(right);
+			var v1 = left.AsVector<ulong>();
+			var v2 = right.AsVector<ulong>();
 			var result = v1 | v2;
-			return Unsafe.BitCast<Vector256<ulong>, Int256>(result);
+			return Create(result);
 		}
 		else if (Avx2.IsSupported)
 		{
-			var v1 = Unsafe.BitCast<Int256, Vector256<ulong>>(left);
-			var v2 = Unsafe.BitCast<Int256, Vector256<ulong>>(right);
+			var v1 = left.AsVector<ulong>();
+			var v2 = right.AsVector<ulong>();
 			var result = Avx2.Or(v1, v2);
-			return Unsafe.BitCast<Vector256<ulong>, Int256>(result);
+			return Create(result);
 		}
 		else
 		{
@@ -208,17 +208,17 @@ public partial struct Int256
 	{
 		if (Vector256.IsHardwareAccelerated)
 		{
-			var v1 = Unsafe.BitCast<Int256, Vector256<ulong>>(left);
-			var v2 = Unsafe.BitCast<Int256, Vector256<ulong>>(right);
+			var v1 = left.AsVector<ulong>();
+			var v2 = right.AsVector<ulong>();
 			var result = v1 ^ v2;
-			return Unsafe.BitCast<Vector256<ulong>, Int256>(result);
+			return Create(result);
 		}
 		else if (Avx2.IsSupported)
 		{
-			var v1 = Unsafe.BitCast<Int256, Vector256<ulong>>(left);
-			var v2 = Unsafe.BitCast<Int256, Vector256<ulong>>(right);
+			var v1 = left.AsVector<ulong>();
+			var v2 = right.AsVector<ulong>();
 			var result = Avx2.Xor(v1, v2);
-			return Unsafe.BitCast<Vector256<ulong>, Int256>(result);
+			return Create(result);
 		}
 		else
 		{
@@ -421,14 +421,14 @@ public partial struct Int256
 	{
 		if (Vector256.IsHardwareAccelerated)
 		{
-			var v1 = Vector256.Create(left._p0, left._p1, left._p2, left._p3);
-			var v2 = Vector256.Create(right._p0, right._p1, right._p2, right._p3);
+			var v1 = left.AsVector<ulong>();
+			var v2 = right.AsVector<ulong>();
 			return v1 == v2;
 		}
 		else if (Avx2.IsSupported)
 		{
-			var v1 = Vector256.Create(left._p0, left._p1, left._p2, left._p3).AsByte();
-			var v2 = Vector256.Create(right._p0, right._p1, right._p2, right._p3).AsByte();
+			var v1 = left.AsVector<byte>();
+			var v2 = right.AsVector<byte>();
 			var equals = Avx2.CompareEqual(v1, v2);
 			var result = Avx2.MoveMask(equals);
 			return (result & 0xFFFF_FFFF) == 0xFFFF_FFFF;
@@ -444,14 +444,14 @@ public partial struct Int256
 	{
 		if (Vector256.IsHardwareAccelerated)
 		{
-			var v1 = Vector256.Create(left._p0, left._p1, left._p2, left._p3);
-			var v2 = Vector256.Create(right._p0, right._p1, right._p2, right._p3);
+			var v1 = left.AsVector<ulong>();
+			var v2 = right.AsVector<ulong>();
 			return v1 != v2;
 		}
 		else if (Avx2.IsSupported)
 		{
-			var v1 = Vector256.Create(left._p0, left._p1, left._p2, left._p3).AsByte();
-			var v2 = Vector256.Create(right._p0, right._p1, right._p2, right._p3).AsByte();
+			var v1 = left.AsVector<byte>();
+			var v2 = right.AsVector<byte>();
 			var equals = Avx2.CompareEqual(v1, v2);
 			var result = Avx2.MoveMask(equals);
 			return (result & 0xFFFF_FFFF) != 0xFFFF_FFFF;

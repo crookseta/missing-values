@@ -64,7 +64,7 @@ public partial struct Quad :
 
 	static int IBinaryFloatingPointInfo<Quad, UInt128>.MinimumDecimalExponent => -4966;
 
-	static int IBinaryFloatingPointInfo<Quad, UInt128>.MaximumDecimalExponent => 4932;
+	static int IBinaryFloatingPointInfo<Quad, UInt128>.MaximumDecimalExponent => 4932 + 1;
 
 	static int IBinaryFloatingPointInfo<Quad, UInt128>.MinBiasedExponent => MinBiasedExponent;
 
@@ -76,7 +76,7 @@ public partial struct Quad :
 
 	static int IBinaryFloatingPointInfo<Quad, UInt128>.ExponentBias => ExponentBias;
 
-	static int IBinaryFloatingPointInfo<Quad, UInt128>.OverflowDecimalExponent => (ExponentBias + (2 * 113) / 3);
+	static int IBinaryFloatingPointInfo<Quad, UInt128>.OverflowDecimalExponent => (ExponentBias + (2 * 113)) / 3;
 		
 	static int IBinaryFloatingPointInfo<Quad, UInt128>.InfinityExponent => 0x7FFF;
 
@@ -425,6 +425,26 @@ public partial struct Quad :
 	{
 		return NumberParser.TryParseFloat<Quad, UInt128, Utf8Char>(Utf8Char.CastFromByteSpan(s), NumberStyles.Float, provider, out result);
 	}
+
+#if NET11_0_OR_GREATER
+	/// <inheritdoc/>
+	public static bool TryParsePartial([NotNullWhen(true)] string? s, NumberStyles style, IFormatProvider? provider, out Quad result, out int charsConsumed)
+	{
+		return NumberParser.TryParsePartialFloat<Quad, UInt128, Utf16Char>(Utf16Char.CastFromCharSpan(s), style, provider, out result, out charsConsumed);
+	}
+
+	/// <inheritdoc/>
+	public static bool TryParsePartial(ReadOnlySpan<char> s, NumberStyles style, IFormatProvider? provider, out Quad result, out int charsConsumed)
+	{
+		return NumberParser.TryParsePartialFloat<Quad, UInt128, Utf16Char>(Utf16Char.CastFromCharSpan(s), style, provider, out result, out charsConsumed);
+	}
+
+	/// <inheritdoc/>
+	public static bool TryParsePartial(ReadOnlySpan<byte> utf8Text, NumberStyles style, IFormatProvider? provider, out Quad result, out int bytesConsumed)
+	{
+		return NumberParser.TryParsePartialFloat<Quad, UInt128, Utf8Char>(Utf8Char.CastFromByteSpan(utf8Text), style, provider, out result, out bytesConsumed);
+	}
+#endif
 
 	/// <inheritdoc/>
 	public int CompareTo(object? obj)
