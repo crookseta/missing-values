@@ -78,6 +78,11 @@ public partial struct Int512
 				double actual => (Int512)actual,
 				NFloat actual => (Int512)actual,
 				Quad actual => (Int512)actual,
+#if NET11_0_OR_GREATER
+				Decimal32 actual => (Int512)actual,
+				Decimal64 actual => (Int512)actual,
+				Decimal128 actual => (Int512)actual,
+#endif
 				decimal actual => (Int512)actual,
 				byte actual => (Int512)actual,
 				ushort actual => (Int512)actual,
@@ -117,7 +122,12 @@ public partial struct Int512
 			float actual => (float.IsPositiveInfinity(actual)) ? MaxValue : (float.IsNegativeInfinity(actual)) ? MinValue : (Int512)actual,
 			double actual => (actual <= -TwoPow511) ? MinValue : (actual > +TwoPow511) ? MaxValue : (Int512)actual,
 			NFloat actual => (actual <= -TwoPow511) ? MinValue : (actual > +TwoPow511) ? MaxValue : (Int512)actual,
-			Quad actual => (actual <= (new Quad(0xC1FE_0000_0000_0000, 0x0000_0000_0000_0000))) ? MinValue : (actual > (new Quad(0x41FE_0000_0000_0000, 0x0000_0000_0000_0000))) ? MaxValue : (Int512)actual,
+#if NET11_0_OR_GREATER
+			// 2^511 in Binary Encoding
+			Decimal32 actual => (Decimal32.IsPositiveInfinity(actual)) ? MaxValue : (Decimal32.IsNegativeInfinity(actual)) ? MinValue : (Int256)actual,
+			Decimal64 actual => (actual <= Decimal64.DecodeBinary(14057934741360918819)) ? MinValue : (actual > Decimal64.DecodeBinary(4834562704506143011)) ? MaxValue : (Int256)actual,
+			Decimal128 actual => (actual <= Decimal128.DecodeBinary(new UInt128(0xB131_4A87_29FC_3DDB, 0x71FD_852E_9D69_DCCB))) ? MinValue : (actual > Decimal128.DecodeBinary(new UInt128(0x3131_4A87_29FC_3DDB, 0x71FD_852E_9D69_DCCB))) ? MaxValue : (Int256)actual,
+#endif
 			decimal actual => (Int512)actual,
 			byte actual => (Int512)actual,
 			ushort actual => (Int512)actual,
@@ -156,7 +166,12 @@ public partial struct Int512
 			float actual => (float.IsPositiveInfinity(actual)) ? MaxValue : (float.IsNegativeInfinity(actual)) ? MinValue : (Int512)actual,
 			double actual => (actual <= -TwoPow511) ? MinValue : (actual > +TwoPow511) ? MaxValue : (Int512)actual,
 			NFloat actual => (actual <= -TwoPow511) ? MinValue : (actual > +TwoPow511) ? MaxValue : (Int512)actual,
-			Quad actual => (actual <= (new Quad(0xC1FE_0000_0000_0000, 0x0000_0000_0000_0000))) ? MinValue : (actual > (new Quad(0x41FE_0000_0000_0000, 0x0000_0000_0000_0000))) ? MaxValue : (Int512)actual,
+#if NET11_0_OR_GREATER
+			// 2^511 in Binary Encoding
+			Decimal32 actual => (Decimal32.IsPositiveInfinity(actual)) ? MaxValue : (Decimal32.IsNegativeInfinity(actual)) ? MinValue : (Int256)actual,
+			Decimal64 actual => (actual <= Decimal64.DecodeBinary(14057934741360918819)) ? MinValue : (actual > Decimal64.DecodeBinary(4834562704506143011)) ? MaxValue : (Int256)actual,
+			Decimal128 actual => (actual <= Decimal128.DecodeBinary(new UInt128(0xB131_4A87_29FC_3DDB, 0x71FD_852E_9D69_DCCB))) ? MinValue : (actual > Decimal128.DecodeBinary(new UInt128(0x3131_4A87_29FC_3DDB, 0x71FD_852E_9D69_DCCB))) ? MaxValue : (Int256)actual,
+#endif
 			decimal actual => (Int512)actual,
 			byte actual => (Int512)actual,
 			ushort actual => (Int512)actual,
@@ -195,6 +210,11 @@ public partial struct Int512
 				double => (TOther)(object)(double)value,
 				NFloat => (TOther)(object)(NFloat)value,
 				Quad => (TOther)(object)(Quad)value,
+#if NET11_0_OR_GREATER
+				Decimal32 => (TOther)(object)(Decimal32)value,
+				Decimal64 => (TOther)(object)(Decimal64)value,
+				Decimal128 => (TOther)(object)(Decimal128)value,
+#endif
 				decimal => (TOther)(object)(decimal)value,
 				byte => (TOther)(object)(byte)value,
 				ushort => (TOther)(object)(ushort)value,
@@ -233,6 +253,11 @@ public partial struct Int512
 			double => (TOther)(object)(double)value,
 			NFloat => (TOther)(object)(NFloat)value,
 			Quad => (TOther)(object)(Quad)value,
+#if NET11_0_OR_GREATER
+			Decimal32 => (TOther)(object)(Decimal32)value,
+			Decimal64 => (TOther)(object)(Decimal64)value,
+			Decimal128 => (TOther)(object)(Decimal128)value,
+#endif
 			decimal => (TOther)(object)(decimal)value,
 			byte => (TOther)(object)((value >= (Int512)byte.MaxValue) ? byte.MaxValue : (value <= (Int512)byte.MinValue) ? byte.MinValue : (byte)value),
 			ushort => (TOther)(object)((value >= (Int512)ushort.MaxValue) ? ushort.MaxValue : (value <= (Int512)ushort.MinValue) ? ushort.MinValue : (ushort)value),
@@ -269,6 +294,11 @@ public partial struct Int512
 			double => (TOther)(object)(double)value,
 			NFloat => (TOther)(object)(NFloat)value,
 			Quad => (TOther)(object)(Quad)value,
+#if NET11_0_OR_GREATER
+			Decimal32 => (TOther)(object)(Decimal32)value,
+			Decimal64 => (TOther)(object)(Decimal64)value,
+			Decimal128 => (TOther)(object)(Decimal128)value,
+#endif
 			decimal => (TOther)(object)(decimal)value,
 			byte => (TOther)(object)(byte)value,
 			ushort => (TOther)(object)(ushort)value,

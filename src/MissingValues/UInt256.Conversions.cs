@@ -77,6 +77,11 @@ public partial struct UInt256
 				Half actual => (UInt256)actual,
 				float actual => (UInt256)actual,
 				double actual => (UInt256)actual,
+#if NET11_0_OR_GREATER
+				Decimal32 actual => (UInt256)actual,
+				Decimal64 actual => (UInt256)actual,
+				Decimal128 actual => (UInt256)actual,
+#endif
 				decimal actual => (UInt256)actual,
 				byte actual => (UInt256)actual,
 				ushort actual => (UInt256)actual,
@@ -119,6 +124,11 @@ public partial struct UInt256
 			Half actual => (actual < Half.Zero) ? MinValue : (UInt256)actual,
 			float actual => (actual < 0) ? MinValue : (UInt256)actual,
 			double actual => (actual < 0) ? MinValue : (actual > TwoPow256) ? MaxValue : (UInt256)actual,
+#if NET11_0_OR_GREATER
+			Decimal32 actual => (actual < Decimal32.Zero) ? MinValue : (actual > Decimal32.DecodeBinary(1443998497)) ? MaxValue : (UInt256)actual,
+			Decimal64 actual => (actual < Decimal64.Zero) ? MinValue : (actual > Decimal64.DecodeBinary(4144469578073229482)) ? MaxValue : (UInt256)actual,
+			Decimal128 actual => (actual < Decimal128.Zero) ? MinValue : (actual > Decimal128.DecodeBinary(new UInt128(0x3098_3917_0431_0A8A, 0xCEC1_632E_269F_6DDF))) ? MaxValue : (UInt256)actual,
+#endif
 			decimal actual => (actual < 0) ? MinValue : (UInt128)actual,
 			byte actual => actual,
 			ushort actual => actual,
@@ -154,6 +164,11 @@ public partial struct UInt256
 			Half actual => (actual < Half.Zero) ? MinValue : (UInt256)actual,
 			float actual => (actual < 0) ? MinValue : (UInt256)actual,
 			double actual => (actual < 0) ? MinValue : (UInt256)actual,
+#if NET11_0_OR_GREATER
+			Decimal32 actual => (actual < Decimal32.Zero) ? MinValue : (actual > Decimal32.DecodeBinary(1443998497)) ? MaxValue : (UInt256)actual,
+			Decimal64 actual => (actual < Decimal64.Zero) ? MinValue : (actual > Decimal64.DecodeBinary(4144469578073229482)) ? MaxValue : (UInt256)actual,
+			Decimal128 actual => (actual < Decimal128.Zero) ? MinValue : (actual > Decimal128.DecodeBinary(new UInt128(0x3098_3917_0431_0A8A, 0xCEC1_632E_269F_6DDF))) ? MaxValue : (UInt256)actual,
+#endif
 			decimal actual => (actual < 0) ? MinValue : (UInt256)actual,
 			byte actual => actual,
 			ushort actual => actual,
@@ -190,6 +205,11 @@ public partial struct UInt256
 				Half => (TOther)(object)(Half)value,
 				float => (TOther)(object)(float)value,
 				double => (TOther)(object)(double)value,
+#if NET11_0_OR_GREATER
+				Decimal32 => (TOther)(object)(Decimal32)value,
+				Decimal64 => (TOther)(object)(Decimal64)value,
+				Decimal128 => (TOther)(object)(Decimal128)value,
+#endif
 				decimal => (TOther)(object)(decimal)value,
 				byte => (TOther)(object)(byte)value,
 				ushort => (TOther)(object)(ushort)value,
@@ -226,6 +246,11 @@ public partial struct UInt256
 			Half => (TOther)(object)(Half)value,
 			float => (TOther)(object)(float)value,
 			double => (TOther)(object)(double)value,
+#if NET11_0_OR_GREATER
+			Decimal32 => (TOther)(object)(Decimal32)value,
+			Decimal64 => (TOther)(object)(Decimal64)value,
+			Decimal128 => (TOther)(object)(Decimal128)value,
+#endif
 			decimal => (TOther)(object)(decimal)value,
 			byte => (TOther)(object)((value >= 0xFF) ? byte.MaxValue : (byte)value),
 			ushort => (TOther)(object)((value >= 0xFFFF) ? ushort.MaxValue : (ushort)value),
@@ -271,6 +296,11 @@ public partial struct UInt256
 				float => (TOther)(object)(float)value,
 				double => (TOther)(object)(double)value,
 				NFloat => (TOther)(object)(NFloat)value,
+#if NET11_0_OR_GREATER
+				Decimal32 => (TOther)(object)(Decimal32)value,
+				Decimal64 => (TOther)(object)(Decimal64)value,
+				Decimal128 => (TOther)(object)(Decimal128)value,
+#endif
 				decimal => (TOther)(object)(decimal)value,
 				byte => (TOther)(object)(byte)value,
 				ushort => (TOther)(object)(ushort)value,
