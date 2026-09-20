@@ -829,7 +829,7 @@ namespace MissingValues.Internals
 						exceedsUInt512 = true;
 						break;
 					}
-					significand *= 10;
+					significand = Calculator.Multiply(in significand, 10, out _);
 				}
 
 				magnitude = exceedsUInt512 ? UInt512.Zero : significand;
@@ -842,7 +842,7 @@ namespace MissingValues.Internals
 
 				for (int i = 0; i < drop && significand != UInt512.Zero; i++)
 				{
-					significand /= 10;
+					significand = Calculator.Divide(in significand, 10);
 				}
 
 				magnitude = significand;
