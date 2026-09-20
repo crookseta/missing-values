@@ -81,6 +81,11 @@ public partial struct Quad
 			double actual => (Quad)actual,
 			NFloat actual => (Quad)actual,
 			Quad actual => actual,
+#if NET11_0_OR_GREATER
+			Decimal32 actual => (Quad)actual,
+			Decimal64 actual => (Quad)actual,
+			Decimal128 actual => (Quad)actual,
+#endif
 			decimal actual => (Quad)actual,
 			byte actual => (Quad)actual,
 			ushort actual => (Quad)actual,
@@ -119,6 +124,11 @@ public partial struct Quad
 				NFloat => (TOther)(object)(NFloat)value,
 				Quad => (TOther)(object)value,
 				Octo => (TOther)(object)(Octo)value,
+#if NET11_0_OR_GREATER
+				Decimal32 => (TOther)(object)(Decimal32)value,
+				Decimal64 => (TOther)(object)(Decimal64)value,
+				Decimal128 => (TOther)(object)(Decimal128)value,
+#endif
 				decimal => (TOther)(object)(decimal)value,
 				byte => (TOther)(object)(byte)value,
 				ushort => (TOther)(object)(ushort)value,
@@ -161,6 +171,11 @@ public partial struct Quad
 			NFloat => (TOther)(object)(NFloat)value,
 			Quad => (TOther)(object)value,
 			Octo => (TOther)(object)(Octo)value,
+#if NET11_0_OR_GREATER
+			Decimal32 => (TOther)(object)(Decimal32)value,
+			Decimal64 => (TOther)(object)(Decimal64)value,
+			Decimal128 => (TOther)(object)(Decimal128)value,
+#endif
 			decimal => (TOther)(object)(decimal)value,
 			byte => (TOther)(object)((value >= byte.MaxValue) ? byte.MaxValue : (value <= Quad.Zero) ? byte.MinValue : (byte)value),
 			ushort => (TOther)(object)((value >= ushort.MaxValue) ? ushort.MaxValue : (value <= Quad.Zero) ? ushort.MinValue : (ushort)value),
@@ -1330,6 +1345,33 @@ public partial struct Quad
 	{
 		return (decimal)(double)value;
 	}
+#if NET11_0_OR_GREATER
+	/// <summary>
+	/// Explicitly converts a <see cref="Quad" /> value to a <see cref="Decimal128"/>.
+	/// </summary>
+	/// <param name="value">The value to convert.</param>
+	public static explicit operator Decimal128(Quad value)
+	{
+		return (Decimal128)(double)value;
+	}
+	/// <summary>
+	/// Explicitly converts a <see cref="Quad" /> value to a <see cref="Decimal64"/>.
+	/// </summary>
+	/// <param name="value">The value to convert.</param>
+	public static explicit operator Decimal64(Quad value)
+	{
+		return (Decimal64)(double)value;
+	}
+	/// <summary>
+	/// Explicitly converts a <see cref="Quad" /> value to a <see cref="Decimal32"/>.
+	/// </summary>
+	/// <param name="value">The value to convert.</param>
+	public static explicit operator Decimal32(Quad value)
+	{
+		return (Decimal32)(double)value;
+	}
+#endif
+	
 	/// <summary>
 	/// Implicitly converts a <see cref="Quad" /> value to a <see cref="Octo"/>.
 	/// </summary>
@@ -1703,6 +1745,33 @@ public partial struct Quad
 	{
 		return (Quad)(double)value;
 	}
+#if NET11_0_OR_GREATER
+	/// <summary>
+	/// Explicitly converts a <see cref="Decimal128" /> value to a <see cref="Quad"/>.
+	/// </summary>
+	/// <param name="value">The value to convert.</param>
+	public static explicit operator Quad(Decimal128 value)
+	{
+		return (Quad)(double)value;
+	}
+	/// <summary>
+	/// Explicitly converts a <see cref="Decimal64" /> value to a <see cref="Quad"/>.
+	/// </summary>
+	/// <param name="value">The value to convert.</param>
+	public static explicit operator Quad(Decimal64 value)
+	{
+		return (Quad)(double)value;
+	}
+	/// <summary>
+	/// Explicitly converts a <see cref="Decimal32" /> value to a <see cref="Quad"/>.
+	/// </summary>
+	/// <param name="value">The value to convert.</param>
+	public static explicit operator Quad(Decimal32 value)
+	{
+		return (Quad)(double)value;
+	}
+#endif
+	
 	/// <summary>
 	/// Implicitly converts a <see cref="double" /> value to a <see cref="Quad"/>.
 	/// </summary>
