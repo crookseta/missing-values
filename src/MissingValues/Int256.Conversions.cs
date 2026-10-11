@@ -77,6 +77,11 @@ public partial struct Int256
 				float actual => (Int256)actual,
 				double actual => (Int256)actual,
 				NFloat actual => (Int256)actual,
+#if NET11_0_OR_GREATER
+				Decimal32 actual => (Int256)actual,
+				Decimal64 actual => (Int256)actual,
+				Decimal128 actual => (Int256)actual,
+#endif
 				decimal actual => (Int256)actual,
 				byte actual => (Int256)actual,
 				ushort actual => (Int256)actual,
@@ -112,10 +117,16 @@ public partial struct Int256
 		result = value switch
 		{
 			char actual => actual,
-			Half actual => (Int256)actual,
-			float actual => (Int256)actual,
+			Half actual => (Half.IsPositiveInfinity(actual)) ? MaxValue : (Half.IsNegativeInfinity(actual)) ? MinValue : (Int256)actual,
+			float actual => (float.IsPositiveInfinity(actual)) ? MaxValue : (float.IsNegativeInfinity(actual)) ? MinValue : (Int256)actual,
 			double actual => (actual <= -TwoPow255) ? MinValue : (actual > +TwoPow255) ? MaxValue : (Int256)actual,
 			NFloat actual => (actual <= -TwoPow255) ? MinValue : (actual > +TwoPow255) ? MaxValue : (Int256)actual,
+#if NET11_0_OR_GREATER
+			// 2^255 in Binary Encoding
+			Decimal32 actual => (actual <= Decimal32.DecodeBinary(0xD5D8_57A4)) ? MinValue : (actual > Decimal32.DecodeBinary(0x55D8_57A4)) ? MaxValue : (Int256)actual,
+			Decimal64 actual => (actual <= Decimal64.DecodeBinary(0xB974_919D_5556_EB52)) ? MinValue : (actual > Decimal64.DecodeBinary(0x3974_919D_5556_EB52)) ? MaxValue : (Int256)actual,
+			Decimal128 actual => (actual <= Decimal128.DecodeBinary(new UInt128(0xB097_1D73_14F5_34B6, 0x09C6_EFE6_C11D_255B))) ? MinValue : (actual > Decimal128.DecodeBinary(new UInt128(0x3097_1D73_14F5_34B6, 0x09C6_EFE6_C11D_255B))) ? MaxValue : (Int256)actual,
+#endif
 			decimal actual => (Int256)actual,
 			byte actual => (Int256)actual,
 			ushort actual => (Int256)actual,
@@ -152,6 +163,12 @@ public partial struct Int256
 			float actual => (float.IsPositiveInfinity(actual)) ? MaxValue : (float.IsNegativeInfinity(actual)) ? MinValue : (Int256)actual,
 			double actual => (actual <= -TwoPow255) ? MinValue : (actual > +TwoPow255) ? MaxValue : (Int256)actual,
 			NFloat actual => (actual <= -TwoPow255) ? MinValue : (actual > +TwoPow255) ? MaxValue : (Int256)actual,
+#if NET11_0_OR_GREATER
+			// 2^255 in Binary Encoding
+			Decimal32 actual => (actual <= Decimal32.DecodeBinary(0xD5D8_57A4)) ? MinValue : (actual > Decimal32.DecodeBinary(0x55D8_57A4)) ? MaxValue : (Int256)actual,
+			Decimal64 actual => (actual <= Decimal64.DecodeBinary(0xB974_919D_5556_EB52)) ? MinValue : (actual > Decimal64.DecodeBinary(0x3974_919D_5556_EB52)) ? MaxValue : (Int256)actual,
+			Decimal128 actual => (actual <= Decimal128.DecodeBinary(new UInt128(0xB097_1D73_14F5_34B6, 0x09C6_EFE6_C11D_255B))) ? MinValue : (actual > Decimal128.DecodeBinary(new UInt128(0x3097_1D73_14F5_34B6, 0x09C6_EFE6_C11D_255B))) ? MaxValue : (Int256)actual,
+#endif
 			decimal actual => (Int128)actual,
 			byte actual => (Int256)actual,
 			ushort actual => (Int256)actual,
@@ -186,6 +203,11 @@ public partial struct Int256
 				float => (TOther)(object)(float)value,
 				double => (TOther)(object)(double)value,
 				NFloat => (TOther)(object)(NFloat)value,
+#if NET11_0_OR_GREATER
+				Decimal32 => (TOther)(object)(Decimal32)value,
+				Decimal64 => (TOther)(object)(Decimal64)value,
+				Decimal128 => (TOther)(object)(Decimal128)value,
+#endif
 				decimal => (TOther)(object)(decimal)value,
 				byte => (TOther)(object)(byte)value,
 				ushort => (TOther)(object)(ushort)value,
@@ -223,6 +245,11 @@ public partial struct Int256
 			float => (TOther)(object)(float)value,
 			double => (TOther)(object)(double)value,
 			NFloat => (TOther)(object)(NFloat)value,
+#if NET11_0_OR_GREATER
+			Decimal32 => (TOther)(object)(Decimal32)value,
+			Decimal64 => (TOther)(object)(Decimal64)value,
+			Decimal128 => (TOther)(object)(Decimal128)value,
+#endif
 			decimal => (TOther)(object)(decimal)value,
 			byte => (TOther)(object)((value >= (Int256)byte.MaxValue) ? byte.MaxValue : (value <= (Int256)byte.MinValue) ? byte.MinValue : (byte)value),
 			ushort => (TOther)(object)((value >= (Int256)ushort.MaxValue) ? ushort.MaxValue : (value <= (Int256)ushort.MinValue) ? ushort.MinValue : (ushort)value),
@@ -258,6 +285,11 @@ public partial struct Int256
 			float => (TOther)(object)(float)value,
 			double => (TOther)(object)(double)value,
 			NFloat => (TOther)(object)(NFloat)value,
+#if NET11_0_OR_GREATER
+			Decimal32 => (TOther)(object)(Decimal32)value,
+			Decimal64 => (TOther)(object)(Decimal64)value,
+			Decimal128 => (TOther)(object)(Decimal128)value,
+#endif
 			decimal => (TOther)(object)(decimal)value,
 			byte => (TOther)(object)(byte)value,
 			ushort => (TOther)(object)(ushort)value,
@@ -645,6 +677,34 @@ public partial struct Int256
 		}
 		return (decimal)(double)(UInt256)(value);
 	}
+
+#if NET11_0_OR_GREATER
+	/// <summary>
+	/// Explicitly converts a <see cref="Int256" /> value to a <see cref="Decimal32"/>.
+	/// </summary>
+	/// <param name="value">The value to convert.</param>
+	public static explicit operator Decimal32(in Int256 value)
+	{
+		return BitHelper.ConvertToDecimalN<Decimal32, Int256>(in value);
+	}
+	/// <summary>
+	/// Explicitly converts a <see cref="Int256" /> value to a <see cref="Decimal64"/>.
+	/// </summary>
+	/// <param name="value">The value to convert.</param>
+	public static explicit operator Decimal64(in Int256 value)
+	{
+		return BitHelper.ConvertToDecimalN<Decimal64, Int256>(in value);
+	}
+	/// <summary>
+	/// Explicitly converts a <see cref="Int256" /> value to a <see cref="Decimal128"/>.
+	/// </summary>
+	/// <param name="value">The value to convert.</param>
+	public static explicit operator Decimal128(in Int256 value)
+	{
+		return BitHelper.ConvertToDecimalN<Decimal128, Int256>(in value);
+	}
+#endif
+	
 	/// <summary>
 	/// Explicitly converts a <see cref="Int256" /> value to a <see cref="Octo"/>.
 	/// </summary>
@@ -872,6 +932,63 @@ public partial struct Int256
 	/// <param name="value">The value to convert.</param>
 	/// <exception cref="OverflowException"><paramref name="value"/> is outside the range of <see cref="Int256"/>.</exception>
 	public static explicit operator checked Int256(decimal value) => checked((Int256)(double)value);
+
+#if NET11_0_OR_GREATER
+	/// <summary>
+	/// Explicitly converts a <see cref="Decimal32" /> value to a <see cref="Int256"/>.
+	/// </summary>
+	/// <param name="value">The value to convert.</param>
+	public static explicit operator Int256(Decimal32 value)
+	{
+		return BitHelper.ConvertFromDecimalN<Int256, Decimal32>(value);
+	}
+	/// <summary>
+	/// Explicitly converts a <see cref="Decimal32" /> value to a <see cref="Int256"/>.
+	/// </summary>
+	/// <param name="value">The value to convert.</param>
+	/// <exception cref="OverflowException"><paramref name="value"/> is outside the range of <see cref="Int256"/>.</exception>
+	public static explicit operator checked Int256(Decimal32 value)
+	{
+		return BitHelper.ConvertFromDecimalN<Int256, Decimal32>(value, true);
+	}
+	
+	/// <summary>
+	/// Explicitly converts a <see cref="Decimal64" /> value to a <see cref="Int256"/>.
+	/// </summary>
+	/// <param name="value">The value to convert.</param>
+	public static explicit operator Int256(Decimal64 value)
+	{
+		return BitHelper.ConvertFromDecimalN<Int256, Decimal64>(value);
+	}
+	/// <summary>
+	/// Explicitly converts a <see cref="Decimal64" /> value to a <see cref="Int256"/>.
+	/// </summary>
+	/// <param name="value">The value to convert.</param>
+	/// <exception cref="OverflowException"><paramref name="value"/> is outside the range of <see cref="Int256"/>.</exception>
+	public static explicit operator checked Int256(Decimal64 value)
+	{
+		return BitHelper.ConvertFromDecimalN<Int256, Decimal64>(value, true);
+	}
+	
+	/// <summary>
+	/// Explicitly converts a <see cref="Decimal128" /> value to a <see cref="Int256"/>.
+	/// </summary>
+	/// <param name="value">The value to convert.</param>
+	public static explicit operator Int256(Decimal128 value)
+	{
+		return BitHelper.ConvertFromDecimalN<Int256, Decimal128>(value);
+	}
+	/// <summary>
+	/// Explicitly converts a <see cref="Decimal128" /> value to a <see cref="Int256"/>.
+	/// </summary>
+	/// <param name="value">The value to convert.</param>
+	/// <exception cref="OverflowException"><paramref name="value"/> is outside the range of <see cref="Int256"/>.</exception>
+	public static explicit operator checked Int256(Decimal128 value)
+	{
+		return BitHelper.ConvertFromDecimalN<Int256, Decimal128>(value, true);
+	}
+#endif
+	
 	/// <summary>
 	/// Explicitly converts a <see cref="double" /> value to a <see cref="Int256"/>.
 	/// </summary>
