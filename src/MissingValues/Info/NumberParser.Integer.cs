@@ -1,3 +1,4 @@
+using System.Buffers.Binary;
 using System.Diagnostics;
 using System.Globalization;
 using System.Runtime.CompilerServices;
@@ -16,7 +17,7 @@ internal static partial class NumberParser
 	                                     | NumberStyles.AllowExponent 
 	                                     | NumberStyles.AllowCurrencySymbol;
 
-	public static ReadOnlySpan<ulong> E19Table => [
+	internal static ReadOnlySpan<ulong> E19Table => [
 		1,
 		10,
 		100,
@@ -339,6 +340,8 @@ internal static partial class NumberParser
 		where T : struct, IFormattableUnsignedInteger<T>
 		where TChar : unmanaged, IUtfCharacter<TChar>
 	{
+		const ulong E16 = 10_000_000_000_000_000UL;
+		
 		// By this point there should not be leading whitespaces.
 		styles &= ~(NumberStyles.AllowLeadingSign | NumberStyles.AllowLeadingWhite);
 		const int UInt64MaxSafeCharacterCount = 19;
@@ -380,10 +383,11 @@ internal static partial class NumberParser
 				: FromChar512(TChar.CastToCharSpan(s[charsConsumed..]));
 			
 			if (!TryParse64Chars(v, out ulong high, out ulong mid, out ulong midLow, out ulong low)) break;
-			
-			output *= T.E64;
-			output += (T.MultiplyByUInt64(T.CreateTruncating(high), 10_000_000_000_000_000UL) + T.CreateTruncating(mid)) * T.E32;
-			output += T.MultiplyByUInt64(T.CreateTruncating(midLow), 10_000_000_000_000_000UL) + T.CreateTruncating(low);
+
+			output = T.MultiplyAddByUInt64(in output, E16, high);
+			output = T.MultiplyAddByUInt64(in output, E16, mid);
+			output = T.MultiplyAddByUInt64(in output, E16, midLow);
+			output = T.MultiplyAddByUInt64(in output, E16, low);
 			charsConsumed += 64;
 		}
 		
@@ -395,8 +399,8 @@ internal static partial class NumberParser
 			
 			if (!TryParse32Chars(v, out ulong high, out ulong low)) break;
 			
-			output *= T.E32;
-			output += T.MultiplyByUInt64(T.CreateTruncating(high), 10_000_000_000_000_000UL) + T.CreateTruncating(low);
+			output = T.MultiplyAddByUInt64(in output, E16, high);
+			output = T.MultiplyAddByUInt64(in output, E16, low);
 			charsConsumed += 32;
 		}
 		
@@ -408,7 +412,7 @@ internal static partial class NumberParser
 			
 			if (!TryParse16Chars(v, out ulong low)) break;
 			
-			output = T.MultiplyByUInt64(in output, 10_000_000_000_000_000UL) + T.CreateTruncating(low);
+			output = T.MultiplyAddByUInt64(in output, E16, low);
 			charsConsumed += 16;
 		}
 		
@@ -424,19 +428,23 @@ internal static partial class NumberParser
 				var slice = s.Slice(charsConsumed, 8);
 				chunk = 0;
 
-				for (int i = 7; i >= 0; i--)
+				for (int i = slice.Length - 1; i >= 0; i--)
 				{
 					chunk <<= 8;
 					chunk |= (byte)slice[i];
 				}
 			}
+			if (!BitConverter.IsLittleEndian)
+			{
+				chunk = BinaryPrimitives.ReverseEndianness(chunk);
+			}
 			if (!TryParse8Chars(chunk, out ulong low)) break;
 			
-			output = T.MultiplyByUInt64(in output, 100_000_000UL) + T.CreateTruncating(low);
+			output = T.MultiplyAddByUInt64(in output, 100_000_000UL, low); 
 			charsConsumed += 8;
 		}
 		
-		int maxDigitsLeft = T.MaxDecimalDigits - (charsConsumed -  leadingZeroes);
+		int maxDigitsLeft = T.MaxDecimalDigits - (charsConsumed - leadingZeroes);
 		if (maxDigitsLeft < 0) 
 		{
 			// We've already overflowed.
@@ -444,6 +452,7 @@ internal static partial class NumberParser
 			output = default;
 			return ParsingStatus.Overflow;
 		}
+		Debug.Assert(maxDigitsLeft < E19Table.Length);
 
 		ulong remaining = 0;
 		int index = 0;
@@ -464,8 +473,7 @@ internal static partial class NumberParser
 				{
 					break;
 				}
-				output = T.MultiplyByUInt64(in output, E19Table[index]);
-				output += T.CreateTruncating(remaining);
+				output = T.MultiplyAddByUInt64(in output, E19Table[index], remaining);
 				return ParsingStatus.Partial;
 			}
 
@@ -473,8 +481,7 @@ internal static partial class NumberParser
 			remaining += (uint)s[charsConsumed++] - '0';
 		}
 		
-		output = T.MultiplyByUInt64(in output, E19Table[index]);
-		output += T.CreateTruncating(remaining);
+		output = T.MultiplyAddByUInt64(in output, E19Table[index], remaining);
 		
 		if (charsConsumed >= s.Length)
 		{
