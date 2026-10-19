@@ -103,12 +103,42 @@ public partial struct Int256
 	}
 
 	/// <inheritdoc/>
-	public static Int256 operator ++(in Int256 value) => value + One;
+	public static Int256 operator ++(in Int256 value)
+	{
+		ulong part0 = value._p0 + 1UL;
+		ulong carry = (part0 < value._p0) ? 1UL : 0UL;
+
+		ulong part1 = value._p1 + carry;
+		carry = (part1 < value._p1 || (carry == 1 && part1 == value._p1)) ? 1UL : 0UL;
+
+		ulong part2 = value._p2 + carry;
+		carry = (part2 < value._p2 || (carry == 1 && part2 == value._p2)) ? 1UL : 0UL;
+
+		ulong part3 = value._p3 + carry;
+
+		return new Int256(part3, part2, part1, part0);
+	}
+
 	/// <inheritdoc/>
 	public static Int256 operator checked ++(in Int256 value) => checked(value + One);
 
 	/// <inheritdoc/>
-	public static Int256 operator --(in Int256 value) => value - One;
+	public static Int256 operator --(in Int256 value)
+	{
+		ulong part0 = value._p0 - 1UL;
+		ulong borrow = (part0 > value._p0) ? 1UL : 0UL;
+
+		ulong part1 = value._p1 - borrow;
+		borrow = (part1 > value._p1 || (borrow == 1UL && part1 == value._p1)) ? 1UL : 0UL;
+
+		ulong part2 = value._p2 - borrow;
+		borrow = (part2 > value._p2 || (borrow == 1UL && part2 == value._p2)) ? 1UL : 0UL;
+
+		ulong part3 = value._p3 - borrow;
+
+		return new Int256(part3, part2, part1, part0);
+	}
+
 	/// <inheritdoc/>
 	public static Int256 operator checked --(in Int256 value) => checked(value - One);
 
