@@ -65,19 +65,19 @@ namespace MissingValues.Info
 		private static Vector512<byte> FromChar512(ReadOnlySpan<char> span)
 		{
 			var shortSpan = MemoryMarshal.Cast<char, ushort>(span);
-			return Vector512.NarrowWithSaturation(Vector512.Create(shortSpan), Vector512.Create(shortSpan[Vector512<ushort>.Count..]));
+			return Vector512.Narrow(Vector512.Create(shortSpan), Vector512.Create(shortSpan[Vector512<ushort>.Count..]));
 		}
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		private static Vector256<byte> FromChar256(ReadOnlySpan<char> span)
 		{
 			var shortSpan = MemoryMarshal.Cast<char, ushort>(span);
-			return Vector256.NarrowWithSaturation(Vector256.Create(shortSpan), Vector256.Create(shortSpan[Vector256<ushort>.Count..]));
+			return Vector256.Narrow(Vector256.Create(shortSpan), Vector256.Create(shortSpan[Vector256<ushort>.Count..]));
 		}
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		private static Vector128<byte> FromChar128(ReadOnlySpan<char> span)
 		{
 			var shortSpan = MemoryMarshal.Cast<char, ushort>(span);
-			return Vector128.NarrowWithSaturation(Vector128.Create(shortSpan), Vector128.Create(shortSpan[Vector128<ushort>.Count..]));
+			return Vector128.Narrow(Vector128.Create(shortSpan), Vector128.Create(shortSpan[Vector128<ushort>.Count..]));
 		}
 
 		private static bool TryParse8Chars(ulong chunk, out ulong result)
