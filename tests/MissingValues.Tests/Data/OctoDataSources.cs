@@ -1851,6 +1851,105 @@ public class OctoDataSources
 		yield return () => (Octo.NFloatMaxValue, NFloat.MaxValue);
 		yield return () => (Octo.PositiveInfinity, NFloat.PositiveInfinity);
 	}
+	
+	public static IEnumerable<Func<(Octo, Decimal32)>> ConvertToCheckedDecimal32TestData()
+	{
+		yield return () => (Octo.NegativeInfinity, Decimal32.NegativeInfinity);
+		yield return () => (Octo.Decimal32MinValue, Decimal32.MinValue);
+		yield return () => (Octo.NegativeOne, Decimal32.NegativeOne);
+		yield return () => (Octo.Half, Decimal32.Parse("0.5", CultureInfo.InvariantCulture));
+		yield return () => (Octo.One, Decimal32.One);
+		yield return () => (Octo.Decimal32MaxValue, Decimal32.MaxValue);
+		yield return () => (Octo.PositiveInfinity, Decimal32.PositiveInfinity);
+	}
+	
+	public static IEnumerable<Func<(Octo, Decimal32)>> ConvertToSaturatingDecimal32TestData()
+	{
+		yield return () => (Octo.NegativeInfinity, Decimal32.NegativeInfinity);
+		yield return () => (Octo.Decimal32MinValue, Decimal32.MinValue);
+		yield return () => (Octo.NegativeOne, Decimal32.NegativeOne);
+		yield return () => (Octo.Half, Decimal32.Parse("0.5", CultureInfo.InvariantCulture));
+		yield return () => (Octo.One, Decimal32.One);
+		yield return () => (Octo.Decimal32MaxValue, Decimal32.MaxValue);
+		yield return () => (Octo.PositiveInfinity, Decimal32.PositiveInfinity);
+	}
+	
+	public static IEnumerable<Func<(Octo, Decimal32)>> ConvertToTruncatingDecimal32TestData()
+	{
+		yield return () => (Octo.NegativeInfinity, Decimal32.NegativeInfinity);
+		yield return () => (Octo.Decimal32MinValue, Decimal32.MinValue);
+		yield return () => (Octo.NegativeOne, Decimal32.NegativeOne);
+		yield return () => (Octo.Half, Decimal32.Parse("0.5", CultureInfo.InvariantCulture));
+		yield return () => (Octo.One, Decimal32.One);
+		yield return () => (Octo.Decimal32MaxValue, Decimal32.MaxValue);
+		yield return () => (Octo.PositiveInfinity, Decimal32.PositiveInfinity);
+	}
+	
+	public static IEnumerable<Func<(Octo, Decimal64)>> ConvertToCheckedDecimal64TestData()
+	{
+		yield return () => (Octo.NegativeInfinity, Decimal64.NegativeInfinity);
+		yield return () => (Octo.Decimal64MinValue, Decimal64.MinValue);
+		yield return () => (Octo.NegativeOne, Decimal64.NegativeOne);
+		yield return () => (Octo.Half, Decimal64.Parse("0.5", CultureInfo.InvariantCulture));
+		yield return () => (Octo.One, Decimal64.One);
+		yield return () => (Octo.Decimal64MaxValue, Decimal64.MaxValue);
+		yield return () => (Octo.PositiveInfinity, Decimal64.PositiveInfinity);
+	}
+	
+	public static IEnumerable<Func<(Octo, Decimal64)>> ConvertToSaturatingDecimal64TestData()
+	{
+		yield return () => (Octo.NegativeInfinity, Decimal64.NegativeInfinity);
+		yield return () => (Octo.Decimal64MinValue, Decimal64.MinValue);
+		yield return () => (Octo.NegativeOne, Decimal64.NegativeOne);
+		yield return () => (Octo.Half, Decimal64.Parse("0.5", CultureInfo.InvariantCulture));
+		yield return () => (Octo.One, Decimal64.One);
+		yield return () => (Octo.Decimal64MaxValue, Decimal64.MaxValue);
+		yield return () => (Octo.PositiveInfinity, Decimal64.PositiveInfinity);
+	}
+	
+	public static IEnumerable<Func<(Octo, Decimal64)>> ConvertToTruncatingDecimal64TestData()
+	{
+		yield return () => (Octo.NegativeInfinity, Decimal64.NegativeInfinity);
+		yield return () => (Octo.Decimal64MinValue, Decimal64.MinValue);
+		yield return () => (Octo.NegativeOne, Decimal64.NegativeOne);
+		yield return () => (Octo.Half, Decimal64.Parse("0.5", CultureInfo.InvariantCulture));
+		yield return () => (Octo.One, Decimal64.One);
+		yield return () => (Octo.Decimal64MaxValue, Decimal64.MaxValue);
+		yield return () => (Octo.PositiveInfinity, Decimal64.PositiveInfinity);
+	}
+	
+	public static IEnumerable<Func<(Octo, Decimal128)>> ConvertToCheckedDecimal128TestData()
+	{
+		yield return () => (Octo.NegativeInfinity, Decimal128.NegativeInfinity);
+		yield return () => (Octo.Decimal128MinValue, Decimal128.MinValue);
+		yield return () => (Octo.NegativeOne, Decimal128.NegativeOne);
+		yield return () => (Octo.Half, Decimal128.Parse("0.5", CultureInfo.InvariantCulture));
+		yield return () => (Octo.One, Decimal128.One);
+		yield return () => (Octo.Decimal128MaxValue, Decimal128.MaxValue);
+		yield return () => (Octo.PositiveInfinity, Decimal128.PositiveInfinity);
+	}
+	
+	public static IEnumerable<Func<(Octo, Decimal128)>> ConvertToSaturatingDecimal128TestData()
+	{
+		yield return () => (Octo.NegativeInfinity, Decimal128.NegativeInfinity);
+		yield return () => (Octo.Decimal128MinValue, Decimal128.MinValue);
+		yield return () => (Octo.NegativeOne, Decimal128.NegativeOne);
+		yield return () => (Octo.Half, Decimal128.Parse("0.5", CultureInfo.InvariantCulture));
+		yield return () => (Octo.One, Decimal128.One);
+		yield return () => (Octo.Decimal128MaxValue, Decimal128.MaxValue);
+		yield return () => (Octo.PositiveInfinity, Decimal128.PositiveInfinity);
+	}
+	
+	public static IEnumerable<Func<(Octo, Decimal128)>> ConvertToTruncatingDecimal128TestData()
+	{
+		yield return () => (Octo.NegativeInfinity, Decimal128.NegativeInfinity);
+		yield return () => (Octo.Decimal128MinValue, Decimal128.MinValue);
+		yield return () => (Octo.NegativeOne, Decimal128.NegativeOne);
+		yield return () => (Octo.Half, Decimal128.Parse("0.5", CultureInfo.InvariantCulture));
+		yield return () => (Octo.One, Decimal128.One);
+		yield return () => (Octo.Decimal128MaxValue, Decimal128.MaxValue);
+		yield return () => (Octo.PositiveInfinity, Decimal128.PositiveInfinity);
+	}
 
 	public static IEnumerable<Func<(byte, Octo)>> ConvertFromCheckedByteTestData()
 	{
@@ -2492,5 +2591,122 @@ public class OctoDataSources
 		yield return () => (1f, Octo.One);
 		yield return () => (NFloat.MaxValue, Octo.NFloatMaxValue);
 		yield return () => (NFloat.PositiveInfinity, Octo.PositiveInfinity);
+	}
+	
+	public static IEnumerable<Func<(Decimal32, Octo)>> ConvertFromCheckedDecimal32TestData()
+	{
+		yield return () => (Decimal32.NegativeInfinity, Octo.NegativeInfinity);
+		yield return () => (Decimal32.MinValue, Octo.Decimal32MinValue);
+		yield return () => (Decimal32.NegativeOne, Octo.NegativeOne);
+		yield return () => (Decimal32.Parse("-0.5", CultureInfo.InvariantCulture), Octo.NegativeHalf);
+		yield return () => (Decimal32.Zero, Octo.Zero);
+		yield return () => (Decimal32.Parse("0.5", CultureInfo.InvariantCulture), Octo.Half);
+		yield return () => (Decimal32.One, Octo.One);
+		yield return () => (Decimal32.MaxValue, Octo.Decimal32MaxValue);
+		yield return () => (Decimal32.PositiveInfinity, Octo.PositiveInfinity);
+	}
+	
+	public static IEnumerable<Func<(Decimal32, Octo)>> ConvertFromSaturatingDecimal32TestData()
+	{
+		yield return () => (Decimal32.NegativeInfinity, Octo.NegativeInfinity);
+		yield return () => (Decimal32.MinValue, Octo.Decimal32MinValue);
+		yield return () => (Decimal32.NegativeOne, Octo.NegativeOne);
+		yield return () => (Decimal32.Parse("-0.5", CultureInfo.InvariantCulture), Octo.NegativeHalf);
+		yield return () => (Decimal32.Zero, Octo.Zero);
+		yield return () => (Decimal32.Parse("0.5", CultureInfo.InvariantCulture), Octo.Half);
+		yield return () => (Decimal32.One, Octo.One);
+		yield return () => (Decimal32.MaxValue, Octo.Decimal32MaxValue);
+		yield return () => (Decimal32.PositiveInfinity, Octo.PositiveInfinity);
+	}
+	
+	public static IEnumerable<Func<(Decimal32, Octo)>> ConvertFromTruncatingDecimal32TestData()
+	{
+		yield return () => (Decimal32.NegativeInfinity, Octo.NegativeInfinity);
+		yield return () => (Decimal32.MinValue, Octo.Decimal32MinValue);
+		yield return () => (Decimal32.NegativeOne, Octo.NegativeOne);
+		yield return () => (Decimal32.Parse("-0.5", CultureInfo.InvariantCulture), Octo.NegativeHalf);
+		yield return () => (Decimal32.Zero, Octo.Zero);
+		yield return () => (Decimal32.Parse("0.5", CultureInfo.InvariantCulture), Octo.Half);
+		yield return () => (Decimal32.One, Octo.One);
+		yield return () => (Decimal32.MaxValue, Octo.Decimal32MaxValue);
+		yield return () => (Decimal32.PositiveInfinity, Octo.PositiveInfinity);
+	}
+	
+	public static IEnumerable<Func<(Decimal64, Octo)>> ConvertFromCheckedDecimal64TestData()
+	{
+		yield return () => (Decimal64.NegativeInfinity, Octo.NegativeInfinity);
+		yield return () => (Decimal64.MinValue, Octo.Decimal64MinValue);
+		yield return () => (Decimal64.NegativeOne, Octo.NegativeOne);
+		yield return () => (Decimal64.Parse("-0.5", CultureInfo.InvariantCulture), Octo.NegativeHalf);
+		yield return () => (Decimal64.Zero, Octo.Zero);
+		yield return () => (Decimal64.Parse("0.5", CultureInfo.InvariantCulture), Octo.Half);
+		yield return () => (Decimal64.One, Octo.One);
+		yield return () => (Decimal64.MaxValue, Octo.Decimal64MaxValue);
+		yield return () => (Decimal64.PositiveInfinity, Octo.PositiveInfinity);
+	}
+	
+	public static IEnumerable<Func<(Decimal64, Octo)>> ConvertFromSaturatingDecimal64TestData()
+	{
+		yield return () => (Decimal64.NegativeInfinity, Octo.NegativeInfinity);
+		yield return () => (Decimal64.MinValue, Octo.Decimal64MinValue);
+		yield return () => (Decimal64.NegativeOne, Octo.NegativeOne);
+		yield return () => (Decimal64.Parse("-0.5", CultureInfo.InvariantCulture), Octo.NegativeHalf);
+		yield return () => (Decimal64.Zero, Octo.Zero);
+		yield return () => (Decimal64.Parse("0.5", CultureInfo.InvariantCulture), Octo.Half);
+		yield return () => (Decimal64.One, Octo.One);
+		yield return () => (Decimal64.MaxValue, Octo.Decimal64MaxValue);
+		yield return () => (Decimal64.PositiveInfinity, Octo.PositiveInfinity);
+	}
+	
+	public static IEnumerable<Func<(Decimal64, Octo)>> ConvertFromTruncatingDecimal64TestData()
+	{
+		yield return () => (Decimal64.NegativeInfinity, Octo.NegativeInfinity);
+		yield return () => (Decimal64.MinValue, Octo.Decimal64MinValue);
+		yield return () => (Decimal64.NegativeOne, Octo.NegativeOne);
+		yield return () => (Decimal64.Parse("-0.5", CultureInfo.InvariantCulture), Octo.NegativeHalf);
+		yield return () => (Decimal64.Zero, Octo.Zero);
+		yield return () => (Decimal64.Parse("0.5", CultureInfo.InvariantCulture), Octo.Half);
+		yield return () => (Decimal64.One, Octo.One);
+		yield return () => (Decimal64.MaxValue, Octo.Decimal64MaxValue);
+		yield return () => (Decimal64.PositiveInfinity, Octo.PositiveInfinity);
+	}
+	
+	public static IEnumerable<Func<(Decimal128, Octo)>> ConvertFromCheckedDecimal128TestData()
+	{
+		yield return () => (Decimal128.NegativeInfinity, Octo.NegativeInfinity);
+		yield return () => (Decimal128.MinValue, Octo.Decimal128MinValue);
+		yield return () => (Decimal128.NegativeOne, Octo.NegativeOne);
+		yield return () => (Decimal128.Parse("-0.5", CultureInfo.InvariantCulture), Octo.NegativeHalf);
+		yield return () => (Decimal128.Zero, Octo.Zero);
+		yield return () => (Decimal128.Parse("0.5", CultureInfo.InvariantCulture), Octo.Half);
+		yield return () => (Decimal128.One, Octo.One);
+		yield return () => (Decimal128.MaxValue, Octo.Decimal128MaxValue);
+		yield return () => (Decimal128.PositiveInfinity, Octo.PositiveInfinity);
+	}
+	
+	public static IEnumerable<Func<(Decimal128, Octo)>> ConvertFromSaturatingDecimal128TestData()
+	{
+		yield return () => (Decimal128.NegativeInfinity, Octo.NegativeInfinity);
+		yield return () => (Decimal128.MinValue, Octo.Decimal128MinValue);
+		yield return () => (Decimal128.NegativeOne, Octo.NegativeOne);
+		yield return () => (Decimal128.Parse("-0.5", CultureInfo.InvariantCulture), Octo.NegativeHalf);
+		yield return () => (Decimal128.Zero, Octo.Zero);
+		yield return () => (Decimal128.Parse("0.5", CultureInfo.InvariantCulture), Octo.Half);
+		yield return () => (Decimal128.One, Octo.One);
+		yield return () => (Decimal128.MaxValue, Octo.Decimal128MaxValue);
+		yield return () => (Decimal128.PositiveInfinity, Octo.PositiveInfinity);
+	}
+	
+	public static IEnumerable<Func<(Decimal128, Octo)>> ConvertFromTruncatingDecimal128TestData()
+	{
+		yield return () => (Decimal128.NegativeInfinity, Octo.NegativeInfinity);
+		yield return () => (Decimal128.MinValue, Octo.Decimal128MinValue);
+		yield return () => (Decimal128.NegativeOne, Octo.NegativeOne);
+		yield return () => (Decimal128.Parse("-0.5", CultureInfo.InvariantCulture), Octo.NegativeHalf);
+		yield return () => (Decimal128.Zero, Octo.Zero);
+		yield return () => (Decimal128.Parse("0.5", CultureInfo.InvariantCulture), Octo.Half);
+		yield return () => (Decimal128.One, Octo.One);
+		yield return () => (Decimal128.MaxValue, Octo.Decimal128MaxValue);
+		yield return () => (Decimal128.PositiveInfinity, Octo.PositiveInfinity);
 	}
 }

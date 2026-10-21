@@ -1806,6 +1806,105 @@ public class QuadDataSources
 		yield return () => (Quad.NFloatMaxValue, NFloat.MaxValue);
 		yield return () => (Quad.PositiveInfinity, NFloat.PositiveInfinity);
 	}
+	
+	public static IEnumerable<Func<(Quad, Decimal32)>> ConvertToCheckedDecimal32TestData()
+	{
+		yield return () => (Quad.NegativeInfinity, Decimal32.NegativeInfinity);
+		yield return () => (Quad.Decimal32MinValue, Decimal32.MinValue);
+		yield return () => (Quad.NegativeOne, Decimal32.NegativeOne);
+		yield return () => (Quad.Half, Decimal32.Parse("0.5", CultureInfo.InvariantCulture));
+		yield return () => (Quad.One, Decimal32.One);
+		yield return () => (Quad.Decimal32MaxValue, Decimal32.MaxValue);
+		yield return () => (Quad.PositiveInfinity, Decimal32.PositiveInfinity);
+	}
+	
+	public static IEnumerable<Func<(Quad, Decimal32)>> ConvertToSaturatingDecimal32TestData()
+	{
+		yield return () => (Quad.NegativeInfinity, Decimal32.NegativeInfinity);
+		yield return () => (Quad.Decimal32MinValue, Decimal32.MinValue);
+		yield return () => (Quad.NegativeOne, Decimal32.NegativeOne);
+		yield return () => (Quad.Half, Decimal32.Parse("0.5", CultureInfo.InvariantCulture));
+		yield return () => (Quad.One, Decimal32.One);
+		yield return () => (Quad.Decimal32MaxValue, Decimal32.MaxValue);
+		yield return () => (Quad.PositiveInfinity, Decimal32.PositiveInfinity);
+	}
+	
+	public static IEnumerable<Func<(Quad, Decimal32)>> ConvertToTruncatingDecimal32TestData()
+	{
+		yield return () => (Quad.NegativeInfinity, Decimal32.NegativeInfinity);
+		yield return () => (Quad.Decimal32MinValue, Decimal32.MinValue);
+		yield return () => (Quad.NegativeOne, Decimal32.NegativeOne);
+		yield return () => (Quad.Half, Decimal32.Parse("0.5", CultureInfo.InvariantCulture));
+		yield return () => (Quad.One, Decimal32.One);
+		yield return () => (Quad.Decimal32MaxValue, Decimal32.MaxValue);
+		yield return () => (Quad.PositiveInfinity, Decimal32.PositiveInfinity);
+	}
+	
+	public static IEnumerable<Func<(Quad, Decimal64)>> ConvertToCheckedDecimal64TestData()
+	{
+		yield return () => (Quad.NegativeInfinity, Decimal64.NegativeInfinity);
+		yield return () => (Quad.Decimal64MinValue, Decimal64.MinValue);
+		yield return () => (Quad.NegativeOne, Decimal64.NegativeOne);
+		yield return () => (Quad.Half, Decimal64.Parse("0.5", CultureInfo.InvariantCulture));
+		yield return () => (Quad.One, Decimal64.One);
+		yield return () => (Quad.Decimal64MaxValue, Decimal64.MaxValue);
+		yield return () => (Quad.PositiveInfinity, Decimal64.PositiveInfinity);
+	}
+	
+	public static IEnumerable<Func<(Quad, Decimal64)>> ConvertToSaturatingDecimal64TestData()
+	{
+		yield return () => (Quad.NegativeInfinity, Decimal64.NegativeInfinity);
+		yield return () => (Quad.Decimal64MinValue, Decimal64.MinValue);
+		yield return () => (Quad.NegativeOne, Decimal64.NegativeOne);
+		yield return () => (Quad.Half, Decimal64.Parse("0.5", CultureInfo.InvariantCulture));
+		yield return () => (Quad.One, Decimal64.One);
+		yield return () => (Quad.Decimal64MaxValue, Decimal64.MaxValue);
+		yield return () => (Quad.PositiveInfinity, Decimal64.PositiveInfinity);
+	}
+	
+	public static IEnumerable<Func<(Quad, Decimal64)>> ConvertToTruncatingDecimal64TestData()
+	{
+		yield return () => (Quad.NegativeInfinity, Decimal64.NegativeInfinity);
+		yield return () => (Quad.Decimal64MinValue, Decimal64.MinValue);
+		yield return () => (Quad.NegativeOne, Decimal64.NegativeOne);
+		yield return () => (Quad.Half, Decimal64.Parse("0.5", CultureInfo.InvariantCulture));
+		yield return () => (Quad.One, Decimal64.One);
+		yield return () => (Quad.Decimal64MaxValue, Decimal64.MaxValue);
+		yield return () => (Quad.PositiveInfinity, Decimal64.PositiveInfinity);
+	}
+	
+	public static IEnumerable<Func<(Quad, Decimal128)>> ConvertToCheckedDecimal128TestData()
+	{
+		yield return () => (Quad.NegativeInfinity, Decimal128.NegativeInfinity);
+		yield return () => (Quad.Decimal64MinValue, Decimal64.MinValue);
+		yield return () => (Quad.NegativeOne, Decimal128.NegativeOne);
+		yield return () => (Quad.Half, Decimal128.Parse("0.5", CultureInfo.InvariantCulture));
+		yield return () => (Quad.One, Decimal128.One);
+		yield return () => (Quad.Decimal64MaxValue, Decimal64.MaxValue);
+		yield return () => (Quad.PositiveInfinity, Decimal128.PositiveInfinity);
+	}
+	
+	public static IEnumerable<Func<(Quad, Decimal128)>> ConvertToSaturatingDecimal128TestData()
+	{
+		yield return () => (Quad.NegativeInfinity, Decimal128.NegativeInfinity);
+		yield return () => (Quad.Decimal64MinValue, Decimal64.MinValue);
+		yield return () => (Quad.NegativeOne, Decimal128.NegativeOne);
+		yield return () => (Quad.Half, Decimal128.Parse("0.5", CultureInfo.InvariantCulture));
+		yield return () => (Quad.One, Decimal128.One);
+		yield return () => (Quad.Decimal64MaxValue, Decimal64.MaxValue);
+		yield return () => (Quad.PositiveInfinity, Decimal128.PositiveInfinity);
+	}
+	
+	public static IEnumerable<Func<(Quad, Decimal128)>> ConvertToTruncatingDecimal128TestData()
+	{
+		yield return () => (Quad.NegativeInfinity, Decimal128.NegativeInfinity);
+		yield return () => (Quad.Decimal64MinValue, Decimal64.MinValue);
+		yield return () => (Quad.NegativeOne, Decimal128.NegativeOne);
+		yield return () => (Quad.Half, Decimal128.Parse("0.5", CultureInfo.InvariantCulture));
+		yield return () => (Quad.One, Decimal128.One);
+		yield return () => (Quad.Decimal64MaxValue, Decimal64.MaxValue);
+		yield return () => (Quad.PositiveInfinity, Decimal128.PositiveInfinity);
+	}
 
 	public static IEnumerable<Func<(byte, Quad)>> ConvertFromCheckedByteTestData()
 	{
@@ -2432,5 +2531,122 @@ public class QuadDataSources
 		yield return () => (1f, Quad.One);
 		yield return () => (NFloat.MaxValue, Quad.NFloatMaxValue);
 		yield return () => (NFloat.PositiveInfinity, Quad.PositiveInfinity);
+	}
+	
+	public static IEnumerable<Func<(Decimal32, Quad)>> ConvertFromCheckedDecimal32TestData()
+	{
+		yield return () => (Decimal32.NegativeInfinity, Quad.NegativeInfinity);
+		yield return () => (Decimal32.MinValue, Quad.Decimal32MinValue);
+		yield return () => (Decimal32.NegativeOne, Quad.NegativeOne);
+		yield return () => (Decimal32.Parse("-0.5", CultureInfo.InvariantCulture), Quad.NegativeHalf);
+		yield return () => (Decimal32.Zero, Quad.Zero);
+		yield return () => (Decimal32.Parse("0.5", CultureInfo.InvariantCulture), Quad.Half);
+		yield return () => (Decimal32.One, Quad.One);
+		yield return () => (Decimal32.MaxValue, Quad.Decimal32MaxValue);
+		yield return () => (Decimal32.PositiveInfinity, Quad.PositiveInfinity);
+	}
+	
+	public static IEnumerable<Func<(Decimal32, Quad)>> ConvertFromSaturatingDecimal32TestData()
+	{
+		yield return () => (Decimal32.NegativeInfinity, Quad.NegativeInfinity);
+		yield return () => (Decimal32.MinValue, Quad.Decimal32MinValue);
+		yield return () => (Decimal32.NegativeOne, Quad.NegativeOne);
+		yield return () => (Decimal32.Parse("-0.5", CultureInfo.InvariantCulture), Quad.NegativeHalf);
+		yield return () => (Decimal32.Zero, Quad.Zero);
+		yield return () => (Decimal32.Parse("0.5", CultureInfo.InvariantCulture), Quad.Half);
+		yield return () => (Decimal32.One, Quad.One);
+		yield return () => (Decimal32.MaxValue, Quad.Decimal32MaxValue);
+		yield return () => (Decimal32.PositiveInfinity, Quad.PositiveInfinity);
+	}
+	
+	public static IEnumerable<Func<(Decimal32, Quad)>> ConvertFromTruncatingDecimal32TestData()
+	{
+		yield return () => (Decimal32.NegativeInfinity, Quad.NegativeInfinity);
+		yield return () => (Decimal32.MinValue, Quad.Decimal32MinValue);
+		yield return () => (Decimal32.NegativeOne, Quad.NegativeOne);
+		yield return () => (Decimal32.Parse("-0.5", CultureInfo.InvariantCulture), Quad.NegativeHalf);
+		yield return () => (Decimal32.Zero, Quad.Zero);
+		yield return () => (Decimal32.Parse("0.5", CultureInfo.InvariantCulture), Quad.Half);
+		yield return () => (Decimal32.One, Quad.One);
+		yield return () => (Decimal32.MaxValue, Quad.Decimal32MaxValue);
+		yield return () => (Decimal32.PositiveInfinity, Quad.PositiveInfinity);
+	}
+	
+	public static IEnumerable<Func<(Decimal64, Quad)>> ConvertFromCheckedDecimal64TestData()
+	{
+		yield return () => (Decimal64.NegativeInfinity, Quad.NegativeInfinity);
+		yield return () => (Decimal64.MinValue, Quad.Decimal64MinValue);
+		yield return () => (Decimal64.NegativeOne, Quad.NegativeOne);
+		yield return () => (Decimal64.Parse("-0.5", CultureInfo.InvariantCulture), Quad.NegativeHalf);
+		yield return () => (Decimal64.Zero, Quad.Zero);
+		yield return () => (Decimal64.Parse("0.5", CultureInfo.InvariantCulture), Quad.Half);
+		yield return () => (Decimal64.One, Quad.One);
+		yield return () => (Decimal64.MaxValue, Quad.Decimal64MaxValue);
+		yield return () => (Decimal64.PositiveInfinity, Quad.PositiveInfinity);
+	}
+	
+	public static IEnumerable<Func<(Decimal64, Quad)>> ConvertFromSaturatingDecimal64TestData()
+	{
+		yield return () => (Decimal64.NegativeInfinity, Quad.NegativeInfinity);
+		yield return () => (Decimal64.MinValue, Quad.Decimal64MinValue);
+		yield return () => (Decimal64.NegativeOne, Quad.NegativeOne);
+		yield return () => (Decimal64.Parse("-0.5", CultureInfo.InvariantCulture), Quad.NegativeHalf);
+		yield return () => (Decimal64.Zero, Quad.Zero);
+		yield return () => (Decimal64.Parse("0.5", CultureInfo.InvariantCulture), Quad.Half);
+		yield return () => (Decimal64.One, Quad.One);
+		yield return () => (Decimal64.MaxValue, Quad.Decimal64MaxValue);
+		yield return () => (Decimal64.PositiveInfinity, Quad.PositiveInfinity);
+	}
+	
+	public static IEnumerable<Func<(Decimal64, Quad)>> ConvertFromTruncatingDecimal64TestData()
+	{
+		yield return () => (Decimal64.NegativeInfinity, Quad.NegativeInfinity);
+		yield return () => (Decimal64.MinValue, Quad.Decimal64MinValue);
+		yield return () => (Decimal64.NegativeOne, Quad.NegativeOne);
+		yield return () => (Decimal64.Parse("-0.5", CultureInfo.InvariantCulture), Quad.NegativeHalf);
+		yield return () => (Decimal64.Zero, Quad.Zero);
+		yield return () => (Decimal64.Parse("0.5", CultureInfo.InvariantCulture), Quad.Half);
+		yield return () => (Decimal64.One, Quad.One);
+		yield return () => (Decimal64.MaxValue, Quad.Decimal64MaxValue);
+		yield return () => (Decimal64.PositiveInfinity, Quad.PositiveInfinity);
+	}
+	
+	public static IEnumerable<Func<(Decimal128, Quad)>> ConvertFromCheckedDecimal128TestData()
+	{
+		yield return () => (Decimal128.NegativeInfinity, Quad.NegativeInfinity);
+		yield return () => (Decimal64.MinValue, Quad.Decimal64MinValue);
+		yield return () => (Decimal128.NegativeOne, Quad.NegativeOne);
+		yield return () => (Decimal128.Parse("-0.5", CultureInfo.InvariantCulture), Quad.NegativeHalf);
+		yield return () => (Decimal128.Zero, Quad.Zero);
+		yield return () => (Decimal128.Parse("0.5", CultureInfo.InvariantCulture), Quad.Half);
+		yield return () => (Decimal128.One, Quad.One);
+		yield return () => (Decimal64.MaxValue, Quad.Decimal64MaxValue);
+		yield return () => (Decimal128.PositiveInfinity, Quad.PositiveInfinity);
+	}
+	
+	public static IEnumerable<Func<(Decimal128, Quad)>> ConvertFromSaturatingDecimal128TestData()
+	{
+		yield return () => (Decimal128.NegativeInfinity, Quad.NegativeInfinity);
+		yield return () => (Decimal64.MinValue, Quad.Decimal64MinValue);
+		yield return () => (Decimal128.NegativeOne, Quad.NegativeOne);
+		yield return () => (Decimal128.Parse("-0.5", CultureInfo.InvariantCulture), Quad.NegativeHalf);
+		yield return () => (Decimal128.Zero, Quad.Zero);
+		yield return () => (Decimal128.Parse("0.5", CultureInfo.InvariantCulture), Quad.Half);
+		yield return () => (Decimal128.One, Quad.One);
+		yield return () => (Decimal64.MaxValue, Quad.Decimal64MaxValue);
+		yield return () => (Decimal128.PositiveInfinity, Quad.PositiveInfinity);
+	}
+	
+	public static IEnumerable<Func<(Decimal128, Quad)>> ConvertFromTruncatingDecimal128TestData()
+	{
+		yield return () => (Decimal128.NegativeInfinity, Quad.NegativeInfinity);
+		yield return () => (Decimal64.MinValue, Quad.Decimal64MinValue);
+		yield return () => (Decimal128.NegativeOne, Quad.NegativeOne);
+		yield return () => (Decimal128.Parse("-0.5", CultureInfo.InvariantCulture), Quad.NegativeHalf);
+		yield return () => (Decimal128.Zero, Quad.Zero);
+		yield return () => (Decimal128.Parse("0.5", CultureInfo.InvariantCulture), Quad.Half);
+		yield return () => (Decimal128.One, Quad.One);
+		yield return () => (Decimal64.MaxValue, Quad.Decimal64MaxValue);
+		yield return () => (Decimal128.PositiveInfinity, Quad.PositiveInfinity);
 	}
 }
