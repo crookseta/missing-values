@@ -1,7 +1,9 @@
 ﻿using System.Buffers.Binary;
 using System.Diagnostics;
+using System.Globalization;
 using System.Numerics;
 using System.Runtime.CompilerServices;
+using MissingValues.Info;
 using MissingValues.Primitives;
 
 namespace MissingValues.Internals
@@ -769,7 +771,8 @@ namespace MissingValues.Internals
 		}
 
 #if NET11_0_OR_GREATER
-		private static void GetExponentAndSignificand<T>(T value, out int exponent, out UInt512 significand)
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
+		internal static void GetExponentAndSignificand<T>(T value, out int exponent, out UInt512 significand)
 			where T : IDecimalFloatingPointIeee754<T>
 		{
 			Span<byte> exponentBuffer = stackalloc byte[8];
@@ -784,6 +787,7 @@ namespace MissingValues.Internals
 			significand = BinaryOperations.ReadUInt512LittleEndian(significandBuffer);
 		}
 
+		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		internal static TInteger ConvertFromDecimalN<TInteger, TDecimal>(TDecimal value, bool isChecked = false)
 			where TInteger : IBigInteger<TInteger>, IMinMaxValue<TInteger>
 			where TDecimal : IDecimalFloatingPointIeee754<TDecimal>
@@ -899,7 +903,17 @@ namespace MissingValues.Internals
 			where TDecimal : IDecimalFloatingPointIeee754<TDecimal>
 			where TInteger : IBigInteger<TInteger>, IMinMaxValue<TInteger>
 		{
-			throw new NotImplementedException();
+			bool isNegative = TInteger.IsNegative(value);
+			UInt512 bits = UInt512.CreateTruncating(value);
+			
+			UInt512 magnitude = isNegative ? (~bits) + UInt512.One : bits;
+			
+			int digits = UInt512.CountDigits(in magnitude);
+
+			Span<byte> buffer = stackalloc byte[155];
+			NumberFormatter.UInt512ToDecChars(magnitude, Unsafe.BitCast<Span<byte>, Span<Utf8Char>>(buffer), digits);
+			TDecimal result = TDecimal.Parse(buffer[..digits], CultureInfo.CurrentCulture);
+			return isNegative ? -result : result;
 		}
 #endif
 

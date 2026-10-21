@@ -808,6 +808,18 @@ public class UInt512GenericMathTests
 	[Test, MethodDataSource<DataSources>(nameof(ConvertToSaturatingNFloatTestData))] public async Task ConvertToSaturatingNFloatTest(UInt512 input, NFloat expected) => await Assert.That(NFloat.CreateSaturating(input)).IsEqualTo(expected);
 	[Test, MethodDataSource<DataSources>(nameof(ConvertToTruncatingNFloatTestData))] public async Task ConvertToTruncatingNFloatTest(UInt512 input, NFloat expected) => await Assert.That(NFloat.CreateTruncating(input)).IsEqualTo(expected);
 	
+	[Test, MethodDataSource<DataSources>(nameof(ConvertToCheckedDecimal32TestData))] public async Task ConvertToCheckedDecimal32Test(UInt512 input, Decimal32 expected) => await Assert.That(Decimal32.CreateChecked(input)).IsEqualTo(expected);
+	[Test, MethodDataSource<DataSources>(nameof(ConvertToSaturatingDecimal32TestData))] public async Task ConvertToSaturatingDecimal32Test(UInt512 input, Decimal32 expected) => await Assert.That(Decimal32.CreateSaturating(input)).IsEqualTo(expected);
+	[Test, MethodDataSource<DataSources>(nameof(ConvertToTruncatingDecimal32TestData))] public async Task ConvertToTruncatingDecimal32Test(UInt512 input, Decimal32 expected) => await Assert.That(Decimal32.CreateTruncating(input)).IsEqualTo(expected);
+	
+	[Test, MethodDataSource<DataSources>(nameof(ConvertToCheckedDecimal64TestData))] public async Task ConvertToCheckedDecimal64Test(UInt512 input, Decimal64 expected) => await Assert.That(Decimal64.CreateChecked(input)).IsEqualTo(expected);
+	[Test, MethodDataSource<DataSources>(nameof(ConvertToSaturatingDecimal64TestData))] public async Task ConvertToSaturatingDecimal64Test(UInt512 input, Decimal64 expected) => await Assert.That(Decimal64.CreateSaturating(input)).IsEqualTo(expected);
+	[Test, MethodDataSource<DataSources>(nameof(ConvertToTruncatingDecimal64TestData))] public async Task ConvertToTruncatingDecimal64Test(UInt512 input, Decimal64 expected) => await Assert.That(Decimal64.CreateTruncating(input)).IsEqualTo(expected);
+	
+	[Test, MethodDataSource<DataSources>(nameof(ConvertToCheckedDecimal128TestData))] public async Task ConvertToCheckedDecimal128Test(UInt512 input, Decimal128 expected) => await Assert.That(Decimal128.CreateChecked(input)).IsEqualTo(expected);
+	[Test, MethodDataSource<DataSources>(nameof(ConvertToSaturatingDecimal128TestData))] public async Task ConvertToSaturatingDecimal128Test(UInt512 input, Decimal128 expected) => await Assert.That(Decimal128.CreateSaturating(input)).IsEqualTo(expected);
+	[Test, MethodDataSource<DataSources>(nameof(ConvertToTruncatingDecimal128TestData))] public async Task ConvertToTruncatingDecimal128Test(UInt512 input, Decimal128 expected) => await Assert.That(Decimal128.CreateTruncating(input)).IsEqualTo(expected);
+	
 	[Test, MethodDataSource<DataSources>(nameof(ConvertFromCheckedByteTestData))] public async Task ConvertFromCheckedByteTest(byte input, UInt512 expected) => await Assert.That(UInt512.CreateChecked(input)).IsEqualTo(expected);
 	[Test, MethodDataSource<DataSources>(nameof(ConvertFromSaturatingByteTestData))] public async Task ConvertFromSaturatingByteTest(byte input, UInt512 expected) => await Assert.That(UInt512.CreateSaturating(input)).IsEqualTo(expected);
 	[Test, MethodDataSource<DataSources>(nameof(ConvertFromTruncatingByteTestData))] public async Task ConvertFromTruncatingByteTest(byte input, UInt512 expected) => await Assert.That(UInt512.CreateTruncating(input)).IsEqualTo(expected);
@@ -875,5 +887,17 @@ public class UInt512GenericMathTests
 	[Test, MethodDataSource<DataSources>(nameof(ConvertFromCheckedNFloatTestData))] public async Task ConvertFromCheckedNFloatTest(NFloat input, UInt512 expected) => await Assert.That(UInt512.CreateChecked(input)).IsEqualTo(expected);
 	[Test, MethodDataSource<DataSources>(nameof(ConvertFromSaturatingNFloatTestData))] public async Task ConvertFromSaturatingNFloatTest(NFloat input, UInt512 expected) => await Assert.That(UInt512.CreateSaturating(input)).IsEqualTo(expected);
 	[Test, MethodDataSource<DataSources>(nameof(ConvertFromTruncatingNFloatTestData))] public async Task ConvertFromTruncatingNFloatTest(NFloat input, UInt512 expected) => await Assert.That(UInt512.CreateTruncating(input)).IsEqualTo(expected);
+	
+	[Test, MethodDataSource<DataSources>(nameof(ConvertFromCheckedDecimal32TestData))] public async Task ConvertFromCheckedDecimal32Test(Decimal32 input, UInt512 expected) => await Assert.That(UInt512.CreateChecked(input)).IsEqualTo(expected);
+	[Test, MethodDataSource<DataSources>(nameof(ConvertFromSaturatingDecimal32TestData))] public async Task ConvertFromSaturatingDecimal32Test(Decimal32 input, UInt512 expected) => await Assert.That(UInt512.CreateSaturating(input)).IsEqualTo(expected);
+	[Test, MethodDataSource<DataSources>(nameof(ConvertFromTruncatingDecimal32TestData))] public async Task ConvertFromTruncatingDecimal32Test(Decimal32 input, UInt512 expected) => await Assert.That(UInt512.CreateTruncating(input)).IsEqualTo(expected);
+	
+	[Test, MethodDataSource<DataSources>(nameof(ConvertFromCheckedDecimal64TestData))] public async Task ConvertFromCheckedDecimal64Test(Decimal64 input, UInt512 expected) => await Assert.That(UInt512.CreateChecked(input)).IsEqualTo(expected);
+	[Test, MethodDataSource<DataSources>(nameof(ConvertFromSaturatingDecimal64TestData))] public async Task ConvertFromSaturatingDecimal64Test(Decimal64 input, UInt512 expected) => await Assert.That(UInt512.CreateSaturating(input)).IsEqualTo(expected);
+	[Test, MethodDataSource<DataSources>(nameof(ConvertFromTruncatingDecimal64TestData))] public async Task ConvertFromTruncatingDecimal64Test(Decimal64 input, UInt512 expected) => await Assert.That(UInt512.CreateTruncating(input)).IsEqualTo(expected);
+	
+	[Test, MethodDataSource<DataSources>(nameof(ConvertFromCheckedDecimal128TestData))] public async Task ConvertFromCheckedDecimal128Test(Decimal128 input, UInt512 expected) => await Assert.That(UInt512.CreateChecked(input)).IsEqualTo(expected);
+	[Test, MethodDataSource<DataSources>(nameof(ConvertFromSaturatingDecimal128TestData))] public async Task ConvertFromSaturatingDecimal128Test(Decimal128 input, UInt512 expected) => await Assert.That(UInt512.CreateSaturating(input)).IsEqualTo(expected);
+	[Test, MethodDataSource<DataSources>(nameof(ConvertFromTruncatingDecimal128TestData))] public async Task ConvertFromTruncatingDecimal128Test(Decimal128 input, UInt512 expected) => await Assert.That(UInt512.CreateTruncating(input)).IsEqualTo(expected);
 	#endregion
 }

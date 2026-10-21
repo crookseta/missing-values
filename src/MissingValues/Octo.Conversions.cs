@@ -1,9 +1,11 @@
 using System.Buffers;
 using System.Buffers.Binary;
 using System.Diagnostics;
+using System.Globalization;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using MissingValues.Info;
 using MissingValues.Internals;
 using MissingValues.Primitives;
 
@@ -1332,7 +1334,31 @@ public partial struct Octo
 	/// <param name="value">The value to convert.</param>
 	public static explicit operator Decimal128(in Octo value)
 	{
-		return (Decimal128)(double)value;
+		if (IsNaN(value))
+		{
+			return Decimal128.NaN;
+		}
+		if (IsInfinity(value))
+		{
+			return IsNegative(value) ? Decimal128.NegativeInfinity : Decimal128.PositiveInfinity;
+		}
+		if (value == Zero)
+		{
+			return IsNegative(value) ? Decimal128.NegativeZero : Decimal128.Zero;
+		}
+
+		byte[] bufferArray = ArrayPool<byte>.Shared.Rent(NumberParser.OctoBufferLength);
+		try
+		{
+			value.TryFormat(bufferArray.AsSpan(), out int written, "G", CultureInfo.CurrentCulture);
+			var buffer = bufferArray.AsSpan(0, written);
+			
+			return Decimal128.Parse(buffer);
+		}
+		finally
+		{
+			ArrayPool<byte>.Shared.Return(bufferArray);
+		}
 	}
 	/// <summary>
 	/// Explicitly converts a <see cref="Octo" /> value to a <see cref="Decimal64"/>.
@@ -1340,7 +1366,31 @@ public partial struct Octo
 	/// <param name="value">The value to convert.</param>
 	public static explicit operator Decimal64(in Octo value)
 	{
-		return (Decimal64)(double)value;
+		if (IsNaN(value))
+		{
+			return Decimal64.NaN;
+		}
+		if (IsInfinity(value))
+		{
+			return IsNegative(value) ? Decimal64.NegativeInfinity : Decimal64.PositiveInfinity;
+		}
+		if (value == Zero)
+		{
+			return IsNegative(value) ? Decimal64.NegativeZero : Decimal64.Zero;
+		}
+
+		byte[] bufferArray = ArrayPool<byte>.Shared.Rent(NumberParser.OctoBufferLength);
+		try
+		{
+			value.TryFormat(bufferArray.AsSpan(), out int written, "G", CultureInfo.CurrentCulture);
+			var buffer = bufferArray.AsSpan(0, written);
+			
+			return Decimal64.Parse(buffer);
+		}
+		finally
+		{
+			ArrayPool<byte>.Shared.Return(bufferArray);
+		}
 	}
 	/// <summary>
 	/// Explicitly converts a <see cref="Octo" /> value to a <see cref="Decimal32"/>.
@@ -1348,7 +1398,31 @@ public partial struct Octo
 	/// <param name="value">The value to convert.</param>
 	public static explicit operator Decimal32(in Octo value)
 	{
-		return (Decimal32)(double)value;
+		if (IsNaN(value))
+		{
+			return Decimal32.NaN;
+		}
+		if (IsInfinity(value))
+		{
+			return IsNegative(value) ? Decimal32.NegativeInfinity : Decimal32.PositiveInfinity;
+		}
+		if (value == Zero)
+		{
+			return IsNegative(value) ? Decimal32.NegativeZero : Decimal32.Zero;
+		}
+
+		byte[] bufferArray = ArrayPool<byte>.Shared.Rent(NumberParser.OctoBufferLength);
+		try
+		{
+			value.TryFormat(bufferArray.AsSpan(), out int written, "G", CultureInfo.CurrentCulture);
+			var buffer = bufferArray.AsSpan(0, written);
+			
+			return Decimal32.Parse(buffer);
+		}
+		finally
+		{
+			ArrayPool<byte>.Shared.Return(bufferArray);
+		}
 	}
 #endif
 	
@@ -1728,6 +1802,7 @@ public partial struct Octo
 	{
 		return (Octo)(double)value;
 	}
+	
 #if NET11_0_OR_GREATER
 	/// <summary>
 	/// Implicitly converts a <see cref="Decimal128" /> value to a <see cref="Octo"/>.
@@ -1735,7 +1810,31 @@ public partial struct Octo
 	/// <param name="value">The value to convert.</param>
 	public static implicit operator Octo(Decimal128 value)
 	{
-		return (Octo)(double)value;
+		bool isNegative = Decimal128.IsNegative(value);
+		if (Decimal128.IsInfinity(value))
+		{
+			return isNegative ? NegativeInfinity : PositiveInfinity;
+		}
+		if (Decimal128.IsNaN(value))
+		{
+			return NaN;
+		}
+		
+		BitHelper.GetExponentAndSignificand(value, out int exponent, out UInt512 significand);
+
+		if (significand == UInt512.Zero)
+		{
+			return isNegative ? NegativeZero : Zero;
+		}
+		
+		NumberInfo number = new(stackalloc byte[155]);
+		
+		number.Scale = number.DigitsCount = UInt512.CountDigits(in significand);
+		number.Scale += exponent;
+		number.IsNegative = isNegative;
+		NumberFormatter.UInt512ToDecChars(significand, MemoryMarshal.Cast<byte, Utf8Char>(number.Digits), number.DigitsCount);
+		
+		return NumberInfo.ConvertToFloat<Octo, UInt256>(ref number);
 	}
 	/// <summary>
 	/// Implicitly converts a <see cref="Decimal64" /> value to a <see cref="Octo"/>.
@@ -1743,7 +1842,31 @@ public partial struct Octo
 	/// <param name="value">The value to convert.</param>
 	public static implicit operator Octo(Decimal64 value)
 	{
-		return (Octo)(double)value;
+		bool isNegative = Decimal64.IsNegative(value);
+		if (Decimal64.IsInfinity(value))
+		{
+			return isNegative ? NegativeInfinity : PositiveInfinity;
+		}
+		if (Decimal64.IsNaN(value))
+		{
+			return NaN;
+		}
+		
+		BitHelper.GetExponentAndSignificand(value, out int exponent, out UInt512 significand);
+
+		if (significand == UInt512.Zero)
+		{
+			return isNegative ? NegativeZero : Zero;
+		}
+		
+		NumberInfo number = new(stackalloc byte[155]);
+		
+		number.Scale = number.DigitsCount = UInt512.CountDigits(in significand);
+		number.Scale += exponent;
+		number.IsNegative = isNegative;
+		NumberFormatter.UInt512ToDecChars(significand, MemoryMarshal.Cast<byte, Utf8Char>(number.Digits), number.DigitsCount);
+		
+		return NumberInfo.ConvertToFloat<Octo, UInt256>(ref number);
 	}
 	/// <summary>
 	/// Implicitly converts a <see cref="Decimal32" /> value to a <see cref="Octo"/>.
@@ -1751,7 +1874,31 @@ public partial struct Octo
 	/// <param name="value">The value to convert.</param>
 	public static implicit operator Octo(Decimal32 value)
 	{
-		return (Octo)(double)value;
+		bool isNegative = Decimal32.IsNegative(value);
+		if (Decimal32.IsInfinity(value))
+		{
+			return isNegative ? NegativeInfinity : PositiveInfinity;
+		}
+		if (Decimal32.IsNaN(value))
+		{
+			return NaN;
+		}
+		
+		BitHelper.GetExponentAndSignificand(value, out int exponent, out UInt512 significand);
+
+		if (significand == UInt512.Zero)
+		{
+			return isNegative ? NegativeZero : Zero;
+		}
+		
+		NumberInfo number = new(stackalloc byte[155]);
+		
+		number.Scale = number.DigitsCount = UInt512.CountDigits(in significand);
+		number.Scale += exponent;
+		number.IsNegative = isNegative;
+		NumberFormatter.UInt512ToDecChars(significand, MemoryMarshal.Cast<byte, Utf8Char>(number.Digits), number.DigitsCount);
+		
+		return NumberInfo.ConvertToFloat<Octo, UInt256>(ref number);
 	}
 #endif
 	
