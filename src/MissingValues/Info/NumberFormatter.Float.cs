@@ -72,7 +72,7 @@ internal static partial class NumberFormatter
 			}
 			else
 			{
-				precision = maxSignificandPrecision;
+				precision = -1;
 			}
 		}
 
@@ -94,7 +94,7 @@ internal static partial class NumberFormatter
 			return FormatNumber(in value, format!, info);
 		}
 
-		Ryu.Format<TFloat, TSignificand, Utf16Char>(in value, buffer, out charsWritten, fmt, out bool isExceptional, info, precision);
+		Ryu.Format<TFloat, TSignificand, Utf16Char>(in value, buffer, out charsWritten, fmt, out bool isExceptional, info);
 
 		if (isExceptional || fmt.StartsWith("E", StringComparison.OrdinalIgnoreCase))
 		{
@@ -133,7 +133,7 @@ internal static partial class NumberFormatter
 			}
 			else
 			{
-				precision = maxSignificandPrecision;
+				precision = -1;
 			}
 		}
 
@@ -148,7 +148,7 @@ internal static partial class NumberFormatter
 		}
 
 		Span<TChar> buffer = stackalloc TChar[maxBufferAlloc];
-		Ryu.Format<TFloat, TSignificand, TChar>(in value, buffer, out charsWritten, format, out bool isExceptional, info, precision);
+		Ryu.Format<TFloat, TSignificand, TChar>(in value, buffer, out charsWritten, format, out bool isExceptional, info);
 
 		if (isExceptional || format.Contains("E", StringComparison.OrdinalIgnoreCase))
 		{
@@ -212,12 +212,13 @@ internal static partial class NumberFormatter
 		// For normal numbers, this is already the case.
 		// For denormal numbers, we need to shift left until the leading 1 is there.
 
+		int bitLength = Unsafe.SizeOf<TSignificand>() * 8;
 		int mantissaBits = TFloat.DenormalMantissaBits;
 
 		if (fraction < (TSignificand.One << mantissaBits))
 		{
 			// Denormal: shift the leading 1 up to the implicit bit position
-			int lz = int.CreateTruncating(TSignificand.LeadingZeroCount(fraction)) - ((Unsafe.SizeOf<TSignificand>() * 8 - 1) - mantissaBits);
+			int lz = int.CreateTruncating(TSignificand.LeadingZeroCount(fraction)) - ((bitLength - 1) - mantissaBits);
 			fraction <<= lz;
 			exponent -= lz;
 		}
@@ -265,8 +266,8 @@ internal static partial class NumberFormatter
 				// (we're in the precision > 0 branch) and precision < defaultHexDigits
 				// (checked above), so bitsToKeep < mantissaBits and bitsToDiscard > 0.
 				// For all IEEE types mantissaBits <= 52, so bitsToDiscard < 64.
-				Debug.Assert(bitsToDiscard > 0 && bitsToDiscard < (Unsafe.SizeOf<TSignificand>() * 8));
-				if (bitsToDiscard > 0 && bitsToDiscard < (Unsafe.SizeOf<TSignificand>() * 8))
+				Debug.Assert(bitsToDiscard > 0 && bitsToDiscard < bitLength);
+				if (bitsToDiscard > 0 && bitsToDiscard < bitLength)
 				{
 					TSignificand roundBit = TSignificand.One << (bitsToDiscard - 1);
 					TSignificand discardedBits = significandBits & ((TSignificand.One << bitsToDiscard) - TSignificand.One);
@@ -288,16 +289,16 @@ internal static partial class NumberFormatter
 						significandBits >>= bitsToDiscard;
 					}
 
-					shifted = significandBits << ((Unsafe.SizeOf<TSignificand>() * 8) - bitsToKeep);
+					shifted = significandBits << (bitLength - bitsToKeep);
 				}
 				else
 				{
-					shifted = significandBits << ((Unsafe.SizeOf<TSignificand>() * 8) - mantissaBits);
+					shifted = significandBits << (bitLength - mantissaBits);
 				}
 			}
 			else
 			{
-				shifted = significandBits << ((Unsafe.SizeOf<TSignificand>() * 8) - mantissaBits);
+				shifted = significandBits << (bitLength - mantissaBits);
 			}
 			
 			builder.AppendUtf16(info.NumberDecimalSeparator);
@@ -307,8 +308,8 @@ internal static partial class NumberFormatter
 			for (int i = 0; i < realDigits; i++)
 			{
 				builder.Append(format == 'X' 
-					? TChar.ToCharUpper(uint.CreateTruncating(shifted >> (Unsafe.SizeOf<TSignificand>() * 8 - 4)))
-					: TChar.ToCharLower(uint.CreateTruncating(shifted >> (Unsafe.SizeOf<TSignificand>() * 8 - 4))));
+					? TChar.ToCharUpper(uint.CreateTruncating(shifted >> (bitLength - 4)))
+					: TChar.ToCharLower(uint.CreateTruncating(shifted >> (bitLength - 4))));
 				shifted <<= 4;
 			}
 			
@@ -337,12 +338,12 @@ internal static partial class NumberFormatter
 				{
 					builder.AppendUtf16(info.NumberDecimalSeparator);
 
-					TSignificand shifted = significandBits << ((Unsafe.SizeOf<TSignificand>() * 8) - mantissaBits);
+					TSignificand shifted = significandBits << (bitLength - mantissaBits);
 					for (int i = 0; i < trimmedDigits; i++)
 					{
 						builder.Append(format == 'X' 
-							? TChar.ToUpper((TChar)uint.CreateTruncating(shifted >> (Unsafe.SizeOf<TSignificand>() * 8 - 4)))
-							: TChar.ToLower((TChar)uint.CreateTruncating(shifted >> (Unsafe.SizeOf<TSignificand>() * 8 - 4))));
+							? TChar.ToCharUpper(uint.CreateTruncating(shifted >> (bitLength - 4)))
+							: TChar.ToCharLower(uint.CreateTruncating(shifted >> (bitLength - 4))));
 						shifted <<= 4;
 					}
 				}

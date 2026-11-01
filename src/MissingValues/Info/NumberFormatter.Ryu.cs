@@ -298,7 +298,7 @@ internal static partial class NumberFormatter
 
 		private const int FDExceptionalExponent = 0x7FFF_FFFF;
 
-		internal static void Format<TFloat, TSignificand, TChar>(in TFloat value, scoped Span<TChar> destination, out int charsWritten, ReadOnlySpan<char> format, out bool isExceptional, NumberFormatInfo? info, int? precision = null)
+		internal static void Format<TFloat, TSignificand, TChar>(in TFloat value, scoped Span<TChar> destination, out int charsWritten, ReadOnlySpan<char> format, out bool isExceptional, NumberFormatInfo? info)
 			where TFloat : struct, IBinaryFloatingPointInfo<TFloat, TSignificand>
 			where TSignificand : unmanaged, IBinaryInteger<TSignificand>, IUnsignedNumber<TSignificand>
 			where TChar : unmanaged, IUtfCharacter<TChar>
