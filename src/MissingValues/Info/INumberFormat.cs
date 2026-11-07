@@ -1,9 +1,6 @@
 ﻿using System.Buffers.Binary;
 using MissingValues.Internals;
-using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
-using System.Numerics;
-using System.Runtime.CompilerServices;
 using System.Runtime.Intrinsics;
 using System.Runtime.Intrinsics.X86;
 
@@ -273,7 +270,7 @@ internal readonly struct HexConverter<TInteger> : IIntegerRadixConverter<TIntege
 	    
 	    var nibbles = (lowerChunk - offset);
 
-	    var mult = Vector128.Create((sbyte)16, 1, 16, 1, 16, 1, 16, 1, 16, 1, 16, 1, 16, 1, 16, 1);
+	    var mult = Vector128.CreateAlternatingSequence((sbyte)16, (sbyte)1);
 	    var bytes16 = Ssse3.MultiplyAddAdjacent(nibbles, mult); 
 
 	    var packed = Sse2.PackUnsignedSaturate(bytes16, bytes16);
@@ -306,10 +303,7 @@ internal readonly struct HexConverter<TInteger> : IIntegerRadixConverter<TIntege
 	    
 		var nibbles = (lowerChunk - offset);
 
-		var mult = Vector256.Create(
-			(sbyte)16, 1, 16, 1, 16, 1, 16, 1, 16, 1, 16, 1, 16, 1, 16, 1,
-			16, 1, 16, 1, 16, 1, 16, 1, 16, 1, 16, 1, 16, 1, 16, 1
-			);
+		var mult = Vector256.CreateAlternatingSequence((sbyte)16, (sbyte)1);
 		var bytes16 = Avx2.MultiplyAddAdjacent(nibbles, mult); 
 
 		var packed = Avx2.PackUnsignedSaturate(bytes16, bytes16);
@@ -343,12 +337,7 @@ internal readonly struct HexConverter<TInteger> : IIntegerRadixConverter<TIntege
 	    
 		var nibbles = (lowerChunk - offset);
 
-		var mult = Vector512.Create(
-			(sbyte)16, 1, 16, 1, 16, 1, 16, 1, 16, 1, 16, 1, 16, 1, 16, 1,
-			16, 1, 16, 1, 16, 1, 16, 1, 16, 1, 16, 1, 16, 1, 16, 1,
-			16, 1, 16, 1, 16, 1, 16, 1, 16, 1, 16, 1, 16, 1, 16, 1,
-			16, 1, 16, 1, 16, 1, 16, 1, 16, 1, 16, 1, 16, 1, 16, 1
-		);
+		var mult = Vector512.CreateAlternatingSequence((sbyte)16, (sbyte)1);
 		var bytes16 = Avx512BW.MultiplyAddAdjacent(nibbles, mult); 
 
 		var packed = Avx512BW.PackUnsignedSaturate(bytes16, bytes16);

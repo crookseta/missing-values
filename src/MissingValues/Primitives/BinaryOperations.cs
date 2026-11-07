@@ -2,6 +2,7 @@ using System.Buffers.Binary;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Intrinsics;
+using MissingValues.Internals;
 
 namespace MissingValues.Primitives;
 
@@ -73,20 +74,9 @@ public static partial class BinaryOperations
     /// <returns>The reversed value.</returns>
     public static UInt256 ReverseEndianness(in UInt256 value)
     {
-        if (Vector256.IsHardwareAccelerated)
-        {
-#if NET11_0_OR_GREATER
-            return UInt256.Create(Vector256.Reverse(value.AsVector<byte>()));
-#else
-            return Unsafe.BitCast<Vector256<byte>, UInt256>(
-                Vector256.Shuffle(
-                    Unsafe.BitCast<UInt256, Vector256<byte>>(value),
-                    Vector256.Create((byte)31, 30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0)
-                )
-            );
-#endif
-        }
-        return new UInt256(BinaryPrimitives.ReverseEndianness(value.Part0), BinaryPrimitives.ReverseEndianness(value.Part1), BinaryPrimitives.ReverseEndianness(value.Part2), BinaryPrimitives.ReverseEndianness(value.Part3));
+        return Vector256.IsHardwareAccelerated 
+            ? UInt256.Create(Vector256.Reverse(value.AsVector<byte>())) 
+            : new UInt256(BinaryPrimitives.ReverseEndianness(value.Part0), BinaryPrimitives.ReverseEndianness(value.Part1), BinaryPrimitives.ReverseEndianness(value.Part2), BinaryPrimitives.ReverseEndianness(value.Part3));
     }
     
     /// <summary>
@@ -96,20 +86,9 @@ public static partial class BinaryOperations
     /// <returns>The reversed value.</returns>
     public static Int256 ReverseEndianness(in Int256 value)
     {
-        if (Vector256.IsHardwareAccelerated)
-        {
-#if NET11_0_OR_GREATER
-            return Int256.Create(Vector256.Reverse(value.AsVector<byte>()));
-#else
-            return Unsafe.BitCast<Vector256<byte>, Int256>(
-                Vector256.Shuffle(
-                    Unsafe.BitCast<Int256, Vector256<byte>>(value),
-                    Vector256.Create((byte)31, 30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0)
-                )
-            );
-#endif
-        }
-        return new Int256(BinaryPrimitives.ReverseEndianness(value.Part0), BinaryPrimitives.ReverseEndianness(value.Part1), BinaryPrimitives.ReverseEndianness(value.Part2), BinaryPrimitives.ReverseEndianness(value.Part3));
+        return Vector256.IsHardwareAccelerated 
+            ? Int256.Create(Vector256.Reverse(value.AsVector<byte>())) 
+            : new Int256(BinaryPrimitives.ReverseEndianness(value.Part0), BinaryPrimitives.ReverseEndianness(value.Part1), BinaryPrimitives.ReverseEndianness(value.Part2), BinaryPrimitives.ReverseEndianness(value.Part3));
     }
     
     /// <summary>
@@ -121,19 +100,7 @@ public static partial class BinaryOperations
     {
         if (Vector512.IsHardwareAccelerated)
         {
-#if NET11_0_OR_GREATER
             return UInt512.Create(Vector512.Reverse(value.AsVector<byte>()));
-#else
-            return Unsafe.BitCast<Vector512<byte>, UInt512>(
-                Vector512.Shuffle(
-                    Unsafe.BitCast<UInt512, Vector512<byte>>(value),
-                    Vector512.Create(
-                        (byte)63, 62, 61, 60, 59, 58, 57, 56, 55, 54, 53, 52, 51, 50, 49, 48, 47, 46, 45, 44, 43, 42, 41, 40, 39, 38, 37, 36, 35, 34, 33, 32,
-                        31, 30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0
-                    )
-                )
-            );
-#endif
         }
         if (Vector256.IsHardwareAccelerated)
         {
@@ -154,19 +121,7 @@ public static partial class BinaryOperations
     {
         if (Vector512.IsHardwareAccelerated)
         {
-#if NET11_0_OR_GREATER
             return Int512.Create(Vector512.Reverse(value.AsVector<byte>()));
-#else
-            return Unsafe.BitCast<Vector512<byte>, Int512>(
-                Vector512.Shuffle(
-                    Unsafe.BitCast<Int512, Vector512<byte>>(value),
-                    Vector512.Create(
-                        (byte)63, 62, 61, 60, 59, 58, 57, 56, 55, 54, 53, 52, 51, 50, 49, 48, 47, 46, 45, 44, 43, 42, 41, 40, 39, 38, 37, 36, 35, 34, 33, 32,
-                        31, 30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0
-                    )
-                )
-            );
-#endif
         }
         if (Vector256.IsHardwareAccelerated)
         {
@@ -187,6 +142,10 @@ public static partial class BinaryOperations
     public static void ReverseEndianness(ReadOnlySpan<UInt256> source, Span<UInt256> destination)
     {
         ArgumentOutOfRangeException.ThrowIfLessThan(destination.Length, source.Length);
+        if (source.Length == 0)
+        {
+            return;
+        }
         if (Unsafe.AreSame(in source[0], in destination[0]) || !source.Overlaps(destination, out int elementOffset) || elementOffset < 0)
         {
             int i = 0;
@@ -198,12 +157,7 @@ public static partial class BinaryOperations
 
                 for (; i < vectorSource.Length; i++)
                 {
-                    vectorDestination[i] = Vector256.Shuffle(
-                        vectorSource[i],
-                        Vector256.Create(
-                            (byte)31, 30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20, 19, 18, 17, 16, 
-                            15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0)
-                    );
+                    vectorDestination[i] = Vector256.Reverse(vectorSource[i]);
                 }
             }
             else
@@ -229,12 +183,7 @@ public static partial class BinaryOperations
 
                 for (; i >= 0; i--)
                 {
-                    vectorDestination[i] = Vector256.Shuffle(
-                        vectorSource[i],
-                        Vector256.Create(
-                            (byte)31, 30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20, 19, 18, 17, 16, 
-                            15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0)
-                    );
+                    vectorDestination[i] = Vector256.Reverse(vectorSource[i]);
                 }
             }
             else
@@ -260,6 +209,10 @@ public static partial class BinaryOperations
     public static void ReverseEndianness(ReadOnlySpan<Int256> source, Span<Int256> destination)
     {
         ArgumentOutOfRangeException.ThrowIfLessThan(destination.Length, source.Length);
+        if (source.Length == 0)
+        {
+            return;
+        }
         if (Unsafe.AreSame(in source[0], in destination[0]) || !source.Overlaps(destination, out int elementOffset) || elementOffset < 0)
         {
             int i = 0;
@@ -271,12 +224,7 @@ public static partial class BinaryOperations
 
                 for (; i < vectorSource.Length; i++)
                 {
-                    vectorDestination[i] = Vector256.Shuffle(
-                        vectorSource[i],
-                        Vector256.Create(
-                            (byte)31, 30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20, 19, 18, 17, 16, 
-                            15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0)
-                    );
+                    vectorDestination[i] = Vector256.Reverse(vectorSource[i]);
                 }
             }
             else
@@ -302,12 +250,7 @@ public static partial class BinaryOperations
 
                 for (; i >= 0; i--)
                 {
-                    vectorDestination[i] = Vector256.Shuffle(
-                        vectorSource[i],
-                        Vector256.Create(
-                            (byte)31, 30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20, 19, 18, 17, 16, 
-                            15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0)
-                    );
+                    vectorDestination[i] = Vector256.Reverse(vectorSource[i]);
                 }
             }
             else
@@ -333,6 +276,10 @@ public static partial class BinaryOperations
     public static void ReverseEndianness(ReadOnlySpan<UInt512> source, Span<UInt512> destination)
     {
         ArgumentOutOfRangeException.ThrowIfLessThan(destination.Length, source.Length);
+        if (source.Length == 0)
+        {
+            return;
+        }
         if (Unsafe.AreSame(in source[0], in destination[0]) || !source.Overlaps(destination, out int elementOffset) || elementOffset < 0)
         {
             int i = 0;
@@ -344,14 +291,7 @@ public static partial class BinaryOperations
 
                 for (; i < vectorSource.Length; i++)
                 {
-                    vectorDestination[i] = Vector512.Shuffle(
-                        vectorSource[i],
-                        Vector512.Create(
-                            (byte)63, 62, 61, 60, 59, 58, 57, 56, 55, 54, 53, 52, 51, 50, 49, 48, 
-                            47, 46, 45, 44, 43, 42, 41, 40, 39, 38, 37, 36, 35, 34, 33, 32,
-                            31, 30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20, 19, 18, 17, 16, 
-                            15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0)
-                    );
+                    vectorDestination[i] = Vector512.Reverse(vectorSource[i]);
                 }
             }
             else
@@ -377,14 +317,7 @@ public static partial class BinaryOperations
 
                 for (; i >= 0; i--)
                 {
-                    vectorDestination[i] = Vector512.Shuffle(
-                        vectorSource[i],
-                        Vector512.Create(
-                            (byte)63, 62, 61, 60, 59, 58, 57, 56, 55, 54, 53, 52, 51, 50, 49, 48, 
-                            47, 46, 45, 44, 43, 42, 41, 40, 39, 38, 37, 36, 35, 34, 33, 32,
-                            31, 30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20, 19, 18, 17, 16, 
-                            15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0)
-                    );
+                    vectorDestination[i] = Vector512.Reverse(vectorSource[i]);
                 }
             }
             else
@@ -410,6 +343,10 @@ public static partial class BinaryOperations
     public static void ReverseEndianness(ReadOnlySpan<Int512> source, Span<Int512> destination)
     {
         ArgumentOutOfRangeException.ThrowIfLessThan(destination.Length, source.Length);
+        if (source.Length == 0)
+        {
+            return;
+        }
         if (Unsafe.AreSame(in source[0], in destination[0]) || !source.Overlaps(destination, out int elementOffset) || elementOffset < 0)
         {
             int i = 0;
@@ -421,14 +358,7 @@ public static partial class BinaryOperations
 
                 for (; i < vectorSource.Length; i++)
                 {
-                    vectorDestination[i] = Vector512.Shuffle(
-                        vectorSource[i],
-                        Vector512.Create(
-                            (byte)63, 62, 61, 60, 59, 58, 57, 56, 55, 54, 53, 52, 51, 50, 49, 48, 
-                            47, 46, 45, 44, 43, 42, 41, 40, 39, 38, 37, 36, 35, 34, 33, 32,
-                            31, 30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20, 19, 18, 17, 16, 
-                            15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0)
-                    );
+                    vectorDestination[i] = Vector512.Reverse(vectorSource[i]);
                 }
             }
             else
@@ -454,14 +384,7 @@ public static partial class BinaryOperations
 
                 for (; i >= 0; i--)
                 {
-                    vectorDestination[i] = Vector512.Shuffle(
-                        vectorSource[i],
-                        Vector512.Create(
-                            (byte)63, 62, 61, 60, 59, 58, 57, 56, 55, 54, 53, 52, 51, 50, 49, 48, 
-                            47, 46, 45, 44, 43, 42, 41, 40, 39, 38, 37, 36, 35, 34, 33, 32,
-                            31, 30, 29, 28, 27, 26, 25, 24, 23, 22, 21, 20, 19, 18, 17, 16, 
-                            15, 14, 13, 12, 11, 10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 0)
-                    );
+                    vectorDestination[i] = Vector512.Reverse(vectorSource[i]);
                 }
             }
             else
