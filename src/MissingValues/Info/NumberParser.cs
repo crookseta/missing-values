@@ -1,4 +1,5 @@
-﻿using MissingValues.Internals;
+﻿using System.Diagnostics;
+using MissingValues.Internals;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -64,18 +65,21 @@ namespace MissingValues.Info
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		private static Vector512<byte> FromChar512(ReadOnlySpan<char> span)
 		{
+			Debug.Assert(span.Length >= Vector512<ushort>.Count * 2);
 			var shortSpan = MemoryMarshal.Cast<char, ushort>(span);
 			return Vector512.Narrow(Vector512.Create(shortSpan), Vector512.Create(shortSpan[Vector512<ushort>.Count..]));
 		}
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		private static Vector256<byte> FromChar256(ReadOnlySpan<char> span)
 		{
+			Debug.Assert(span.Length >= Vector256<ushort>.Count * 2);
 			var shortSpan = MemoryMarshal.Cast<char, ushort>(span);
 			return Vector256.Narrow(Vector256.Create(shortSpan), Vector256.Create(shortSpan[Vector256<ushort>.Count..]));
 		}
 		[MethodImpl(MethodImplOptions.AggressiveInlining)]
 		private static Vector128<byte> FromChar128(ReadOnlySpan<char> span)
 		{
+			Debug.Assert(span.Length >= Vector128<ushort>.Count * 2);
 			var shortSpan = MemoryMarshal.Cast<char, ushort>(span);
 			return Vector128.Narrow(Vector128.Create(shortSpan), Vector128.Create(shortSpan[Vector128<ushort>.Count..]));
 		}
@@ -116,10 +120,10 @@ namespace MissingValues.Info
 			}
 
 			chunk -= zeroes;
-			var mult = Vector128.Create((sbyte)10, 1, 10, 1, 10, 1, 10, 1, 10, 1, 10, 1, 10, 1, 10, 1);
+			var mult = Vector128.CreateAlternatingSequence((sbyte)10, (sbyte)1);
 
 			var chunk16 = Ssse3.MultiplyAddAdjacent(chunk, mult);
-			var mult16 = Vector128.Create((short)100, 1, 100, 1, 100, 1, 100, 1);
+			var mult16 = Vector128.CreateAlternatingSequence((short)100, (short)1);
 
 			var chunk32 = Sse2.MultiplyAddAdjacent(chunk16, mult16);
 
@@ -148,14 +152,10 @@ namespace MissingValues.Info
 			}
 		
 			chunk -= zeroes;
-			var mult = Vector256.Create(
-				(sbyte)10, 1, 10, 1, 10, 1, 10, 1, 10, 1, 10, 1, 10, 1, 10, 1, 
-				10, 1, 10, 1, 10, 1, 10, 1, 10, 1, 10, 1, 10, 1, 10, 1);
+			var mult = Vector256.CreateAlternatingSequence((sbyte)10, (sbyte)1);
 
 			Vector256<short> chunk16 = Avx2.MultiplyAddAdjacent(chunk, mult);
-			var mult16 = Vector256.Create(
-				(short)100, 1, 100, 1, 100, 1, 100, 1, 
-				100, 1, 100, 1, 100, 1, 100, 1);
+			var mult16 = Vector256.CreateAlternatingSequence((short)100, (short)1);
 		
 			Vector256<int> chunk32 = Avx2.MultiplyAddAdjacent(chunk16, mult16);
 
@@ -191,20 +191,10 @@ namespace MissingValues.Info
 			}
 		
 			chunk -= zeroes;
-			var mult = Vector512.Create(
-				(sbyte)10, 1, 10, 1, 10, 1, 10, 1, 10, 1, 10, 1, 10, 1, 10, 1, 
-				10, 1, 10, 1, 10, 1, 10, 1, 10, 1, 10, 1, 10, 1, 10, 1,
-				10, 1, 10, 1, 10, 1, 10, 1, 10, 1, 10, 1, 10, 1, 10, 1, 
-				10, 1, 10, 1, 10, 1, 10, 1, 10, 1, 10, 1, 10, 1, 10, 1
-				);
+			var mult = Vector512.CreateAlternatingSequence((sbyte)10, (sbyte)1);
 
 			Vector512<short> chunk16 = Avx512BW.MultiplyAddAdjacent(chunk, mult);
-			var mult16 = Vector512.Create(
-				(short)100, 1, 100, 1, 100, 1, 100, 1, 
-				100, 1, 100, 1, 100, 1, 100, 1,
-				100, 1, 100, 1, 100, 1, 100, 1, 
-				100, 1, 100, 1, 100, 1, 100, 1
-				);
+			var mult16 = Vector512.CreateAlternatingSequence((short)100, (short)1);
 		
 			Vector512<int> chunk32 = Avx512BW.MultiplyAddAdjacent(chunk16, mult16);
 

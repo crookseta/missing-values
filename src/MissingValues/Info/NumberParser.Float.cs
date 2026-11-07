@@ -52,13 +52,19 @@ internal static partial class NumberParser
 		else
 		{
 			byte[] buffer = ArrayPool<byte>.Shared.Rent(OctoBufferLength);
-			NumberInfo number = new NumberInfo(buffer, true);
-
-			if ((status = NumberInfo.TryParseCore(s, ref number, info, styles, out charsConsumed)).IsSuccessfulOrPartial())
+			try
 			{
-				result = NumberInfo.ConvertToFloat<TFloat, TBits>(ref number);
+				NumberInfo number = new NumberInfo(buffer, true);
+
+				if ((status = NumberInfo.TryParseCore(s, ref number, info, styles, out charsConsumed)).IsSuccessfulOrPartial())
+				{
+					result = NumberInfo.ConvertToFloat<TFloat, TBits>(ref number);
+					return status;
+				}
+			}
+			finally
+			{
 				ArrayPool<byte>.Shared.Return(buffer);
-				return status;
 			}
 		}
 		

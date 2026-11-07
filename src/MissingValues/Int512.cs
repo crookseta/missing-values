@@ -197,6 +197,16 @@ public readonly partial struct Int512
 	{
 		return ToString("D", CultureInfo.CurrentCulture);
 	}
+	
+	/// <summary>
+	/// Converts the numeric value of this instance to its equivalent string representation, using the specified format.
+	/// </summary>
+	/// <param name="format">A numeric format string.</param>
+	/// <returns>The string representation of the value of this instance as specified by <paramref name="format"/>.</returns>
+	public string ToString([StringSyntax(StringSyntaxAttribute.NumericFormat)] string? format)
+	{
+		return ToString(format, CultureInfo.CurrentCulture);
+	}
 
 	/// <summary>
 	/// Produces the full product of two signed 512-bit numbers.

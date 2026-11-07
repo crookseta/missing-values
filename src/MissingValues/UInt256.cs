@@ -2,6 +2,7 @@
 using MissingValues.Internals;
 using System.Buffers;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -123,6 +124,16 @@ public readonly partial struct UInt256
 	{
 		return ToString("D", CultureInfo.CurrentCulture);
 	}
+	
+	/// <summary>
+	/// Converts the numeric value of this instance to its equivalent string representation, using the specified format.
+	/// </summary>
+	/// <param name="format">A numeric format string.</param>
+	/// <returns>The string representation of the value of this instance as specified by <paramref name="format"/>.</returns>
+	public string ToString([StringSyntax(StringSyntaxAttribute.NumericFormat)] string? format)
+	{
+		return ToString(format, CultureInfo.CurrentCulture);
+	}
 
 	/// <inheritdoc/>
 	public override bool Equals(object? obj)
@@ -215,70 +226,73 @@ public readonly partial struct UInt256
 		ulong[]? bitsArray = null;
 		scoped Span<ulong> bits;
 
-		if (value._p3 == 0 && value._p2 == 0 && value._p1 == 0)
+		try
 		{
-			if (value._p0 == 1)
-				return value;
-			if (value._p0 == 0)
-				return value;
-
-			if (power >= (Size * 8))
+			if (value._p3 == 0 && value._p2 == 0 && value._p1 == 0)
 			{
-				Thrower.ArithmeticOverflow(Thrower.ArithmeticOperation.Exponentiation);
-			}
+				if (value._p0 == 1)
+					return value;
+				if (value._p0 == 0)
+					return value;
 
-			size = Calculator.PowBound(power, 1);
-
-			bits = (size <= Calculator.StackAllocThreshold
-				? stackalloc ulong[Calculator.StackAllocThreshold]
-				: bitsArray = ArrayPool<ulong>.Shared.Rent(size));
-			bits.Clear();
-
-			Calculator.Pow(value._p0, power, bits[..size]);
-		}
-		else
-		{
-			if (power >= (Size * 8))
-			{
-				Thrower.ArithmeticOverflow(Thrower.ArithmeticOperation.Exponentiation);
-			}
-
-			int valueLength = BitHelper.GetTrimLength(in value);
-			size = Calculator.PowBound(power, valueLength);
-
-			Span<ulong> valueSpan = stackalloc ulong[UIntCount];
-			valueSpan.Clear();
-			BitHelper.Write(valueSpan, in value);
-
-			bits = (size <= Calculator.StackAllocThreshold
-				? stackalloc ulong[Calculator.StackAllocThreshold]
-				: bitsArray = ArrayPool<ulong>.Shared.Rent(size));
-			bits.Clear();
-
-			Calculator.Pow(valueSpan[..valueLength], power, bits[..size]);
-		}
-
-		if (size > UIntCount)
-		{
-			Span<ulong> overflow = bits[UIntCount..];
-
-			for (int i = 0; i < overflow.Length; i++)
-			{
-				if (overflow[i] != 0)
+				if (power >= (Size * 8))
 				{
 					Thrower.ArithmeticOverflow(Thrower.ArithmeticOperation.Exponentiation);
 				}
+
+				size = Calculator.PowBound(power, 1);
+
+				bits = (size <= Calculator.StackAllocThreshold
+					? stackalloc ulong[Calculator.StackAllocThreshold]
+					: bitsArray = ArrayPool<ulong>.Shared.Rent(size));
+				bits.Clear();
+
+				Calculator.Pow(value._p0, power, bits[..size]);
+			}
+			else
+			{
+				if (power >= (Size * 8))
+				{
+					Thrower.ArithmeticOverflow(Thrower.ArithmeticOperation.Exponentiation);
+				}
+
+				int valueLength = BitHelper.GetTrimLength(in value);
+				size = Calculator.PowBound(power, valueLength);
+
+				Span<ulong> valueSpan = stackalloc ulong[UIntCount];
+				valueSpan.Clear();
+				BitHelper.Write(valueSpan, in value);
+
+				bits = (size <= Calculator.StackAllocThreshold
+					? stackalloc ulong[Calculator.StackAllocThreshold]
+					: bitsArray = ArrayPool<ulong>.Shared.Rent(size));
+				bits.Clear();
+
+				Calculator.Pow(valueSpan[..valueLength], power, bits[..size]);
+			}
+
+			if (size > UIntCount)
+			{
+				Span<ulong> overflow = bits[UIntCount..];
+
+				for (int i = 0; i < overflow.Length; i++)
+				{
+					if (overflow[i] != 0)
+					{
+						Thrower.ArithmeticOverflow(Thrower.ArithmeticOperation.Exponentiation);
+					}
+				}
+			}
+
+			return new UInt256(bits);
+		}
+		finally
+		{
+			if (bitsArray is not null)
+			{
+				ArrayPool<ulong>.Shared.Return(bitsArray);
 			}
 		}
-
-		UInt256 result = new UInt256(bits);
-
-		if (bitsArray is not null)
-		{
-			ArrayPool<ulong>.Shared.Return(bitsArray);
-		}
-
-		return result;
 	}
 
 	/// <summary>Parses a span of characters into a value.</summary>

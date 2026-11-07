@@ -1273,36 +1273,41 @@ public partial struct Octo
 			int bytesNeeded = 32 + byteShift + (bitShift > 0 ? 1 : 0);
 			
 			byte[]? array = null;
-			Span<byte> buffer = bytesNeeded >= Calculator.StackAllocThreshold
-				? (array = ArrayPool<byte>.Shared.Rent(bytesNeeded)).AsSpan(0, bytesNeeded)
-				: stackalloc byte[bytesNeeded];
-			buffer.Clear();
-
-			if (bitShift == 0)
+			try
 			{
-				BinaryOperations.WriteUInt256LittleEndian(buffer[byteShift..], man);
-			}
-			else
-			{
-				UInt128 low = man.Lower;
-				UInt128 high = man.Upper;
+				Span<byte> buffer = bytesNeeded >= Calculator.StackAllocThreshold
+					? (array = ArrayPool<byte>.Shared.Rent(bytesNeeded)).AsSpan(0, bytesNeeded)
+					: stackalloc byte[bytesNeeded];
+				buffer.Clear();
 
-				UInt128 shiftedLow = low << bitShift;
-				UInt128 shiftedHigh = (high << bitShift) | (low >> (128 - bitShift));
-				UInt128 carry = high >> (128 - bitShift);
-
-				BinaryOperations.WriteUInt256LittleEndian(buffer[byteShift..], new UInt256(shiftedHigh, shiftedLow));
-				if (carry > 0)
+				if (bitShift == 0)
 				{
-					buffer[byteShift + 32] = (byte)carry;
+					BinaryOperations.WriteUInt256LittleEndian(buffer[byteShift..], man);
 				}
+				else
+				{
+					UInt128 low = man.Lower;
+					UInt128 high = man.Upper;
+
+					UInt128 shiftedLow = low << bitShift;
+					UInt128 shiftedHigh = (high << bitShift) | (low >> (128 - bitShift));
+					UInt128 carry = high >> (128 - bitShift);
+
+					BinaryOperations.WriteUInt256LittleEndian(buffer[byteShift..], new UInt256(shiftedHigh, shiftedLow));
+					if (carry > 0)
+					{
+						buffer[byteShift + 32] = (byte)carry;
+					}
+				}
+				
+				result = new BigInteger(buffer, isUnsigned: true, isBigEndian: false);
 			}
-			
-			result = new BigInteger(buffer, isUnsigned: true, isBigEndian: false);
-			
-			if (array is not null)
+			finally
 			{
-				ArrayPool<byte>.Shared.Return(array);
+				if (array is not null)
+				{
+					ArrayPool<byte>.Shared.Return(array);
+				}
 			}
 		}
 		else
@@ -1770,28 +1775,33 @@ public partial struct Octo
 		
 		int byteCount = magnitude.GetByteCount();
 		byte[]? array = null;
-		Span<byte> bits = byteCount >= Calculator.StackAllocThreshold 
-			? (array = ArrayPool<byte>.Shared.Rent(byteCount)).AsSpan(0, byteCount) 
-			: stackalloc byte[byteCount];
-		bits.Clear();
-
-		magnitude.TryWriteBytes(bits, out int bytesWritten);
-		int uintCount = (bytesWritten + 15) / 16;
-
-		UInt256 h = BitHelper.ReadUInt128Chunk(bits, uintCount - 1);
-		UInt256 m = BitHelper.ReadUInt128Chunk(bits, uintCount - 2);
-		UInt256 l = BitHelper.ReadUInt128Chunk(bits, uintCount - 3);
-
-		int z = (int)UInt128.LeadingZeroCount(h.Lower);
-		int exp = (uintCount - 2) * 128 - z;
-		UInt256 man = (h << 128 + z) | (m << z) | (l >> 128 - z);
-		
-		if (array is not null)
+		try
 		{
-			ArrayPool<byte>.Shared.Return(array);
-		}
+			Span<byte> bits = byteCount >= Calculator.StackAllocThreshold 
+				? (array = ArrayPool<byte>.Shared.Rent(byteCount)).AsSpan(0, byteCount) 
+				: stackalloc byte[byteCount];
+			bits.Clear();
 
-		return BitHelper.GetOctoFromParts(sign, exp, man);
+			magnitude.TryWriteBytes(bits, out int bytesWritten);
+			int uintCount = (bytesWritten + 15) / 16;
+
+			UInt256 h = BitHelper.ReadUInt128Chunk(bits, uintCount - 1);
+			UInt256 m = BitHelper.ReadUInt128Chunk(bits, uintCount - 2);
+			UInt256 l = BitHelper.ReadUInt128Chunk(bits, uintCount - 3);
+
+			int z = (int)UInt128.LeadingZeroCount(h.Lower);
+			int exp = (uintCount - 2) * 128 - z;
+			UInt256 man = (h << 128 + z) | (m << z) | (l >> 128 - z);
+
+			return BitHelper.GetOctoFromParts(sign, exp, man);
+		}
+		finally
+		{
+			if (array is not null)
+			{
+				ArrayPool<byte>.Shared.Return(array);
+			}
+		}
 	}
 
 	/// <summary>

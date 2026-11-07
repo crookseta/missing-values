@@ -1293,36 +1293,41 @@ public partial struct Quad
 			int bytesNeeded = 16 + byteShift + (bitShift > 0 ? 1 : 0);
 			
 			byte[]? array = null;
-			Span<byte> buffer = bytesNeeded >= Calculator.StackAllocThreshold
-				? (array = ArrayPool<byte>.Shared.Rent(bytesNeeded)).AsSpan(0, bytesNeeded)
-				: stackalloc byte[bytesNeeded];
-			buffer.Clear();
-
-			if (bitShift == 0)
+			try
 			{
-				BinaryPrimitives.WriteUInt128LittleEndian(buffer[byteShift..], man);
-			}
-			else
-			{
-				ulong low = (ulong)man;
-				ulong high = (ulong)(man >> 64);
+				Span<byte> buffer = bytesNeeded >= Calculator.StackAllocThreshold
+					? (array = ArrayPool<byte>.Shared.Rent(bytesNeeded)).AsSpan(0, bytesNeeded)
+					: stackalloc byte[bytesNeeded];
+				buffer.Clear();
 
-				ulong shiftedLow = low << bitShift;
-				ulong shiftedHigh = (high << bitShift) | (low >> (64 - bitShift));
-				ulong carry = high >> (64 - bitShift);
-
-				BinaryPrimitives.WriteUInt128LittleEndian(buffer[byteShift..], new UInt128(shiftedHigh, shiftedLow));
-				if (carry > 0)
+				if (bitShift == 0)
 				{
-					buffer[byteShift + 16] = (byte)carry;
+					BinaryPrimitives.WriteUInt128LittleEndian(buffer[byteShift..], man);
 				}
+				else
+				{
+					ulong low = (ulong)man;
+					ulong high = (ulong)(man >> 64);
+
+					ulong shiftedLow = low << bitShift;
+					ulong shiftedHigh = (high << bitShift) | (low >> (64 - bitShift));
+					ulong carry = high >> (64 - bitShift);
+
+					BinaryPrimitives.WriteUInt128LittleEndian(buffer[byteShift..], new UInt128(shiftedHigh, shiftedLow));
+					if (carry > 0)
+					{
+						buffer[byteShift + 16] = (byte)carry;
+					}
+				}
+				
+				result = new BigInteger(buffer, isUnsigned: true, isBigEndian: false);
 			}
-			
-			result = new BigInteger(buffer, isUnsigned: true, isBigEndian: false);
-			
-			if (array is not null)
+			finally
 			{
-				ArrayPool<byte>.Shared.Return(array);
+				if (array is not null)
+				{
+					ArrayPool<byte>.Shared.Return(array);
+				}
 			}
 		}
 		else
@@ -1787,29 +1792,34 @@ public partial struct Quad
 
 		int byteCount = magnitude.GetByteCount();
 		byte[]? array = null;
-		Span<byte> bits = byteCount >= Calculator.StackAllocThreshold 
-			? (array = ArrayPool<byte>.Shared.Rent(byteCount)).AsSpan(0, byteCount) 
-			: stackalloc byte[byteCount];
-		
-		bits.Clear();
-
-		magnitude.TryWriteBytes(bits, out int bytesWritten);
-		int ulongCount = (bytesWritten + 7) / 8;
-
-		UInt128 h = BitHelper.ReadUInt64Chunk(bits, ulongCount - 1);
-		UInt128 m = BitHelper.ReadUInt64Chunk(bits, ulongCount - 2);
-		UInt128 l = BitHelper.ReadUInt64Chunk(bits, ulongCount - 3);
-
-		int z = BitOperations.LeadingZeroCount((ulong)h);
-		int exp = (ulongCount - 2) * 64 - z;
-		UInt128 man = (h << (64 + z)) | (m << z) | (l >> (64 - z));
-	    
-		if (array is not null)
+		try
 		{
-			ArrayPool<byte>.Shared.Return(array);
-		}
+			Span<byte> bits = byteCount >= Calculator.StackAllocThreshold 
+				? (array = ArrayPool<byte>.Shared.Rent(byteCount)).AsSpan(0, byteCount) 
+				: stackalloc byte[byteCount];
+			
+			bits.Clear();
 
-		return BitHelper.GetQuadFromParts(sign, exp, man);
+			magnitude.TryWriteBytes(bits, out int bytesWritten);
+			int ulongCount = (bytesWritten + 7) / 8;
+
+			UInt128 h = BitHelper.ReadUInt64Chunk(bits, ulongCount - 1);
+			UInt128 m = BitHelper.ReadUInt64Chunk(bits, ulongCount - 2);
+			UInt128 l = BitHelper.ReadUInt64Chunk(bits, ulongCount - 3);
+
+			int z = BitOperations.LeadingZeroCount((ulong)h);
+			int exp = (ulongCount - 2) * 64 - z;
+			UInt128 man = (h << (64 + z)) | (m << z) | (l >> (64 - z));
+			
+			return BitHelper.GetQuadFromParts(sign, exp, man);
+		}
+		finally
+		{
+			if (array is not null)
+			{
+				ArrayPool<byte>.Shared.Return(array);
+			}
+		}
 	}
 
 	/// <summary>
