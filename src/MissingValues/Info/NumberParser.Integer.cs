@@ -452,7 +452,6 @@ internal static partial class NumberParser
 			output = default;
 			return ParsingStatus.Overflow;
 		}
-		Debug.Assert(maxDigitsLeft < E19Table.Length);
 
 		ulong remaining = 0;
 		int index = 0;
