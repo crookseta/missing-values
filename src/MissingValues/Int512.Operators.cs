@@ -121,12 +121,65 @@ public partial struct Int512
 	}
 
 	/// <inheritdoc/>
-	public static Int512 operator ++(in Int512 value) => value + One;
+	public static Int512 operator ++(in Int512 value)
+	{
+		ulong part0 = value._p0 + 1UL;
+		ulong carry = (part0 < value._p0) ? 1UL : 0UL;
+
+		ulong part1 = value._p1 + carry;
+		carry = (part1 < value._p1 || (carry == 1 && part1 == value._p1)) ? 1UL : 0UL;
+
+		ulong part2 = value._p2 + carry;
+		carry = (part2 < value._p2 || (carry == 1 && part2 == value._p2)) ? 1UL : 0UL;
+
+		ulong part3 = value._p3 + carry;
+		carry = (part3 < value._p3 || (carry == 1 && part3 == value._p3)) ? 1UL : 0UL;
+
+		ulong part4 = value._p4 + carry;
+		carry = (part4 < value._p4 || (carry == 1 && part4 == value._p4)) ? 1UL : 0UL;
+
+		ulong part5 = value._p5 + carry;
+		carry = (part5 < value._p5 || (carry == 1 && part5 == value._p5)) ? 1UL : 0UL;
+
+		ulong part6 = value._p6 + carry;
+		carry = (part6 < value._p6 || (carry == 1 && part6 == value._p6)) ? 1UL : 0UL;
+
+		ulong part7 = value._p7 + carry;
+		return new Int512(part7, part6, part5, part4, part3, part2, part1, part0);
+	}
+
 	/// <inheritdoc/>
 	public static Int512 operator checked ++(in Int512 value) => checked(value + One);
 
 	/// <inheritdoc/>
-	public static Int512 operator --(in Int512 value) => value - One;
+	public static Int512 operator --(in Int512 value)
+	{
+		ulong part0 = value._p0 - 1UL;
+		ulong borrow = (part0 > value._p0) ? 1UL : 0UL;
+
+		ulong part1 = value._p1 - borrow;
+		borrow = (part1 > value._p1 || (borrow == 1UL && part1 == value._p1)) ? 1UL : 0UL;
+
+		ulong part2 = value._p2 - borrow;
+		borrow = (part2 > value._p2 || (borrow == 1UL && part2 == value._p2)) ? 1UL : 0UL;
+
+		ulong part3 = value._p3 - borrow;
+		borrow = (part3 > value._p3 || (borrow == 1UL && part3 == value._p3)) ? 1UL : 0UL;
+
+		ulong part4 = value._p4 - borrow;
+		borrow = (part4 > value._p4 || (borrow == 1UL && part4 == value._p4)) ? 1UL : 0UL;
+
+		ulong part5 = value._p5 - borrow;
+		borrow = (part5 > value._p5 || (borrow == 1UL && part5 == value._p5)) ? 1UL : 0UL;
+
+		ulong part6 = value._p6 - borrow;
+		borrow = (part6 > value._p6 || (borrow == 1UL && part6 == value._p6)) ? 1UL : 0UL;
+
+		ulong part7 = value._p7 - borrow;
+
+		return new Int512(part7, part6, part5, part4, part3, part2, part1, part0);
+	}
+
 	/// <inheritdoc/>
 	public static Int512 operator checked --(in Int512 value) => checked(value - One);
 
@@ -180,10 +233,10 @@ public partial struct Int512
 	{
 		if (Vector512.IsHardwareAccelerated)
 		{
-			var v1 = Unsafe.BitCast<Int512, Vector512<ulong>>(left);
-			var v2 = Unsafe.BitCast<Int512, Vector512<ulong>>(right);
+			var v1 = left.AsVector<ulong>();
+			var v2 = right.AsVector<ulong>();
 			var result = v1 & v2;
-			return Unsafe.BitCast<Vector512<ulong>, Int512>(result);
+			return Create(result);
 		}
 		else
 		{
@@ -196,10 +249,10 @@ public partial struct Int512
 	{
 		if (Vector512.IsHardwareAccelerated)
 		{
-			var v1 = Unsafe.BitCast<Int512, Vector512<ulong>>(left);
-			var v2 = Unsafe.BitCast<Int512, Vector512<ulong>>(right);
+			var v1 = left.AsVector<ulong>();
+			var v2 = right.AsVector<ulong>();
 			var result = v1 | v2;
-			return Unsafe.BitCast<Vector512<ulong>, Int512>(result);
+			return Create(result);
 		}
 		else
 		{
@@ -212,10 +265,10 @@ public partial struct Int512
 	{
 		if (Vector512.IsHardwareAccelerated)
 		{
-			var v1 = Unsafe.BitCast<Int512, Vector512<ulong>>(left);
-			var v2 = Unsafe.BitCast<Int512, Vector512<ulong>>(right);
+			var v1 = left.AsVector<ulong>();
+			var v2 = right.AsVector<ulong>();
 			var result = v1 ^ v2;
-			return Unsafe.BitCast<Vector512<ulong>, Int512>(result);
+			return Create(result);
 		}
 		else
 		{
@@ -506,8 +559,8 @@ public partial struct Int512
 	{
 		if (Vector512.IsHardwareAccelerated)
 		{
-			var v1 = Vector512.Create(left._p0, left._p1, left._p2, left._p3, left._p4, left._p5, left._p6, left._p7);
-			var v2 = Vector512.Create(right._p0, right._p1, right._p2, right._p3, right._p4, right._p5, right._p6, right._p7);
+			var v1 = left.AsVector<ulong>();
+			var v2 = right.AsVector<ulong>();
 			return v1 == v2;
 		}
 		if (Vector256.IsHardwareAccelerated)
@@ -530,8 +583,8 @@ public partial struct Int512
 	{
 		if (Vector512.IsHardwareAccelerated)
 		{
-			var v1 = Vector512.Create(left._p0, left._p1, left._p2, left._p3, left._p4, left._p5, left._p6, left._p7);
-			var v2 = Vector512.Create(right._p0, right._p1, right._p2, right._p3, right._p4, right._p5, right._p6, right._p7);
+			var v1 = left.AsVector<ulong>();
+			var v2 = right.AsVector<ulong>();
 			return v1 != v2;
 		}
 		if (Vector256.IsHardwareAccelerated)

@@ -203,6 +203,16 @@ public readonly partial struct UInt512
 	{
 		return ToString("D", CultureInfo.CurrentCulture);
 	}
+	
+	/// <summary>
+	/// Converts the numeric value of this instance to its equivalent string representation, using the specified format.
+	/// </summary>
+	/// <param name="format">A numeric format string.</param>
+	/// <returns>The string representation of the value of this instance as specified by <paramref name="format"/>.</returns>
+	public string ToString([StringSyntax(StringSyntaxAttribute.NumericFormat)] string? format)
+	{
+		return ToString(format, CultureInfo.CurrentCulture);
+	}
 
 	/// <summary>
 	/// Produces the full product of two unsigned 512-bit numbers.
@@ -219,7 +229,7 @@ public readonly partial struct UInt512
 			{
 				if (left._p7 == 0 && left._p6 == 0 && left._p5 == 0 && left._p4 == 0 && left._p3 == 0 && left._p2 == 0 && left._p1 == 0)
 				{
-					ulong up = Calculator.BigMul(left._p0, right._p0, out ulong low);
+					ulong up = Math.BigMul(left._p0, right._p0, out ulong low);
 					lower = new UInt512(0, 0, 0, 0, 0, 0, up, low);
 					return Zero;
 				}
@@ -343,71 +353,74 @@ public readonly partial struct UInt512
 		int size;
 		ulong[]? bitsArray = null;
 		scoped Span<ulong> bits;
-
-		if (value._p7 == 0 && value._p6 == 0 && value._p5 == 0 && value._p4 == 0 && value._p3 == 0 && value._p2 == 0 && value._p1 == 0)
+		
+		try
 		{
-			if (value._p0 == 1)
-				return value;
-			if (value._p0 == 0)
-				return value;
-
-			if (power >= (Size * 8))
+			if (value._p7 == 0 && value._p6 == 0 && value._p5 == 0 && value._p4 == 0 && value._p3 == 0 && value._p2 == 0 && value._p1 == 0)
 			{
-				Thrower.ArithmeticOverflow(Thrower.ArithmeticOperation.Exponentiation);
-			}
+				if (value._p0 == 1)
+					return value;
+				if (value._p0 == 0)
+					return value;
 
-			size = Calculator.PowBound(power, 1);
-
-			bits = (size <= Calculator.StackAllocThreshold
-				? stackalloc ulong[Calculator.StackAllocThreshold]
-				: bitsArray = ArrayPool<ulong>.Shared.Rent(size));
-			bits.Clear();
-
-			Calculator.Pow(value._p0, power, bits[..size]);
-		}
-		else
-		{
-			if (power >= (Size * 8))
-			{
-				Thrower.ArithmeticOverflow(Thrower.ArithmeticOperation.Exponentiation);
-			}
-
-			int valueLength = BitHelper.GetTrimLength(in value);
-			size = Calculator.PowBound(power, valueLength);
-
-			Span<ulong> valueSpan = stackalloc ulong[UIntCount];
-			valueSpan.Clear();
-			BitHelper.Write(valueSpan, in value);
-
-			bits = (size <= Calculator.StackAllocThreshold
-				? stackalloc ulong[Calculator.StackAllocThreshold]
-				: bitsArray = ArrayPool<ulong>.Shared.Rent(size));
-			bits.Clear();
-
-			Calculator.Pow(valueSpan[..valueLength], power, bits[..size]);
-		}
-
-		if (size > UIntCount)
-		{
-			Span<ulong> overflow = bits[UIntCount..];
-
-			for (int i = 0; i < overflow.Length; i++)
-			{
-				if (overflow[i] != 0)
+				if (power >= (Size * 8))
 				{
 					Thrower.ArithmeticOverflow(Thrower.ArithmeticOperation.Exponentiation);
 				}
+
+				size = Calculator.PowBound(power, 1);
+
+				bits = (size <= Calculator.StackAllocThreshold
+					? stackalloc ulong[Calculator.StackAllocThreshold]
+					: bitsArray = ArrayPool<ulong>.Shared.Rent(size));
+				bits.Clear();
+
+				Calculator.Pow(value._p0, power, bits[..size]);
+			}
+			else
+			{
+				if (power >= (Size * 8))
+				{
+					Thrower.ArithmeticOverflow(Thrower.ArithmeticOperation.Exponentiation);
+				}
+
+				int valueLength = BitHelper.GetTrimLength(in value);
+				size = Calculator.PowBound(power, valueLength);
+
+				Span<ulong> valueSpan = stackalloc ulong[UIntCount];
+				valueSpan.Clear();
+				BitHelper.Write(valueSpan, in value);
+
+				bits = (size <= Calculator.StackAllocThreshold
+					? stackalloc ulong[Calculator.StackAllocThreshold]
+					: bitsArray = ArrayPool<ulong>.Shared.Rent(size));
+				bits.Clear();
+
+				Calculator.Pow(valueSpan[..valueLength], power, bits[..size]);
+			}
+
+			if (size > UIntCount)
+			{
+				Span<ulong> overflow = bits[UIntCount..];
+
+				for (int i = 0; i < overflow.Length; i++)
+				{
+					if (overflow[i] != 0)
+					{
+						Thrower.ArithmeticOverflow(Thrower.ArithmeticOperation.Exponentiation);
+					}
+				}
+			}
+
+			return new UInt512(bits);
+		}
+		finally
+		{
+			if (bitsArray is not null)
+			{
+				ArrayPool<ulong>.Shared.Return(bitsArray);
 			}
 		}
-
-		UInt512 result = new UInt512(bits);
-
-		if (bitsArray is not null)
-		{
-			ArrayPool<ulong>.Shared.Return(bitsArray);
-		}
-
-		return result;
 	}
 
 	/// <summary>Parses a span of characters into a value.</summary>
@@ -426,6 +439,19 @@ public readonly partial struct UInt512
 	public static bool TryParse(ReadOnlySpan<char> s, out UInt512 result)
 	{
 		return TryParse(s, CultureInfo.CurrentCulture, out result);
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	internal Vector512<T> AsVector<T>()
+		where T : unmanaged
+	{
+		return Unsafe.BitCast<UInt512, Vector512<T>>(this);
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	internal static UInt512 Create<T>(Vector512<T> vector)
+	{
+		return Unsafe.BitCast<Vector512<T>, UInt512>(vector);
 	}
 
 	private static UInt512 ToUInt512(double value)

@@ -33,40 +33,11 @@ internal static class Calculator
 		carryOut = c1 + c2;
 		return sum2;
 	}
-
-	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	internal static UInt128 BigMul(ulong a, ulong b)
-	{
-		ulong high = BigMul(a, b, out ulong low);
-		return new UInt128(high, low);
-	}
-
-	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	internal static ulong BigMul(ulong a, ulong b, out ulong lower)
-	{
-		if (Bmi2.X64.IsSupported)
-		{
-			/*
-			 * Using Bmi2.X64.MultiplyNoFlags(ulong left, ulong right, ulong* low) is actually
-			 * slower than simply getting the lower product directly and getting the high
-			 * product with Bmi2.X64.MultiplyNoFlags(ulong left, ulong right).
-			 * https://github.com/dotnet/runtime/issues/11782#issuecomment-2174501863
-			 */
-			lower = a * b;
-			return Bmi2.X64.MultiplyNoFlags(a, b);
-		}
-		if (ArmBase.Arm64.IsSupported)
-		{
-			lower = a * b;
-			return ArmBase.Arm64.MultiplyHigh(a, b);
-		}
-		return Math.BigMul(a, b, out lower);
-	}
 	
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	internal static (ulong hi, ulong lo) BigMulAdd(ulong a, ulong b, ulong c)
 	{
-		ulong highProd = BigMul(a, b, out ulong lowProd);
+		ulong highProd = Math.BigMul(a, b, out ulong lowProd);
 		
 		ulong lower = lowProd + c;
 		ulong carry = (lower < lowProd) ? 1UL : 0UL;
@@ -85,7 +56,6 @@ internal static class Calculator
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	internal static (UInt128 Quotient, ulong Remainder) DivRemByUInt64(UInt128 left, ulong right)
 	{
-#if NET9_0_OR_GREATER
 		if (X86Base.X64.IsSupported)
 		{
 			ulong highRes = 0ul;
@@ -101,17 +71,15 @@ internal static class Calculator
 #pragma warning restore SYSLIB5004
 			return (new UInt128(highRes, lowRes), remainder);
 		}
-#endif
 		UInt128 quotient = left / right;
 		return (quotient, left.Lower - (quotient.Lower * right));
 	}
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
-	internal static ulong DivRemByUInt64(ulong hi, ulong lo, ulong divisor, out ulong remainder)
+	internal static ulong DivRemByUInt64(ulong hi, ulong lo, ulong divisor)
 	{
 		if (hi == 0)
 		{
 			(ulong q, ulong r) = Math.DivRem(lo, divisor);
-			remainder = r;
 			return q;
 		}
 		if (divisor <= uint.MaxValue)
@@ -122,28 +90,22 @@ internal static class Calculator
 			(ulong qHi, ulong r1) = Math.DivRem((hi << 32) | loHi, divisor);
 			(ulong qLo, ulong r2) = Math.DivRem((r1 << 32) | loLo, divisor);
 
-			remainder = r2;
 			return ((qHi << 32) | qLo);
 		}
-#if NET9_0_OR_GREATER
 #pragma warning disable SYSLIB5004 // X86Base.DivRem is experimental
 		if (X86Base.X64.IsSupported)
 		{
 			(ulong q, ulong r) = X86Base.X64.DivRem(lo, hi, divisor);
-			remainder = (ulong)r;
 			return (ulong)q;
 		}
 #pragma warning restore SYSLIB5004
-#endif
 		UInt128 value = new UInt128(hi, lo);
 		ulong quotient = (value / divisor).Lower;
-		remainder = lo - quotient * divisor;
 		return quotient;
 	}
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	internal static UInt128 DivideByUInt64(UInt128 left, ulong right)
 	{
-#if NET9_0_OR_GREATER
 		if (X86Base.X64.IsSupported)
 		{
 			ulong highRes = 0ul;
@@ -158,7 +120,6 @@ internal static class Calculator
 			return new UInt128(highRes, X86Base.X64.DivRem((ulong)left, remainder, right).Quotient);
 #pragma warning restore SYSLIB5004
 		}
-#endif
 		return left / right;
 	}
 
@@ -193,11 +154,11 @@ internal static class Calculator
 			for (int j = 0; j < i; j++)
 			{
 				UInt128 digit1 = bits[i + j] + carry;
-				UInt128 digit2 = BigMul(value[j], v);
+				UInt128 digit2 = Math.BigMul(value[j], v);
 				bits[i + j] = unchecked((ulong)(digit1 + (digit2 << 1)));
 				carry = (digit2 + (digit1 >> 1)) >> 63;
 			}
-			UInt128 digits = BigMul(v, v) + carry;
+			UInt128 digits = Math.BigMul(v, v) + carry;
 			bits[i + i] = digits.Lower;
 			bits[i + i + 1] = digits.Upper;
 		}
@@ -214,7 +175,7 @@ internal static class Calculator
 
 		ulong p3, p2, p1, p0;
 
-		carry = BigMul(left.Part0, right, out p0);
+		carry = Math.BigMul(left.Part0, right, out p0);
 		(carry, p1) = BigMulAdd(left.Part1, right, carry);
 		(carry, p2) = BigMulAdd(left.Part2, right, carry);
 		(carry, p3) = BigMulAdd(left.Part3, right, carry);
@@ -225,7 +186,7 @@ internal static class Calculator
 	{
 		ulong p7, p6, p5, p4, p3, p2, p1, p0;
 		
-		carry = BigMul(left.Part0, right, out p0);
+		carry = Math.BigMul(left.Part0, right, out p0);
 		(carry, p1) = BigMulAdd(left.Part1, right, carry);
 		(carry, p2) = BigMulAdd(left.Part2, right, carry);
 		(carry, p3) = BigMulAdd(left.Part3, right, carry);
@@ -289,7 +250,7 @@ internal static class Calculator
 
 			for (; i < length; i++)
 			{
-				UInt128 product = BigMul(left[i], multiplier) + result[i] + carry;
+				UInt128 product = Math.BigMul(left[i], multiplier) + result[i] + carry;
 				result[i] = product.Lower;
 				carry = product.Upper;
 			}
@@ -825,7 +786,7 @@ internal static class Calculator
 
 			// First guess for the current digit of the quotient,
 			// which naturally must have only 64 bits...
-			ulong digit = (valHi1 >= divHi) ? ulong.MaxValue : DivRemByUInt64(valHi1, valHi0, divHi, out _);
+			ulong digit = (valHi1 >= divHi) ? ulong.MaxValue : DivRemByUInt64(valHi1, valHi0, divHi);
 
 			// Our first guess may be a little bit too big
 			while (DivideGuessTooBig(digit, valHi1, valHi0, valLo, divHi, divLo))

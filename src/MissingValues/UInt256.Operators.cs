@@ -96,8 +96,8 @@ public partial struct UInt256
 	{
 		if (Vector256.IsHardwareAccelerated)
 		{
-			var v = Vector256.OnesComplement(Unsafe.BitCast<UInt256, Vector256<ulong>>(value));
-			return Unsafe.BitCast<Vector256<ulong>, UInt256>(v);
+			var v = Vector256.OnesComplement(value.AsVector<ulong>());
+			return Create(v);
 		}
 		else
 		{
@@ -106,63 +106,89 @@ public partial struct UInt256
 	}
 
 	/// <inheritdoc/>
-	public static UInt256 operator ++(in UInt256 value) => value + One;
-	/// <inheritdoc/>
-	public static UInt256 operator checked ++(in UInt256 value) => checked(value + One);
+	public static UInt256 operator ++(in UInt256 value)
+	{
+		ulong part0 = value._p0 + 1UL;
+		ulong carry = (part0 < value._p0) ? 1UL : 0UL;
+
+		ulong part1 = value._p1 + carry;
+		carry = (part1 < value._p1 || (carry == 1 && part1 == value._p1)) ? 1UL : 0UL;
+
+		ulong part2 = value._p2 + carry;
+		carry = (part2 < value._p2 || (carry == 1 && part2 == value._p2)) ? 1UL : 0UL;
+
+		ulong part3 = value._p3 + carry;
+
+		return new UInt256(part3, part2, part1, part0);
+	}
 
 	/// <inheritdoc/>
-	public static UInt256 operator --(in UInt256 value) => value - One;
+	public static UInt256 operator checked ++(in UInt256 value)
+	{
+		ulong part0 = value._p0 + 1UL;
+		ulong carry = (part0 < value._p0) ? 1UL : 0UL;
+
+		ulong part1 = value._p1 + carry;
+		carry = (part1 < value._p1 || (carry == 1 && part1 == value._p1)) ? 1UL : 0UL;
+
+		ulong part2 = value._p2 + carry;
+		carry = (part2 < value._p2 || (carry == 1 && part2 == value._p2)) ? 1UL : 0UL;
+
+		ulong part3 = checked(value._p3 + carry);
+
+		return new UInt256(part3, part2, part1, part0);
+	}
+
 	/// <inheritdoc/>
-	public static UInt256 operator checked --(in UInt256 value) => checked(value - One);
+	public static UInt256 operator --(in UInt256 value)
+	{
+		ulong part0 = value._p0 - 1UL;
+		ulong borrow = (part0 > value._p0) ? 1UL : 0UL;
+
+		ulong part1 = value._p1 - borrow;
+		borrow = (part1 > value._p1 || (borrow == 1UL && part1 == value._p1)) ? 1UL : 0UL;
+
+		ulong part2 = value._p2 - borrow;
+		borrow = (part2 > value._p2 || (borrow == 1UL && part2 == value._p2)) ? 1UL : 0UL;
+
+		ulong part3 = value._p3 - borrow;
+
+		return new UInt256(part3, part2, part1, part0);
+	}
+
+	/// <inheritdoc/>
+	public static UInt256 operator checked --(in UInt256 value)
+	{
+		ulong part0 = value._p0 - 1UL;
+		ulong borrow = (part0 > value._p0) ? 1UL : 0UL;
+
+		ulong part1 = value._p1 - borrow;
+		borrow = (part1 > value._p1 || (borrow == 1UL && part1 == value._p1)) ? 1UL : 0UL;
+
+		ulong part2 = value._p2 - borrow;
+		borrow = (part2 > value._p2 || (borrow == 1UL && part2 == value._p2)) ? 1UL : 0UL;
+
+		ulong part3 = checked(value._p3 - borrow);
+
+		return new UInt256(part3, part2, part1, part0);
+	}
 
 	/// <inheritdoc/>
 	public static UInt256 operator *(in UInt256 left, in UInt256 right)
 	{
-		ulong up, low;
-			
-		if (right._p3 == 0 && right._p2 == 0 && right._p1 == 0)
-		{
-			if (left._p3 == 0 && left._p2 == 0 && left._p1 == 0)
-			{
-				up = Calculator.BigMul(left._p0, right._p0, out low);
-				return new UInt256(0, 0, up, low);
-			}
+		UInt128 a0 = new UInt128(left._p1, left._p0);
+		UInt128 a1 = new UInt128(left._p3, left._p2);
+		UInt128 b0 = new UInt128(right._p1, right._p0);
+		UInt128 b1 = new UInt128(right._p3, right._p2);
+		
+		UInt128 high = UInt128.BigMul(a0, b0, out UInt128 low);
+		
+		high += (a1 * b0) + (a0 * b1);
 
-			return Calculator.Multiply(in left, right._p0, out _);
-		}
-		else if (left._p3 == 0 && left._p2 == 0 && left._p1 == 0)
-		{
-			return Calculator.Multiply(in right, left._p0, out _);
-		}
-
-		(up, low) = Calculator.BigMulAdd(left._p0, right._p0, 0);
-		ulong p0 = low;
-		(up, low) = Calculator.BigMulAdd(left._p1, right._p0, up);
-		ulong p1 = low;
-		(up, low) = Calculator.BigMulAdd(left._p2, right._p0, up);
-		ulong p2 = low;
-		(_, low) = Calculator.BigMulAdd(left._p3, right._p0, up);
-		ulong p3 = low;
-        
-		(up, low) = Calculator.BigMulAdd(left._p0, right._p1, 0);
-		p1 = Calculator.AddWithCarry(p1, low, out ulong carry);
-		up += carry;
-		(up, low) = Calculator.BigMulAdd(left._p1, right._p1, up);
-		p2 = Calculator.AddWithCarry(p2, low, out carry);
-		up += carry;
-		(_, low) = Calculator.BigMulAdd(left._p2, right._p1, up);
-		p3 += low;
-
-		(up, low) = Calculator.BigMulAdd(left._p0, right._p2, 0);
-		p2 = Calculator.AddWithCarry(p2, low, out carry);
-		up += carry;
-		(_, low) = Calculator.BigMulAdd(left._p1, right._p2, up);
-		p3 += low;
-        
-		(_, low) = Calculator.BigMulAdd(left._p0, right._p3, 0);
-		p3 += low;
-        
-		return new UInt256(p3, p2, p1, p0);
+		return new UInt256(
+			high.Upper, high.Lower,
+			low.Upper,  low.Lower
+		);
 	}
 	/// <inheritdoc/>
 	public static UInt256 operator checked *(in UInt256 left, in UInt256 right)
@@ -268,17 +294,17 @@ public partial struct UInt256
 	{
 		if (Vector256.IsHardwareAccelerated)
 		{
-			var v1 = Unsafe.BitCast<UInt256, Vector256<ulong>>(left);
-			var v2 = Unsafe.BitCast<UInt256, Vector256<ulong>>(right);
+			var v1 = left.AsVector<ulong>();
+			var v2 = right.AsVector<ulong>();
 			var result = v1 & v2;
-			return Unsafe.BitCast<Vector256<ulong>, UInt256>(result);
+			return Create(result);
 		}
 		else if (Avx2.IsSupported)
 		{
-			var v1 = Unsafe.BitCast<UInt256, Vector256<ulong>>(left);
-			var v2 = Unsafe.BitCast<UInt256, Vector256<ulong>>(right);
+			var v1 = left.AsVector<ulong>();
+			var v2 = right.AsVector<ulong>();
 			var result = Avx2.And(v1, v2);
-			return Unsafe.BitCast<Vector256<ulong>, UInt256>(result);
+			return Create(result);
 		}
 		else
 		{
@@ -291,17 +317,17 @@ public partial struct UInt256
 	{
 		if (Vector256.IsHardwareAccelerated)
 		{
-			var v1 = Unsafe.BitCast<UInt256, Vector256<ulong>>(left);
-			var v2 = Unsafe.BitCast<UInt256, Vector256<ulong>>(right);
+			var v1 = left.AsVector<ulong>();
+			var v2 = right.AsVector<ulong>();
 			var result = v1 | v2;
-			return Unsafe.BitCast<Vector256<ulong>, UInt256>(result);
+			return Create(result);
 		}
 		else if (Avx2.IsSupported)
 		{
-			var v1 = Unsafe.BitCast<UInt256, Vector256<ulong>>(left);
-			var v2 = Unsafe.BitCast<UInt256, Vector256<ulong>>(right);
+			var v1 = left.AsVector<ulong>();
+			var v2 = right.AsVector<ulong>();
 			var result = Avx2.Or(v1, v2);
-			return Unsafe.BitCast<Vector256<ulong>, UInt256>(result);
+			return Create(result);
 		}
 		else
 		{
@@ -314,17 +340,17 @@ public partial struct UInt256
 	{
 		if (Vector256.IsHardwareAccelerated)
 		{
-			var v1 = Unsafe.BitCast<UInt256, Vector256<ulong>>(left);
-			var v2 = Unsafe.BitCast<UInt256, Vector256<ulong>>(right);
+			var v1 = left.AsVector<ulong>();
+			var v2 = right.AsVector<ulong>();
 			var result = v1 ^ v2;
-			return Unsafe.BitCast<Vector256<ulong>, UInt256>(result);
+			return Create(result);
 		}
 		else if (Avx2.IsSupported)
 		{
-			var v1 = Unsafe.BitCast<UInt256, Vector256<ulong>>(left);
-			var v2 = Unsafe.BitCast<UInt256, Vector256<ulong>>(right);
+			var v1 = left.AsVector<ulong>();
+			var v2 = right.AsVector<ulong>();
 			var result = Avx2.Xor(v1, v2);
-			return Unsafe.BitCast<Vector256<ulong>, UInt256>(result);
+			return Create(result);
 		}
 		else
 		{
@@ -406,14 +432,14 @@ public partial struct UInt256
 	{
 		if (Vector256.IsHardwareAccelerated)
 		{
-			var v1 = Vector256.Create(left._p0, left._p1, left._p2, left._p3);
-			var v2 = Vector256.Create(right._p0, right._p1, right._p2, right._p3);
+			var v1 = left.AsVector<ulong>();
+			var v2 = right.AsVector<ulong>();
 			return v1 == v2;
 		}
 		else if (Avx2.IsSupported)
 		{
-			var v1 = Vector256.Create(left._p0, left._p1, left._p2, left._p3).AsByte();
-			var v2 = Vector256.Create(right._p0, right._p1, right._p2, right._p3).AsByte();
+			var v1 = left.AsVector<byte>();
+			var v2 = right.AsVector<byte>();
 			var equals = Avx2.CompareEqual(v1, v2);
 			var result = Avx2.MoveMask(equals);
 			return (result & 0xFFFF_FFFF) == 0xFFFF_FFFF;
@@ -429,14 +455,14 @@ public partial struct UInt256
 	{
 		if (Vector256.IsHardwareAccelerated)
 		{
-			var v1 = Vector256.Create(left._p0, left._p1, left._p2, left._p3);
-			var v2 = Vector256.Create(right._p0, right._p1, right._p2, right._p3);
+			var v1 = left.AsVector<ulong>();
+			var v2 = right.AsVector<ulong>();
 			return v1 != v2;
 		}
 		else if (Avx2.IsSupported)
 		{
-			var v1 = Vector256.Create(left._p0, left._p1, left._p2, left._p3).AsByte();
-			var v2 = Vector256.Create(right._p0, right._p1, right._p2, right._p3).AsByte();
+			var v1 = left.AsVector<byte>();
+			var v2 = right.AsVector<byte>();
 			var equals = Avx2.CompareEqual(v1, v2);
 			var result = Avx2.MoveMask(equals);
 			return (result & 0xFFFF_FFFF) != 0xFFFF_FFFF;
@@ -453,8 +479,8 @@ public partial struct UInt256
 		// Successively compare each part.
 		return (left._p3 < right._p3)
 		       || (left._p3 == right._p3 && ((left._p2 < right._p2)
-		                                     || (left._p2 == right._p2 && ((left._p1 < right._p1)
-		                                                                   || (left._p1 == right._p1 && (left._p0 < right._p0))))));
+		       || (left._p2 == right._p2 && ((left._p1 < right._p1)
+		       || (left._p1 == right._p1 && (left._p0 < right._p0))))));
 
 	}
 
@@ -463,8 +489,8 @@ public partial struct UInt256
 	{
 		return (left._p3 > right._p3)
 		       || (left._p3 == right._p3 && ((left._p2 > right._p2)
-		                                     || (left._p2 == right._p2 && ((left._p1 > right._p1)
-		                                                                   || (left._p1 == right._p1 && (left._p0 > right._p0))))));
+		       || (left._p2 == right._p2 && ((left._p1 > right._p1)
+		       || (left._p1 == right._p1 && (left._p0 > right._p0))))));
 	}
 
 	/// <inheritdoc/>
@@ -472,8 +498,8 @@ public partial struct UInt256
 	{
 		return (left._p3 < right._p3)
 		       || (left._p3 == right._p3 && ((left._p2 < right._p2)
-		                                     || (left._p2 == right._p2 && ((left._p1 < right._p1)
-		                                                                   || (left._p1 == right._p1 && (left._p0 <= right._p0))))));
+		       || (left._p2 == right._p2 && ((left._p1 < right._p1)
+		       || (left._p1 == right._p1 && (left._p0 <= right._p0))))));
 	}
 
 	/// <inheritdoc/>
@@ -481,8 +507,8 @@ public partial struct UInt256
 	{
 		return (left._p3 > right._p3)
 		       || (left._p3 == right._p3 && ((left._p2 > right._p2)
-		                                     || (left._p2 == right._p2 && ((left._p1 > right._p1)
-		                                                                   || (left._p1 == right._p1 && (left._p0 >= right._p0))))));
+		       || (left._p2 == right._p2 && ((left._p1 > right._p1)
+		       || (left._p1 == right._p1 && (left._p0 >= right._p0))))));
 	}
 
 	/// <inheritdoc/>

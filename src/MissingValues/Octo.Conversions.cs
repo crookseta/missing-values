@@ -1,9 +1,11 @@
 using System.Buffers;
 using System.Buffers.Binary;
 using System.Diagnostics;
+using System.Globalization;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using MissingValues.Info;
 using MissingValues.Internals;
 using MissingValues.Primitives;
 
@@ -80,6 +82,11 @@ public partial struct Octo
 			NFloat actual => (Octo)actual,
 			Quad actual => (Octo)actual,
 			Octo actual => actual,
+#if NET11_0_OR_GREATER
+			Decimal32 actual => (Octo)actual,
+			Decimal64 actual => (Octo)actual,
+			Decimal128 actual => (Octo)actual,
+#endif
 			decimal actual => (Octo)actual,
 			byte actual => (Octo)actual,
 			ushort actual => (Octo)actual,
@@ -118,6 +125,11 @@ public partial struct Octo
 				NFloat => (TOther)(object)(NFloat)value,
 				Quad => (TOther)(object)(Quad)value,
 				Octo => (TOther)(object)value,
+#if NET11_0_OR_GREATER
+				Decimal32 => (TOther)(object)(Decimal32)value,
+				Decimal64 => (TOther)(object)(Decimal64)value,
+				Decimal128 => (TOther)(object)(Decimal128)value,
+#endif
 				decimal => (TOther)(object)(decimal)value,
 				byte => (TOther)(object)(byte)value,
 				ushort => (TOther)(object)(ushort)value,
@@ -160,6 +172,11 @@ public partial struct Octo
 			NFloat => (TOther)(object)(NFloat)value,
 			Quad => (TOther)(object)(Quad)value,
 			Octo => (TOther)(object)value,
+#if NET11_0_OR_GREATER
+			Decimal32 => (TOther)(object)(Decimal32)value,
+			Decimal64 => (TOther)(object)(Decimal64)value,
+			Decimal128 => (TOther)(object)(Decimal128)value,
+#endif
 			decimal => (TOther)(object)(decimal)value,
 			byte => (TOther)(object)((value >= byte.MaxValue) ? byte.MaxValue : (value <= Octo.Zero) ? byte.MinValue : (byte)value),
 			ushort => (TOther)(object)((value >= ushort.MaxValue) ? ushort.MaxValue : (value <= Octo.Zero) ? ushort.MinValue : (ushort)value),
@@ -1256,36 +1273,41 @@ public partial struct Octo
 			int bytesNeeded = 32 + byteShift + (bitShift > 0 ? 1 : 0);
 			
 			byte[]? array = null;
-			Span<byte> buffer = bytesNeeded >= Calculator.StackAllocThreshold
-				? (array = ArrayPool<byte>.Shared.Rent(bytesNeeded)).AsSpan(0, bytesNeeded)
-				: stackalloc byte[bytesNeeded];
-			buffer.Clear();
-
-			if (bitShift == 0)
+			try
 			{
-				BinaryOperations.WriteUInt256LittleEndian(buffer[byteShift..], man);
-			}
-			else
-			{
-				UInt128 low = man.Lower;
-				UInt128 high = man.Upper;
+				Span<byte> buffer = bytesNeeded >= Calculator.StackAllocThreshold
+					? (array = ArrayPool<byte>.Shared.Rent(bytesNeeded)).AsSpan(0, bytesNeeded)
+					: stackalloc byte[bytesNeeded];
+				buffer.Clear();
 
-				UInt128 shiftedLow = low << bitShift;
-				UInt128 shiftedHigh = (high << bitShift) | (low >> (128 - bitShift));
-				UInt128 carry = high >> (128 - bitShift);
-
-				BinaryOperations.WriteUInt256LittleEndian(buffer[byteShift..], new UInt256(shiftedHigh, shiftedLow));
-				if (carry > 0)
+				if (bitShift == 0)
 				{
-					buffer[byteShift + 32] = (byte)carry;
+					BinaryOperations.WriteUInt256LittleEndian(buffer[byteShift..], man);
 				}
+				else
+				{
+					UInt128 low = man.Lower;
+					UInt128 high = man.Upper;
+
+					UInt128 shiftedLow = low << bitShift;
+					UInt128 shiftedHigh = (high << bitShift) | (low >> (128 - bitShift));
+					UInt128 carry = high >> (128 - bitShift);
+
+					BinaryOperations.WriteUInt256LittleEndian(buffer[byteShift..], new UInt256(shiftedHigh, shiftedLow));
+					if (carry > 0)
+					{
+						buffer[byteShift + 32] = (byte)carry;
+					}
+				}
+				
+				result = new BigInteger(buffer, isUnsigned: true, isBigEndian: false);
 			}
-			
-			result = new BigInteger(buffer, isUnsigned: true, isBigEndian: false);
-			
-			if (array is not null)
+			finally
 			{
-				ArrayPool<byte>.Shared.Return(array);
+				if (array is not null)
+				{
+					ArrayPool<byte>.Shared.Return(array);
+				}
 			}
 		}
 		else
@@ -1310,6 +1332,105 @@ public partial struct Octo
 	{
 		return (decimal)(double)value;
 	}
+#if NET11_0_OR_GREATER
+	/// <summary>
+	/// Explicitly converts a <see cref="Octo" /> value to a <see cref="Decimal128"/>.
+	/// </summary>
+	/// <param name="value">The value to convert.</param>
+	public static explicit operator Decimal128(in Octo value)
+	{
+		if (IsNaN(value))
+		{
+			return Decimal128.NaN;
+		}
+		if (IsInfinity(value))
+		{
+			return IsNegative(value) ? Decimal128.NegativeInfinity : Decimal128.PositiveInfinity;
+		}
+		if (value == Zero)
+		{
+			return IsNegative(value) ? Decimal128.NegativeZero : Decimal128.Zero;
+		}
+
+		byte[] bufferArray = ArrayPool<byte>.Shared.Rent(NumberParser.OctoBufferLength);
+		try
+		{
+			value.TryFormat(bufferArray.AsSpan(), out int written, "G", CultureInfo.CurrentCulture);
+			var buffer = bufferArray.AsSpan(0, written);
+			
+			return Decimal128.Parse(buffer);
+		}
+		finally
+		{
+			ArrayPool<byte>.Shared.Return(bufferArray);
+		}
+	}
+	/// <summary>
+	/// Explicitly converts a <see cref="Octo" /> value to a <see cref="Decimal64"/>.
+	/// </summary>
+	/// <param name="value">The value to convert.</param>
+	public static explicit operator Decimal64(in Octo value)
+	{
+		if (IsNaN(value))
+		{
+			return Decimal64.NaN;
+		}
+		if (IsInfinity(value))
+		{
+			return IsNegative(value) ? Decimal64.NegativeInfinity : Decimal64.PositiveInfinity;
+		}
+		if (value == Zero)
+		{
+			return IsNegative(value) ? Decimal64.NegativeZero : Decimal64.Zero;
+		}
+
+		byte[] bufferArray = ArrayPool<byte>.Shared.Rent(NumberParser.OctoBufferLength);
+		try
+		{
+			value.TryFormat(bufferArray.AsSpan(), out int written, "G", CultureInfo.CurrentCulture);
+			var buffer = bufferArray.AsSpan(0, written);
+			
+			return Decimal64.Parse(buffer);
+		}
+		finally
+		{
+			ArrayPool<byte>.Shared.Return(bufferArray);
+		}
+	}
+	/// <summary>
+	/// Explicitly converts a <see cref="Octo" /> value to a <see cref="Decimal32"/>.
+	/// </summary>
+	/// <param name="value">The value to convert.</param>
+	public static explicit operator Decimal32(in Octo value)
+	{
+		if (IsNaN(value))
+		{
+			return Decimal32.NaN;
+		}
+		if (IsInfinity(value))
+		{
+			return IsNegative(value) ? Decimal32.NegativeInfinity : Decimal32.PositiveInfinity;
+		}
+		if (value == Zero)
+		{
+			return IsNegative(value) ? Decimal32.NegativeZero : Decimal32.Zero;
+		}
+
+		byte[] bufferArray = ArrayPool<byte>.Shared.Rent(NumberParser.OctoBufferLength);
+		try
+		{
+			value.TryFormat(bufferArray.AsSpan(), out int written, "G", CultureInfo.CurrentCulture);
+			var buffer = bufferArray.AsSpan(0, written);
+			
+			return Decimal32.Parse(buffer);
+		}
+		finally
+		{
+			ArrayPool<byte>.Shared.Return(bufferArray);
+		}
+	}
+#endif
+	
 	/// <summary>
 	/// Explicitly converts a <see cref="Octo" /> value to a <see cref="Quad"/>.
 	/// </summary>
@@ -1654,28 +1775,33 @@ public partial struct Octo
 		
 		int byteCount = magnitude.GetByteCount();
 		byte[]? array = null;
-		Span<byte> bits = byteCount >= Calculator.StackAllocThreshold 
-			? (array = ArrayPool<byte>.Shared.Rent(byteCount)).AsSpan(0, byteCount) 
-			: stackalloc byte[byteCount];
-		bits.Clear();
-
-		magnitude.TryWriteBytes(bits, out int bytesWritten);
-		int uintCount = (bytesWritten + 15) / 16;
-
-		UInt256 h = BitHelper.ReadUInt128Chunk(bits, uintCount - 1);
-		UInt256 m = BitHelper.ReadUInt128Chunk(bits, uintCount - 2);
-		UInt256 l = BitHelper.ReadUInt128Chunk(bits, uintCount - 3);
-
-		int z = (int)UInt128.LeadingZeroCount(h.Lower);
-		int exp = (uintCount - 2) * 128 - z;
-		UInt256 man = (h << 128 + z) | (m << z) | (l >> 128 - z);
-		
-		if (array is not null)
+		try
 		{
-			ArrayPool<byte>.Shared.Return(array);
-		}
+			Span<byte> bits = byteCount >= Calculator.StackAllocThreshold 
+				? (array = ArrayPool<byte>.Shared.Rent(byteCount)).AsSpan(0, byteCount) 
+				: stackalloc byte[byteCount];
+			bits.Clear();
 
-		return BitHelper.GetOctoFromParts(sign, exp, man);
+			magnitude.TryWriteBytes(bits, out int bytesWritten);
+			int uintCount = (bytesWritten + 15) / 16;
+
+			UInt256 h = BitHelper.ReadUInt128Chunk(bits, uintCount - 1);
+			UInt256 m = BitHelper.ReadUInt128Chunk(bits, uintCount - 2);
+			UInt256 l = BitHelper.ReadUInt128Chunk(bits, uintCount - 3);
+
+			int z = (int)UInt128.LeadingZeroCount(h.Lower);
+			int exp = (uintCount - 2) * 128 - z;
+			UInt256 man = (h << 128 + z) | (m << z) | (l >> 128 - z);
+
+			return BitHelper.GetOctoFromParts(sign, exp, man);
+		}
+		finally
+		{
+			if (array is not null)
+			{
+				ArrayPool<byte>.Shared.Return(array);
+			}
+		}
 	}
 
 	/// <summary>
@@ -1686,6 +1812,106 @@ public partial struct Octo
 	{
 		return (Octo)(double)value;
 	}
+	
+#if NET11_0_OR_GREATER
+	/// <summary>
+	/// Implicitly converts a <see cref="Decimal128" /> value to a <see cref="Octo"/>.
+	/// </summary>
+	/// <param name="value">The value to convert.</param>
+	public static implicit operator Octo(Decimal128 value)
+	{
+		bool isNegative = Decimal128.IsNegative(value);
+		if (Decimal128.IsInfinity(value))
+		{
+			return isNegative ? NegativeInfinity : PositiveInfinity;
+		}
+		if (Decimal128.IsNaN(value))
+		{
+			return NaN;
+		}
+		
+		BitHelper.GetExponentAndSignificand(value, out int exponent, out UInt512 significand);
+
+		if (significand == UInt512.Zero)
+		{
+			return isNegative ? NegativeZero : Zero;
+		}
+		
+		NumberInfo number = new(stackalloc byte[155]);
+		
+		number.Scale = number.DigitsCount = UInt512.CountDigits(in significand);
+		number.Scale += exponent;
+		number.IsNegative = isNegative;
+		NumberFormatter.UInt512ToDecChars(significand, MemoryMarshal.Cast<byte, Utf8Char>(number.Digits), number.DigitsCount);
+		
+		return NumberInfo.ConvertToFloat<Octo, UInt256>(ref number);
+	}
+	/// <summary>
+	/// Implicitly converts a <see cref="Decimal64" /> value to a <see cref="Octo"/>.
+	/// </summary>
+	/// <param name="value">The value to convert.</param>
+	public static implicit operator Octo(Decimal64 value)
+	{
+		bool isNegative = Decimal64.IsNegative(value);
+		if (Decimal64.IsInfinity(value))
+		{
+			return isNegative ? NegativeInfinity : PositiveInfinity;
+		}
+		if (Decimal64.IsNaN(value))
+		{
+			return NaN;
+		}
+		
+		BitHelper.GetExponentAndSignificand(value, out int exponent, out UInt512 significand);
+
+		if (significand == UInt512.Zero)
+		{
+			return isNegative ? NegativeZero : Zero;
+		}
+		
+		NumberInfo number = new(stackalloc byte[155]);
+		
+		number.Scale = number.DigitsCount = UInt512.CountDigits(in significand);
+		number.Scale += exponent;
+		number.IsNegative = isNegative;
+		NumberFormatter.UInt512ToDecChars(significand, MemoryMarshal.Cast<byte, Utf8Char>(number.Digits), number.DigitsCount);
+		
+		return NumberInfo.ConvertToFloat<Octo, UInt256>(ref number);
+	}
+	/// <summary>
+	/// Implicitly converts a <see cref="Decimal32" /> value to a <see cref="Octo"/>.
+	/// </summary>
+	/// <param name="value">The value to convert.</param>
+	public static implicit operator Octo(Decimal32 value)
+	{
+		bool isNegative = Decimal32.IsNegative(value);
+		if (Decimal32.IsInfinity(value))
+		{
+			return isNegative ? NegativeInfinity : PositiveInfinity;
+		}
+		if (Decimal32.IsNaN(value))
+		{
+			return NaN;
+		}
+		
+		BitHelper.GetExponentAndSignificand(value, out int exponent, out UInt512 significand);
+
+		if (significand == UInt512.Zero)
+		{
+			return isNegative ? NegativeZero : Zero;
+		}
+		
+		NumberInfo number = new(stackalloc byte[155]);
+		
+		number.Scale = number.DigitsCount = UInt512.CountDigits(in significand);
+		number.Scale += exponent;
+		number.IsNegative = isNegative;
+		NumberFormatter.UInt512ToDecChars(significand, MemoryMarshal.Cast<byte, Utf8Char>(number.Digits), number.DigitsCount);
+		
+		return NumberInfo.ConvertToFloat<Octo, UInt256>(ref number);
+	}
+#endif
+	
 	/// <summary>
 	/// Implicitly converts a <see cref="double" /> value to a <see cref="Octo"/>.
 	/// </summary>

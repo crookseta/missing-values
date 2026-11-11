@@ -197,6 +197,16 @@ public readonly partial struct Int512
 	{
 		return ToString("D", CultureInfo.CurrentCulture);
 	}
+	
+	/// <summary>
+	/// Converts the numeric value of this instance to its equivalent string representation, using the specified format.
+	/// </summary>
+	/// <param name="format">A numeric format string.</param>
+	/// <returns>The string representation of the value of this instance as specified by <paramref name="format"/>.</returns>
+	public string ToString([StringSyntax(StringSyntaxAttribute.NumericFormat)] string? format)
+	{
+		return ToString(format, CultureInfo.CurrentCulture);
+	}
 
 	/// <summary>
 	/// Produces the full product of two signed 512-bit numbers.
@@ -282,6 +292,19 @@ public readonly partial struct Int512
 	public static bool TryParse(ReadOnlySpan<char> s, out Int512 result)
 	{
 		return TryParse(s, CultureInfo.CurrentCulture, out result);
+	}
+	
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	internal Vector512<T> AsVector<T>()
+		where T : unmanaged
+	{
+		return Unsafe.BitCast<Int512, Vector512<T>>(this);
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	internal static Int512 Create<T>(Vector512<T> vector)
+	{
+		return Unsafe.BitCast<Vector512<T>, Int512>(vector);
 	}
 
 	private static Int512 ToInt512(double value)

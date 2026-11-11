@@ -242,75 +242,43 @@ namespace MissingValues
 
 		static UInt512 INumberBase<UInt512>.MinMagnitudeNumber(UInt512 x, UInt512 y) => Min(x, y);
 
-#if NET9_0_OR_GREATER
 		static UInt512 INumberBase<UInt512>.MultiplyAddEstimate(UInt512 left, UInt512 right, UInt512 addend) => (left * right) + addend;
-#endif
 
 		/// <inheritdoc/>
 		public static UInt512 Parse(ReadOnlySpan<char> s, NumberStyles style, IFormatProvider? provider)
 		{
-			var status = NumberParser.TryParseToUnsigned(Utf16Char.CastFromCharSpan(s), style, provider, out UInt512 output);
-			if (!status.IsSuccessful())
-			{
-				status.Throw<UInt512>(s.ToString());
-			}
-			return output;
+			return NumberParser.ParseToInteger<UInt512, Utf16Char>(Utf16Char.CastFromCharSpan(s), style, provider);
 		}
 
 		/// <inheritdoc/>
 		public static UInt512 Parse(string s, NumberStyles style, IFormatProvider? provider)
 		{
 			ArgumentNullException.ThrowIfNull(s);
-			var status = NumberParser.TryParseToUnsigned(Utf16Char.CastFromCharSpan(s), style, provider, out UInt512 output);
-			if (!status.IsSuccessful())
-			{
-				status.Throw<UInt512>(s.ToString());
-			}
-			return output;
+			return NumberParser.ParseToInteger<UInt512, Utf16Char>(Utf16Char.CastFromCharSpan(s), style, provider);
 		}
 
 		/// <inheritdoc/>
 		public static UInt512 Parse(ReadOnlySpan<char> s, IFormatProvider? provider)
 		{
-			var status = NumberParser.TryParseToUnsigned(Utf16Char.CastFromCharSpan(s), NumberStyles.Integer, provider, out UInt512 output);
-			if (!status.IsSuccessful())
-			{
-				status.Throw<UInt512>(s.ToString());
-			}
-			return output;
+			return NumberParser.ParseToInteger<UInt512, Utf16Char>(Utf16Char.CastFromCharSpan(s), NumberStyles.Integer, provider);
 		}
 
 		/// <inheritdoc/>
 		public static UInt512 Parse(string s, IFormatProvider? provider)
 		{
 			ArgumentNullException.ThrowIfNull(s);
-			var status = NumberParser.TryParseToUnsigned(Utf16Char.CastFromCharSpan(s), NumberStyles.Integer, provider, out UInt512 output);
-			if (!status.IsSuccessful())
-			{
-				status.Throw<UInt512>(s.ToString());
-			}
-			return output;
+			return NumberParser.ParseToInteger<UInt512, Utf16Char>(Utf16Char.CastFromCharSpan(s), NumberStyles.Integer, provider);
 		}
 
 		/// <inheritdoc/>
 		public static UInt512 Parse(ReadOnlySpan<byte> utf8Text, NumberStyles style, IFormatProvider? provider)
 		{
-			var status = NumberParser.TryParseToUnsigned(Utf8Char.CastFromByteSpan(utf8Text), style, provider, out UInt512 output);
-			if (!status.IsSuccessful())
-			{
-				status.Throw<UInt512>(utf8Text);
-			}
-			return output;
+			return NumberParser.ParseToInteger<UInt512, Utf8Char>(Utf8Char.CastFromByteSpan(utf8Text), style, provider);
 		}
 		/// <inheritdoc/>
 		public static UInt512 Parse(ReadOnlySpan<byte> utf8Text, IFormatProvider? provider)
 		{
-			var status = NumberParser.TryParseToUnsigned(Utf8Char.CastFromByteSpan(utf8Text), NumberStyles.Integer, provider, out UInt512 output);
-			if (!status.IsSuccessful())
-			{
-				status.Throw<UInt512>(utf8Text);
-			}
-			return output;
+			return NumberParser.ParseToInteger<UInt512, Utf8Char>(Utf8Char.CastFromByteSpan(utf8Text), NumberStyles.Integer, provider);
 		}
 
 		/// <inheritdoc/>
@@ -355,7 +323,7 @@ namespace MissingValues
 				return false;
 			}
 
-			return NumberParser.TryParseToUnsigned(Utf16Char.CastFromCharSpan(s), style, provider, out result).IsSuccessful();
+			return NumberParser.TryParseToInteger(Utf16Char.CastFromCharSpan(s), style, provider, false, out result, out _);
 		}
 
 		/// <inheritdoc/>
@@ -367,7 +335,7 @@ namespace MissingValues
 				return false;
 			}
 
-			return NumberParser.TryParseToUnsigned(Utf16Char.CastFromCharSpan(s), style, provider, out result).IsSuccessful();
+			return NumberParser.TryParseToInteger(Utf16Char.CastFromCharSpan(s), style, provider, false, out result, out _);
 		}
 
 		/// <inheritdoc/>
@@ -379,7 +347,7 @@ namespace MissingValues
 				return false;
 			}
 
-			return NumberParser.TryParseToUnsigned(Utf16Char.CastFromCharSpan(s), NumberStyles.Integer, provider, out result).IsSuccessful();
+			return NumberParser.TryParseToInteger(Utf16Char.CastFromCharSpan(s), NumberStyles.Integer, provider, false, out result, out _);
 		}
 
 		/// <inheritdoc/>
@@ -391,7 +359,7 @@ namespace MissingValues
 				return false;
 			}
 
-			return NumberParser.TryParseToUnsigned(Utf16Char.CastFromCharSpan(s), NumberStyles.Integer, provider, out result).IsSuccessful();
+			return NumberParser.TryParseToInteger(Utf16Char.CastFromCharSpan(s), NumberStyles.Integer, provider, false, out result, out _);
 		}
 
 		/// <inheritdoc/>
@@ -403,7 +371,7 @@ namespace MissingValues
 				return false;
 			}
 
-			return NumberParser.TryParseToUnsigned(Utf8Char.CastFromByteSpan(utf8Text), style, provider, out result).IsSuccessful();
+			return NumberParser.TryParseToInteger(Utf8Char.CastFromByteSpan(utf8Text), style, provider, false, out result, out _);
 		}
 		/// <inheritdoc/>
 		public static bool TryParse(ReadOnlySpan<byte> utf8Text, IFormatProvider? provider, [MaybeNullWhen(false)] out UInt512 result)
@@ -414,8 +382,49 @@ namespace MissingValues
 				return false;
 			}
 
-			return NumberParser.TryParseToUnsigned(Utf8Char.CastFromByteSpan(utf8Text), NumberStyles.Integer, provider, out result).IsSuccessful();
+			return NumberParser.TryParseToInteger(Utf8Char.CastFromByteSpan(utf8Text), NumberStyles.Integer, provider, false, out result, out _);
 		}
+
+#if NET11_0_OR_GREATER
+		/// <inheritdoc/>
+		public static bool TryParsePartial([NotNullWhen(true)] string? s, NumberStyles style, IFormatProvider? provider, out UInt512 result, out int charsConsumed)
+		{
+			if (string.IsNullOrWhiteSpace(s))
+			{
+				charsConsumed = 0;
+				result = default;
+				return false;
+			}
+		
+			return NumberParser.TryParseToInteger(Utf16Char.CastFromCharSpan(s), style, provider, true, out result, out charsConsumed);
+		}
+
+		/// <inheritdoc/>
+		public static bool TryParsePartial(ReadOnlySpan<char> s, NumberStyles style, IFormatProvider? provider, out UInt512 result, out int charsConsumed)
+		{
+			if (s.Length == 0 || s.IsWhiteSpace())
+			{
+				charsConsumed = 0;
+				result = default;
+				return false;
+			}
+		
+			return NumberParser.TryParseToInteger(Utf16Char.CastFromCharSpan(s), style, provider, true, out result, out charsConsumed);
+		}
+
+		/// <inheritdoc/>
+		public static bool TryParsePartial(ReadOnlySpan<byte> utf8Text, NumberStyles style, IFormatProvider? provider, out UInt512 result, out int bytesConsumed)
+		{
+			if (utf8Text.Length == 0 || !utf8Text.ContainsAnyExcept((byte)' '))
+			{
+				bytesConsumed = 0;
+				result = default;
+				return false;
+			}
+		
+			return NumberParser.TryParseToInteger(Utf8Char.CastFromByteSpan(utf8Text), style, provider, true, out result, out bytesConsumed);
+		}
+#endif
 
 		static bool IBinaryInteger<UInt512>.TryReadBigEndian(ReadOnlySpan<byte> source, bool isUnsigned, out UInt512 value)
 		{
@@ -598,5 +607,78 @@ namespace MissingValues
 		static int IFormattableInteger<UInt512>.Log2Int32(in UInt512 value) => BitHelper.Log2(in value);
 		static int IFormattableInteger<UInt512>.LeadingZeroCountInt32(in UInt512 value) => BitHelper.LeadingZeroCount(in value);
 		static void IFormattableUnsignedInteger<UInt512>.ToDecChars<TChar>(in UInt512 number, Span<TChar> destination, int digits) => NumberFormatter.UInt512ToDecChars(number, destination, digits);
+		
+		static UInt512 IFormattableUnsignedInteger<UInt512>.MultiplyAddByUInt64(in UInt512 left, ulong right, ulong addend)
+		{
+			ulong upper = Math.BigMul(left._p0, right, out ulong part0);
+			part0 += addend;
+			upper += (part0 < addend) ? 1UL : 0UL;
+
+			ulong carry = Math.BigMul(left._p1, right, out ulong part1);
+			part1 += upper;
+			carry += (part1 < upper) ? 1UL : 0UL;
+
+			upper = Math.BigMul(left._p2, right, out ulong part2);
+			part2 += carry;
+			upper += (part2 < carry) ? 1UL : 0UL;
+
+			carry = Math.BigMul(left._p3, right, out ulong part3);
+			part3 += upper;
+			carry += (part3 < upper) ? 1UL : 0UL;
+
+			upper = Math.BigMul(left._p4, right, out ulong part4);
+			part4 += carry;
+			upper += (part4 < carry) ? 1UL : 0UL;
+
+			carry = Math.BigMul(left._p5, right, out ulong part5);
+			part5 += upper;
+			carry += (part5 < upper) ? 1UL : 0UL;
+
+			upper = Math.BigMul(left._p6, right, out ulong part6);
+			part6 += carry;
+			upper += (part6 < carry) ? 1UL : 0UL;
+
+			ulong part7 = left._p7 * right;
+			part7 += upper;
+
+			return new UInt512(part7, part6, part5, part4, part3, part2, part1, part0);
+		}
+		static bool IFormattableUnsignedInteger<UInt512>.TryCheckedMultiplyAdd(UInt512 left, ulong right, ulong addend, out UInt512 result)
+		{
+			ulong upper = Math.BigMul(left._p0, right, out ulong part0);
+			part0 += addend;
+			upper += (part0 < addend) ? 1UL : 0UL;
+
+			ulong carry = Math.BigMul(left._p1, right, out ulong part1);
+			part1 += upper;
+			carry += (part1 < upper) ? 1UL : 0UL;
+
+			upper = Math.BigMul(left._p2, right, out ulong part2);
+			part2 += carry;
+			upper += (part2 < carry) ? 1UL : 0UL;
+
+			carry = Math.BigMul(left._p3, right, out ulong part3);
+			part3 += upper;
+			carry += (part3 < upper) ? 1UL : 0UL;
+
+			upper = Math.BigMul(left._p4, right, out ulong part4);
+			part4 += carry;
+			upper += (part4 < carry) ? 1UL : 0UL;
+
+			carry = Math.BigMul(left._p5, right, out ulong part5);
+			part5 += upper;
+			carry += (part5 < upper) ? 1UL : 0UL;
+
+			upper = Math.BigMul(left._p6, right, out ulong part6);
+			part6 += carry;
+			upper += (part6 < carry) ? 1UL : 0UL;
+
+			carry = Math.BigMul(left._p7, right, out ulong part7);
+			part7 += upper;
+			carry += (part7 < upper) ? 1UL : 0UL;
+
+			result = new UInt512(part7, part6, part5, part4, part3, part2, part1, part0);
+			return carry == 0;
+		}
 	}
 }

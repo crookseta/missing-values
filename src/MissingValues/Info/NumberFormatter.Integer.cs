@@ -99,13 +99,17 @@ internal interface IFormattableUnsignedInteger<TUnsigned> : IFormattableInteger<
 	where TUnsigned : IFormattableUnsignedInteger<TUnsigned>
 {
 	/// <summary>
-	/// Gets the absolute representation of the maximum representable value of <typeparamref name="TSigned"/>(Abs(TSigned.MinValue)).
+	/// Gets the absolute representation of the maximum representable value of <typeparamref name="TUnsigned"/>(Abs(TSigned.MinValue)).
 	/// </summary>
 	static abstract TUnsigned SignedMaxMagnitude { get; }
 
 	static abstract int CountDigits(in TUnsigned value);
 
 	static abstract void ToDecChars<TChar>(in TUnsigned number, Span<TChar> destination, int digits) where TChar : unmanaged, IUtfCharacter<TChar>;
+
+	static abstract TUnsigned MultiplyAddByUInt64(in TUnsigned left, ulong right, ulong addend);
+	
+	static abstract bool TryCheckedMultiplyAdd(TUnsigned left, ulong right, ulong addend, out TUnsigned result);
 
 	static bool IFormattableInteger<TUnsigned>.IsUnsignedInteger => true;
 }
@@ -170,37 +174,33 @@ internal static partial class NumberFormatter
 		return T.MaxBinaryDigits - T.LeadingZeroCountInt32(in value);
 	}
 
-	private static ref TChar UInt64ToDecChars<TChar>(ulong value, ref TChar bufferEnd, int digits)
+	private static int UInt64ToDecChars<TChar>(ulong value, Span<TChar> buffer, int end, int digits)
 		where TChar : unmanaged, IUtfCharacter<TChar>
 	{
 		// Borrowed from https://github.com/dotnet/runtime/blob/main/src/libraries/System.Private.CoreLib/src/System/Number.Formatting.cs
 		uint remainder;
 		while (value >= 100)
 		{
-			bufferEnd = ref Unsafe.Subtract(ref bufferEnd, 2);
+			end -= 2;
 			digits -= 2;
 			(value, remainder) = Calculator.DivRemByUInt32(value, 100);
-			WriteTwoDigits(remainder, ref bufferEnd);
+			WriteTwoDigits(remainder, buffer[end..]);
 		}
 		while (value != 0 || digits > 0)
 		{
 			digits--;
 			(value, remainder) = Calculator.DivRemByUInt32(value, 10);
-			bufferEnd = ref Unsafe.Subtract(ref bufferEnd, 1);
-			bufferEnd = (TChar)(remainder + '0');
+			buffer[--end] = (TChar)(remainder + '0');
 		}
 
-		return ref bufferEnd;
+		return end;
 	}
 
-	private static unsafe void WriteTwoDigits<TChar>(uint value, ref TChar ptr)
+	private static void WriteTwoDigits<TChar>(uint value, Span<TChar> span)
 		where TChar : unmanaged, IUtfCharacter<TChar>
 	{
-		Unsafe.CopyBlockUnaligned(
-			ref Unsafe.As<TChar, byte>(ref ptr),
-			ref Unsafe.Add(ref MemoryMarshal.GetReference(TChar.TwoDigitsAsBytes), (uint)sizeof(TChar) * 2 * value),
-			(uint)sizeof(TChar) * 2
-			);
+		Debug.Assert(value <= 99);
+		TChar.TwoDigitsAsBytes.Slice((int)(Unsafe.SizeOf<TChar>() * 2 * value), Unsafe.SizeOf<TChar>() * 2).CopyTo(MemoryMarshal.AsBytes(span));
 	}
 
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -212,14 +212,14 @@ internal static partial class NumberFormatter
 	internal static void UInt256ToDecChars<TChar>(UInt256 value, Span<TChar> destination, int digits)
 		where TChar : unmanaged, IUtfCharacter<TChar>
 	{
-		ref TChar bufferEnd = ref Unsafe.Add(ref MemoryMarshal.GetReference(destination), digits);
+		int end = digits;
 
 		while (value.Part3 != 0 || value.Part2 != 0 || value.Part1 != 0)
 		{
-			bufferEnd = ref UInt64ToDecChars(UInt256DivMod1E19(ref value), ref bufferEnd, E19Digits);
+			end = UInt64ToDecChars(UInt256DivMod1E19(ref value), destination, end, E19Digits);
 			digits -= E19Digits;
 		}
-		UInt64ToDecChars(value.Part0, ref bufferEnd, digits);
+		UInt64ToDecChars(value.Part0, destination, end, digits);
 	}
 	[MethodImpl(MethodImplOptions.AggressiveInlining)]
 	private static ulong UInt512DivMod1E19(ref UInt512 value)
@@ -230,103 +230,53 @@ internal static partial class NumberFormatter
 	internal static void UInt512ToDecChars<TChar>(UInt512 value, Span<TChar> destination, int digits)
 		where TChar : unmanaged, IUtfCharacter<TChar>
 	{
-		ref TChar bufferEnd = ref Unsafe.Add(ref MemoryMarshal.GetReference(destination), digits);
+		int end = digits;
 
 		while (value.Part7 != 0 || value.Part6 != 0 || value.Part5 != 0 || value.Part4 != 0 || value.Part3 != 0 || value.Part2 != 0 || value.Part1 != 0)
 		{
-			bufferEnd = ref UInt64ToDecChars(UInt512DivMod1E19(ref value), ref bufferEnd, E19Digits);
+			end = UInt64ToDecChars(UInt512DivMod1E19(ref value), destination, end, E19Digits);
 			digits -= E19Digits;
 		}
-		UInt64ToDecChars(value.Part0, ref bufferEnd, digits);
+		UInt64ToDecChars(value.Part0, destination, end, digits);
 	}
-	internal static unsafe void UnsignedIntegerToHexChars<T, TChar>(in T value, char isUpper, Span<TChar> destination, int digits)
+
+	internal static void UnsignedIntegerToRadixChars<T, TChar, TConverter>(in T value, char isUpper, Span<TChar> destination, int digits)
 		where T : unmanaged, IFormattableUnsignedInteger<T>
 		where TChar : unmanaged, IUtfCharacter<TChar>
+		where TConverter : struct, IIntegerRadixConverter<T>
 	{
 		destination[..digits].Fill((TChar)'0');
 		int hexBase = (isUpper - ('X' - 'A' + 10));
-		Span<ulong> value64 = stackalloc ulong[sizeof(T) / sizeof(ulong)];
-		Unsafe.WriteUnaligned(ref Unsafe.As<ulong, byte>(ref MemoryMarshal.GetReference(value64)), value);
+		Span<ulong> value64 = stackalloc ulong[Unsafe.SizeOf<T>() / sizeof(ulong)];
+		value.TryCopyTo(value64);
 		value64 = value64[..^(T.LeadingZeroCountInt32(in value) / 64)];
-
-		fixed (TChar* ptr = &MemoryMarshal.GetReference(destination))
+		
+		ulong v;
+		if (value64.Length == 1)
 		{
-			TChar* bufferEnd = ptr + digits;
-			const int MaxDigitsPerChunk = 16;
-			ulong v;
-
-			if (value64.Length == 1)
+			v = value64[0];
+			
+			while (--digits >= 0 || v != 0)
 			{
-				v = value64[0];
-
-				while (--digits >= 0 || v != 0)
-				{
-					byte digit = (byte)(v & 0xF);
-					*(--bufferEnd) = (TChar)(char)(digit + (digit < 10 ? (byte)'0' : hexBase));
-					v >>= 4;
-				}
-
-				return;
+				byte digit = (byte)(v & TConverter.MaxDigitValue);
+				destination[digits] = (TChar)(char)(digit + (digit < 10 ? (byte)'0' : hexBase));
+				v >>>= TConverter.BitsPerCharacter;
 			}
-
-			for (int i = 0; i < value64.Length && digits > 0; i++)
-			{
-				int digitsLeft = Math.Min(digits, MaxDigitsPerChunk);
-				v = value64[i];
-
-				while (digitsLeft > 0 || v != 0)
-				{
-					byte digit = (byte)(v & 0xF);
-					*(--bufferEnd) = (TChar)(char)(digit + (digit < 10 ? (byte)'0' : hexBase));
-					digitsLeft--;
-					v >>= 4;
-				}
-
-				digits -= MaxDigitsPerChunk;
-			}
+			
+			return;
 		}
-	}
-	internal static unsafe void UnsignedIntegerToBinChars<T, TChar>(in T value, Span<TChar> destination, int digits)
-		where T : unmanaged, IFormattableUnsignedInteger<T>
-		where TChar : unmanaged, IUtfCharacter<TChar>
-	{
-		destination[..digits].Fill((TChar)'0');
-		Span<ulong> value64 = stackalloc ulong[sizeof(T) / sizeof(ulong)];
-		Unsafe.WriteUnaligned(ref Unsafe.As<ulong, byte>(ref MemoryMarshal.GetReference(value64)), value);
-		value64 = value64[..^(T.LeadingZeroCountInt32(in value) / 64)];
 
-		fixed (TChar* ptr = &MemoryMarshal.GetReference(destination))
+		for (int i = 0; i < value64.Length && digits > 0; i++)
 		{
-			TChar* bufferEnd = ptr + digits;
-			const int MaxDigitsPerChunk = 64;
-			ulong v;
+			int digitsLeft = Math.Min(digits, TConverter.MaxUInt64DigitCount);
+			v = value64[i];
 
-			if (value64.Length == 1)
+			while (digitsLeft > 0 || v != 0)
 			{
-				v = value64[0];
-
-				while (--digits >= 0 || v != 0)
-				{
-					*(--bufferEnd) = (TChar)(char)('0' + (v & 0x1));
-					v >>= 1;
-				}
-
-				return;
-			}
-
-			for (int i = 0; i < value64.Length && digits > 0; i++)
-			{
-				int digitsLeft = Math.Min(digits, MaxDigitsPerChunk);
-				v = value64[i];
-
-				while (digitsLeft > 0 || v != 0)
-				{
-					*(--bufferEnd) = (TChar)(char)('0' + (v & 0x1));
-					digitsLeft--;
-					v >>= 1;
-				}
-
-				digits -= MaxDigitsPerChunk;
+				byte digit = (byte)(v & TConverter.MaxDigitValue);
+				destination[--digits] = (TChar)(char)(digit + (digit < 10 ? (byte)'0' : hexBase));
+				digitsLeft--;
+				v >>>= TConverter.BitsPerCharacter;
 			}
 		}
 	}
@@ -365,9 +315,9 @@ internal static partial class NumberFormatter
 			case 'B':
 				u = Unsafe.BitCast<TSigned, TUnsigned>(value);
 				precision = int.Max(precision, CountBinDigits(in u));
-				return string.Create(precision, u, (destination, number) =>
+				return string.Create(precision, (u, fmt), (destination, number) =>
 				{
-					UnsignedIntegerToBinChars(in number, Utf16Char.CastFromCharSpan(destination), destination.Length);
+					UnsignedIntegerToRadixChars<TUnsigned, Utf16Char, BinConverter<TUnsigned>>(in number.u, number.fmt, Utf16Char.CastFromCharSpan(destination), destination.Length);
 				});
 			case 'x':
 			case 'X':
@@ -375,7 +325,7 @@ internal static partial class NumberFormatter
 				precision = int.Max(precision, CountHexDigits(in u));
 				return string.Create(precision, (u, fmt), (destination, number) =>
 				{
-					UnsignedIntegerToHexChars(in number.u, number.fmt, Utf16Char.CastFromCharSpan(destination), destination.Length);
+					UnsignedIntegerToRadixChars<TUnsigned, Utf16Char, HexConverter<TUnsigned>>(in number.u, number.fmt, Utf16Char.CastFromCharSpan(destination), destination.Length);
 				});
 			case 'd':
 			case 'D':
@@ -413,7 +363,7 @@ internal static partial class NumberFormatter
 		where TChar : unmanaged, IUtfCharacter<TChar>
 	{
 		int digits;
-		scoped Span<TChar> negativeSign;
+		scoped ReadOnlySpan<TChar> negativeSign;
 		NumberFormatInfo info;
 
 		if (format.IsEmpty)
@@ -433,8 +383,7 @@ internal static partial class NumberFormatter
 			else
 			{
 				info = NumberFormatInfo.GetInstance(provider);
-				negativeSign = stackalloc TChar[TChar.GetLength(info.NegativeSign)];
-				TChar.Copy(info.NegativeSign, negativeSign);
+				negativeSign = info.NegativeSignTChar(stackalloc TChar[16]);
 
 				TSigned abs = -value;
 				TUnsigned ui = abs >= TSigned.Zero ? TUnsigned.CreateTruncating(abs) : TUnsigned.SignedMaxMagnitude;
@@ -464,7 +413,7 @@ internal static partial class NumberFormatter
 					charsWritten = 0;
 					return false;
 				}
-				UnsignedIntegerToBinChars(in u, destination, charsWritten);
+				UnsignedIntegerToRadixChars<TUnsigned, TChar, BinConverter<TUnsigned>>(in u, fmt, destination, charsWritten);
 				return true;
 			case 'x':
 			case 'X':
@@ -475,7 +424,7 @@ internal static partial class NumberFormatter
 					charsWritten = 0;
 					return false;
 				}
-				UnsignedIntegerToHexChars(in u, fmt, destination, charsWritten);
+				UnsignedIntegerToRadixChars<TUnsigned, TChar, HexConverter<TUnsigned>>(in u, fmt, destination, charsWritten);
 				return true;
 			case 'd':
 			case 'D':
@@ -496,8 +445,7 @@ internal static partial class NumberFormatter
 				if (isNegative)
 				{
 					info = NumberFormatInfo.GetInstance(provider);
-					negativeSign = stackalloc TChar[TChar.GetLength(info.NegativeSign)];
-					TChar.Copy(info.NegativeSign, negativeSign);
+					negativeSign = info.NegativeSignTChar(stackalloc TChar[16]);
 
 					charsWritten = precision + negativeSign.Length;
 					if (destination.Length < charsWritten)
@@ -534,16 +482,16 @@ internal static partial class NumberFormatter
 			case 'b':
 			case 'B':
 				precision = int.Max(precision, CountBinDigits(in value));
-				return string.Create(precision, value, (destination, number) =>
+				return string.Create(precision, (value, fmt), (destination, number) =>
 				{
-					UnsignedIntegerToBinChars(in number, Utf16Char.CastFromCharSpan(destination), destination.Length);
+					UnsignedIntegerToRadixChars<TUnsigned, Utf16Char, BinConverter<TUnsigned>>(in number.value, number.fmt, Utf16Char.CastFromCharSpan(destination), destination.Length);
 				});
 			case 'x':
 			case 'X':
 				precision = int.Max(precision, CountHexDigits(in value));
 				return string.Create(precision, (value, fmt), (destination, number) =>
 				{
-					UnsignedIntegerToHexChars(in number.value, number.fmt, Utf16Char.CastFromCharSpan(destination), destination.Length);
+					UnsignedIntegerToRadixChars<TUnsigned, Utf16Char, HexConverter<TUnsigned>>(in number.value, number.fmt, Utf16Char.CastFromCharSpan(destination), destination.Length);
 				});
 			case 'd':
 			case 'D':
@@ -589,7 +537,7 @@ internal static partial class NumberFormatter
 					return false;
 				}
 
-				UnsignedIntegerToBinChars(in value, destination, charsWritten);
+				UnsignedIntegerToRadixChars<TUnsigned, TChar, BinConverter<TUnsigned>>(in value, fmt, destination, charsWritten);
 				return true;
 			case 'x':
 			case 'X':
@@ -601,7 +549,7 @@ internal static partial class NumberFormatter
 					return false;
 				}
 
-				UnsignedIntegerToHexChars(in value, fmt, destination, charsWritten);
+				UnsignedIntegerToRadixChars<TUnsigned, TChar, HexConverter<TUnsigned>>(in value, fmt, destination, charsWritten);
 				return true;
 			case 'd':
 			case 'D':

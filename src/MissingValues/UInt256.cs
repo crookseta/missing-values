@@ -2,6 +2,7 @@
 using MissingValues.Internals;
 using System.Buffers;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -123,6 +124,16 @@ public readonly partial struct UInt256
 	{
 		return ToString("D", CultureInfo.CurrentCulture);
 	}
+	
+	/// <summary>
+	/// Converts the numeric value of this instance to its equivalent string representation, using the specified format.
+	/// </summary>
+	/// <param name="format">A numeric format string.</param>
+	/// <returns>The string representation of the value of this instance as specified by <paramref name="format"/>.</returns>
+	public string ToString([StringSyntax(StringSyntaxAttribute.NumericFormat)] string? format)
+	{
+		return ToString(format, CultureInfo.CurrentCulture);
+	}
 
 	/// <inheritdoc/>
 	public override bool Equals(object? obj)
@@ -145,60 +156,34 @@ public readonly partial struct UInt256
 	/// <returns>The high 256-bit of the product of the specified numbers.</returns>
 	public static UInt256 BigMul(UInt256 left, UInt256 right, out UInt256 lower)
 	{
-		if (right._p3 == 0 && right._p2 == 0 && right._p1 == 0)
-		{
-			if (left._p3 == 0 && left._p2 == 0 && left._p1 == 0)
-			{
-				ulong up = Calculator.BigMul(left._p0, right._p0, out ulong low);
-				lower = new UInt256(0, 0, up, low);
-				return Zero;
-			}
+		UInt128 a0 = new UInt128(left._p1, left._p0);
+		UInt128 a1 = new UInt128(left._p3, left._p2);
+		UInt128 b0 = new UInt128(right._p1, right._p0);
+		UInt128 b1 = new UInt128(right._p3, right._p2);
 
-			lower = Calculator.Multiply(in left, right._p0, out ulong carry);
-			return carry;
-		}
-		else if (left._p3 == 0 && left._p2 == 0 && left._p1 == 0)
-		{
-			lower = Calculator.Multiply(in right, left._p0, out ulong carry);
-			return carry;
-		}
+		UInt128 h0 = UInt128.BigMul(a0, b0, out UInt128 l0);
+		UInt128 h1 = UInt128.BigMul(a0, b1, out UInt128 l1);
+		UInt128 h2 = UInt128.BigMul(a1, b0, out UInt128 l2);
+		UInt128 h3 = UInt128.BigMul(a1, b1, out UInt128 l3);
 
-		const int UIntCount = Size / sizeof(ulong);
+		UInt128 r0 = l0;
 
-		Span<ulong> rawBits = stackalloc ulong[UIntCount * 2];
-		rawBits.Clear();
+		UInt128 r1 = h0 + l1;
+		ulong c1 = (r1 < h0) ? 1UL : 0UL;
+		r1 += l2;
+		c1 += (r1 < l2) ? 1UL : 0UL;
 
-		Multiply(in left, right._p0, rawBits);
-		Multiply(in left, right._p1, rawBits[1..]);
-		Multiply(in left, right._p2, rawBits[2..]);
-		Multiply(in left, right._p3, rawBits[3..]);
+		UInt128 r2 = l3 + h1;
+		ulong c2 = (r2 < l3) ? 1UL : 0UL;
+		r2 += h2;
+		c2 += (r2 < h2) ? 1UL : 0UL;
+		r2 += c1;
+		c2 += (r2 < c1) ? 1UL : 0UL;
 
-		lower = new UInt256(rawBits);
+		UInt128 r3 = h3 + c2;
 
-		return new UInt256(rawBits[4..]);
-
-		static void Multiply(in UInt256 left, ulong right, Span<ulong> result)
-		{
-			Debug.Assert(result.Length >= 5);
-				
-			ulong up, low, carry;
-			(up, low) = Calculator.BigMulAdd(left._p0, right, 0);
-			result[0] = Calculator.AddWithCarry(result[0], low, out carry);
-
-			up += carry;
-			(up, low) = Calculator.BigMulAdd(left._p1, right, up);
-			result[1] = Calculator.AddWithCarry(result[1], low, out carry);
-
-			up += carry;
-			(up, low) = Calculator.BigMulAdd(left._p2, right, up);
-			result[2] = Calculator.AddWithCarry(result[2], low, out carry);
-
-			up += carry;
-			(up, low) = Calculator.BigMulAdd(left._p3, right, up);
-			result[3] = Calculator.AddWithCarry(result[3], low, out carry);
-
-			result[4] = up;
-		}
+		lower = new UInt256(r1.Upper, r1.Lower, r0.Upper, r0.Lower);
+		return new UInt256(r3.Upper, r3.Lower, r2.Upper, r2.Lower);
 	}
 		
 	/// <summary>
@@ -241,70 +226,73 @@ public readonly partial struct UInt256
 		ulong[]? bitsArray = null;
 		scoped Span<ulong> bits;
 
-		if (value._p3 == 0 && value._p2 == 0 && value._p1 == 0)
+		try
 		{
-			if (value._p0 == 1)
-				return value;
-			if (value._p0 == 0)
-				return value;
-
-			if (power >= (Size * 8))
+			if (value._p3 == 0 && value._p2 == 0 && value._p1 == 0)
 			{
-				Thrower.ArithmeticOverflow(Thrower.ArithmeticOperation.Exponentiation);
-			}
+				if (value._p0 == 1)
+					return value;
+				if (value._p0 == 0)
+					return value;
 
-			size = Calculator.PowBound(power, 1);
-
-			bits = (size <= Calculator.StackAllocThreshold
-				? stackalloc ulong[Calculator.StackAllocThreshold]
-				: bitsArray = ArrayPool<ulong>.Shared.Rent(size));
-			bits.Clear();
-
-			Calculator.Pow(value._p0, power, bits[..size]);
-		}
-		else
-		{
-			if (power >= (Size * 8))
-			{
-				Thrower.ArithmeticOverflow(Thrower.ArithmeticOperation.Exponentiation);
-			}
-
-			int valueLength = BitHelper.GetTrimLength(in value);
-			size = Calculator.PowBound(power, valueLength);
-
-			Span<ulong> valueSpan = stackalloc ulong[UIntCount];
-			valueSpan.Clear();
-			BitHelper.Write(valueSpan, in value);
-
-			bits = (size <= Calculator.StackAllocThreshold
-				? stackalloc ulong[Calculator.StackAllocThreshold]
-				: bitsArray = ArrayPool<ulong>.Shared.Rent(size));
-			bits.Clear();
-
-			Calculator.Pow(valueSpan[..valueLength], power, bits[..size]);
-		}
-
-		if (size > UIntCount)
-		{
-			Span<ulong> overflow = bits[UIntCount..];
-
-			for (int i = 0; i < overflow.Length; i++)
-			{
-				if (overflow[i] != 0)
+				if (power >= (Size * 8))
 				{
 					Thrower.ArithmeticOverflow(Thrower.ArithmeticOperation.Exponentiation);
 				}
+
+				size = Calculator.PowBound(power, 1);
+
+				bits = (size <= Calculator.StackAllocThreshold
+					? stackalloc ulong[Calculator.StackAllocThreshold]
+					: bitsArray = ArrayPool<ulong>.Shared.Rent(size));
+				bits.Clear();
+
+				Calculator.Pow(value._p0, power, bits[..size]);
+			}
+			else
+			{
+				if (power >= (Size * 8))
+				{
+					Thrower.ArithmeticOverflow(Thrower.ArithmeticOperation.Exponentiation);
+				}
+
+				int valueLength = BitHelper.GetTrimLength(in value);
+				size = Calculator.PowBound(power, valueLength);
+
+				Span<ulong> valueSpan = stackalloc ulong[UIntCount];
+				valueSpan.Clear();
+				BitHelper.Write(valueSpan, in value);
+
+				bits = (size <= Calculator.StackAllocThreshold
+					? stackalloc ulong[Calculator.StackAllocThreshold]
+					: bitsArray = ArrayPool<ulong>.Shared.Rent(size));
+				bits.Clear();
+
+				Calculator.Pow(valueSpan[..valueLength], power, bits[..size]);
+			}
+
+			if (size > UIntCount)
+			{
+				Span<ulong> overflow = bits[UIntCount..];
+
+				for (int i = 0; i < overflow.Length; i++)
+				{
+					if (overflow[i] != 0)
+					{
+						Thrower.ArithmeticOverflow(Thrower.ArithmeticOperation.Exponentiation);
+					}
+				}
+			}
+
+			return new UInt256(bits);
+		}
+		finally
+		{
+			if (bitsArray is not null)
+			{
+				ArrayPool<ulong>.Shared.Return(bitsArray);
 			}
 		}
-
-		UInt256 result = new UInt256(bits);
-
-		if (bitsArray is not null)
-		{
-			ArrayPool<ulong>.Shared.Return(bitsArray);
-		}
-
-		return result;
 	}
 
 	/// <summary>Parses a span of characters into a value.</summary>
@@ -323,6 +311,19 @@ public readonly partial struct UInt256
 	public static bool TryParse(ReadOnlySpan<char> s, out UInt256 result)
 	{
 		return TryParse(s, CultureInfo.CurrentCulture, out result);
+	}
+	
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	internal Vector256<T> AsVector<T>()
+		where T : unmanaged
+	{
+		return Unsafe.BitCast<UInt256, Vector256<T>>(this);
+	}
+
+	[MethodImpl(MethodImplOptions.AggressiveInlining)]
+	internal static UInt256 Create<T>(Vector256<T> vector)
+	{
+		return Unsafe.BitCast<Vector256<T>, UInt256>(vector);
 	}
 
 	private static UInt256 ToUInt256(double value)

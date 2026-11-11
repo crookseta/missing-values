@@ -48,22 +48,26 @@ namespace MissingValues.Info
 			int bufferLength = reader.HasValueSequence ? checked((int)reader.ValueSequence.Length) : reader.ValueSpan.Length;
 
 			byte[]? rentedBuffer = null;
-			Span<byte> buffer = bufferLength <= StackallocByteThreshold
-				? stackalloc byte[StackallocByteThreshold]
-				: (rentedBuffer = ArrayPool<byte>.Shared.Rent(bufferLength));
-
-			int written = CopyValue(in reader, buffer);
-			if (!TryParse(buffer[..written], out T result))
+			try
 			{
-				Thrower.InvalidFormat("Json");
-			}
+				Span<byte> buffer = bufferLength <= StackallocByteThreshold
+					? stackalloc byte[StackallocByteThreshold]
+					: (rentedBuffer = ArrayPool<byte>.Shared.Rent(bufferLength));
 
-			if (rentedBuffer is not null)
+				int written = CopyValue(in reader, buffer);
+				if (!TryParse(buffer[..written], out T result))
+				{
+					Thrower.InvalidFormat("Json");
+				}
+				return result;
+			}
+			finally
 			{
-				ArrayPool<byte>.Shared.Return(rentedBuffer);
+				if (rentedBuffer is not null)
+				{
+					ArrayPool<byte>.Shared.Return(rentedBuffer);
+				}
 			}
-
-			return result;
 		}
 		private static void WriteCore<T>(Utf8JsonWriter writer, in T value)
 			where T : struct, INumberBase<T>
@@ -80,22 +84,28 @@ namespace MissingValues.Info
 			byte[]? bufferArray = null;
 			scoped Span<byte> buffer;
 
-			if (maxFormatLength > StackallocByteThreshold)
+			try
 			{
-				bufferArray = ArrayPool<byte>.Shared.Rent(maxFormatLength);
-				buffer = bufferArray;
+				if (maxFormatLength > StackallocByteThreshold)
+				{
+					bufferArray = ArrayPool<byte>.Shared.Rent(maxFormatLength);
+					buffer = bufferArray;
+				}
+				else
+				{
+					buffer = stackalloc byte[maxFormatLength];
+				}
+				Format(buffer, in value, out int written);
+				writer.WriteRawValue(buffer[..written]);
 			}
-			else
+			finally
 			{
-				buffer = stackalloc byte[maxFormatLength];
+				if (bufferArray is not null)
+				{
+					ArrayPool<byte>.Shared.Return(bufferArray);
+				}
 			}
-			Format(buffer, in value, out int written);
-			writer.WriteRawValue(buffer[..written]);
 
-			if (bufferArray is not null)
-			{
-				ArrayPool<byte>.Shared.Return(bufferArray);
-			}
 		}
 
 		private static void Format<T>(

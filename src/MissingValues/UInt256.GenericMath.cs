@@ -222,9 +222,7 @@ public partial struct UInt256 :
 
 	static UInt256 INumberBase<UInt256>.MaxMagnitudeNumber(UInt256 x, UInt256 y) => Max(x, y);
 
-#if NET9_0_OR_GREATER
-		static UInt256 INumberBase<UInt256>.MultiplyAddEstimate(UInt256 left, UInt256 right, UInt256 addend) => (left * right) + addend; 
-#endif
+	static UInt256 INumberBase<UInt256>.MultiplyAddEstimate(UInt256 left, UInt256 right, UInt256 addend) => (left * right) + addend;
 
 	/// <inheritdoc/>
 	public static UInt256 Min(UInt256 x, UInt256 y) => (x <= y) ? x : y;
@@ -238,68 +236,38 @@ public partial struct UInt256 :
 	/// <inheritdoc/>
 	public static UInt256 Parse(ReadOnlySpan<char> s, NumberStyles style, IFormatProvider? provider)
 	{
-		var status = NumberParser.TryParseToUnsigned(Utf16Char.CastFromCharSpan(s), style, provider, out UInt256 output);
-		if (!status.IsSuccessful())
-		{
-			status.Throw<UInt256>(s.ToString());
-		}
-		return output;
+		return NumberParser.ParseToInteger<UInt256, Utf16Char>(Utf16Char.CastFromCharSpan(s), style, provider);
 	}
 
 	/// <inheritdoc/>
 	public static UInt256 Parse(string s, NumberStyles style, IFormatProvider? provider)
 	{
 		ArgumentNullException.ThrowIfNull(s);
-		var status = NumberParser.TryParseToUnsigned(Utf16Char.CastFromCharSpan(s), style, provider, out UInt256 output);
-		if (!status.IsSuccessful())
-		{
-			status.Throw<UInt256>(s.ToString());
-		}
-		return output;
+		return NumberParser.ParseToInteger<UInt256, Utf16Char>(Utf16Char.CastFromCharSpan(s), style, provider);
 	}
 
 	/// <inheritdoc/>
 	public static UInt256 Parse(ReadOnlySpan<char> s, IFormatProvider? provider)
 	{
-		var status = NumberParser.TryParseToUnsigned(Utf16Char.CastFromCharSpan(s), NumberStyles.Integer, provider, out UInt256 output);
-		if (!status.IsSuccessful())
-		{
-			status.Throw<UInt256>(s.ToString());
-		}
-		return output;
+		return NumberParser.ParseToInteger<UInt256, Utf16Char>(Utf16Char.CastFromCharSpan(s), NumberStyles.Integer, provider);
 	}
 
 	/// <inheritdoc/>
 	public static UInt256 Parse(string s, IFormatProvider? provider)
 	{
 		ArgumentNullException.ThrowIfNull(s);
-		var status = NumberParser.TryParseToUnsigned(Utf16Char.CastFromCharSpan(s), NumberStyles.Integer, provider, out UInt256 output);
-		if (!status.IsSuccessful())
-		{
-			status.Throw<UInt256>(s.ToString());
-		}
-		return output;
+		return NumberParser.ParseToInteger<UInt256, Utf16Char>(Utf16Char.CastFromCharSpan(s), NumberStyles.Integer, provider);
 	}
 
 	/// <inheritdoc/>
 	public static UInt256 Parse(ReadOnlySpan<byte> utf8Text, NumberStyles style, IFormatProvider? provider)
 	{
-		var status = NumberParser.TryParseToUnsigned(Utf8Char.CastFromByteSpan(utf8Text), style, provider, out UInt256 output);
-		if (!status.IsSuccessful())
-		{
-			status.Throw<UInt256>(utf8Text);
-		}
-		return output;
+		return NumberParser.ParseToInteger<UInt256, Utf8Char>(Utf8Char.CastFromByteSpan(utf8Text), style, provider);
 	}
 	/// <inheritdoc/>
 	public static UInt256 Parse(ReadOnlySpan<byte> utf8Text, IFormatProvider? provider)
 	{
-		var status = NumberParser.TryParseToUnsigned(Utf8Char.CastFromByteSpan(utf8Text), NumberStyles.Integer, provider, out UInt256 output);
-		if (!status.IsSuccessful())
-		{
-			status.Throw<UInt256>(utf8Text);
-		}
-		return output;
+		return NumberParser.ParseToInteger<UInt256, Utf8Char>(Utf8Char.CastFromByteSpan(utf8Text), NumberStyles.Integer, provider);
 	}
 
 	/// <inheritdoc/>
@@ -340,7 +308,7 @@ public partial struct UInt256 :
 			return false;
 		}
 
-		return NumberParser.TryParseToUnsigned(Utf16Char.CastFromCharSpan(s), style, provider, out result).IsSuccessful();
+		return NumberParser.TryParseToInteger(Utf16Char.CastFromCharSpan(s), style, provider, false, out result, out _);
 	}
 
 	/// <inheritdoc/>
@@ -352,7 +320,7 @@ public partial struct UInt256 :
 			return false;
 		}
 
-		return NumberParser.TryParseToUnsigned(Utf16Char.CastFromCharSpan(s), style, provider, out result).IsSuccessful();
+		return NumberParser.TryParseToInteger(Utf16Char.CastFromCharSpan(s), style, provider, false, out result, out _);
 	}
 
 	/// <inheritdoc/>
@@ -364,7 +332,7 @@ public partial struct UInt256 :
 			return false;
 		}
 
-		return NumberParser.TryParseToUnsigned(Utf16Char.CastFromCharSpan(s), NumberStyles.Integer, provider, out result).IsSuccessful();
+		return NumberParser.TryParseToInteger(Utf16Char.CastFromCharSpan(s), NumberStyles.Integer, provider, false, out result, out _);
 	}
 
 	/// <inheritdoc/>
@@ -376,7 +344,7 @@ public partial struct UInt256 :
 			return false;
 		}
 
-		return NumberParser.TryParseToUnsigned(Utf16Char.CastFromCharSpan(s), NumberStyles.Integer, provider, out result).IsSuccessful();
+		return NumberParser.TryParseToInteger(Utf16Char.CastFromCharSpan(s), NumberStyles.Integer, provider, false, out result, out _);
 	}
 
 	/// <inheritdoc/>
@@ -388,7 +356,7 @@ public partial struct UInt256 :
 			return false;
 		}
 
-		return NumberParser.TryParseToUnsigned(Utf8Char.CastFromByteSpan(utf8Text), style, provider, out result).IsSuccessful();
+		return NumberParser.TryParseToInteger(Utf8Char.CastFromByteSpan(utf8Text), style, provider, false, out result, out _);
 	}
 
 	/// <inheritdoc/>
@@ -400,8 +368,49 @@ public partial struct UInt256 :
 			return false;
 		}
 
-		return NumberParser.TryParseToUnsigned(Utf8Char.CastFromByteSpan(utf8Text), NumberStyles.Integer, provider, out result).IsSuccessful();
+		return NumberParser.TryParseToInteger(Utf8Char.CastFromByteSpan(utf8Text), NumberStyles.Integer, provider, false, out result, out _);
 	}
+
+#if NET11_0_OR_GREATER
+	/// <inheritdoc/>
+	public static bool TryParsePartial([NotNullWhen(true)] string? s, NumberStyles style, IFormatProvider? provider, out UInt256 result, out int charsConsumed)
+	{
+		if (string.IsNullOrWhiteSpace(s))
+		{
+			charsConsumed = 0;
+			result = default;
+			return false;
+		}
+		
+		return NumberParser.TryParseToInteger(Utf16Char.CastFromCharSpan(s), style, provider, true, out result, out charsConsumed);
+	}
+
+	/// <inheritdoc/>
+	public static bool TryParsePartial(ReadOnlySpan<char> s, NumberStyles style, IFormatProvider? provider, out UInt256 result, out int charsConsumed)
+	{
+		if (s.Length == 0 || s.IsWhiteSpace())
+		{
+			charsConsumed = 0;
+			result = default;
+			return false;
+		}
+		
+		return NumberParser.TryParseToInteger(Utf16Char.CastFromCharSpan(s), style, provider, true, out result, out charsConsumed);
+	}
+
+	/// <inheritdoc/>
+	public static bool TryParsePartial(ReadOnlySpan<byte> utf8Text, NumberStyles style, IFormatProvider? provider, out UInt256 result, out int bytesConsumed)
+	{
+		if (utf8Text.Length == 0 || !utf8Text.ContainsAnyExcept((byte)' '))
+		{
+			bytesConsumed = 0;
+			result = default;
+			return false;
+		}
+		
+		return NumberParser.TryParseToInteger(Utf8Char.CastFromByteSpan(utf8Text), style, provider, true, out result, out bytesConsumed);
+	}
+#endif
 
 	static bool IBinaryInteger<UInt256>.TryReadBigEndian(ReadOnlySpan<byte> source, bool isUnsigned, out UInt256 value)
 	{
@@ -589,4 +598,45 @@ public partial struct UInt256 :
 	static int IFormattableInteger<UInt256>.Log2Int32(in UInt256 value) => BitHelper.Log2(in value);
 	static int IFormattableInteger<UInt256>.LeadingZeroCountInt32(in UInt256 value) => BitHelper.LeadingZeroCount(in value);
 	static void IFormattableUnsignedInteger<UInt256>.ToDecChars<TChar>(in UInt256 number, Span<TChar> destination, int digits) => NumberFormatter.UInt256ToDecChars(number, destination, digits);
+
+	static UInt256 IFormattableUnsignedInteger<UInt256>.MultiplyAddByUInt64(in UInt256 left, ulong right, ulong addend)
+	{
+		ulong upper = Math.BigMul(left._p0, right, out ulong part0);
+		part0 += addend;
+		upper += (part0 < addend) ? 1UL : 0UL;
+
+		ulong carry = Math.BigMul(left._p1, right, out ulong part1);
+		part1 += upper;
+		carry += (part1 < upper) ? 1UL : 0UL;
+
+		upper = Math.BigMul(left._p2, right, out ulong part2);
+		part2 += carry;
+		upper += (part2 < carry) ? 1UL : 0UL;
+
+		ulong part3 = left._p3 * right;
+		part3 += upper;
+
+		return new UInt256(part3, part2, part1, part0);
+	}
+	static bool IFormattableUnsignedInteger<UInt256>.TryCheckedMultiplyAdd(UInt256 left, ulong right, ulong addend, out UInt256 result)
+	{
+		ulong upper = Math.BigMul(left._p0, right, out ulong part0);
+		part0 += addend;
+		upper += (part0 < addend) ? 1UL : 0UL;
+
+		ulong carry = Math.BigMul(left._p1, right, out ulong part1);
+		part1 += upper;
+		carry += (part1 < upper) ? 1UL : 0UL;
+
+		upper = Math.BigMul(left._p2, right, out ulong part2);
+		part2 += carry;
+		upper += (part2 < carry) ? 1UL : 0UL;
+
+		carry = Math.BigMul(left._p3, right, out ulong part3);
+		part3 += upper;
+		carry += (part3 < upper) ? 1UL : 0UL;
+
+		result = new UInt256(part3, part2, part1, part0);
+		return carry == 0;
+	}
 }

@@ -1,5 +1,7 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System.Buffers.Binary;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using System.Runtime.Intrinsics.Arm;
 
 namespace MissingValues.Internals
 {
@@ -19,6 +21,37 @@ namespace MissingValues.Internals
 			{
 				Span<TChar> span = builder.AppendSpan(TChar.GetLength(source));
 				TChar.Copy(source, span);
+			}
+		}
+
+		extension(uint)
+		{
+			internal static uint ReverseBits(uint value)
+			{
+				if (ArmBase.IsSupported)
+				{
+					return ArmBase.ReverseElementBits(value);
+				}
+				
+				value = ((value & 0xF0F0F0F0) >>> 4) | ((value & 0x0F0F0F0F) << 4);
+				value = ((value & 0xCCCCCCCC) >>> 2) | ((value & 0x33333333) << 2);
+				value = ((value & 0xAAAAAAAA) >>> 1) | ((value & 0x55555555) << 1);
+				return BinaryPrimitives.ReverseEndianness(value);
+			}
+		}
+		extension(ulong)
+		{
+			internal static ulong ReverseBits(ulong value)
+			{
+				if (ArmBase.IsSupported)
+				{
+					return ArmBase.Arm64.ReverseElementBits(value);
+				}
+				
+				value = ((value & 0xF0F0F0F0F0F0F0F0) >>> 4) | ((value & 0x0F0F0F0F0F0F0F0F) << 4);
+				value = ((value & 0xCCCCCCCCCCCCCCCC) >>> 2) | ((value & 0x3333333333333333) << 2);
+				value = ((value & 0xAAAAAAAAAAAAAAAA) >>> 1) | ((value & 0x5555555555555555) << 1);
+				return BinaryPrimitives.ReverseEndianness(value);
 			}
 		}
 		extension(UInt128 uInt128)
@@ -42,31 +75,6 @@ namespace MissingValues.Internals
 				int num2 = (num1 * 1233) >> 12;
 				return (x < Unsafe.Add(ref Unsafe.As<ulong, UInt512>(ref MemoryMarshal.GetReference(Tables.Pow10Table)), num2) ? num2 - 1 : num2) + 1;
 			}
-			
-			#if !NET10_0_OR_GREATER
-			internal static UInt128 BigMul(UInt128 a, UInt128 b, out UInt128 lower)
-			{
-				// Adaptation of algorithm for multiplication
-				// of 32-bit unsigned integers described
-				// in Hacker's Delight by Henry S. Warren, Jr. (ISBN 0-201-91465-4), Chapter 8
-				// Basically, it's an optimized version of FOIL method applied to
-				// low and high dwords of each operand
-
-				ulong al = a.Lower;
-				ulong ah = a.Upper;
-
-				ulong bl = b.Lower;
-				ulong bh = b.Upper;
-
-				UInt128 mull = Calculator.BigMul(al, bl);
-				UInt128 t = Calculator.BigMul(ah, bl) + mull.Upper;
-				UInt128 tl = Calculator.BigMul(al, bh) + t.Lower;
-
-				lower = new UInt128(tl.Lower, mull.Lower);
-
-				return Calculator.BigMul(ah, bh) + t.Upper + tl.Upper;
-			}
-			#endif
 		}
 		extension(Int128 int128)
 		{

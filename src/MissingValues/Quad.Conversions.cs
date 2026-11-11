@@ -1,9 +1,11 @@
 using System.Buffers;
 using System.Buffers.Binary;
 using System.Diagnostics;
+using System.Globalization;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
+using MissingValues.Info;
 using MissingValues.Internals;
 using MissingValues.Primitives;
 
@@ -81,6 +83,11 @@ public partial struct Quad
 			double actual => (Quad)actual,
 			NFloat actual => (Quad)actual,
 			Quad actual => actual,
+#if NET11_0_OR_GREATER
+			Decimal32 actual => (Quad)actual,
+			Decimal64 actual => (Quad)actual,
+			Decimal128 actual => (Quad)actual,
+#endif
 			decimal actual => (Quad)actual,
 			byte actual => (Quad)actual,
 			ushort actual => (Quad)actual,
@@ -119,6 +126,11 @@ public partial struct Quad
 				NFloat => (TOther)(object)(NFloat)value,
 				Quad => (TOther)(object)value,
 				Octo => (TOther)(object)(Octo)value,
+#if NET11_0_OR_GREATER
+				Decimal32 => (TOther)(object)(Decimal32)value,
+				Decimal64 => (TOther)(object)(Decimal64)value,
+				Decimal128 => (TOther)(object)(Decimal128)value,
+#endif
 				decimal => (TOther)(object)(decimal)value,
 				byte => (TOther)(object)(byte)value,
 				ushort => (TOther)(object)(ushort)value,
@@ -161,6 +173,11 @@ public partial struct Quad
 			NFloat => (TOther)(object)(NFloat)value,
 			Quad => (TOther)(object)value,
 			Octo => (TOther)(object)(Octo)value,
+#if NET11_0_OR_GREATER
+			Decimal32 => (TOther)(object)(Decimal32)value,
+			Decimal64 => (TOther)(object)(Decimal64)value,
+			Decimal128 => (TOther)(object)(Decimal128)value,
+#endif
 			decimal => (TOther)(object)(decimal)value,
 			byte => (TOther)(object)((value >= byte.MaxValue) ? byte.MaxValue : (value <= Quad.Zero) ? byte.MinValue : (byte)value),
 			ushort => (TOther)(object)((value >= ushort.MaxValue) ? ushort.MaxValue : (value <= Quad.Zero) ? ushort.MinValue : (ushort)value),
@@ -1276,36 +1293,41 @@ public partial struct Quad
 			int bytesNeeded = 16 + byteShift + (bitShift > 0 ? 1 : 0);
 			
 			byte[]? array = null;
-			Span<byte> buffer = bytesNeeded >= Calculator.StackAllocThreshold
-				? (array = ArrayPool<byte>.Shared.Rent(bytesNeeded)).AsSpan(0, bytesNeeded)
-				: stackalloc byte[bytesNeeded];
-			buffer.Clear();
-
-			if (bitShift == 0)
+			try
 			{
-				BinaryPrimitives.WriteUInt128LittleEndian(buffer[byteShift..], man);
-			}
-			else
-			{
-				ulong low = (ulong)man;
-				ulong high = (ulong)(man >> 64);
+				Span<byte> buffer = bytesNeeded >= Calculator.StackAllocThreshold
+					? (array = ArrayPool<byte>.Shared.Rent(bytesNeeded)).AsSpan(0, bytesNeeded)
+					: stackalloc byte[bytesNeeded];
+				buffer.Clear();
 
-				ulong shiftedLow = low << bitShift;
-				ulong shiftedHigh = (high << bitShift) | (low >> (64 - bitShift));
-				ulong carry = high >> (64 - bitShift);
-
-				BinaryPrimitives.WriteUInt128LittleEndian(buffer[byteShift..], new UInt128(shiftedHigh, shiftedLow));
-				if (carry > 0)
+				if (bitShift == 0)
 				{
-					buffer[byteShift + 16] = (byte)carry;
+					BinaryPrimitives.WriteUInt128LittleEndian(buffer[byteShift..], man);
 				}
+				else
+				{
+					ulong low = (ulong)man;
+					ulong high = (ulong)(man >> 64);
+
+					ulong shiftedLow = low << bitShift;
+					ulong shiftedHigh = (high << bitShift) | (low >> (64 - bitShift));
+					ulong carry = high >> (64 - bitShift);
+
+					BinaryPrimitives.WriteUInt128LittleEndian(buffer[byteShift..], new UInt128(shiftedHigh, shiftedLow));
+					if (carry > 0)
+					{
+						buffer[byteShift + 16] = (byte)carry;
+					}
+				}
+				
+				result = new BigInteger(buffer, isUnsigned: true, isBigEndian: false);
 			}
-			
-			result = new BigInteger(buffer, isUnsigned: true, isBigEndian: false);
-			
-			if (array is not null)
+			finally
 			{
-				ArrayPool<byte>.Shared.Return(array);
+				if (array is not null)
+				{
+					ArrayPool<byte>.Shared.Return(array);
+				}
 			}
 		}
 		else
@@ -1330,6 +1352,106 @@ public partial struct Quad
 	{
 		return (decimal)(double)value;
 	}
+	
+#if NET11_0_OR_GREATER
+	/// <summary>
+	/// Explicitly converts a <see cref="Quad" /> value to a <see cref="Decimal128"/>.
+	/// </summary>
+	/// <param name="value">The value to convert.</param>
+	public static explicit operator Decimal128(Quad value)
+	{
+		if (IsNaN(value))
+		{
+			return Decimal128.NaN;
+		}
+		if (IsInfinity(value))
+		{
+			return IsNegative(value) ? Decimal128.NegativeInfinity : Decimal128.PositiveInfinity;
+		}
+		if (value == Zero)
+		{
+			return IsNegative(value) ? Decimal128.NegativeZero : Decimal128.Zero;
+		}
+
+		byte[] bufferArray = ArrayPool<byte>.Shared.Rent(NumberParser.QuadBufferLength);
+		try
+		{
+			value.TryFormat(bufferArray.AsSpan(), out int written, "G", CultureInfo.CurrentCulture);
+			var buffer = bufferArray.AsSpan(0, written);
+			
+			return Decimal128.Parse(buffer);
+		}
+		finally
+		{
+			ArrayPool<byte>.Shared.Return(bufferArray);
+		}
+	}
+	/// <summary>
+	/// Explicitly converts a <see cref="Quad" /> value to a <see cref="Decimal64"/>.
+	/// </summary>
+	/// <param name="value">The value to convert.</param>
+	public static explicit operator Decimal64(Quad value)
+	{
+		if (IsNaN(value))
+		{
+			return Decimal64.NaN;
+		}
+		if (IsInfinity(value))
+		{
+			return IsNegative(value) ? Decimal64.NegativeInfinity : Decimal64.PositiveInfinity;
+		}
+		if (value == Zero)
+		{
+			return IsNegative(value) ? Decimal64.NegativeZero : Decimal64.Zero;
+		}
+
+		byte[] bufferArray = ArrayPool<byte>.Shared.Rent(NumberParser.QuadBufferLength);
+		try
+		{
+			value.TryFormat(bufferArray.AsSpan(), out int written, "G", CultureInfo.CurrentCulture);
+			var buffer = bufferArray.AsSpan(0, written);
+			
+			return Decimal64.Parse(buffer);
+		}
+		finally
+		{
+			ArrayPool<byte>.Shared.Return(bufferArray);
+		}
+	}
+	/// <summary>
+	/// Explicitly converts a <see cref="Quad" /> value to a <see cref="Decimal32"/>.
+	/// </summary>
+	/// <param name="value">The value to convert.</param>
+	public static explicit operator Decimal32(Quad value)
+	{
+		if (IsNaN(value))
+		{
+			return Decimal32.NaN;
+		}
+		if (IsInfinity(value))
+		{
+			return IsNegative(value) ? Decimal32.NegativeInfinity : Decimal32.PositiveInfinity;
+		}
+		if (value == Zero)
+		{
+			return IsNegative(value) ? Decimal32.NegativeZero : Decimal32.Zero;
+		}
+
+		byte[] bufferArray = ArrayPool<byte>.Shared.Rent(NumberParser.QuadBufferLength);
+		try
+		{
+			value.TryFormat(bufferArray.AsSpan(), out int written, "G", CultureInfo.CurrentCulture);
+			var buffer = bufferArray.AsSpan(0, written);
+			
+			return Decimal32.Parse(buffer);
+		}
+		finally
+		{
+			ArrayPool<byte>.Shared.Return(bufferArray);
+		}
+	}
+#endif
+	
 	/// <summary>
 	/// Implicitly converts a <see cref="Quad" /> value to a <see cref="Octo"/>.
 	/// </summary>
@@ -1670,29 +1792,34 @@ public partial struct Quad
 
 		int byteCount = magnitude.GetByteCount();
 		byte[]? array = null;
-		Span<byte> bits = byteCount >= Calculator.StackAllocThreshold 
-			? (array = ArrayPool<byte>.Shared.Rent(byteCount)).AsSpan(0, byteCount) 
-			: stackalloc byte[byteCount];
-		
-		bits.Clear();
-
-		magnitude.TryWriteBytes(bits, out int bytesWritten);
-		int ulongCount = (bytesWritten + 7) / 8;
-
-		UInt128 h = BitHelper.ReadUInt64Chunk(bits, ulongCount - 1);
-		UInt128 m = BitHelper.ReadUInt64Chunk(bits, ulongCount - 2);
-		UInt128 l = BitHelper.ReadUInt64Chunk(bits, ulongCount - 3);
-
-		int z = BitOperations.LeadingZeroCount((ulong)h);
-		int exp = (ulongCount - 2) * 64 - z;
-		UInt128 man = (h << (64 + z)) | (m << z) | (l >> (64 - z));
-	    
-		if (array is not null)
+		try
 		{
-			ArrayPool<byte>.Shared.Return(array);
-		}
+			Span<byte> bits = byteCount >= Calculator.StackAllocThreshold 
+				? (array = ArrayPool<byte>.Shared.Rent(byteCount)).AsSpan(0, byteCount) 
+				: stackalloc byte[byteCount];
+			
+			bits.Clear();
 
-		return BitHelper.GetQuadFromParts(sign, exp, man);
+			magnitude.TryWriteBytes(bits, out int bytesWritten);
+			int ulongCount = (bytesWritten + 7) / 8;
+
+			UInt128 h = BitHelper.ReadUInt64Chunk(bits, ulongCount - 1);
+			UInt128 m = BitHelper.ReadUInt64Chunk(bits, ulongCount - 2);
+			UInt128 l = BitHelper.ReadUInt64Chunk(bits, ulongCount - 3);
+
+			int z = BitOperations.LeadingZeroCount((ulong)h);
+			int exp = (ulongCount - 2) * 64 - z;
+			UInt128 man = (h << (64 + z)) | (m << z) | (l >> (64 - z));
+			
+			return BitHelper.GetQuadFromParts(sign, exp, man);
+		}
+		finally
+		{
+			if (array is not null)
+			{
+				ArrayPool<byte>.Shared.Return(array);
+			}
+		}
 	}
 
 	/// <summary>
@@ -1703,6 +1830,105 @@ public partial struct Quad
 	{
 		return (Quad)(double)value;
 	}
+#if NET11_0_OR_GREATER
+	/// <summary>
+	/// Explicitly converts a <see cref="Decimal128" /> value to a <see cref="Quad"/>.
+	/// </summary>
+	/// <param name="value">The value to convert.</param>
+	public static explicit operator Quad(Decimal128 value)
+	{
+		bool isNegative = Decimal128.IsNegative(value);
+		if (Decimal128.IsInfinity(value))
+		{
+			return isNegative ? NegativeInfinity : PositiveInfinity;
+		}
+		if (Decimal128.IsNaN(value))
+		{
+			return NaN;
+		}
+		
+		BitHelper.GetExponentAndSignificand(value, out int exponent, out UInt512 significand);
+
+		if (significand == UInt512.Zero)
+		{
+			return isNegative ? NegativeZero : Zero;
+		}
+		
+		NumberInfo number = new(stackalloc byte[155]);
+		
+		number.Scale = number.DigitsCount = UInt512.CountDigits(in significand);
+		number.Scale += exponent;
+		number.IsNegative = isNegative;
+		NumberFormatter.UInt512ToDecChars(significand, MemoryMarshal.Cast<byte, Utf8Char>(number.Digits), number.DigitsCount);
+		
+		return NumberInfo.ConvertToFloat<Quad, UInt128>(ref number);
+	}
+	/// <summary>
+	/// Explicitly converts a <see cref="Decimal64" /> value to a <see cref="Quad"/>.
+	/// </summary>
+	/// <param name="value">The value to convert.</param>
+	public static explicit operator Quad(Decimal64 value)
+	{
+		bool isNegative = Decimal64.IsNegative(value);
+		if (Decimal64.IsInfinity(value))
+		{
+			return isNegative ? NegativeInfinity : PositiveInfinity;
+		}
+		if (Decimal64.IsNaN(value))
+		{
+			return NaN;
+		}
+		
+		BitHelper.GetExponentAndSignificand(value, out int exponent, out UInt512 significand);
+
+		if (significand == UInt512.Zero)
+		{
+			return isNegative ? NegativeZero : Zero;
+		}
+		
+		NumberInfo number = new(stackalloc byte[155]);
+		
+		number.Scale = number.DigitsCount = UInt512.CountDigits(in significand);
+		number.Scale += exponent;
+		number.IsNegative = isNegative;
+		NumberFormatter.UInt512ToDecChars(significand, MemoryMarshal.Cast<byte, Utf8Char>(number.Digits), number.DigitsCount);
+		
+		return NumberInfo.ConvertToFloat<Quad, UInt128>(ref number);
+	}
+	/// <summary>
+	/// Explicitly converts a <see cref="Decimal32" /> value to a <see cref="Quad"/>.
+	/// </summary>
+	/// <param name="value">The value to convert.</param>
+	public static explicit operator Quad(Decimal32 value)
+	{
+		bool isNegative = Decimal32.IsNegative(value);
+		if (Decimal32.IsInfinity(value))
+		{
+			return isNegative ? NegativeInfinity : PositiveInfinity;
+		}
+		if (Decimal32.IsNaN(value))
+		{
+			return NaN;
+		}
+		
+		BitHelper.GetExponentAndSignificand(value, out int exponent, out UInt512 significand);
+
+		if (significand == UInt512.Zero)
+		{
+			return isNegative ? NegativeZero : Zero;
+		}
+		
+		NumberInfo number = new(stackalloc byte[155]);
+		
+		number.Scale = number.DigitsCount = UInt512.CountDigits(in significand);
+		number.Scale += exponent;
+		number.IsNegative = isNegative;
+		NumberFormatter.UInt512ToDecChars(significand, MemoryMarshal.Cast<byte, Utf8Char>(number.Digits), number.DigitsCount);
+		
+		return NumberInfo.ConvertToFloat<Quad, UInt128>(ref number);
+	}
+#endif
+	
 	/// <summary>
 	/// Implicitly converts a <see cref="double" /> value to a <see cref="Quad"/>.
 	/// </summary>

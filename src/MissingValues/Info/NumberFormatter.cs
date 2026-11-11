@@ -32,21 +32,27 @@ namespace MissingValues.Info
 				int minimumLength = 512;
 				char[] bufferArray = ArrayPool<char>.Shared.Rent(minimumLength);
 				buffer = bufferArray;
-				while (!TryFormatNumber(
-					in value,
-				  Utf16Char.CastFromCharSpan(buffer),
-					out charsWritten,
-					format,
-					provider))
+				try
+				{
+					while (!TryFormatNumber(
+						in value,
+					  Utf16Char.CastFromCharSpan(buffer),
+						out charsWritten,
+						format,
+						provider))
+					{
+						ArrayPool<char>.Shared.Return(bufferArray);
+						minimumLength *= 2;
+						bufferArray = ArrayPool<char>.Shared.Rent(minimumLength);
+						buffer = bufferArray;
+					}
+					string output = new string(buffer[..charsWritten]);
+					return output;
+				}
+				finally
 				{
 					ArrayPool<char>.Shared.Return(bufferArray);
-					minimumLength *= 2;
-					bufferArray = ArrayPool<char>.Shared.Rent(minimumLength);
-					buffer = bufferArray;
 				}
-				string output = new string(buffer[..charsWritten]);
-				ArrayPool<char>.Shared.Return(bufferArray);
-				return output;
 			}
 			return new string(buffer[..charsWritten]);
 		}
@@ -63,139 +69,137 @@ namespace MissingValues.Info
 			byte[]? digitsArray = null;
 			ValueListBuilder<TChar> builder = new ValueListBuilder<TChar>(stackalloc TChar[256]);
 
-			if (TNumber.IsBinaryInteger())
+			try
 			{
-				if (value is UInt256 uInt256)
+				if (TNumber.IsBinaryInteger())
 				{
-					number = new(stackalloc byte[UInt256Precision]);
-					UIntToNumber<UInt256>(in uInt256, ref number);
-				}
-				else if (value is Int256 int256)
-				{
-					number = new(stackalloc byte[Int256Precision]);
-					IntToNumber<Int256, UInt256>(ref int256, ref number);
-				}
-				else if (value is UInt512 uInt512)
-				{
-					number = new(stackalloc byte[UInt512Precision]);
-					UIntToNumber<UInt512>(in uInt512, ref number);
-				}
-				else if (value is Int512 int512)
-				{
-					number = new(stackalloc byte[Int512Precision]);
-					IntToNumber<Int512, UInt512>(ref int512, ref number);
-				}
-				else
-				{
-					Thrower.NotSupported<TNumber>();
-					number = default;
-				}
-			}
-			else
-			{
-				bool exceptional;
-
-				if (value is Quad quad)
-				{
-					digitsArray = ArrayPool<byte>.Shared.Rent(NumberParser.QuadBufferLength);
-
-					number = new(digitsArray.AsSpan(0, NumberParser.QuadBufferLength), true);
-					Ryu.Format<Quad, UInt128>(in quad, ref number, out exceptional);
-				}
-				else if (value is Octo octo)
-				{
-					digitsArray = ArrayPool<byte>.Shared.Rent(NumberParser.OctoBufferLength);
-
-					number = new(digitsArray.AsSpan(0, NumberParser.OctoBufferLength), true);
-					Ryu.Format<Octo, UInt256>(in octo, ref number, out exceptional);
-				}
-				else
-				{
-					Thrower.NotSupported<TNumber>();
-					number = default;
-					exceptional = false;
-				}
-
-				if (exceptional)
-				{
-					scoped Span<TChar> sign;
-					if (number.DigitsCount > 1) // NaN
+					if (value is UInt256 uInt256)
 					{
-						sign = stackalloc TChar[TChar.GetLength(provider.NaNSymbol)];
-						TChar.Copy(provider.NaNSymbol, sign);
+						number = new(stackalloc byte[UInt256Precision]);
+						UIntToNumber<UInt256>(in uInt256, ref number);
 					}
-					else if (number.IsNegative) // Negative Infinity
+					else if (value is Int256 int256)
 					{
-						sign = stackalloc TChar[TChar.GetLength(provider.NegativeInfinitySymbol)];
-						TChar.Copy(provider.NegativeInfinitySymbol, sign);
+						number = new(stackalloc byte[Int256Precision]);
+						IntToNumber<Int256, UInt256>(ref int256, ref number);
 					}
-					else // Positive Infinity
+					else if (value is UInt512 uInt512)
 					{
-						sign = stackalloc TChar[TChar.GetLength(provider.PositiveInfinitySymbol)];
-						TChar.Copy(provider.PositiveInfinitySymbol, sign);
+						number = new(stackalloc byte[UInt512Precision]);
+						UIntToNumber<UInt512>(in uInt512, ref number);
 					}
-					bool res;
-					if (res = sign.TryCopyTo(destination))
+					else if (value is Int512 int512)
 					{
-						charsWritten = sign.Length;
+						number = new(stackalloc byte[Int512Precision]);
+						IntToNumber<Int512, UInt512>(ref int512, ref number);
 					}
 					else
 					{
-						charsWritten = 0;
+						Thrower.NotSupported<TNumber>();
+						number = default;
 					}
-
-					if (digitsArray is not null)
-					{
-						ArrayPool<byte>.Shared.Return(digitsArray);
-					}
-
-					return res;
 				}
+				else
+				{
+					bool exceptional;
+
+					if (value is Quad quad)
+					{
+						digitsArray = ArrayPool<byte>.Shared.Rent(NumberParser.QuadBufferLength);
+
+						number = new(digitsArray.AsSpan(0, NumberParser.QuadBufferLength), true);
+						Ryu.Format<Quad, UInt128>(in quad, ref number, out exceptional);
+					}
+					else if (value is Octo octo)
+					{
+						digitsArray = ArrayPool<byte>.Shared.Rent(NumberParser.OctoBufferLength);
+
+						number = new(digitsArray.AsSpan(0, NumberParser.OctoBufferLength), true);
+						Ryu.Format<Octo, UInt256>(in octo, ref number, out exceptional);
+					}
+					else
+					{
+						Thrower.NotSupported<TNumber>();
+						number = default;
+						exceptional = false;
+					}
+
+					if (exceptional)
+					{
+						scoped ReadOnlySpan<TChar> sign;
+						if (number.DigitsCount > 1) // NaN
+						{
+							sign = provider.NaNSymbolTChar(stackalloc TChar[16]);
+						}
+						else if (number.IsNegative) // Negative Infinity
+						{
+							sign = provider.NegativeInfinitySymbolTChar(stackalloc TChar[16]);
+						}
+						else // Positive Infinity
+						{
+							sign = provider.PositiveInfinitySymbolTChar(stackalloc TChar[16]);
+						}
+						bool res = sign.TryCopyTo(destination);
+						if (res)
+						{
+							charsWritten = sign.Length;
+						}
+						else
+						{
+							charsWritten = 0;
+						}
+
+						return res;
+					}
+				}
+
+				char fmt = GetFormat(format, out int precision);
+				bool result;
+
+				switch (fmt)
+				{
+					case 'c':
+					case 'C':
+						Format<CurrencyFormat>(ref builder, ref number, precision, false, provider);
+						result = builder.TryCopyTo(destination, out charsWritten);
+						break;
+					case 'e':
+						Debug.Assert(TNumber.IsBinaryInteger());
+						Format<EngineeringFormat>(ref builder, ref number, precision, false, provider);
+						result = builder.TryCopyTo(destination, out charsWritten);
+						break;
+					case 'E':
+						Debug.Assert(TNumber.IsBinaryInteger());
+						Format<EngineeringFormat>(ref builder, ref number, precision, true, provider);
+						result = builder.TryCopyTo(destination, out charsWritten);
+						break;
+					case 'f':
+					case 'F':
+						Format<FixedFormat>(ref builder, ref number, precision, false, provider);
+						result = builder.TryCopyTo(destination, out charsWritten);
+						break;
+					case 'n':
+					case 'N':
+						Format<NumericFormat>(ref builder, ref number, precision, false, provider);
+						result = builder.TryCopyTo(destination, out charsWritten);
+						break;
+					default:
+						Thrower.InvalidFormat(fmt);
+						charsWritten = 0;
+						result = false;
+						break;
+				}
+
+				return result;
 			}
-
-			char fmt = GetFormat(format, out int precision);
-			bool result;
-
-			switch (fmt)
+			finally
 			{
-				case 'c':
-				case 'C':
-					Format<CurrencyFormat>(ref builder, ref number, precision, false, provider);
-					result = builder.TryCopyTo(destination, out charsWritten);
-					break;
-				case 'e':
-					Debug.Assert(TNumber.IsBinaryInteger());
-					Format<EngineeringFormat>(ref builder, ref number, precision, false, provider);
-					result = builder.TryCopyTo(destination, out charsWritten);
-					break;
-				case 'E':
-					Debug.Assert(TNumber.IsBinaryInteger());
-					Format<EngineeringFormat>(ref builder, ref number, precision, true, provider);
-					result = builder.TryCopyTo(destination, out charsWritten);
-					break;
-				case 'f':
-				case 'F':
-					Format<FixedFormat>(ref builder, ref number, precision, false, provider);
-					result = builder.TryCopyTo(destination, out charsWritten);
-					break;
-				case 'n':
-				case 'N':
-					Format<NumericFormat>(ref builder, ref number, precision, false, provider);
-					result = builder.TryCopyTo(destination, out charsWritten);
-					break;
-				default:
-					Thrower.InvalidFormat(fmt);
-					charsWritten = 0;
-					result = false;
-					break;
+				if (digitsArray is not null)
+				{
+					ArrayPool<byte>.Shared.Return(digitsArray);
+				}
+				builder.Dispose();
 			}
-
-			if (digitsArray is not null)
-			{
-				ArrayPool<byte>.Shared.Return(digitsArray);
-			}
-			builder.Dispose();
-			return result;
 			static void Format<TFormat>(ref ValueListBuilder<TChar> vlb, ref NumberInfo number, int nMaxDigits, bool isUpper, NumberFormatInfo info)
 				where TFormat : struct, INumberFormat
 			{
@@ -216,18 +220,7 @@ namespace MissingValues.Info
 		{
 			int charsWritten = number.DigitsCount = TUnsigned.CountDigits(in value);
 
-			if (typeof(TUnsigned) == typeof(UInt256))
-			{
-				UInt256ToDecChars((UInt256)(object)value, MemoryMarshal.Cast<byte, Utf8Char>(number.Digits), charsWritten);
-			}
-			else if (typeof(TUnsigned) == typeof(UInt512))
-			{
-				UInt512ToDecChars((UInt512)(object)value, MemoryMarshal.Cast<byte, Utf8Char>(number.Digits), charsWritten);
-			}
-			else
-			{
-				Thrower.NotSupported();
-			}
+			TUnsigned.ToDecChars(in value, MemoryMarshal.Cast<byte, Utf8Char>(number.Digits), charsWritten);
 
 			number.Scale = charsWritten;
 			number.Digits[charsWritten] = (byte)'\0';
@@ -268,7 +261,8 @@ namespace MissingValues.Info
 			where TChar : unmanaged, IUtfCharacter<TChar>
 		{
 			int digPos = number.Scale;
-			ref byte dig = ref number.GetDigitsReference();
+			int index = 0;
+			Span<byte> digits = number.Digits;
 
 			if (digPos > 0)
 			{
@@ -308,13 +302,12 @@ namespace MissingValues.Info
 					int digLength = number.DigitsCount;
 					int digStart = (digPos < digLength) ? digPos : digLength;
 
-					ref TChar spanPtr = ref MemoryMarshal.GetReference(vlb.AppendSpan(bufferSize));
-					ref TChar p = ref Unsafe.Add(ref spanPtr, bufferSize - 1);
+					Span<TChar> span = vlb.AppendSpan(bufferSize);
+					int pIndex = (bufferSize - 1);
 
 					for (int i = digPos - 1; i >= 0; i--)
 					{
-						p = ((i < digStart) ? (TChar)Unsafe.Add(ref dig, i) : (TChar)'0');
-						p = ref Unsafe.Subtract(ref p, 1);
+						span[pIndex--] = i < digStart ? (TChar)digits[i] : (TChar)'0';
 
 						if (groupSize > 0)
 						{
@@ -323,8 +316,7 @@ namespace MissingValues.Info
 							{
 								for (int j = sGroup.Length - 1; j >= 0; j--)
 								{
-									p = sGroup[j];
-									p = ref Unsafe.Subtract(ref p, 1);
+									span[pIndex--] = sGroup[j];
 								}
 
 								if (groupSizeIndex < groupDigits.Length - 1)
@@ -337,14 +329,14 @@ namespace MissingValues.Info
 						}
 					}
 
-					dig = ref Unsafe.Add(ref dig, digStart);
+					index += digStart;
 				}
 				else
 				{
 					do
 					{
-						vlb.Append((TChar)(dig != 0 ? (char)dig : '0'));
-						dig = ref Unsafe.Add(ref dig, 1);
+						vlb.Append((TChar)(digits[index] != 0 ? (char)digits[index] : '0'));
+						index++;
 					} while (--digPos > 0);
 				}
 			}
@@ -369,8 +361,8 @@ namespace MissingValues.Info
 
 				while (nMaxDigits > 0)
 				{
-					vlb.Append((TChar)((dig != 0) ? (char)(dig) : '0'));
-					dig = ref Unsafe.Add(ref dig, 1);
+					vlb.Append((TChar)(index < digits.Length && digits[index] != 0 ? (char)digits[index] : '0'));
+					index++;
 					nMaxDigits--;
 				}
 			}
@@ -383,8 +375,7 @@ namespace MissingValues.Info
 
 			if (value < 0)
 			{
-				Span<TChar> negativeSign = stackalloc TChar[TChar.GetLength(info.NegativeSign)];
-				TChar.Copy(info.NegativeSign, negativeSign);
+				ReadOnlySpan<TChar> negativeSign = info.NegativeSignTChar(stackalloc TChar[16]);
 				vlb.Append(negativeSign);
 				value = -value;
 			}
@@ -392,8 +383,7 @@ namespace MissingValues.Info
 			{
 				if (positiveSign)
 				{
-					Span<TChar> posSign = stackalloc TChar[TChar.GetLength(info.PositiveSign)];
-					TChar.Copy(info.PositiveSign, posSign);
+					ReadOnlySpan<TChar> posSign = info.PositiveSignTChar(stackalloc TChar[16]);
 					vlb.Append(posSign);
 				}
 			}
@@ -406,35 +396,35 @@ namespace MissingValues.Info
 
 		private static void RoundNumber(ref NumberInfo number, int pos)
 		{
-			ref byte dig = ref number.GetDigitsReference();
+			Span<byte> digits = number.Digits;
 
 			int i = 0;
-			while (i < pos && Unsafe.Add(ref dig, i) != '\0')
+			while (i < pos && digits[i] != '\0')
 			{
 				i++;
 			}
 
-			if ((i == pos) && ShouldRoundUp(ref dig, i))
+			if ((i == pos) && ShouldRoundUp(digits[i]))
 			{
-				while (i > 0 && Unsafe.Add(ref dig, i - 1) == '9')
+				while (i > 0 && digits[i - 1] ==  '9')
 				{
 					i--;
 				}
 
 				if (i > 0)
 				{
-					Unsafe.Add(ref dig, i - 1) = (byte)(Unsafe.Add(ref dig, i - 1) + 1);
+					digits[i - 1]++;
 				}
 				else
 				{
 					number.Scale++;
-					dig = (byte)('1');
+					digits[0] = (byte)('1');
 					i = 1;
 				}
 			}
 			else
 			{
-				while (i > 0 && Unsafe.Add(ref dig, i - 1) == '0')
+				while (i > 0 && digits[i - 1] == '0')
 				{
 					i--;
 				}
@@ -445,13 +435,12 @@ namespace MissingValues.Info
 				number.Scale = 0; // Decimals with scale ('0.00') should be rounded.
 			}
 
-			Unsafe.Add(ref dig, i) = (byte)'\0';
+			digits[i] = (byte)'\0';
 			number.DigitsCount = i;
+			return;
 
-			static bool ShouldRoundUp(ref byte dig, int i)
+			static bool ShouldRoundUp(byte digit)
 			{
-				byte digit = Unsafe.Add(ref dig, i);
-
 				if (digit == '\0')
 				{
 					return false;

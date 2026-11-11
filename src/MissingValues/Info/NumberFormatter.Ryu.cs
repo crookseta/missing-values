@@ -298,7 +298,7 @@ internal static partial class NumberFormatter
 
 		private const int FDExceptionalExponent = 0x7FFF_FFFF;
 
-		internal static void Format<TFloat, TSignificand, TChar>(in TFloat value, scoped Span<TChar> destination, out int charsWritten, ReadOnlySpan<char> format, out bool isExceptional, NumberFormatInfo? info, int? precision = null)
+		internal static void Format<TFloat, TSignificand, TChar>(in TFloat value, scoped Span<TChar> destination, out int charsWritten, ReadOnlySpan<char> format, out bool isExceptional, NumberFormatInfo? info)
 			where TFloat : struct, IBinaryFloatingPointInfo<TFloat, TSignificand>
 			where TSignificand : unmanaged, IBinaryInteger<TSignificand>, IUnsignedNumber<TSignificand>
 			where TChar : unmanaged, IUtfCharacter<TChar>
@@ -355,8 +355,7 @@ internal static partial class NumberFormatter
 			isExceptional = false;
 
 			// Step 5: Print the decimal representation.
-			Span<TChar> negativeSign = stackalloc TChar[TChar.GetLength(info.NegativeSign)];
-			TChar.Copy(info.NegativeSign, negativeSign);
+			ReadOnlySpan<TChar> negativeSign = info.NegativeSignTChar(stackalloc TChar[16]);
 
 			int index = 0;
 			if (v.Sign)
@@ -795,14 +794,14 @@ internal static partial class NumberFormatter
 			Debug.Assert(b.Length == 4 || (b[4] == default && b[5] == default && b[6] == default && b[7] == default));
 			Debug.Assert(result.Length == 4);
 
-			UInt128 b00 = Calculator.BigMul(a[0], b[0]);           // 0
-			UInt128 b01 = Calculator.BigMul(a[0], b[1]);           // 64
-			UInt128 b02 = Calculator.BigMul(a[0], b[2]);           // 128
-			UInt128 b03 = Calculator.BigMul(a[0], b[3]);           // 196
-			UInt128 b10 = Calculator.BigMul(a[1], b[0]);           // 64
-			UInt128 b11 = Calculator.BigMul(a[1], b[1]);           // 128
-			UInt128 b12 = Calculator.BigMul(a[1], b[2]);           // 196
-			UInt128 b13 = Calculator.BigMul(a[1], b[3]);           // 256
+			UInt128 b00 = Math.BigMul(a[0], b[0]);           // 0
+			UInt128 b01 = Math.BigMul(a[0], b[1]);           // 64
+			UInt128 b02 = Math.BigMul(a[0], b[2]);           // 128
+			UInt128 b03 = Math.BigMul(a[0], b[3]);           // 196
+			UInt128 b10 = Math.BigMul(a[1], b[0]);           // 64
+			UInt128 b11 = Math.BigMul(a[1], b[1]);           // 128
+			UInt128 b12 = Math.BigMul(a[1], b[2]);           // 196
+			UInt128 b13 = Math.BigMul(a[1], b[3]);           // 256
 
 			UInt128 s0 = b00;                                           // 0
 			UInt128 s1 = b01 + b10;                                     // 64

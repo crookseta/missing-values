@@ -72,7 +72,7 @@ internal static partial class NumberFormatter
 			}
 			else
 			{
-				precision = maxSignificandPrecision;
+				precision = -1;
 			}
 		}
 
@@ -82,9 +82,9 @@ internal static partial class NumberFormatter
 
 		Span<Utf16Char> buffer = stackalloc Utf16Char[maxBufferAlloc];
 		int charsWritten;
-		// TODO: Expose Hex format for v3.0
-		if (false /*fmt.StartsWith("X", StringComparison.OrdinalIgnoreCase) 
-		    && TryFormatFloatToHex<TFloat, TSignificand, Utf16Char>(in value, buffer, out charsWritten, fmt[0], precision, info)*/)
+
+		if (fmt.StartsWith("X", StringComparison.OrdinalIgnoreCase) 
+		    && TryFormatFloatToHex<TFloat, TSignificand, Utf16Char>(in value, buffer, out charsWritten, fmt[0], precision, info))
 		{
 			return new string(Utf16Char.CastToCharSpan(buffer).Slice(0, charsWritten));
 		}
@@ -94,7 +94,7 @@ internal static partial class NumberFormatter
 			return FormatNumber(in value, format!, info);
 		}
 
-		Ryu.Format<TFloat, TSignificand, Utf16Char>(in value, buffer, out charsWritten, fmt, out bool isExceptional, info, precision);
+		Ryu.Format<TFloat, TSignificand, Utf16Char>(in value, buffer, out charsWritten, fmt, out bool isExceptional, info);
 
 		if (isExceptional || fmt.StartsWith("E", StringComparison.OrdinalIgnoreCase))
 		{
@@ -133,12 +133,11 @@ internal static partial class NumberFormatter
 			}
 			else
 			{
-				precision = maxSignificandPrecision;
+				precision = -1;
 			}
 		}
 
-		// TODO: Expose Hex format for v3.0
-		if (false /*format.Contains("X", StringComparison.OrdinalIgnoreCase)*/)
+		if (format.Contains("X", StringComparison.OrdinalIgnoreCase))
 		{
 			return TryFormatFloatToHex<TFloat, TSignificand, TChar>(in value, destination, out charsWritten, format.TrimStart()[0], precision, info);
 		}
@@ -149,7 +148,7 @@ internal static partial class NumberFormatter
 		}
 
 		Span<TChar> buffer = stackalloc TChar[maxBufferAlloc];
-		Ryu.Format<TFloat, TSignificand, TChar>(in value, buffer, out charsWritten, format, out bool isExceptional, info, precision);
+		Ryu.Format<TFloat, TSignificand, TChar>(in value, buffer, out charsWritten, format, out bool isExceptional, info);
 
 		if (isExceptional || format.Contains("E", StringComparison.OrdinalIgnoreCase))
 		{
@@ -213,12 +212,13 @@ internal static partial class NumberFormatter
 		// For normal numbers, this is already the case.
 		// For denormal numbers, we need to shift left until the leading 1 is there.
 
+		int bitLength = Unsafe.SizeOf<TSignificand>() * 8;
 		int mantissaBits = TFloat.DenormalMantissaBits;
 
 		if (fraction < (TSignificand.One << mantissaBits))
 		{
 			// Denormal: shift the leading 1 up to the implicit bit position
-			int lz = int.CreateTruncating(TSignificand.LeadingZeroCount(fraction)) - ((Unsafe.SizeOf<TSignificand>() * 8 - 1) - mantissaBits);
+			int lz = int.CreateTruncating(TSignificand.LeadingZeroCount(fraction)) - ((bitLength - 1) - mantissaBits);
 			fraction <<= lz;
 			exponent -= lz;
 		}
@@ -266,8 +266,8 @@ internal static partial class NumberFormatter
 				// (we're in the precision > 0 branch) and precision < defaultHexDigits
 				// (checked above), so bitsToKeep < mantissaBits and bitsToDiscard > 0.
 				// For all IEEE types mantissaBits <= 52, so bitsToDiscard < 64.
-				Debug.Assert(bitsToDiscard > 0 && bitsToDiscard < (Unsafe.SizeOf<TSignificand>() * 8));
-				if (bitsToDiscard > 0 && bitsToDiscard < (Unsafe.SizeOf<TSignificand>() * 8))
+				Debug.Assert(bitsToDiscard > 0 && bitsToDiscard < bitLength);
+				if (bitsToDiscard > 0 && bitsToDiscard < bitLength)
 				{
 					TSignificand roundBit = TSignificand.One << (bitsToDiscard - 1);
 					TSignificand discardedBits = significandBits & ((TSignificand.One << bitsToDiscard) - TSignificand.One);
@@ -289,16 +289,16 @@ internal static partial class NumberFormatter
 						significandBits >>= bitsToDiscard;
 					}
 
-					shifted = significandBits << ((Unsafe.SizeOf<TSignificand>() * 8) - bitsToKeep);
+					shifted = significandBits << (bitLength - bitsToKeep);
 				}
 				else
 				{
-					shifted = significandBits << ((Unsafe.SizeOf<TSignificand>() * 8) - mantissaBits);
+					shifted = significandBits << (bitLength - mantissaBits);
 				}
 			}
 			else
 			{
-				shifted = significandBits << ((Unsafe.SizeOf<TSignificand>() * 8) - mantissaBits);
+				shifted = significandBits << (bitLength - mantissaBits);
 			}
 			
 			builder.AppendUtf16(info.NumberDecimalSeparator);
@@ -308,8 +308,8 @@ internal static partial class NumberFormatter
 			for (int i = 0; i < realDigits; i++)
 			{
 				builder.Append(format == 'X' 
-					? TChar.ToCharUpper(uint.CreateTruncating(shifted >> (Unsafe.SizeOf<TSignificand>() * 8 - 4)))
-					: TChar.ToCharLower(uint.CreateTruncating(shifted >> (Unsafe.SizeOf<TSignificand>() * 8 - 4))));
+					? TChar.ToCharUpper(uint.CreateTruncating(shifted >> (bitLength - 4)))
+					: TChar.ToCharLower(uint.CreateTruncating(shifted >> (bitLength - 4))));
 				shifted <<= 4;
 			}
 			
@@ -338,12 +338,12 @@ internal static partial class NumberFormatter
 				{
 					builder.AppendUtf16(info.NumberDecimalSeparator);
 
-					TSignificand shifted = significandBits << ((Unsafe.SizeOf<TSignificand>() * 8) - mantissaBits);
+					TSignificand shifted = significandBits << (bitLength - mantissaBits);
 					for (int i = 0; i < trimmedDigits; i++)
 					{
 						builder.Append(format == 'X' 
-							? TChar.ToUpper((TChar)uint.CreateTruncating(shifted >> (Unsafe.SizeOf<TSignificand>() * 8 - 4)))
-							: TChar.ToLower((TChar)uint.CreateTruncating(shifted >> (Unsafe.SizeOf<TSignificand>() * 8 - 4))));
+							? TChar.ToCharUpper(uint.CreateTruncating(shifted >> (bitLength - 4)))
+							: TChar.ToCharLower(uint.CreateTruncating(shifted >> (bitLength - 4))));
 						shifted <<= 4;
 					}
 				}
@@ -369,7 +369,7 @@ internal static partial class NumberFormatter
 		Debug.Assert(actualExponent >= 0);
 		int digitCount = CountDigits((ulong)actualExponent);
 		Span<TChar> digits = stackalloc TChar[digitCount + 1];
-		UInt64ToDecChars((ulong)actualExponent, ref digits[digitCount], digitCount);
+		UInt64ToDecChars((ulong)actualExponent, digits, digitCount, digitCount);
 		builder.Append(digits[..digitCount]);
 
 		bool success = builder.TryCopyTo(destination, out charsWritten);
@@ -418,10 +418,8 @@ internal static partial class NumberFormatter
 			exponent = 0;
 		}
 
-		Span<TChar> numberDecimalSeparator = stackalloc TChar[TChar.GetLength(info.NumberDecimalSeparator)];
-		TChar.Copy(info.NumberDecimalSeparator, numberDecimalSeparator);
-		Span<TChar> negativeSign = stackalloc TChar[TChar.GetLength(info.NegativeSign)];
-		TChar.Copy(info.NegativeSign, negativeSign);
+		ReadOnlySpan<TChar> numberDecimalSeparator = info.NumberDecimalSeparatorTChar(stackalloc TChar[16]);
+		ReadOnlySpan<TChar> negativeSign = info.NegativeSignTChar(stackalloc TChar[16]);
 
 		bool isNegativeExponent = exponent < 0;
 		bool isNegative = buffer.IndexOf(negativeSign) == 0;

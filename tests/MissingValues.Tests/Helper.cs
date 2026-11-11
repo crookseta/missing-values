@@ -171,6 +171,21 @@ public static class Helper
     {
         return TSelf.TryParse(utf8Text, style, provider, out result);
     }
+    public static bool TryParsePartial<TSelf>(string s, NumberStyles style, IFormatProvider? provider, out TSelf result, out int charsConsumed)
+        where TSelf : INumberBase<TSelf>
+    {
+        return TSelf.TryParsePartial(s, style, provider, out result, out charsConsumed);
+    }
+    public static bool TryParsePartial<TSelf>(ReadOnlySpan<char> s, NumberStyles style, IFormatProvider? provider, out TSelf result, out int charsConsumed)
+        where TSelf : INumberBase<TSelf>
+    {
+        return TSelf.TryParsePartial(s, style, provider, out result, out charsConsumed);
+    }
+    public static bool TryParsePartial<TSelf>(ReadOnlySpan<byte> utf8Text, NumberStyles style, IFormatProvider? provider, out TSelf result, out int bytesConsumed)
+        where TSelf : INumberBase<TSelf>
+    {
+        return TSelf.TryParsePartial(utf8Text, style, provider, out result, out bytesConsumed);
+    }
     public static TSelf Clamp<TSelf>(TSelf value, TSelf min, TSelf max)
         where TSelf : INumber<TSelf>
     {
