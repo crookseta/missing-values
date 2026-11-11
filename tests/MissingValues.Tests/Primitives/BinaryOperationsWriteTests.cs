@@ -7,6 +7,55 @@ namespace MissingValues.Tests.Primitives;
 public class BinaryOperationsWriteTests
 {
     [Test]
+    [MethodDataSource<BinaryOperationsDataSources>(nameof(UInt256GetBytesTest))]
+    public async Task UInt256_GetBytes(UInt256 value, byte[] expected)
+    {
+        var actual = BinaryOperations.GetBytes(in value);
+
+        await Assert.That(actual).IsEquivalentTo(expected);
+    }
+    [Test]
+    [MethodDataSource<BinaryOperationsDataSources>(nameof(Int256GetBytesTest))]
+    public async Task Int256_GetBytes(Int256 value, byte[] expected)
+    {
+        var actual = BinaryOperations.GetBytes(in value);
+
+        await Assert.That(actual).IsEquivalentTo(expected);
+    }
+    [Test]
+    [MethodDataSource<BinaryOperationsDataSources>(nameof(UInt512GetBytesTest))]
+    public async Task UInt512_GetBytes(UInt512 value, byte[] expected)
+    {
+        var actual = BinaryOperations.GetBytes(in value);
+
+        await Assert.That(actual).IsEquivalentTo(expected);
+    }
+    [Test]
+    [MethodDataSource<BinaryOperationsDataSources>(nameof(Int512GetBytesTest))]
+    public async Task Int512_GetBytes(Int512 value, byte[] expected)
+    {
+        var actual = BinaryOperations.GetBytes(in value);
+
+        await Assert.That(actual).IsEquivalentTo(expected);
+    }
+    [Test]
+    [MethodDataSource<BinaryOperationsDataSources>(nameof(QuadGetBytesTest))]
+    public async Task Quad_GetBytes(Quad value, byte[] expected)
+    {
+        var actual = BinaryOperations.GetBytes(in value);
+
+        await Assert.That(actual).IsEquivalentTo(expected);
+    }
+    [Test]
+    [MethodDataSource<BinaryOperationsDataSources>(nameof(OctoGetBytesTest))]
+    public async Task Octo_GetBytes(Octo value, byte[] expected)
+    {
+        var actual = BinaryOperations.GetBytes(in value);
+
+        await Assert.That(actual).IsEquivalentTo(expected);
+    }
+    
+    [Test]
     [MethodDataSource<BinaryOperationsDataSources>(nameof(UInt256WriteBigEndianTest))]
     public async Task UInt256_Write_BigEndianTest(UInt256 value, byte[] expected)
     {
@@ -126,6 +175,91 @@ public class BinaryOperationsWriteTests
         
         BinaryOperations.WriteOctoLittleEndian(actual, in value);
         await Assert.That(actual).IsEquivalentTo(expected);
+    }
+    
+    [Test]
+    [MethodDataSource<BinaryOperationsDataSources>(nameof(UInt256TryWriteBytesTest))]
+    public async Task UInt256_TryWriteBytesTest(UInt256 value, byte[] expected, bool successful)
+    {
+        var actual = new byte[expected.Length];
+        
+        bool result = BinaryOperations.TryWriteBytes(actual, in value);
+        await Assert.That(result).IsEqualTo(successful);
+        
+        if (result)
+        {
+            await Assert.That(actual).IsEquivalentTo(expected);
+        }
+    }
+    [Test]
+    [MethodDataSource<BinaryOperationsDataSources>(nameof(Int256TryWriteBytesTest))]
+    public async Task Int256_TryWriteBytesTest(Int256 value, byte[] expected, bool successful)
+    {
+        var actual = new byte[expected.Length];
+        
+        bool result = BinaryOperations.TryWriteBytes(actual, in value);
+        await Assert.That(result).IsEqualTo(successful);
+        
+        if (result)
+        {
+            await Assert.That(actual).IsEquivalentTo(expected);
+        }
+    }
+    [Test]
+    [MethodDataSource<BinaryOperationsDataSources>(nameof(UInt512TryWriteBytesTest))]
+    public async Task UInt512_TryWriteBytesTest(UInt512 value, byte[] expected, bool successful)
+    {
+        var actual = new byte[expected.Length];
+        
+        bool result = BinaryOperations.TryWriteBytes(actual, in value);
+        await Assert.That(result).IsEqualTo(successful);
+        
+        if (result)
+        {
+            await Assert.That(actual).IsEquivalentTo(expected);
+        }
+    }
+    [Test]
+    [MethodDataSource<BinaryOperationsDataSources>(nameof(Int512TryWriteBytesTest))]
+    public async Task Int512_TryWriteBytesTest(Int512 value, byte[] expected, bool successful)
+    {
+        var actual = new byte[expected.Length];
+        
+        bool result = BinaryOperations.TryWriteBytes(actual, in value);
+        await Assert.That(result).IsEqualTo(successful);
+        
+        if (result)
+        {
+            await Assert.That(actual).IsEquivalentTo(expected);
+        }
+    }
+    [Test]
+    [MethodDataSource<BinaryOperationsDataSources>(nameof(QuadTryWriteBytesTest))]
+    public async Task Quad_TryWriteBytesTest(Quad value, byte[] expected, bool successful)
+    {
+        var actual = new byte[expected.Length];
+        
+        bool result = BinaryOperations.TryWriteBytes(actual, in value);
+        await Assert.That(result).IsEqualTo(successful);
+        
+        if (result)
+        {
+            await Assert.That(actual).IsEquivalentTo(expected);
+        }
+    }
+    [Test]
+    [MethodDataSource<BinaryOperationsDataSources>(nameof(OctoTryWriteBytesTest))]
+    public async Task Octo_TryWriteBytesTest(Octo value, byte[] expected, bool successful)
+    {
+        var actual = new byte[expected.Length];
+        
+        bool result = BinaryOperations.TryWriteBytes(actual, in value);
+        await Assert.That(result).IsEqualTo(successful);
+        
+        if (result)
+        {
+            await Assert.That(actual).IsEquivalentTo(expected);
+        }
     }
     
     [Test]
