@@ -96,12 +96,7 @@ internal static partial class NumberFormatter
 
 		Ryu.Format<TFloat, TSignificand, Utf16Char>(in value, buffer, out charsWritten, fmt, out bool isExceptional, info);
 
-		if (isExceptional || fmt.StartsWith("E", StringComparison.OrdinalIgnoreCase))
-		{
-			return new string(Utf16Char.CastToCharSpan(buffer).Slice(0, charsWritten));
-		}
-
-		return new string(Utf16Char.CastToCharSpan(GetGeneralFromScientificFloatChars(buffer, info, precision, maxSignificandPrecision)));
+		return new string(Utf16Char.CastToCharSpan(buffer).Slice(0, charsWritten));
 	}
 
 	public static bool TryFormatFloat<TFloat, TSignificand, TChar>(
@@ -148,16 +143,9 @@ internal static partial class NumberFormatter
 		}
 
 		Span<TChar> buffer = stackalloc TChar[maxBufferAlloc];
-		Ryu.Format<TFloat, TSignificand, TChar>(in value, buffer, out charsWritten, format, out bool isExceptional, info);
+		Ryu.Format<TFloat, TSignificand, TChar>(in value, buffer, out charsWritten, format, out _, info);
 
-		if (isExceptional || format.Contains("E", StringComparison.OrdinalIgnoreCase))
-		{
-			return buffer.TrimEnd(TChar.NullCharacter).TryCopyTo(destination);
-		}
-
-		ReadOnlySpan<TChar> general = GetGeneralFromScientificFloatChars(buffer, info, precision, maxSignificandPrecision);
-		charsWritten = general.Length;
-		return general.TryCopyTo(destination);
+		return buffer.TrimEnd(TChar.NullCharacter).TryCopyTo(destination);
 	}
 	
 	private static bool TryFormatFloatToHex<TFloat, TSignificand, TChar>(in TFloat value, Span<TChar> destination, out int charsWritten, char format, int precision, NumberFormatInfo info)
@@ -405,132 +393,5 @@ internal static partial class NumberFormatter
 			}
 			return fraction;
 		}
-	}
-
-	private static ReadOnlySpan<TChar> GetGeneralFromScientificFloatChars<TChar>(Span<TChar> buffer, NumberFormatInfo info, int precision, int maxSignificandPrecision)
-		where TChar : unmanaged, IUtfCharacter<TChar>
-	{
-		Span<TChar> actualValue = buffer.TrimEnd(TChar.NullCharacter);
-
-		int eIndex = actualValue.IndexOf((TChar)'E');
-		if (eIndex <= 0 || !TChar.TryParseInteger(actualValue[(eIndex + 1)..], NumberStyles.Integer, CultureInfo.CurrentCulture, out int exponent))
-		{
-			exponent = 0;
-		}
-
-		ReadOnlySpan<TChar> numberDecimalSeparator = info.NumberDecimalSeparatorTChar(stackalloc TChar[16]);
-		ReadOnlySpan<TChar> negativeSign = info.NegativeSignTChar(stackalloc TChar[16]);
-
-		bool isNegativeExponent = exponent < 0;
-		bool isNegative = buffer.IndexOf(negativeSign) == 0;
-		int dotIndex = buffer.IndexOf(numberDecimalSeparator);
-		bool containsDecimalSeparator = dotIndex >= 0;
-
-		// If buffer cannot be represented with precision.
-		if ((!isNegativeExponent && (containsDecimalSeparator && exponent >= actualValue[(dotIndex + 1)..eIndex].Length && maxSignificandPrecision < actualValue.Length)) ||
-			(isNegativeExponent && (containsDecimalSeparator && (-exponent) >= 1 && maxSignificandPrecision < actualValue.Length)))
-		{
-			return actualValue;
-		}
-		if (!containsDecimalSeparator && ((isNegativeExponent && (-exponent) >= maxSignificandPrecision) || (!isNegativeExponent && exponent >= maxSignificandPrecision)))
-		{
-			return actualValue;
-		}
-		if (int.Abs(exponent) >= maxSignificandPrecision)
-		{
-			return actualValue;
-		}
-
-		// Get rid of the scientific notation
-		actualValue[eIndex..].Fill(TChar.NullCharacter);
-		actualValue = actualValue[..eIndex];
-
-
-		int temp;
-
-		if (!containsDecimalSeparator)
-		{
-			if (isNegativeExponent) // ie: 5E-1 = 0.5
-			{
-				/*
-				 * Since we got rid of E.. actualValue only has 5, now we have to add the leading zeroes
-				 * we know we have to add the first zero as 0.N, so lets do that first
-				 */
-
-				int i;
-
-				if (isNegative)
-				{
-					i = 4;
-					buffer[2 + numberDecimalSeparator.Length] = buffer[1];
-					buffer[1] = (TChar)'0';
-					numberDecimalSeparator.CopyTo(buffer[2..]);
-				}
-				else
-				{
-					i = 3;
-					buffer[1 + numberDecimalSeparator.Length] = buffer[0];
-					buffer[0] = (TChar)'0';
-					numberDecimalSeparator.CopyTo(buffer[1..]);
-				}
-
-				for (int leadingZeroes = (-exponent) - 1; leadingZeroes > 0 && i < buffer.Length; leadingZeroes--, i++)
-				{
-					(buffer[i - 1], buffer[i]) = ((TChar)'0', buffer[i - 1]);
-				}
-			}
-			else if (exponent != 0) // ie: 5E1 = 50
-			{
-				/*
-				 * This one is easier, we just add trailing zeroes
-				 */
-				for (int i = isNegative ? 2 : 1, trailingZeroes = exponent; trailingZeroes > 0 && i < buffer.Length; i++, trailingZeroes--)
-				{
-					buffer[i] = (TChar)'0';
-				}
-			}
-
-
-		}
-		else if (isNegativeExponent) // ie: 1.1E-5 = 0.000011
-		{
-			Span<TChar> digits = stackalloc TChar[actualValue.Length - 1];
-			digits[0] = isNegative ? actualValue[1] : actualValue[0];
-			actualValue[(dotIndex + 1)..].CopyTo(digits[1..]);
-
-			buffer[isNegative ? 1 : 0] = (TChar)'0';
-			int i;
-
-			for (i = isNegative ? 3 : 2, temp = exponent; temp > 0 && i < buffer.Length - digits.Length; i++, temp--)
-			{
-				buffer[i] = (TChar)'0';
-			}
-
-			digits.CopyTo(buffer[i..]);
-		}
-		else if (exponent != 0) // ie: 1.1E5 = 110000
-		{
-			int i;
-			int decimalDigits = actualValue[(dotIndex + 1)..].Length;
-			if (decimalDigits < exponent && exponent < buffer.Length)
-			{
-				i = actualValue.Length;
-				buffer.Slice(i, exponent - decimalDigits).Fill((TChar)'0');
-			}
-			i = isNegative ? 3 : 2;
-			for (temp = exponent; temp > 0 && i < buffer.Length; i++, temp--)
-			{
-				(buffer[i - 1], buffer[i]) = (buffer[i], buffer[i - 1]);
-			}
-		}
-
-		actualValue = buffer.TrimEnd(TChar.NullCharacter);
-
-		if (actualValue.EndsWith(numberDecimalSeparator))
-		{
-			actualValue = actualValue[..^numberDecimalSeparator.Length];
-		}
-
-		return actualValue;
 	}
 }

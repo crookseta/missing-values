@@ -307,13 +307,13 @@ internal static partial class NumberFormatter
 			if (!format.IsEmpty)
 			{
 				GetFormat(format, out int formatDigits);
-				if (formatDigits > 0)
+				if (formatDigits >= 0)
 				{
 					digits = formatDigits;
 				}
 			}
-			var fd = FloatToDecimal<TFloat, FloatingDecimal<TSignificand>, TSignificand>(in value, digits);
-			charsWritten = ToCharSpan<FloatingDecimal<TSignificand>, TSignificand, TChar>(in fd, destination, format, info is null ? NumberFormatInfo.CurrentInfo : info!, out isExceptional);
+			var fd = FloatToDecimal<TFloat, FloatingDecimal<TSignificand>, TSignificand>(in value, format.StartsWith("e", StringComparison.InvariantCultureIgnoreCase) ? digits : TFloat.MaxSignificandPrecision);
+			charsWritten = ToCharSpan<FloatingDecimal<TSignificand>, TSignificand, TChar>(in fd, destination, format, info is null ? NumberFormatInfo.CurrentInfo : info!, out isExceptional, TFloat.MaxSignificandPrecision);
 		}
 		internal static void Format<TFloat, TSignificand>(in TFloat value, scoped ref NumberInfo number, out bool isExceptional)
 			where TFloat : struct, IBinaryFloatingPointInfo<TFloat, TSignificand>
@@ -321,13 +321,13 @@ internal static partial class NumberFormatter
 		{
 			var fd = FloatToDecimal<TFloat, FloatingDecimal<TSignificand>, TSignificand>(in value, TFloat.MaxSignificandPrecision);
 			UInt256 significand = UInt256.CreateTruncating(fd.Mantissa);
-			UIntToNumber<UInt256>(in significand, ref number);
+			UIntToNumber(in significand, ref number);
 			number.Scale += fd.Exponent;
 			number.IsNegative = fd.Sign;
 			isExceptional = fd.Exponent == FDExceptionalExponent;
 		}
 
-		private static int ToCharSpan<TDecimal, TSignificand, TChar>(in TDecimal v, Span<TChar> destination, ReadOnlySpan<char> format, NumberFormatInfo info, out bool isExceptional)
+		private static int ToCharSpan<TDecimal, TSignificand, TChar>(in TDecimal v, Span<TChar> destination, ReadOnlySpan<char> format, NumberFormatInfo info, out bool isExceptional, int maxSignificandPrecision)
 			where TDecimal : struct, IBinaryFloatingPointDecimalFormat<TDecimal, TSignificand>
 			where TSignificand : unmanaged, IBinaryInteger<TSignificand>, IUnsignedNumber<TSignificand>
 			where TChar : unmanaged, IUtfCharacter<TChar>
@@ -357,6 +357,12 @@ internal static partial class NumberFormatter
 			// Step 5: Print the decimal representation.
 			ReadOnlySpan<TChar> negativeSign = info.NegativeSignTChar(stackalloc TChar[16]);
 
+			char fmt = GetFormat(format, out int digits);
+			if (digits < 0)
+			{
+				digits = maxSignificandPrecision;
+			}
+
 			int index = 0;
 			if (v.Sign)
 			{
@@ -370,68 +376,183 @@ internal static partial class NumberFormatter
 				UInt128 temp => UInt128.CountDigits(temp),
 				UInt256 temp => UInt256.CountDigits(in temp)
 			});
-
-			for (uint i = 0; i < olength - 1; ++i)
+			if (format.StartsWith("e", StringComparison.InvariantCultureIgnoreCase))
 			{
-				(output, TSignificand c) = TSignificand.DivRem(output, TDecimal.Ten);
-				destination[(int)(index + olength - i)] = (TChar)(char)('0' + TDecimal.ToUInt32(in c));
+				index = AsScientificNotation(in v, destination, index, olength, digits + 1, char.IsUpper(fmt), info, negativeSign);
 			}
-			destination[index] = (TChar)(char)('0' + TDecimal.ToUInt32(output % TDecimal.Ten));
-
-			// Print decimal point if needed
-			if (olength > 1)
+			else
 			{
-				int sepLength;
-				switch (format.IsEmpty ? '\0' : format[0])
+				int exp = v.Exponent;
+				if (exp < 0)
 				{
-					case 'p':
-					case 'P':
-						sepLength = TChar.GetLength(info.PercentDecimalSeparator);
-						TChar.Copy(info.PercentDecimalSeparator, destination[(index + 1)..]);
-						break;
-					case 'c':
-					case 'C':
-						sepLength = TChar.GetLength(info.CurrencyDecimalSeparator);
-						TChar.Copy(info.CurrencyDecimalSeparator, destination[(index + 1)..]);
-						break;
-					default:
-						sepLength = TChar.GetLength(info.NumberDecimalSeparator);
-						TChar.Copy(info.NumberDecimalSeparator, destination[(index + 1)..]);
-						break;
+					int absExp = -exp;
+					if ((uint)absExp >= maxSignificandPrecision)
+					{
+						index = AsScientificNotation(in v, destination, index, olength, digits + 1, char.IsUpper(fmt), info, negativeSign);
+					}
+					else
+					{
+						int i;
+						int wholeLength = (int)olength - absExp;
+						var numberDecimalSeparator = info.NumberDecimalSeparatorTChar(stackalloc TChar[8]);
+						if (wholeLength <= 0)
+						{
+							int decLength = -wholeLength;
+							
+							destination[index++] = (TChar)'0';
+							numberDecimalSeparator.CopyTo(destination.Slice(index));
+							index += numberDecimalSeparator.Length;
+
+							if (decLength > 1)
+							{
+								destination.Slice(index, decLength).Fill((TChar)'0');
+								index += decLength;
+							}
+							
+							for (i = (int)olength - 1; i >= 0; i--)
+							{
+								(output, TSignificand c) = TSignificand.DivRem(output, TDecimal.Ten);
+								if ((i + decLength) >= digits)
+								{
+									if ((i + decLength) == digits)
+									{
+										if (c == TDecimal.Five)
+										{
+											output += TSignificand.IsPow2(output)
+												? TSignificand.Zero
+												: TSignificand.One;
+										}
+										else if (c > TDecimal.Five)
+										{
+											output++;
+										}
+									}
+									continue;
+								}
+								destination[i + index] = (TChar)(char)('0' + TDecimal.ToUInt32(in c));
+							}
+							index += (int)olength;
+						}
+						else
+						{
+							int decLength = (int)olength - wholeLength;
+							i = (int)olength - 1 + numberDecimalSeparator.Length;
+							for (int j = decLength; j > 0; i--, j--)
+							{
+								(output, TSignificand c) = TSignificand.DivRem(output, TDecimal.Ten);
+								if (j > digits)
+								{
+									if (j == digits + 1)
+									{
+										if (c == TDecimal.Five)
+										{
+											output += TSignificand.IsPow2(output)
+												? TSignificand.Zero
+												: TSignificand.One;
+										}
+										else if (c > TDecimal.Five)
+										{
+											output++;
+										}
+									}
+									continue;
+								}
+								destination[i + index] = (TChar)(char)('0' + TDecimal.ToUInt32(in c));
+							}
+							
+							numberDecimalSeparator.CopyTo(destination.Slice(i -= (numberDecimalSeparator.Length - 1)));
+							i--;
+							
+							for (; i >= 0; i--)
+							{
+								(output, TSignificand c) = TSignificand.DivRem(output, TDecimal.Ten);
+								destination[i + index] = (TChar)(char)('0' + TDecimal.ToUInt32(in c));
+							}
+
+							index += decLength;
+							index += numberDecimalSeparator.Length;
+							index += wholeLength;
+						}
+					}
+				}
+				else
+				{
+					if (exp + olength > maxSignificandPrecision)
+					{
+						index = AsScientificNotation(in v, destination, index, olength, digits + 1, char.IsUpper(fmt), info, negativeSign);
+					}
+					else
+					{
+						int i;
+						for (i = (int)olength - 1; i >= 0; i--)
+						{
+							(output, TSignificand c) = TSignificand.DivRem(output, TDecimal.Ten);
+							destination[i + index] = (TChar)(char)('0' + TDecimal.ToUInt32(in c));
+						}
+
+						index += (int)olength;
+						i = exp;
+						while (i > 0)
+						{
+							destination[(int)(olength + --i)] = (TChar)'0';
+						}
+
+						index += exp;
+					}
+				}
+			}
+			return index;
+
+			static int AsScientificNotation(in TDecimal v, Span<TChar> destination, int index, uint digits, int precision, bool upper, NumberFormatInfo info, ReadOnlySpan<TChar> negativeSign)
+			{
+				precision = int.Min((int)digits, precision);
+				TSignificand output = v.Mantissa;
+				for (uint i = 0; i < precision - 1; i++)
+				{
+					(output, TSignificand c) = TSignificand.DivRem(output, TDecimal.Ten);
+					destination[(int)(index + precision - i)] = (TChar)(char)('0' + TDecimal.ToUInt32(in c));
+				}
+				destination[index] = (TChar)(char)('0' + TDecimal.ToUInt32(output % TDecimal.Ten));
+
+				// Print decimal point if needed
+				if (precision > 1)
+				{
+					int sepLength = TChar.GetLength(info.NumberDecimalSeparator);
+					TChar.Copy(info.NumberDecimalSeparator, destination[(index + 1)..]);
+
+					index += (int)precision + sepLength;
+				}
+				else
+				{
+					++index;
 				}
 
-				index += (int)olength + sepLength;
-			}
-			else
-			{
-				++index;
-			}
+				// Print the exponent.
+				destination[index++] = upper ? (TChar)'E' : (TChar)'e';
+				int exp = (int)(v.Exponent + digits - 1);
 
-			// Print the exponent.
-			destination[index++] = (TChar)'E';
-			int exp = (int)(v.Exponent + olength - 1);
+				if (exp < 0)
+				{
+					negativeSign.CopyTo(destination[index..]);
+					index += negativeSign.Length;
+					exp = -exp;
+				}
+				else
+				{
+					TChar.Copy(info.PositiveSign, destination[index..]);
+					index += TChar.GetLength(info.PositiveSign);
+				}
 
-			if (exp < 0)
-			{
-				negativeSign.CopyTo(destination[index..]);
-				index += negativeSign.Length;
-				exp = -exp;
-			}
-			else
-			{
-				TChar.Copy(info.PositiveSign, destination[index..]);
-				index += TChar.GetLength(info.PositiveSign);
-			}
+				uint elength = (uint)CountDigits((ulong)exp);
 
-			uint elength = (uint)CountDigits((ulong)exp);
-
-			for (int i = 0; i < elength; ++i)
-			{
-				(exp, int c) = int.DivRem(exp, 10);
-				destination[(int)(index + elength - 1 - i)] = (TChar)(char)('0' + c);
+				for (int i = 0; i < elength; ++i)
+				{
+					(exp, int c) = int.DivRem(exp, 10);
+					destination[(int)(index + elength - 1 - i)] = (TChar)(char)('0' + c);
+				}
+				index += (int)elength;
+				return index;
 			}
-			index += (int)elength;
-			return index;
 		}
 
 		internal static TDecimal FloatToDecimal<TFloat, TDecimal, TSignificand>(in TFloat value, int digits)
