@@ -9,43 +9,6 @@ namespace MissingValues.Info;
 
 internal static partial class NumberFormatter
 {
-	internal interface IBinaryFloatingPointDecimalFormat<TSelf, TSignificand>
-		where TSelf : struct, IBinaryFloatingPointDecimalFormat<TSelf, TSignificand>
-		where TSignificand : unmanaged, IBinaryInteger<TSignificand>, IUnsignedNumber<TSignificand>
-	{
-		static abstract ReadOnlySpan<Ryu.CachePower> GenericPow5Table { get; }
-		static abstract ReadOnlySpan<Ryu.CachePowerSplit> GenericPow5Split { get; }
-		static abstract ReadOnlySpan<Ryu.CachePowerSplit> GenericPow5InvSplit { get; }
-		static abstract ReadOnlySpan<ulong> Pow5Errors { get; }
-		static abstract ReadOnlySpan<ulong> Pow5InvErrors { get; }
-		static abstract uint Pow5InvBitCount { get; }
-		static abstract uint Pow5BitCount { get; }
-		static abstract uint Pow5TableSize { get; }
-		static abstract TSignificand Two { get; }
-		static abstract TSignificand Four { get; }
-		static abstract TSignificand Five { get; }
-		static abstract TSignificand Ten { get; }
-
-		static abstract TSelf Build(in TSignificand mantissa, int exponent, bool sign);
-		static abstract uint Pow5Factor(TSignificand value);
-		static abstract uint ToUInt32(in TSignificand value);
-		static abstract TSignificand FromUInt32(uint value);
-		static virtual bool MultipleOfPowerOf2(in TSignificand value, uint p)
-		{
-			return (value & (((TSignificand.One) << (int)p) - TSignificand.One)) == TSignificand.Zero;
-		}
-		static virtual bool MultipleOfPowerOf5(in TSignificand value, uint p)
-		{
-			return TSelf.Pow5Factor(value) >= p;
-		}
-		static abstract TSignificand MulShift(TSignificand m, ReadOnlySpan<ulong> mul, int j);
-
-		bool Sign { get; }
-		int Exponent { get; }
-		TSignificand Mantissa { get; }
-
-	}
-
 	/*
 	 * Using Ryu algorith for Binary-to-decimal conversion
 	 * Based on this implementation:
@@ -102,148 +65,26 @@ internal static partial class NumberFormatter
 			}
 		}
 
-		private record struct FloatingDecimal<TSignificand>(TSignificand Mantissa, int Exponent, bool Sign) : IBinaryFloatingPointDecimalFormat<FloatingDecimal<TSignificand>, TSignificand>
+		private record struct FloatingDecimal<TSignificand>(TSignificand Mantissa, int Exponent, bool Sign)
 			where TSignificand : unmanaged, IBinaryInteger<TSignificand>, IUnsignedNumber<TSignificand>
 		{
-			static ReadOnlySpan<CachePower> IBinaryFloatingPointDecimalFormat<FloatingDecimal<TSignificand>, TSignificand>.GenericPow5Table
-			{
-				get
-				{
-					if (typeof(TSignificand) == typeof(UInt128))
-					{
-						return CacheArraysForQuad.QuadPow5Table;
-					}
-					else // if (typeof(TSignificand) == typeof(UInt256))
-					{
-						return CacheArraysForOcto.OctoPow5Table;
-					}
-				}
-			}
+			internal static ReadOnlySpan<CachePower> GenericPow5Table => typeof(TSignificand) == typeof(UInt128) ? CacheArraysForQuad.QuadPow5Table : CacheArraysForOcto.OctoPow5Table;
 
-			static ReadOnlySpan<CachePowerSplit> IBinaryFloatingPointDecimalFormat<FloatingDecimal<TSignificand>, TSignificand>.GenericPow5Split
-			{
-				get
-				{
-					if (typeof(TSignificand) == typeof(UInt128))
-					{
-						return CacheArraysForQuad.QuadPow5Split;
-					}
-					else // if (typeof(TSignificand) == typeof(UInt256))
-					{
-						return CacheArraysForOcto.OctoPow5Split;
-					}
-				}
-			}
+			internal static ReadOnlySpan<CachePowerSplit> GenericPow5Split => typeof(TSignificand) == typeof(UInt128) ? CacheArraysForQuad.QuadPow5Split : CacheArraysForOcto.OctoPow5Split;
 
-			static ReadOnlySpan<CachePowerSplit> IBinaryFloatingPointDecimalFormat<FloatingDecimal<TSignificand>, TSignificand>.GenericPow5InvSplit
-			{
-				get
-				{
-					if (typeof(TSignificand) == typeof(UInt128))
-					{
-						return CacheArraysForQuad.QuadPow5InvSplit;
-					}
-					else // if (typeof(TSignificand) == typeof(UInt256))
-					{
-						return CacheArraysForOcto.OctoPow5InvSplit;
-					}
-				}
-			}
+			internal static ReadOnlySpan<CachePowerSplit> GenericPow5InvSplit => typeof(TSignificand) == typeof(UInt128) ? CacheArraysForQuad.QuadPow5InvSplit : CacheArraysForOcto.OctoPow5InvSplit;
 
-			static ReadOnlySpan<ulong> IBinaryFloatingPointDecimalFormat<FloatingDecimal<TSignificand>, TSignificand>.Pow5Errors
-			{
-				get
-				{
-					if (typeof(TSignificand) == typeof(UInt128))
-					{
-						return CacheArraysForQuad.QuadPow5Errors;
-					}
-					else // if (typeof(TSignificand) == typeof(UInt256))
-					{
-						return CacheArraysForOcto.OctoPow5Errors;
-					}
-				}
-			}
+			internal static ReadOnlySpan<ulong> Pow5Errors => typeof(TSignificand) == typeof(UInt128) ? CacheArraysForQuad.QuadPow5Errors : CacheArraysForOcto.OctoPow5Errors;
 
-			static ReadOnlySpan<ulong> IBinaryFloatingPointDecimalFormat<FloatingDecimal<TSignificand>, TSignificand>.Pow5InvErrors
-			{
-				get
-				{
-					if (typeof(TSignificand) == typeof(UInt128))
-					{
-						return CacheArraysForQuad.QuadPow5InvErrors;
-					}
-					else // if (typeof(TSignificand) == typeof(UInt256))
-					{
-						return CacheArraysForOcto.OctoPow5InvErrors;
-					}
-				}
-			}
+			internal static ReadOnlySpan<ulong> Pow5InvErrors => typeof(TSignificand) == typeof(UInt128) ? CacheArraysForQuad.QuadPow5InvErrors : CacheArraysForOcto.OctoPow5InvErrors;
 
-			static uint IBinaryFloatingPointDecimalFormat<FloatingDecimal<TSignificand>, TSignificand>.Pow5InvBitCount
-			{
-				get
-				{
-					if (typeof(TSignificand) == typeof(UInt128))
-					{
-						return 249;
-					}
-					else // if (typeof(TSignificand) == typeof(UInt256))
-					{
-						return 501;
-					}
-				}
-			}
+			internal static uint Pow5InvBitCount => typeof(TSignificand) == typeof(UInt128) ? 249U : 501U;
 
-			static uint IBinaryFloatingPointDecimalFormat<FloatingDecimal<TSignificand>, TSignificand>.Pow5BitCount
-			{
-				get
-				{
-					if (typeof(TSignificand) == typeof(UInt128))
-					{
-						return 249;
-					}
-					else // if (typeof(TSignificand) == typeof(UInt256))
-					{
-						return 501;
-					}
-				}
-			}
+			internal static uint Pow5BitCount => typeof(TSignificand) == typeof(UInt128) ? 249U : 501U;
 
-			static uint IBinaryFloatingPointDecimalFormat<FloatingDecimal<TSignificand>, TSignificand>.Pow5TableSize
-			{
-				get
-				{
-					if (typeof(TSignificand) == typeof(UInt128))
-					{
-						return 56;
-					}
-					else // if (typeof(TSignificand) == typeof(UInt256))
-					{
-						return 111;
-					}
-				}
-			}
+			internal static uint Pow5TableSize => typeof(TSignificand) == typeof(UInt128) ? 56U : 111U;
 
-			static TSignificand IBinaryFloatingPointDecimalFormat<FloatingDecimal<TSignificand>, TSignificand>.Two => TSignificand.CreateTruncating(2);
-
-			static TSignificand IBinaryFloatingPointDecimalFormat<FloatingDecimal<TSignificand>, TSignificand>.Four => TSignificand.CreateTruncating(4);
-
-			static TSignificand IBinaryFloatingPointDecimalFormat<FloatingDecimal<TSignificand>, TSignificand>.Five => TSignificand.CreateTruncating(5);
-
-			static TSignificand IBinaryFloatingPointDecimalFormat<FloatingDecimal<TSignificand>, TSignificand>.Ten => TSignificand.CreateTruncating(10);
-
-			static FloatingDecimal<TSignificand> IBinaryFloatingPointDecimalFormat<FloatingDecimal<TSignificand>, TSignificand>.Build(in TSignificand mantissa, int exponent, bool sign)
-			{
-				return new(mantissa, exponent, sign);
-			}
-
-			static TSignificand IBinaryFloatingPointDecimalFormat<FloatingDecimal<TSignificand>, TSignificand>.FromUInt32(uint value)
-			{
-				return TSignificand.CreateChecked(value);
-			}
-
-			static TSignificand IBinaryFloatingPointDecimalFormat<FloatingDecimal<TSignificand>, TSignificand>.MulShift(TSignificand m, ReadOnlySpan<ulong> mul, int j)
+			internal static TSignificand MulShift(TSignificand m, ReadOnlySpan<ulong> mul, int j)
 			{
 				if (typeof(TSignificand) == typeof(UInt128))
 				{
@@ -275,7 +116,7 @@ internal static partial class NumberFormatter
 				}
 			}
 
-			static uint IBinaryFloatingPointDecimalFormat<FloatingDecimal<TSignificand>, TSignificand>.Pow5Factor(TSignificand value)
+			internal static uint Pow5Factor(TSignificand value)
 			{
 				var five = TSignificand.CreateTruncating(5);
 				for (uint i = 0; value > TSignificand.Zero; ++i)
@@ -288,11 +129,6 @@ internal static partial class NumberFormatter
 				}
 
 				return 0;
-			}
-
-			static uint IBinaryFloatingPointDecimalFormat<FloatingDecimal<TSignificand>, TSignificand>.ToUInt32(in TSignificand value)
-			{
-				return uint.CreateTruncating(value);
 			}
 		}
 
@@ -307,28 +143,27 @@ internal static partial class NumberFormatter
 			if (!format.IsEmpty)
 			{
 				GetFormat(format, out int formatDigits);
-				if (formatDigits > 0)
+				if (formatDigits >= 0)
 				{
 					digits = formatDigits;
 				}
 			}
-			var fd = FloatToDecimal<TFloat, FloatingDecimal<TSignificand>, TSignificand>(in value, digits);
-			charsWritten = ToCharSpan<FloatingDecimal<TSignificand>, TSignificand, TChar>(in fd, destination, format, info is null ? NumberFormatInfo.CurrentInfo : info!, out isExceptional);
+			var fd = FloatToDecimal<TFloat, TSignificand>(in value, format.StartsWith("e", StringComparison.InvariantCultureIgnoreCase) ? digits : TFloat.MaxSignificandPrecision);
+			charsWritten = ToCharSpan(in fd, destination, format, info is null ? NumberFormatInfo.CurrentInfo : info!, out isExceptional, TFloat.MaxSignificandPrecision);
 		}
 		internal static void Format<TFloat, TSignificand>(in TFloat value, scoped ref NumberInfo number, out bool isExceptional)
 			where TFloat : struct, IBinaryFloatingPointInfo<TFloat, TSignificand>
 			where TSignificand : unmanaged, IBinaryInteger<TSignificand>, IUnsignedNumber<TSignificand>
 		{
-			var fd = FloatToDecimal<TFloat, FloatingDecimal<TSignificand>, TSignificand>(in value, TFloat.MaxSignificandPrecision);
+			var fd = FloatToDecimal<TFloat, TSignificand>(in value, TFloat.MaxSignificandPrecision);
 			UInt256 significand = UInt256.CreateTruncating(fd.Mantissa);
-			UIntToNumber<UInt256>(in significand, ref number);
+			UIntToNumber(in significand, ref number);
 			number.Scale += fd.Exponent;
 			number.IsNegative = fd.Sign;
 			isExceptional = fd.Exponent == FDExceptionalExponent;
 		}
 
-		private static int ToCharSpan<TDecimal, TSignificand, TChar>(in TDecimal v, Span<TChar> destination, ReadOnlySpan<char> format, NumberFormatInfo info, out bool isExceptional)
-			where TDecimal : struct, IBinaryFloatingPointDecimalFormat<TDecimal, TSignificand>
+		private static int ToCharSpan<TSignificand, TChar>(in FloatingDecimal<TSignificand> v, Span<TChar> destination, ReadOnlySpan<char> format, NumberFormatInfo info, out bool isExceptional, int maxSignificandPrecision)
 			where TSignificand : unmanaged, IBinaryInteger<TSignificand>, IUnsignedNumber<TSignificand>
 			where TChar : unmanaged, IUtfCharacter<TChar>
 		{
@@ -357,6 +192,12 @@ internal static partial class NumberFormatter
 			// Step 5: Print the decimal representation.
 			ReadOnlySpan<TChar> negativeSign = info.NegativeSignTChar(stackalloc TChar[16]);
 
+			char fmt = GetFormat(format, out int digits);
+			if (digits < 0)
+			{
+				digits = maxSignificandPrecision;
+			}
+
 			int index = 0;
 			if (v.Sign)
 			{
@@ -370,73 +211,191 @@ internal static partial class NumberFormatter
 				UInt128 temp => UInt128.CountDigits(temp),
 				UInt256 temp => UInt256.CountDigits(in temp)
 			});
-
-			for (uint i = 0; i < olength - 1; ++i)
+			if (format.StartsWith("e", StringComparison.InvariantCultureIgnoreCase))
 			{
-				(output, TSignificand c) = TSignificand.DivRem(output, TDecimal.Ten);
-				destination[(int)(index + olength - i)] = (TChar)(char)('0' + TDecimal.ToUInt32(in c));
+				index = AsScientificNotation(in v, destination, index, olength, digits + 1, char.IsUpper(fmt), info, negativeSign);
 			}
-			destination[index] = (TChar)(char)('0' + TDecimal.ToUInt32(output % TDecimal.Ten));
-
-			// Print decimal point if needed
-			if (olength > 1)
+			else
 			{
-				int sepLength;
-				switch (format.IsEmpty ? '\0' : format[0])
+				int exp = v.Exponent;
+				var ten = TSignificand.CreateTruncating(10);
+				if (exp < 0)
 				{
-					case 'p':
-					case 'P':
-						sepLength = TChar.GetLength(info.PercentDecimalSeparator);
-						TChar.Copy(info.PercentDecimalSeparator, destination[(index + 1)..]);
-						break;
-					case 'c':
-					case 'C':
-						sepLength = TChar.GetLength(info.CurrencyDecimalSeparator);
-						TChar.Copy(info.CurrencyDecimalSeparator, destination[(index + 1)..]);
-						break;
-					default:
-						sepLength = TChar.GetLength(info.NumberDecimalSeparator);
-						TChar.Copy(info.NumberDecimalSeparator, destination[(index + 1)..]);
-						break;
+					int absExp = -exp;
+					if ((uint)absExp >= maxSignificandPrecision)
+					{
+						index = AsScientificNotation(in v, destination, index, olength, digits + 1, char.IsUpper(fmt), info, negativeSign);
+					}
+					else
+					{
+						int i;
+						int wholeLength = (int)olength - absExp;
+						var numberDecimalSeparator = info.NumberDecimalSeparatorTChar(stackalloc TChar[16]);
+						if (wholeLength <= 0)
+						{
+							int decLength = -wholeLength;
+							
+							destination[index++] = (TChar)'0';
+							numberDecimalSeparator.CopyTo(destination.Slice(index));
+							index += numberDecimalSeparator.Length;
+
+							if (decLength > 1)
+							{
+								destination.Slice(index, decLength).Fill((TChar)'0');
+								index += decLength;
+							}
+							
+							for (i = (int)olength - 1; i >= 0; i--)
+							{
+								(output, TSignificand c) = TSignificand.DivRem(output, ten);
+								if ((i + decLength) >= digits)
+								{
+									if ((i + decLength) == digits)
+									{
+										var five = TSignificand.CreateTruncating(5);
+										if (c == five)
+										{
+											output += TSignificand.IsEvenInteger(output)
+												? TSignificand.Zero
+												: TSignificand.One;
+										}
+										else if (c > five)
+										{
+											output++;
+										}
+									}
+									continue;
+								}
+								destination[i + index] = (TChar)(char)('0' + uint.CreateTruncating(c));
+							}
+							index += (int)olength;
+						}
+						else
+						{
+							int decLength = (int)olength - wholeLength;
+							i = (int)olength - 1 + numberDecimalSeparator.Length;
+							for (int j = decLength; j > 0; i--, j--)
+							{
+								(output, TSignificand c) = TSignificand.DivRem(output, ten);
+								if (j > digits)
+								{
+									if (j == digits + 1)
+									{
+										var five = TSignificand.CreateTruncating(5);
+										if (c == five)
+										{
+											output += TSignificand.IsEvenInteger(output)
+												? TSignificand.Zero
+												: TSignificand.One;
+										}
+										else if (c > five)
+										{
+											output++;
+										}
+									}
+									continue;
+								}
+								destination[i + index] = (TChar)(char)('0' + uint.CreateTruncating(c));
+							}
+							
+							numberDecimalSeparator.CopyTo(destination.Slice(i -= (numberDecimalSeparator.Length - 1)));
+							i--;
+							
+							for (; i >= 0; i--)
+							{
+								(output, TSignificand c) = TSignificand.DivRem(output, ten);
+								destination[i + index] = (TChar)(char)('0' + uint.CreateTruncating(c));
+							}
+
+							index += decLength;
+							index += numberDecimalSeparator.Length;
+							index += wholeLength;
+						}
+					}
+				}
+				else
+				{
+					if (exp + olength > maxSignificandPrecision)
+					{
+						index = AsScientificNotation(in v, destination, index, olength, digits + 1, char.IsUpper(fmt), info, negativeSign);
+					}
+					else
+					{
+						int i;
+						for (i = (int)olength - 1; i >= 0; i--)
+						{
+							(output, TSignificand c) = TSignificand.DivRem(output, ten);
+							destination[i + index] = (TChar)(char)('0' + uint.CreateTruncating(c));
+						}
+
+						index += (int)olength;
+						i = exp;
+						while (i > 0)
+						{
+							destination[(int)(olength + --i)] = (TChar)'0';
+						}
+
+						index += exp;
+					}
+				}
+			}
+			return index;
+
+			static int AsScientificNotation(in FloatingDecimal<TSignificand> v, Span<TChar> destination, int index, uint digits, int precision, bool upper, NumberFormatInfo info, ReadOnlySpan<TChar> negativeSign)
+			{
+				var ten = TSignificand.CreateTruncating(10);
+				precision = int.Min((int)digits, precision);
+				TSignificand output = v.Mantissa;
+				for (uint i = 0; i < precision - 1; i++)
+				{
+					(output, TSignificand c) = TSignificand.DivRem(output, ten);
+					destination[(int)(index + precision - i)] = (TChar)(char)('0' + uint.CreateTruncating(c));
+				}
+				destination[index] = (TChar)(char)('0' + uint.CreateTruncating(output % ten));
+
+				// Print decimal point if needed
+				if (precision > 1)
+				{
+					int sepLength = TChar.GetLength(info.NumberDecimalSeparator);
+					TChar.Copy(info.NumberDecimalSeparator, destination[(index + 1)..]);
+
+					index += (int)precision + sepLength;
+				}
+				else
+				{
+					++index;
 				}
 
-				index += (int)olength + sepLength;
-			}
-			else
-			{
-				++index;
-			}
+				// Print the exponent.
+				destination[index++] = upper ? (TChar)'E' : (TChar)'e';
+				int exp = (int)(v.Exponent + digits - 1);
 
-			// Print the exponent.
-			destination[index++] = (TChar)'E';
-			int exp = (int)(v.Exponent + olength - 1);
+				if (exp < 0)
+				{
+					negativeSign.CopyTo(destination[index..]);
+					index += negativeSign.Length;
+					exp = -exp;
+				}
+				else
+				{
+					TChar.Copy(info.PositiveSign, destination[index..]);
+					index += TChar.GetLength(info.PositiveSign);
+				}
 
-			if (exp < 0)
-			{
-				negativeSign.CopyTo(destination[index..]);
-				index += negativeSign.Length;
-				exp = -exp;
-			}
-			else
-			{
-				TChar.Copy(info.PositiveSign, destination[index..]);
-				index += TChar.GetLength(info.PositiveSign);
-			}
+				uint elength = (uint)CountDigits((ulong)exp);
 
-			uint elength = (uint)CountDigits((ulong)exp);
-
-			for (int i = 0; i < elength; ++i)
-			{
-				(exp, int c) = int.DivRem(exp, 10);
-				destination[(int)(index + elength - 1 - i)] = (TChar)(char)('0' + c);
+				for (int i = 0; i < elength; ++i)
+				{
+					(exp, int c) = int.DivRem(exp, 10);
+					destination[(int)(index + elength - 1 - i)] = (TChar)(char)('0' + c);
+				}
+				index += (int)elength;
+				return index;
 			}
-			index += (int)elength;
-			return index;
 		}
 
-		internal static TDecimal FloatToDecimal<TFloat, TDecimal, TSignificand>(in TFloat value, int digits)
+		private static FloatingDecimal<TSignificand> FloatToDecimal<TFloat, TSignificand>(in TFloat value, int digits)
 			where TFloat : struct, IBinaryFloatingPointInfo<TFloat, TSignificand>
-			where TDecimal : struct, IBinaryFloatingPointDecimalFormat<TDecimal, TSignificand>
 			where TSignificand : unmanaged, IBinaryInteger<TSignificand>, IUnsignedNumber<TSignificand>
 		{
 			int mantissaBits = TFloat.DenormalMantissaBits;
@@ -444,23 +403,22 @@ internal static partial class NumberFormatter
 
 			TSignificand bits = TFloat.FloatToBits(value);
 
-
 			uint bias = (1U << (exponentBits - 1)) - 1;
 			bool ieeeSign = ((bits >> (mantissaBits + exponentBits)) & TSignificand.One) != TSignificand.Zero;
 			TSignificand ieeeMantissa = bits & ((TSignificand.One << mantissaBits) - TSignificand.One);
-			uint ieeeExponent = TDecimal.ToUInt32(((bits >> mantissaBits) & ((TSignificand.One << exponentBits) - TSignificand.One)));
+			uint ieeeExponent = uint.CreateTruncating((bits >> mantissaBits) & ((TSignificand.One << exponentBits) - TSignificand.One));
 
 			if (ieeeExponent == 0 && ieeeMantissa == TSignificand.Zero)
 			{
-				return TDecimal.Build(ieeeMantissa, 0, ieeeSign);
+				return new FloatingDecimal<TSignificand>(ieeeMantissa, 0, ieeeSign);
 			}
 			if (ieeeExponent == ((1U << exponentBits) - 1U))
 			{
-				return TDecimal.Build(
-					   TFloat.ExplicitLeadingBit ? ieeeMantissa & ((TSignificand.One << (mantissaBits - 1)) - TSignificand.One) : ieeeMantissa,
-					   FDExceptionalExponent,
-					   ieeeSign
-					   );
+				return new FloatingDecimal<TSignificand>(
+					TFloat.ExplicitLeadingBit ? ieeeMantissa & ((TSignificand.One << (mantissaBits - 1)) - TSignificand.One) : ieeeMantissa,
+					FDExceptionalExponent,
+					ieeeSign
+					);
 			}
 
 			int e2;
@@ -498,7 +456,7 @@ internal static partial class NumberFormatter
 			bool acceptBounds = even;
 
 			// Step 2: Determine the interval of legal decimal representations.
-			TSignificand four = TDecimal.Four;
+			TSignificand four = TSignificand.CreateTruncating(4);
 			TSignificand mv = four * m2;
 			// bool -> int conversion. True is 1, false is 0.
 			uint mmShift = ((ieeeMantissa != (TFloat.ExplicitLeadingBit ? TSignificand.One << (mantissaBits - 1) : TSignificand.Zero))
@@ -514,34 +472,34 @@ internal static partial class NumberFormatter
 			{
 				uint q = Log10Pow2(e2) - ((e2 > 3) ? 1U : 0U);
 				e10 = (int)q;
-				int k = (int)(TDecimal.Pow5InvBitCount + Pow5Bits((int)q) - 1);
+				int k = (int)(FloatingDecimal<TSignificand>.Pow5InvBitCount + Pow5Bits((int)q) - 1);
 				int i = -e2 + (int)q + k;
 				Span<ulong> pow5 = stackalloc ulong[typeof(TSignificand) == typeof(UInt128) ? 4 : 8];
-				GenericComputeInvPow5<TDecimal, TSignificand>(q, pow5);
+				GenericComputeInvPow5<TSignificand>(q, pow5);
 				TSignificand m = four * m2;
-				vr = TDecimal.MulShift(m, pow5, i);
-				vp = TDecimal.MulShift(m + TDecimal.Two, pow5, i);
-				vm = TDecimal.MulShift(m - TSignificand.One - TDecimal.FromUInt32(mmShift), pow5, i);
+				vr = FloatingDecimal<TSignificand>.MulShift(m, pow5, i);
+				vp = FloatingDecimal<TSignificand>.MulShift(m + TSignificand.CreateTruncating(2), pow5, i);
+				vm = FloatingDecimal<TSignificand>.MulShift(m - TSignificand.One - TSignificand.CreateTruncating(mmShift), pow5, i);
 
 				// floor(log5(2^128)) = 55, this is very conservative
 				if (q <= (typeof(TSignificand) == typeof(UInt128) ? 55 : 110))
 				{
 					// Only one of mp, mv, and mm can be a multiple of 5, if any.
-					if (mv % TDecimal.Five == TSignificand.Zero)
+					if (mv % TSignificand.CreateTruncating(5) == TSignificand.Zero)
 					{
-						vrIsTrailingZeros = TDecimal.MultipleOfPowerOf5(in mv, q - 1);
+						vrIsTrailingZeros = FloatingDecimal<TSignificand>.Pow5Factor(mv) >= q - 1;
 					}
 					else if (acceptBounds)
 					{
 						// Same as min(e2 + (~mm & 1), pow5Factor(mm)) >= q
 						// <=> e2 + (~mm & 1) >= q && pow5Factor(mm) >= q
 						// <=> true && pow5Factor(mm) >= q, since e2 >= q.
-						vmIsTrailingZeros = TDecimal.MultipleOfPowerOf5(mv - TSignificand.One - TDecimal.FromUInt32(mmShift), q);
+						vmIsTrailingZeros = FloatingDecimal<TSignificand>.Pow5Factor(mv - TSignificand.One - TSignificand.CreateTruncating(mmShift)) >= q;
 					}
 					else
 					{
 						// Same as min(e2 + 1, pow5Factor(mp)) >= q.
-						vp -= TDecimal.MultipleOfPowerOf5(mv + TDecimal.Two, q) ? TSignificand.One : TSignificand.Zero;
+						vp -= FloatingDecimal<TSignificand>.Pow5Factor(mv + TSignificand.CreateTruncating(2)) >= q ? TSignificand.One : TSignificand.Zero;
 					}
 				}
 			}
@@ -550,14 +508,14 @@ internal static partial class NumberFormatter
 				uint q = Log10Pow5(-e2) - (-2 > 1 ? 1 : 0);
 				e10 = (int)(q + e2);
 				int i = (int)(-e2 - q);
-				int k = (int)(Pow5Bits(i) - TDecimal.Pow5BitCount);
+				int k = (int)(Pow5Bits(i) - FloatingDecimal<TSignificand>.Pow5BitCount);
 				int j = (int)(q - k);
 				Span<ulong> pow5 = stackalloc ulong[typeof(TSignificand) == typeof(UInt128) ? 4 : 8];
-				GenericComputePow5<TDecimal, TSignificand>((uint)i, pow5);
+				GenericComputePow5<TSignificand>((uint)i, pow5);
 				TSignificand m = four * m2;
-				vr = TDecimal.MulShift(m, pow5, j);
-				vp = TDecimal.MulShift(m + TDecimal.Two, pow5, j);
-				vm = TDecimal.MulShift(m - TSignificand.One - TDecimal.FromUInt32(mmShift), pow5, j);
+				vr = FloatingDecimal<TSignificand>.MulShift(m, pow5, j);
+				vp = FloatingDecimal<TSignificand>.MulShift(m + TSignificand.CreateTruncating(2), pow5, j);
+				vm = FloatingDecimal<TSignificand>.MulShift(m - TSignificand.One - TSignificand.CreateTruncating(mmShift), pow5, j);
 
 				if (q <= 1)
 				{
@@ -576,20 +534,20 @@ internal static partial class NumberFormatter
 				}
 				else if (q < (typeof(TSignificand) == typeof(UInt128) ? 127 : 255))
 				{
-					vrIsTrailingZeros = TDecimal.MultipleOfPowerOf2(in mv, q - 1);
+					vrIsTrailingZeros = (mv & ((TSignificand.One << (int)(q - 1)) - TSignificand.One)) == TSignificand.Zero;
 				}
 			}
 
 			// Step 4: Find the shortest decimal representation in the interval of legal representations.
 			uint removed = 0;
 			byte lastRemovedDigit = 0;
-			TSignificand output, ten = TDecimal.Ten;
+			TSignificand output, ten = TSignificand.CreateTruncating(10);
 
 			while ((vp / ten) > (vm / ten))
 			{
 				vmIsTrailingZeros &= vm % ten == TSignificand.Zero;
 				vrIsTrailingZeros &= lastRemovedDigit == 0;
-				lastRemovedDigit = (byte)TDecimal.ToUInt32(vr % ten);
+				lastRemovedDigit = byte.CreateTruncating(vr % ten);
 				vr /= ten;
 				vp /= ten;
 				vm /= ten;
@@ -601,7 +559,7 @@ internal static partial class NumberFormatter
 				while (vm % ten == TSignificand.Zero)
 				{
 					vrIsTrailingZeros &= lastRemovedDigit == 0;
-					lastRemovedDigit = (byte)TDecimal.ToUInt32(vr % ten);
+					lastRemovedDigit = byte.CreateTruncating(vr % ten);
 					vr /= ten;
 					vp /= ten;
 					vm /= ten;
@@ -621,7 +579,7 @@ internal static partial class NumberFormatter
 				{
 					vmIsTrailingZeros &= vm % ten == TSignificand.Zero;
 					vrIsTrailingZeros &= lastRemovedDigit == 0;
-					lastRemovedDigit = (byte)TDecimal.ToUInt32(vr % ten);
+					lastRemovedDigit = byte.CreateTruncating(vr % ten);
 					vr /= ten;
 					vp /= ten;
 					vm /= ten;
@@ -632,7 +590,7 @@ internal static partial class NumberFormatter
 					while (vm % ten == TSignificand.Zero)
 					{
 						vrIsTrailingZeros &= lastRemovedDigit == 0;
-						lastRemovedDigit = (byte)TDecimal.ToUInt32(vr % ten);
+						lastRemovedDigit = byte.CreateTruncating(vr % ten);
 						vr /= ten;
 						vp /= ten;
 						vm /= ten;
@@ -641,7 +599,7 @@ internal static partial class NumberFormatter
 				}
 			}
 
-			if (vrIsTrailingZeros && (lastRemovedDigit == 5) && (vr % TDecimal.Two == TSignificand.Zero))
+			if (vrIsTrailingZeros && (lastRemovedDigit == 5) && (vr % TSignificand.CreateTruncating(2) == TSignificand.Zero))
 			{
 				lastRemovedDigit = 4;
 			}
@@ -650,13 +608,13 @@ internal static partial class NumberFormatter
 			+ (((vr == vm && (!acceptBounds || !vmIsTrailingZeros)) || (lastRemovedDigit >= 5)) ? TSignificand.One : TSignificand.Zero);
 			int exp = e10 + (int)removed;
 
-			return TDecimal.Build(output, exp, ieeeSign);
+			return new FloatingDecimal<TSignificand>(output, exp, ieeeSign);
 		}
 		internal static (TSignificand Mantissa, int Exponent, bool Sign) FloatToDecimalExtract<TFloat, TSignificand>(in TFloat value)
 			where TFloat : struct, IBinaryFloatingPointInfo<TFloat, TSignificand>
 			where TSignificand : unmanaged, IBinaryInteger<TSignificand>, IUnsignedNumber<TSignificand>
 		{
-			var fd = FloatToDecimal<TFloat, FloatingDecimal<TSignificand>, TSignificand>(in value, TFloat.MaxSignificandPrecision);
+			var fd = FloatToDecimal<TFloat, TSignificand>(in value, TFloat.MaxSignificandPrecision);
 			return (fd.Mantissa, fd.Exponent, fd.Sign);
 		}
 
@@ -698,13 +656,12 @@ internal static partial class NumberFormatter
 
 			return (uint)(((((ulong)e) * 163391164108059UL) >> 46) + 1);
 		}
-		private static void GenericComputePow5<TDecimal, TSignificand>(uint i, Span<ulong> result)
-			where TDecimal : struct, IBinaryFloatingPointDecimalFormat<TDecimal, TSignificand>
+		private static void GenericComputePow5<TSignificand>(uint i, Span<ulong> result)
 			where TSignificand : unmanaged, IBinaryInteger<TSignificand>, IUnsignedNumber<TSignificand>
 		{
-			uint ibase = i / TDecimal.Pow5TableSize;
-			uint ibase2 = ibase * TDecimal.Pow5TableSize;
-			var mul = TDecimal.GenericPow5Split[(int)ibase];
+			uint ibase = i / FloatingDecimal<TSignificand>.Pow5TableSize;
+			uint ibase2 = ibase * FloatingDecimal<TSignificand>.Pow5TableSize;
+			var mul = FloatingDecimal<TSignificand>.GenericPow5Split[(int)ibase];
 
 			if (i == ibase2)
 			{
@@ -730,9 +687,9 @@ internal static partial class NumberFormatter
 			else
 			{
 				uint offset = i - ibase2;
-				var m = TDecimal.GenericPow5Table[(int)offset];
+				var m = FloatingDecimal<TSignificand>.GenericPow5Table[(int)offset];
 				uint delta = Pow5Bits((int)i) - Pow5Bits((int)ibase2);
-				uint corr = (uint)((TDecimal.Pow5Errors[(int)i / 32] >> (2 * ((int)i % 32))) & 3);
+				uint corr = (uint)((FloatingDecimal<TSignificand>.Pow5Errors[(int)i / 32] >> (2 * ((int)i % 32))) & 3);
 				if (typeof(TSignificand) == typeof(UInt128))
 				{
 					Mul128To256Shift(m, mul, (int)delta, corr, result);
@@ -743,13 +700,12 @@ internal static partial class NumberFormatter
 				}
 			}
 		}
-		private static void GenericComputeInvPow5<TDecimal, TSignificand>(uint i, Span<ulong> result)
-			where TDecimal : struct, IBinaryFloatingPointDecimalFormat<TDecimal, TSignificand>
+		private static void GenericComputeInvPow5<TSignificand>(uint i, Span<ulong> result)
 			where TSignificand : unmanaged, IBinaryInteger<TSignificand>, IUnsignedNumber<TSignificand>
 		{
-			uint ibase = (i + TDecimal.Pow5TableSize - 1) / TDecimal.Pow5TableSize;
-			uint ibase2 = ibase * TDecimal.Pow5TableSize;
-			var mul = TDecimal.GenericPow5InvSplit[(int)ibase];
+			uint ibase = (i + FloatingDecimal<TSignificand>.Pow5TableSize - 1) / FloatingDecimal<TSignificand>.Pow5TableSize;
+			uint ibase2 = ibase * FloatingDecimal<TSignificand>.Pow5TableSize;
+			var mul = FloatingDecimal<TSignificand>.GenericPow5InvSplit[(int)ibase];
 			if (i == ibase2)
 			{
 				if (typeof(TSignificand) == typeof(UInt128))
@@ -774,9 +730,9 @@ internal static partial class NumberFormatter
 			else
 			{
 				uint offset = ibase2 - i;
-				var m = TDecimal.GenericPow5Table[(int)offset];
+				var m = FloatingDecimal<TSignificand>.GenericPow5Table[(int)offset];
 				ulong delta = Pow5Bits((int)ibase2) - Pow5Bits((int)i);
-				uint corr = (uint)((TDecimal.Pow5InvErrors[(int)i / 32] >> (2 * ((int)i % 32))) & 3) + 1;
+				uint corr = (uint)((FloatingDecimal<TSignificand>.Pow5InvErrors[(int)i / 32] >> (2 * ((int)i % 32))) & 3) + 1;
 				if (typeof(TSignificand) == typeof(UInt128))
 				{
 					Mul128To256Shift(m, mul, (int)delta, corr, result);
