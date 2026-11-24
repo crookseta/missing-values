@@ -253,49 +253,4 @@ public readonly partial struct Int256
 	{
 		return Unsafe.BitCast<Vector256<T>, Int256>(vector);
 	}
-
-	private static Int256 ToInt256(double value)
-	{
-		const double TwoPow255 = 57896044618658097711785492504343953926634992332820282019728792003956564819968.0;
-
-		Debug.Assert(value >= -TwoPow255);
-		Debug.Assert(double.IsFinite(value));
-		Debug.Assert(TwoPow255 > value);
-
-		// This code is based on `f64_to_i128` from m-ou-se/floatconv
-		// Copyright (c) 2020 Mara Bos <m-ou.se@m-ou.se>. All rights reserved.
-		//
-		// Licensed under the BSD 2 - Clause "Simplified" License
-		// See THIRD-PARTY-NOTICES.TXT for the full license text
-
-		bool isNegative = double.IsNegative(value);
-
-		if (isNegative)
-		{
-			value = -value;
-		}
-
-		if (value >= 1.0)
-		{
-			// In order to convert from double to int256 we first need to extract the signficand,
-			// including the implicit leading bit, as a full 256-bit significand. We can then adjust
-			// this down to the represented integer by right shifting by the unbiased exponent, taking
-			// into account the significand is now represented as 256-bits.
-
-			ulong bits = BitConverter.DoubleToUInt64Bits(value);
-
-			Int256 result = new Int256((bits << 12) >> 1 | 0x8000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
-			result >>>= (1023 + 256 - 1 - (int)(bits >> 52));
-
-			if (isNegative)
-			{
-				return -result;
-			}
-			return result;
-		}
-		else
-		{
-			return Int256.Zero;
-		}
-	}
 }

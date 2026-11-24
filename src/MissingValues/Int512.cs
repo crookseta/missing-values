@@ -306,44 +306,4 @@ public readonly partial struct Int512
 	{
 		return Unsafe.BitCast<Vector512<T>, Int512>(vector);
 	}
-
-	private static Int512 ToInt512(double value)
-	{
-		const double TwoPow511 = 6703903964971298549787012499102923063739682910296196688861780721860882015036773488400937149083451713845015929093243025426876941405973284973216824503042048.0;
-
-		Debug.Assert(value >= -TwoPow511);
-		Debug.Assert(double.IsFinite(value));
-		Debug.Assert(TwoPow511 > value);
-
-		bool isNegative = double.IsNegative(value);
-
-		if (isNegative)
-		{
-			value = -value;
-		}
-
-		if (value >= 1.0)
-		{
-			// In order to convert from double to int512 we first need to extract the signficand,
-			// including the implicit leading bit, as a full 512-bit significand. We can then adjust
-			// this down to the represented integer by right shifting by the unbiased exponent, taking
-			// into account the significand is now represented as 512-bits.
-
-			ulong bits = BitConverter.DoubleToUInt64Bits(value);
-
-			Int512 result = new Int512((bits << 12) >> 1 | 0x8000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000,
-				0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000, 0x0000_0000_0000_0000);
-			result >>>= (1023 + 512 - 1 - (int)(bits >> 52));
-
-			if (isNegative)
-			{
-				return -result;
-			}
-			return result;
-		}
-		else
-		{
-			return Int512.Zero;
-		}
-	}
 }
